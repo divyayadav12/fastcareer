@@ -1,8 +1,122 @@
-import React from 'react';
-import { Shield, Users, Building, Briefcase, FileText, Settings, Activity, CheckCircle, XCircle, User } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Shield, Users, Building, Briefcase, FileText, Settings, Activity, Download } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../../store';
+import axios from 'axios';
+import * as XLSX from 'xlsx';
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
+
+interface Candidate {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  resumeUrl?: string;
+  address?: {
+    street?: string;
+    city?: string;
+    state?: string;
+    zip?: string;
+  };
+  education?: {
+    degree: string;
+    institution: string;
+    passingYear: string;
+  }[];
+  createdAt: string;
+}
 
 export const AdminDashboard = () => {
+  const { user } = useSelector((state: RootState) => state.auth);
+  const [candidates, setCandidates] = useState<Candidate[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [downloading, setDownloading] = useState(false);
+
+  useEffect(() => {
+    const fetchCandidates = async () => {
+      try {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/users/candidates`, {
+          headers: { Authorization: `Bearer ${user?.token}` }
+        });
+        setCandidates(res.data);
+      } catch (error) {
+        console.error('Error fetching candidates:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (user?.token) {
+      fetchCandidates();
+    }
+  }, [user]);
+
+  const handleBulkDownload = async () => {
+    if (candidates.length === 0) {
+      alert('No candidates available to download.');
+      return;
+    }
+    
+    setDownloading(true);
+
+    try {
+      const zip = new JSZip();
+      
+      // 1. Prepare data for Excel
+      const excelData = candidates.map(candidate => ({
+        'First Name': candidate.firstName,
+        'Last Name': candidate.lastName,
+        'Email': candidate.email,
+        'Registered On': new Date(candidate.createdAt).toLocaleDateString(),
+        'Location': candidate.address?.city ? `${candidate.address.city}, ${candidate.address.state}` : 'Not provided',
+        'Education': candidate.education && candidate.education.length > 0 
+                      ? `${candidate.education[0].degree} from ${candidate.education[0].institution} (${candidate.education[0].passingYear})` 
+                      : 'Not provided',
+        'Resume Link': candidate.resumeUrl ? `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${candidate.resumeUrl}` : 'Not uploaded'
+      }));
+
+      // 2. Generate Excel file and add to ZIP
+      const worksheet = XLSX.utils.json_to_sheet(excelData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Candidates");
+      const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+      zip.file("Candidates_List.xlsx", excelBuffer);
+
+      // 3. Create a folder for resumes
+      const resumesFolder = zip.folder("Resumes");
+
+      // 4. Fetch all PDFs and add to ZIP
+      if (resumesFolder) {
+        const fetchPromises = candidates.map(async (candidate) => {
+          if (candidate.resumeUrl) {
+            try {
+              const resumeUrl = `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${candidate.resumeUrl}`;
+              const response = await axios.get(resumeUrl, { responseType: 'arraybuffer' });
+              const fileName = candidate.resumeUrl.split('/').pop() || `${candidate.firstName}_${candidate.lastName}_Resume.pdf`;
+              resumesFolder.file(fileName, response.data);
+            } catch (error) {
+              console.error(`Failed to fetch resume for ${candidate.firstName}:`, error);
+            }
+          }
+        });
+
+        // Wait for all PDFs to be fetched and added
+        await Promise.all(fetchPromises);
+      }
+
+      // 5. Generate final ZIP file and trigger download
+      const content = await zip.generateAsync({ type: 'blob' });
+      saveAs(content, "Candidates_Data_and_Resumes.zip");
+      
+    } catch (error) {
+      console.error('Error generating bulk download:', error);
+      alert('Failed to generate bulk download.');
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row pt-20">
       {/* Sidebar */}
@@ -31,9 +145,6 @@ export const AdminDashboard = () => {
             <Link to="/admin/jobs" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-colors">
               <Briefcase size={18} /> Jobs
             </Link>
-            <Link to="/admin/reports" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-colors">
-              <FileText size={18} /> Reports
-            </Link>
             <Link to="/admin/settings" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-colors">
               <Settings size={18} /> System Settings
             </Link>
@@ -43,140 +154,86 @@ export const AdminDashboard = () => {
 
       {/* Main Content */}
       <main className="flex-1 p-6 md:p-8">
-        <h1 className="text-2xl font-bold text-text mb-8">Platform Overview</h1>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-gray-500 text-sm font-medium">Total Users</h3>
-              <Users size={20} className="text-primary" />
-            </div>
-            <p className="text-3xl font-bold text-text">14,284</p>
-            <p className="text-sm text-green-600 mt-2 flex items-center gap-1">
-              <Activity size={14} /> +12% this month
-            </p>
-          </div>
-
-          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-gray-500 text-sm font-medium">Active Employers</h3>
-              <Building size={20} className="text-primary" />
-            </div>
-            <p className="text-3xl font-bold text-text">428</p>
-            <p className="text-sm text-green-600 mt-2 flex items-center gap-1">
-              <Activity size={14} /> +5% this month
-            </p>
-          </div>
-
-          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-gray-500 text-sm font-medium">Live Jobs</h3>
-              <Briefcase size={20} className="text-primary" />
-            </div>
-            <p className="text-3xl font-bold text-text">2,145</p>
-            <p className="text-sm text-green-600 mt-2 flex items-center gap-1">
-              <Activity size={14} /> +18% this month
-            </p>
-          </div>
-
-          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-gray-500 text-sm font-medium">Applications</h3>
-              <FileText size={20} className="text-primary" />
-            </div>
-            <p className="text-3xl font-bold text-text">8,932</p>
-            <p className="text-sm text-green-600 mt-2 flex items-center gap-1">
-              <Activity size={14} /> +24% this month
-            </p>
-          </div>
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-2xl font-bold text-text">Candidates Management</h1>
+          <button 
+            onClick={handleBulkDownload}
+            disabled={downloading}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${downloading ? 'bg-gray-400 text-white cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 text-white'}`}
+          >
+            <Download size={16} /> {downloading ? 'Generating ZIP...' : 'Download All (Excel + PDFs)'}
+          </button>
         </div>
 
-        {/* Management Sections */}
-        <div className="grid lg:grid-cols-2 gap-8">
-          
-          {/* Pending Employer Approvals */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-            <div className="p-6 border-b border-gray-100">
-              <h2 className="text-lg font-bold text-text">Pending Employer Approvals</h2>
-            </div>
-            <div className="p-0">
-              <table className="w-full text-left">
-                <thead className="bg-gray-50">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-100">
+                  <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Candidate</th>
+                  <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Location</th>
+                  <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Education</th>
+                  <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Registered On</th>
+                  <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Resume</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {loading ? (
                   <tr>
-                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Company</th>
-                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Requested By</th>
-                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500">Loading candidates...</td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
+                ) : candidates.length === 0 ? (
                   <tr>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">NextGen Tech</div>
-                      <div className="text-sm text-gray-500">nextgen.io</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">mike@nextgen.io</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button className="text-green-600 hover:text-green-900 mr-3"><CheckCircle size={20} /></button>
-                      <button className="text-red-600 hover:text-red-900"><XCircle size={20} /></button>
-                    </td>
+                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500">No candidates found.</td>
                   </tr>
-                  <tr>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">Global Finance Corp</div>
-                      <div className="text-sm text-gray-500">gfc.com</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">hr@gfc.com</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button className="text-green-600 hover:text-green-900 mr-3"><CheckCircle size={20} /></button>
-                      <button className="text-red-600 hover:text-red-900"><XCircle size={20} /></button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+                ) : (
+                  candidates.map((candidate) => (
+                    <tr key={candidate._id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold uppercase">
+                            {candidate.firstName[0]}{candidate.lastName[0]}
+                          </div>
+                          <div>
+                            <div className="font-medium text-text">{candidate.firstName} {candidate.lastName}</div>
+                            <div className="text-xs text-gray-500">{candidate.email}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-600">
+                        {candidate.address?.city ? `${candidate.address.city}, ${candidate.address.state}` : '-'}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-600">
+                        {candidate.education && candidate.education.length > 0 ? (
+                          <div>
+                            <div>{candidate.education[0].degree}</div>
+                            <div className="text-xs text-gray-500">{candidate.education[0].institution}</div>
+                          </div>
+                        ) : '-'}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-600">
+                        {new Date(candidate.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4">
+                        {candidate.resumeUrl ? (
+                          <a 
+                            href={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${candidate.resumeUrl}`} 
+                            target="_blank" 
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 text-primary hover:text-blue-700 text-sm font-medium"
+                          >
+                            <FileText size={16} /> View / Download
+                          </a>
+                        ) : (
+                          <span className="text-sm text-gray-400 italic">Not uploaded</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
-
-          {/* Recent System Activity */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
-            <div className="p-6 border-b border-gray-100">
-              <h2 className="text-lg font-bold text-text">Recent System Activity</h2>
-            </div>
-            <div className="p-6 space-y-6">
-              <div className="flex gap-4">
-                <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
-                  <User size={14} />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-800">New candidate registration spike detected.</p>
-                  <p className="text-xs text-gray-400 mt-1">10 mins ago</p>
-                </div>
-              </div>
-              <div className="flex gap-4">
-                <div className="w-8 h-8 rounded-full bg-yellow-100 text-yellow-600 flex items-center justify-center shrink-0">
-                  <Activity size={14} />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-800">High API latency on Job Search endpoint.</p>
-                  <p className="text-xs text-gray-400 mt-1">45 mins ago</p>
-                </div>
-              </div>
-              <div className="flex gap-4">
-                <div className="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center shrink-0">
-                  <CheckCircle size={14} />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-800">System backup completed successfully.</p>
-                  <p className="text-xs text-gray-400 mt-1">3 hours ago</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
         </div>
       </main>
     </div>

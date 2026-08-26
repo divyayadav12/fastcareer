@@ -1,11 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { Button } from '../components/Button';
+import { useSelector, useDispatch } from 'react-redux';
+import { logout, reset } from '../store/authSlice';
+import type { RootState, AppDispatch } from '../store';
 
 export const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
+  const { user } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -14,6 +21,13 @@ export const Navbar = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+  
+  const onLogout = () => {
+    dispatch(logout());
+    dispatch(reset());
+    navigate('/');
+    setMobileMenuOpen(false);
+  };
 
   const navLinks = [
     { name: 'Home', path: '/' },
@@ -53,10 +67,21 @@ export const Navbar = () => {
 
           {/* Desktop Auth/Actions */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link to="/login" className="text-sm font-medium text-text hover:text-primary transition-colors">
-              Login
-            </Link>
-            <Button variant="primary" size="sm">Find a Job</Button>
+            {user ? (
+              <>
+                <Link to={`/${user.role}/dashboard`} className="text-sm font-medium text-text hover:text-primary transition-colors">
+                  Dashboard
+                </Link>
+                <Button variant="outline" size="sm" onClick={onLogout}>Logout</Button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="text-sm font-medium text-text hover:text-primary transition-colors">
+                  Login
+                </Link>
+                <Button variant="primary" size="sm">Find a Job</Button>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -85,10 +110,21 @@ export const Navbar = () => {
             </Link>
           ))}
           <div className="border-t border-gray-100 pt-4 flex flex-col space-y-3 px-2">
-            <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="text-text font-medium text-center border rounded-md py-2">
-              Login
-            </Link>
-            <Button variant="primary" className="w-full">Find a Job</Button>
+            {user ? (
+              <>
+                <Link to={`/${user.role}/dashboard`} onClick={() => setMobileMenuOpen(false)} className="text-text font-medium text-center border rounded-md py-2">
+                  Dashboard
+                </Link>
+                <Button variant="outline" className="w-full" onClick={onLogout}>Logout</Button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="text-text font-medium text-center border rounded-md py-2">
+                  Login
+                </Link>
+                <Button variant="primary" className="w-full">Find a Job</Button>
+              </>
+            )}
           </div>
         </div>
       )}

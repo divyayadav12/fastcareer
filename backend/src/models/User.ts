@@ -13,6 +13,17 @@ export interface IUser extends Document {
   resumeUrl?: string;
   skills?: string[];
   experience?: number;
+  address?: {
+    street?: string;
+    city?: string;
+    state?: string;
+    zip?: string;
+  };
+  education?: {
+    degree: string;
+    institution: string;
+    passingYear: string;
+  }[];
   // Employer specific
   companyName?: string;
   companyWebsite?: string;
@@ -33,6 +44,19 @@ const UserSchema: Schema = new Schema(
     resumeUrl: { type: String },
     skills: [{ type: String }],
     experience: { type: Number },
+    address: {
+      street: { type: String },
+      city: { type: String },
+      state: { type: String },
+      zip: { type: String },
+    },
+    education: [
+      {
+        degree: { type: String },
+        institution: { type: String },
+        passingYear: { type: String },
+      }
+    ],
     
     // Employer specific fields
     companyName: { type: String },

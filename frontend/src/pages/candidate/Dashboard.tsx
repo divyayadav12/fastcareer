@@ -1,137 +1,213 @@
-import React from 'react';
-import { User, FileText, Bookmark, Settings, Bell, ChevronRight, Briefcase, CheckCircle2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { User, FileText, Bookmark, Settings, Bell, ChevronRight, Briefcase, CheckCircle2, Upload, MapPin, GraduationCap } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import type { RootState, AppDispatch } from '../../store';
+import axios from 'axios';
+import { Button } from '../../components/Button';
+import { CandidateLayout } from '../../layouts/CandidateLayout';
 
 export const CandidateDashboard = () => {
+  const { user } = useSelector((state: RootState) => state.auth);
+  const [uploading, setUploading] = useState(false);
+  const [resumeUrl, setResumeUrl] = useState(user?.resumeUrl || '');
+  
+  // Profile Form States
+  const [address, setAddress] = useState({ street: '', city: '', state: '', zip: '' });
+  const [education, setEducation] = useState([{ degree: '', institution: '', passingYear: '' }]);
+  const [savingProfile, setSavingProfile] = useState(false);
+
+  useEffect(() => {
+    // Fetch full profile to populate forms
+    const fetchProfile = async () => {
+      try {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/users/profile`, {
+          headers: { Authorization: `Bearer ${user?.token}` }
+        });
+        if (res.data.resumeUrl) setResumeUrl(res.data.resumeUrl);
+        if (res.data.address) setAddress(res.data.address);
+        if (res.data.education && res.data.education.length > 0) setEducation(res.data.education);
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+      }
+    };
+    if (user?.token) fetchProfile();
+  }, [user]);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('resume', file);
+
+    setUploading(true);
+    try {
+      const uploadRes = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/upload`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      const url = uploadRes.data.url;
+      
+      await axios.put(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/users/profile`, { resumeUrl: url }, {
+        headers: { Authorization: `Bearer ${user?.token}` }
+      });
+
+      setResumeUrl(url);
+      alert('Resume uploaded successfully!');
+    } catch (error) {
+      console.error('Error uploading resume:', error);
+      alert('Failed to upload resume.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingProfile(true);
+    try {
+      await axios.put(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/users/profile`, { address, education }, {
+        headers: { Authorization: `Bearer ${user?.token}` }
+      });
+      alert('Profile details saved successfully!');
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      alert('Failed to save profile.');
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
+  const handleEducationChange = (index: number, field: string, value: string) => {
+    const newEdu = [...education];
+    newEdu[index] = { ...newEdu[index], [field]: value };
+    setEducation(newEdu);
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row pt-20">
-      {/* Sidebar */}
-      <aside className="w-full md:w-64 bg-white border-r border-gray-200 shrink-0 h-auto md:min-h-[calc(100vh-64px)]">
-        <div className="p-6">
-          <div className="flex items-center gap-4 mb-8">
-            <div className="w-12 h-12 bg-primary/10 text-primary rounded-full flex items-center justify-center text-xl font-bold">
-              JD
-            </div>
-            <div>
-              <h3 className="font-bold text-text">John Doe</h3>
-              <p className="text-xs text-gray-500">Candidate</p>
-            </div>
-          </div>
+    <CandidateLayout>
+      <h1 className="text-2xl font-bold text-text mb-8">Welcome back, {user?.firstName}!</h1>
 
-          <nav className="space-y-1">
-            <Link to="/candidate/dashboard" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg bg-blue-50 text-primary">
-              <User size={18} /> Profile Overview
-            </Link>
-            <Link to="/candidate/applications" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
-              <Briefcase size={18} /> My Applications
-            </Link>
-            <Link to="/candidate/saved-jobs" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
-              <Bookmark size={18} /> Saved Jobs
-            </Link>
-            <Link to="/candidate/resume" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
-              <FileText size={18} /> Resume & Documents
-            </Link>
-            <Link to="/candidate/alerts" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
-              <Bell size={18} /> Job Alerts
-            </Link>
-            <Link to="/candidate/settings" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
-              <Settings size={18} /> Account Settings
-            </Link>
-          </nav>
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <main className="flex-1 p-6 md:p-8">
-        <h1 className="text-2xl font-bold text-text mb-8">Welcome back, John!</h1>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm font-medium mb-1">Applied Jobs</p>
-              <h3 className="text-3xl font-bold text-text">12</h3>
-            </div>
-            <div className="bg-blue-50 text-blue-600 p-3 rounded-xl">
-              <Briefcase size={24} />
-            </div>
-          </div>
-          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm font-medium mb-1">Saved Jobs</p>
-              <h3 className="text-3xl font-bold text-text">4</h3>
-            </div>
-            <div className="bg-amber-50 text-amber-600 p-3 rounded-xl">
-              <Bookmark size={24} />
-            </div>
-          </div>
-          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm font-medium mb-1">Profile Views</p>
-              <h3 className="text-3xl font-bold text-text">28</h3>
-            </div>
-            <div className="bg-green-50 text-green-600 p-3 rounded-xl">
-              <User size={24} />
-            </div>
-          </div>
-        </div>
-
-        <div className="grid lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-lg font-bold text-text">Recent Applications</h2>
-                <Link to="/candidate/applications" className="text-sm text-primary font-medium hover:underline">View All</Link>
+      <div className="grid lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-6">
+          
+          {/* Resume Upload Section */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <h2 className="text-lg font-bold text-text mb-4">My Resume</h2>
+            {resumeUrl ? (
+              <div className="mb-4 p-4 border border-green-100 bg-green-50 rounded-lg flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <FileText className="text-green-600" />
+                  <span className="text-sm font-medium text-green-800">Resume Uploaded Successfully</span>
+                </div>
+                <a href={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${resumeUrl}`} target="_blank" rel="noreferrer" className="text-sm text-primary font-medium hover:underline">
+                  View Resume
+                </a>
               </div>
-              <div className="space-y-4">
-                {[1, 2].map((i) => (
-                  <div key={i} className="flex items-center justify-between p-4 border border-gray-100 rounded-xl hover:border-gray-200 transition-colors">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                        <Briefcase size={20} className="text-gray-400" />
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-text text-sm">Senior Financial Analyst</h4>
-                        <p className="text-xs text-gray-500">Global FinTech Corp • Applied 2 days ago</p>
-                      </div>
+            ) : (
+              <p className="text-sm text-gray-500 mb-4">You haven't uploaded a resume yet. Upload one to easily apply for jobs.</p>
+            )}
+            
+            <div className="flex items-center justify-center w-full">
+              <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
+                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                  <Upload className="w-8 h-8 mb-2 text-gray-500" />
+                  <p className="mb-2 text-sm text-gray-500"><span className="font-semibold">Click to upload</span></p>
+                  <p className="text-xs text-gray-500">PDF or Word (MAX. 5MB)</p>
+                </div>
+                <input id="dropzone-file" type="file" className="hidden" accept=".pdf,.doc,.docx" onChange={handleFileUpload} disabled={uploading} />
+              </label>
+            </div>
+            {uploading && <p className="text-sm text-center text-primary mt-2">Uploading...</p>}
+          </div>
+
+          {/* Profile Details Form */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <h2 className="text-lg font-bold text-text mb-6">Complete Your Profile</h2>
+            <form onSubmit={handleSaveProfile} className="space-y-6">
+              {/* Address Section */}
+              <div>
+                <h3 className="text-md font-semibold flex items-center gap-2 mb-4"><MapPin size={18} className="text-primary"/> Address Details</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Street Address</label>
+                    <input type="text" value={address.street} onChange={(e) => setAddress({...address, street: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" placeholder="123 Main St" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                    <input type="text" value={address.city} onChange={(e) => setAddress({...address, city: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" placeholder="Mumbai" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">State / Province</label>
+                    <input type="text" value={address.state} onChange={(e) => setAddress({...address, state: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" placeholder="Maharashtra" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">ZIP / Postal Code</label>
+                    <input type="text" value={address.zip} onChange={(e) => setAddress({...address, zip: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" placeholder="400001" />
+                  </div>
+                </div>
+              </div>
+
+              <hr className="border-gray-100" />
+
+              {/* Education Section */}
+              <div>
+                <h3 className="text-md font-semibold flex items-center gap-2 mb-4"><GraduationCap size={18} className="text-primary"/> Education</h3>
+                {education.map((edu, index) => (
+                  <div key={index} className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 p-4 border border-gray-100 rounded-lg bg-gray-50">
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Degree / Qualification</label>
+                      <input type="text" value={edu.degree} onChange={(e) => handleEducationChange(index, 'degree', e.target.value)} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" placeholder="B.Tech Computer Science" />
                     </div>
-                    <span className="bg-yellow-50 text-yellow-700 px-3 py-1 text-xs font-medium rounded-full">In Review</span>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Institution / University</label>
+                      <input type="text" value={edu.institution} onChange={(e) => handleEducationChange(index, 'institution', e.target.value)} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" placeholder="IIT Bombay" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Passing Year</label>
+                      <input type="text" value={edu.passingYear} onChange={(e) => handleEducationChange(index, 'passingYear', e.target.value)} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" placeholder="2024" />
+                    </div>
                   </div>
                 ))}
+                <button type="button" onClick={() => setEducation([...education, { degree: '', institution: '', passingYear: '' }])} className="text-sm text-primary font-medium hover:underline">
+                  + Add Another Education
+                </button>
               </div>
-            </div>
+
+              <div className="flex justify-end pt-4">
+                <Button type="submit" isLoading={savingProfile}>Save Profile Details</Button>
+              </div>
+            </form>
           </div>
 
-          <div className="space-y-6">
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-              <h2 className="text-lg font-bold text-text mb-4">Profile Completeness</h2>
-              <div className="mb-2 flex justify-between items-center">
-                <span className="text-sm font-medium text-gray-700">65% Complete</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2.5 mb-6">
-                <div className="bg-primary h-2.5 rounded-full" style={{ width: '65%' }}></div>
-              </div>
-              <ul className="space-y-3">
-                <li className="flex items-center justify-between text-sm">
-                  <span className="text-gray-500 line-through">Basic Information</span>
-                  <CheckCircle2 size={16} className="text-green-500" />
-                </li>
-                <li className="flex items-center justify-between text-sm">
-                  <span className="text-gray-500 line-through">Education</span>
-                  <CheckCircle2 size={16} className="text-green-500" />
-                </li>
-                <li className="flex items-center justify-between text-sm">
-                  <span className="text-gray-700 font-medium">Upload Resume</span>
-                  <ChevronRight size={16} className="text-gray-400" />
-                </li>
-                <li className="flex items-center justify-between text-sm">
-                  <span className="text-gray-700 font-medium">Add Skills</span>
-                  <ChevronRight size={16} className="text-gray-400" />
-                </li>
-              </ul>
+        </div>
+
+        <div className="space-y-6">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <h2 className="text-lg font-bold text-text mb-4">Profile Completeness</h2>
+            <div className="mb-2 flex justify-between items-center">
+              <span className="text-sm font-medium text-gray-700">{resumeUrl && address.city && education[0].degree ? '100%' : resumeUrl ? '80%' : '65%'} Complete</span>
             </div>
+            <div className="w-full bg-gray-200 rounded-full h-2.5 mb-6">
+              <div className="bg-primary h-2.5 rounded-full" style={{ width: resumeUrl && address.city && education[0].degree ? '100%' : resumeUrl ? '80%' : '65%' }}></div>
+            </div>
+            <ul className="space-y-3">
+              <li className="flex items-center justify-between text-sm">
+                <span className="text-gray-500 line-through">Basic Information</span>
+                <CheckCircle2 size={16} className="text-green-500" />
+              </li>
+              <li className="flex items-center justify-between text-sm">
+                <span className={resumeUrl ? "text-gray-500 line-through" : "text-gray-700 font-medium"}>Upload Resume</span>
+                {resumeUrl ? <CheckCircle2 size={16} className="text-green-500" /> : <ChevronRight size={16} className="text-gray-400" />}
+              </li>
+              <li className="flex items-center justify-between text-sm">
+                <span className={address.city && education[0].degree ? "text-gray-500 line-through" : "text-gray-700 font-medium"}>Add Details</span>
+                {address.city && education[0].degree ? <CheckCircle2 size={16} className="text-green-500" /> : <ChevronRight size={16} className="text-gray-400" />}
+              </li>
+            </ul>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </CandidateLayout>
   );
 };

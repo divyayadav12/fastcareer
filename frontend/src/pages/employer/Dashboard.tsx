@@ -1,167 +1,224 @@
-import React from 'react';
-import { Building, Users, FileText, Settings, Bell, PlusCircle, Briefcase, BarChart2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Building, Users, FileText, Settings, Bell, PlusCircle, Briefcase, BarChart2, MapPin, GraduationCap, Download } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '../../components/Button';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../../store';
+import axios from 'axios';
+import * as XLSX from 'xlsx';
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
+import { EmployerLayout } from '../../layouts/EmployerLayout';
+
+interface Candidate {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  resumeUrl?: string;
+  address?: {
+    street?: string;
+    city?: string;
+    state?: string;
+    zip?: string;
+  };
+  education?: {
+    degree: string;
+    institution: string;
+    passingYear: string;
+  }[];
+  createdAt: string;
+}
 
 export const EmployerDashboard = () => {
+  const { user } = useSelector((state: RootState) => state.auth);
+  const [candidates, setCandidates] = useState<Candidate[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [downloading, setDownloading] = useState(false);
+
+  useEffect(() => {
+    const fetchCandidates = async () => {
+      try {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/users/candidates`, {
+          headers: { Authorization: `Bearer ${user?.token}` }
+        });
+        setCandidates(res.data);
+      } catch (error) {
+        console.error('Error fetching candidates:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (user?.token) {
+      fetchCandidates();
+    }
+  }, [user]);
+
+  const handleBulkDownload = async () => {
+    if (candidates.length === 0) {
+      alert('No candidates available to download.');
+      return;
+    }
+    
+    setDownloading(true);
+
+    try {
+      const zip = new JSZip();
+      
+      const excelData = candidates.map(candidate => ({
+        'First Name': candidate.firstName,
+        'Last Name': candidate.lastName,
+        'Email': candidate.email,
+        'Registered On': new Date(candidate.createdAt).toLocaleDateString(),
+        'Location': candidate.address?.city ? `${candidate.address.city}, ${candidate.address.state}` : 'Not provided',
+        'Education': candidate.education && candidate.education.length > 0 
+                      ? `${candidate.education[0].degree} from ${candidate.education[0].institution} (${candidate.education[0].passingYear})` 
+                      : 'Not provided',
+        'Resume Link': candidate.resumeUrl ? `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${candidate.resumeUrl}` : 'Not uploaded'
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(excelData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Candidates");
+      const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+      zip.file("Candidates_List.xlsx", excelBuffer);
+
+      const resumesFolder = zip.folder("Resumes");
+
+      if (resumesFolder) {
+        const fetchPromises = candidates.map(async (candidate) => {
+          if (candidate.resumeUrl) {
+            try {
+              const resumeUrl = `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${candidate.resumeUrl}`;
+              const response = await axios.get(resumeUrl, { responseType: 'arraybuffer' });
+              const fileName = candidate.resumeUrl.split('/').pop() || `${candidate.firstName}_${candidate.lastName}_Resume.pdf`;
+              resumesFolder.file(fileName, response.data);
+            } catch (error) {
+              console.error(`Failed to fetch resume for ${candidate.firstName}:`, error);
+            }
+          }
+        });
+        await Promise.all(fetchPromises);
+      }
+
+      const content = await zip.generateAsync({ type: 'blob' });
+      saveAs(content, "Candidates_Data_and_Resumes.zip");
+      
+    } catch (error) {
+      console.error('Error generating bulk download:', error);
+      alert('Failed to generate bulk download.');
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row pt-20">
-      {/* Sidebar */}
-      <aside className="w-full md:w-64 bg-white border-r border-gray-200 shrink-0 h-auto md:min-h-[calc(100vh-64px)]">
-        <div className="p-6">
-          <div className="flex items-center gap-4 mb-8">
-            <div className="w-12 h-12 bg-primary/10 text-primary rounded-xl flex items-center justify-center">
-              <Building size={24} />
-            </div>
-            <div>
-              <h3 className="font-bold text-text">TechCorp Inc.</h3>
-              <p className="text-xs text-gray-500">Employer Account</p>
-            </div>
-          </div>
+    <EmployerLayout>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+        <h1 className="text-2xl font-bold text-text">Employer Dashboard</h1>
+        <Button className="flex items-center gap-2">
+          <PlusCircle size={18} /> Post a New Job
+        </Button>
+      </div>
 
-          <nav className="space-y-1">
-            <Link to="/employer/dashboard" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg bg-blue-50 text-primary">
-              <BarChart2 size={18} /> Dashboard
-            </Link>
-            <Link to="/employer/jobs" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
-              <Briefcase size={18} /> Manage Jobs
-            </Link>
-            <Link to="/employer/candidates" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
-              <Users size={18} /> Candidates
-            </Link>
-            <Link to="/employer/billing" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
-              <FileText size={18} /> Billing & Plans
-            </Link>
-            <Link to="/employer/settings" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
-              <Settings size={18} /> Company Profile
-            </Link>
-          </nav>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between">
+          <div className="flex justify-between items-start mb-4">
+            <p className="text-gray-500 text-sm font-medium">Active Jobs</p>
+            <div className="bg-blue-50 text-blue-600 p-2 rounded-lg"><Briefcase size={20} /></div>
+          </div>
+          <h3 className="text-3xl font-bold text-text">5</h3>
         </div>
-      </aside>
-
-      {/* Main Content */}
-      <main className="flex-1 p-6 md:p-8">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-          <h1 className="text-2xl font-bold text-text">Employer Dashboard</h1>
-          <Button className="flex items-center gap-2">
-            <PlusCircle size={18} /> Post a New Job
-          </Button>
+        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between">
+          <div className="flex justify-between items-start mb-4">
+            <p className="text-gray-500 text-sm font-medium">Total Applicants</p>
+            <div className="bg-green-50 text-green-600 p-2 rounded-lg"><Users size={20} /></div>
+          </div>
+          <h3 className="text-3xl font-bold text-text">{candidates.length}</h3>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between">
-            <div className="flex justify-between items-start mb-4">
-              <p className="text-gray-500 text-sm font-medium">Active Jobs</p>
-              <div className="bg-blue-50 text-blue-600 p-2 rounded-lg"><Briefcase size={20} /></div>
-            </div>
-            <h3 className="text-3xl font-bold text-text">5</h3>
+        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between">
+          <div className="flex justify-between items-start mb-4">
+            <p className="text-gray-500 text-sm font-medium">Shortlisted</p>
+            <div className="bg-amber-50 text-amber-600 p-2 rounded-lg"><FileText size={20} /></div>
           </div>
-          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between">
-            <div className="flex justify-between items-start mb-4">
-              <p className="text-gray-500 text-sm font-medium">Total Applicants</p>
-              <div className="bg-green-50 text-green-600 p-2 rounded-lg"><Users size={20} /></div>
-            </div>
-            <h3 className="text-3xl font-bold text-text">142</h3>
-          </div>
-          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between">
-            <div className="flex justify-between items-start mb-4">
-              <p className="text-gray-500 text-sm font-medium">Shortlisted</p>
-              <div className="bg-amber-50 text-amber-600 p-2 rounded-lg"><FileText size={20} /></div>
-            </div>
-            <h3 className="text-3xl font-bold text-text">18</h3>
-          </div>
-          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between">
-            <div className="flex justify-between items-start mb-4">
-              <p className="text-gray-500 text-sm font-medium">Profile Views</p>
-              <div className="bg-purple-50 text-purple-600 p-2 rounded-lg"><Building size={20} /></div>
-            </div>
-            <h3 className="text-3xl font-bold text-text">892</h3>
-          </div>
+          <h3 className="text-3xl font-bold text-text">18</h3>
         </div>
-
-        <div className="grid lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-lg font-bold text-text">Recent Job Postings</h2>
-                <Link to="/employer/jobs" className="text-sm text-primary font-medium hover:underline">View All</Link>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="border-b border-gray-100 text-sm text-gray-500">
-                      <th className="pb-3 font-medium">Job Title</th>
-                      <th className="pb-3 font-medium">Status</th>
-                      <th className="pb-3 font-medium">Applicants</th>
-                      <th className="pb-3 font-medium">Posted</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                      <td className="py-4 font-medium text-text">Senior Backend Engineer</td>
-                      <td className="py-4"><span className="bg-green-100 text-green-700 px-2 py-1 text-xs rounded-full font-medium">Active</span></td>
-                      <td className="py-4 text-gray-600">45</td>
-                      <td className="py-4 text-gray-500 text-sm">2 days ago</td>
-                    </tr>
-                    <tr className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                      <td className="py-4 font-medium text-text">Product Designer</td>
-                      <td className="py-4"><span className="bg-green-100 text-green-700 px-2 py-1 text-xs rounded-full font-medium">Active</span></td>
-                      <td className="py-4 text-gray-600">32</td>
-                      <td className="py-4 text-gray-500 text-sm">5 days ago</td>
-                    </tr>
-                    <tr className="hover:bg-gray-50 transition-colors">
-                      <td className="py-4 font-medium text-text">Marketing Manager</td>
-                      <td className="py-4"><span className="bg-gray-100 text-gray-700 px-2 py-1 text-xs rounded-full font-medium">Closed</span></td>
-                      <td className="py-4 text-gray-600">65</td>
-                      <td className="py-4 text-gray-500 text-sm">2 weeks ago</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
+        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between">
+          <div className="flex justify-between items-start mb-4">
+            <p className="text-gray-500 text-sm font-medium">Profile Views</p>
+            <div className="bg-purple-50 text-purple-600 p-2 rounded-lg"><Building size={20} /></div>
           </div>
-
-          <div className="space-y-6">
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-              <h2 className="text-lg font-bold text-text mb-4">Recent Notifications</h2>
-              <ul className="space-y-4">
-                <li className="flex gap-3">
-                  <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 mt-1">
-                    <Users size={14} />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-800"><span className="font-semibold">Sarah Jenkins</span> applied for Senior Backend Engineer.</p>
-                    <p className="text-xs text-gray-400 mt-1">2 hours ago</p>
-                  </div>
-                </li>
-                <li className="flex gap-3">
-                  <div className="w-8 h-8 rounded-full bg-green-50 text-green-600 flex items-center justify-center shrink-0 mt-1">
-                    <FileText size={14} />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-800">Your job <span className="font-semibold">Product Designer</span> is performing well. 30+ views today.</p>
-                    <p className="text-xs text-gray-400 mt-1">5 hours ago</p>
-                  </div>
-                </li>
-                <li className="flex gap-3">
-                  <div className="w-8 h-8 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 mt-1">
-                    <Bell size={14} />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-800">Subscription renewing in 3 days.</p>
-                    <p className="text-xs text-gray-400 mt-1">1 day ago</p>
-                  </div>
-                </li>
-              </ul>
-              <div className="mt-4 pt-4 border-t border-gray-100">
-                <Link to="/employer/notifications" className="text-sm text-primary font-medium hover:underline flex items-center justify-center">
-                  View all notifications
-                </Link>
-              </div>
-            </div>
-          </div>
+          <h3 className="text-3xl font-bold text-text">892</h3>
         </div>
-      </main>
-    </div>
+      </div>
+
+      {/* Available Candidates Section */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-8">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-lg font-bold text-text">Available Candidates on Platform</h2>
+          <button 
+            onClick={handleBulkDownload}
+            disabled={downloading}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${downloading ? 'bg-gray-400 text-white cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 text-white'}`}
+          >
+            <Download size={16} /> {downloading ? 'Generating ZIP...' : 'Download All (Excel + PDFs)'}
+          </button>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-gray-100 text-sm text-gray-500 bg-gray-50">
+                <th className="px-4 py-3 font-medium">Candidate Info</th>
+                <th className="px-4 py-3 font-medium">Location</th>
+                <th className="px-4 py-3 font-medium">Education</th>
+                <th className="px-4 py-3 font-medium">Resume</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {loading ? (
+                <tr><td colSpan={4} className="py-8 text-center text-gray-500">Loading candidates...</td></tr>
+              ) : candidates.length === 0 ? (
+                <tr><td colSpan={4} className="py-8 text-center text-gray-500">No candidates available.</td></tr>
+              ) : (
+                candidates.map(candidate => (
+                  <tr key={candidate._id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-4">
+                      <div className="font-medium text-text">{candidate.firstName} {candidate.lastName}</div>
+                      <div className="text-xs text-gray-500">{candidate.email}</div>
+                    </td>
+                    <td className="px-4 py-4 text-sm text-gray-600">
+                      {candidate.address?.city ? (
+                        <div className="flex items-center gap-1"><MapPin size={14}/> {candidate.address.city}, {candidate.address.state}</div>
+                      ) : (
+                        <span className="text-gray-400 italic">Not provided</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-4 text-sm text-gray-600">
+                      {candidate.education && candidate.education.length > 0 ? (
+                        <div>
+                          <div className="font-medium flex items-center gap-1"><GraduationCap size={14}/> {candidate.education[0].degree}</div>
+                          <div className="text-xs text-gray-500">{candidate.education[0].institution} ({candidate.education[0].passingYear})</div>
+                        </div>
+                      ) : (
+                        <span className="text-gray-400 italic">Not provided</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-4">
+                      {candidate.resumeUrl ? (
+                        <a href={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${candidate.resumeUrl}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 bg-green-50 text-green-700 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-green-100 transition-colors">
+                          <Download size={14} /> Download
+                        </a>
+                      ) : (
+                        <span className="text-xs text-gray-400">No Resume</span>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </EmployerLayout>
   );
 };
