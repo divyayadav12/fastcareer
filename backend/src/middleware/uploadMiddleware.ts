@@ -21,7 +21,7 @@ const cloudinaryStorage = new CloudinaryStorage({
       folder: 'fastweb_resumes',
       format: 'pdf',
       public_id: `${file.fieldname}-${Date.now()}`,
-      resource_type: 'raw', // Important for PDFs
+      resource_type: 'image', // Use 'image' instead of 'raw' to bypass Cloudinary Free tier PDF delivery restrictions
     };
   },
 });
