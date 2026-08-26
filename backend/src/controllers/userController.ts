@@ -72,20 +72,9 @@ export const registerUser = async (req: Request, res: Response) => {
 // @access  Private
 export const getUserProfile = async (req: Request, res: Response) => {
   try {
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user.id).select('-password');
     if (user) {
-      res.json({
-        _id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        role: user.role,
-        resumeUrl: user.resumeUrl,
-        headline: user.headline,
-        skills: user.skills,
-        address: user.address,
-        education: user.education,
-      });
+      res.json(user);
     } else {
       res.status(404).json({ message: 'User not found' });
     }
@@ -106,25 +95,23 @@ export const updateUserProfile = async (req: Request, res: Response) => {
       user.lastName = req.body.lastName || user.lastName;
       user.email = req.body.email || user.email;
       
-      if (req.body.resumeUrl) user.resumeUrl = req.body.resumeUrl;
-      if (req.body.headline) user.headline = req.body.headline;
-      if (req.body.skills) user.skills = req.body.skills;
-      if (req.body.address) user.address = req.body.address;
-      if (req.body.education) user.education = req.body.education;
+      if (req.body.resumeUrl !== undefined) user.resumeUrl = req.body.resumeUrl;
+      if (req.body.headline !== undefined) user.headline = req.body.headline;
+      if (req.body.skills !== undefined) user.skills = req.body.skills;
+      if (req.body.phone !== undefined) user.phone = req.body.phone;
+      
+      if (req.body.personalDetails !== undefined) user.personalDetails = req.body.personalDetails;
+      if (req.body.caPortfolio !== undefined) user.caPortfolio = req.body.caPortfolio;
+      if (req.body.qualifications !== undefined) user.qualifications = req.body.qualifications;
 
       const updatedUser = await user.save();
 
+      // Return the updated user object without password, plus token
+      const userResponse = updatedUser.toObject();
+      delete userResponse.password;
+      
       res.json({
-        _id: updatedUser._id,
-        firstName: updatedUser.firstName,
-        lastName: updatedUser.lastName,
-        email: updatedUser.email,
-        role: updatedUser.role,
-        resumeUrl: updatedUser.resumeUrl,
-        headline: updatedUser.headline,
-        skills: updatedUser.skills,
-        address: updatedUser.address,
-        education: updatedUser.education,
+        ...userResponse,
         token: generateToken(updatedUser._id.toString()),
       });
     } else {

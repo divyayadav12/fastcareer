@@ -13,17 +13,82 @@ export interface IUser extends Document {
   resumeUrl?: string;
   skills?: string[];
   experience?: number;
-  address?: {
-    street?: string;
-    city?: string;
-    state?: string;
-    zip?: string;
+  // Step 1: Personal Details
+  personalDetails?: {
+    alternatePhone?: string;
+    currentAddress?: string;
+    currentState?: string;
+    currentCity?: string;
+    permanentAddressSameAsCurrent?: boolean;
+    permanentAddress?: string;
+    permanentState?: string;
+    permanentCity?: string;
+    dateOfBirth?: string;
+    gender?: 'Male' | 'Female' | 'Other';
+    maritalStatus?: string;
+    preferredCampusCity?: string;
   };
-  education?: {
-    degree: string;
-    institution: string;
-    passingYear: string;
-  }[];
+
+  // Step 2: CA Portfolio
+  caPortfolio?: {
+    isFresherCA?: boolean;
+    caInter?: {
+      bothGroups1stAttempt?: boolean;
+      group1Attempts?: string;
+      group1Year?: string;
+      group2Attempts?: string;
+      group2Year?: string;
+      ranker?: string;
+      completionSessionMonth?: string;
+      completionSessionYear?: string;
+      percentage?: number;
+    };
+    caFinal?: {
+      bothGroups1stAttempt?: boolean;
+      group1Attempts?: string;
+      group1Year?: string;
+      group2Attempts?: string;
+      group2Year?: string;
+      ranker?: string;
+      completionSessionMonth?: string;
+      completionSessionYear?: string;
+      percentage?: number;
+    };
+    articleships?: {
+      firmType?: string;
+      firmName?: string;
+      city?: string;
+      noOfPartners?: string;
+      noOfMonths?: number;
+    }[];
+    articleshipCompletionDate?: string;
+    gmcsCompleted?: boolean;
+    big4Articleship?: boolean;
+    industrialTrainee?: boolean;
+    listedCompanyWork?: boolean;
+    natureOfWork?: string;
+  };
+
+  // Step 3: Qualifications
+  qualifications?: {
+    graduation?: {
+      completed?: 'Yes' | 'No/Pursuing' | 'No';
+      yearOfCompletion?: string;
+      percentage?: number;
+      college?: string;
+      type?: 'REGULAR' | 'CORRESPONDENCE';
+    };
+    class12?: {
+      percentage?: number;
+      year?: string;
+      board?: string;
+    };
+    class10?: {
+      percentage?: number;
+      year?: string;
+      board?: string;
+    };
+  };
   // Employer specific
   companyName?: string;
   companyWebsite?: string;
@@ -39,26 +104,90 @@ const UserSchema: Schema = new Schema(
     role: { type: String, enum: ['candidate', 'employer', 'admin'], default: 'candidate' },
     phone: { type: String },
     
-    // Candidate specific fields
+    // --- Candidate specific fields ---
     headline: { type: String },
     resumeUrl: { type: String },
     skills: [{ type: String }],
     experience: { type: Number },
-    address: {
-      street: { type: String },
-      city: { type: String },
-      state: { type: String },
-      zip: { type: String },
-    },
-    education: [
-      {
-        degree: { type: String },
-        institution: { type: String },
-        passingYear: { type: String },
-      }
-    ],
     
-    // Employer specific fields
+    // Step 1: Personal Details
+    personalDetails: {
+      alternatePhone: { type: String },
+      currentAddress: { type: String },
+      currentState: { type: String },
+      currentCity: { type: String },
+      permanentAddressSameAsCurrent: { type: Boolean, default: false },
+      permanentAddress: { type: String },
+      permanentState: { type: String },
+      permanentCity: { type: String },
+      dateOfBirth: { type: String }, // e.g., 'YYYY-MM-DD'
+      gender: { type: String, enum: ['Male', 'Female', 'Other'] },
+      maritalStatus: { type: String },
+      preferredCampusCity: { type: String },
+    },
+
+    // Step 2: CA Portfolio
+    caPortfolio: {
+      isFresherCA: { type: Boolean, default: false },
+      caInter: {
+        bothGroups1stAttempt: { type: Boolean, default: false },
+        group1Attempts: { type: String },
+        group1Year: { type: String },
+        group2Attempts: { type: String },
+        group2Year: { type: String },
+        ranker: { type: String },
+        completionSessionMonth: { type: String },
+        completionSessionYear: { type: String },
+        percentage: { type: Number },
+      },
+      caFinal: {
+        bothGroups1stAttempt: { type: Boolean, default: false },
+        group1Attempts: { type: String },
+        group1Year: { type: String },
+        group2Attempts: { type: String },
+        group2Year: { type: String },
+        ranker: { type: String },
+        completionSessionMonth: { type: String },
+        completionSessionYear: { type: String },
+        percentage: { type: Number },
+      },
+      articleships: [{
+        firmType: { type: String }, // e.g., Medium, Big4
+        firmName: { type: String },
+        city: { type: String },
+        noOfPartners: { type: String },
+        noOfMonths: { type: Number },
+      }],
+      articleshipCompletionDate: { type: String }, // MMM YYYY
+      gmcsCompleted: { type: Boolean },
+      big4Articleship: { type: Boolean },
+      industrialTrainee: { type: Boolean },
+      listedCompanyWork: { type: Boolean },
+      natureOfWork: { type: String }, // Min 100 words text area
+    },
+
+    // Step 3: Qualifications
+    qualifications: {
+      graduation: {
+        completed: { type: String, enum: ['Yes', 'No/Pursuing', 'No'] },
+        yearOfCompletion: { type: String },
+        percentage: { type: Number },
+        college: { type: String },
+        type: { type: String, enum: ['REGULAR', 'CORRESPONDENCE'] },
+      },
+      class12: {
+        percentage: { type: Number },
+        year: { type: String },
+        board: { type: String },
+      },
+      class10: {
+        percentage: { type: Number },
+        year: { type: String },
+        board: { type: String },
+      }
+    },
+    
+    // --- Employer specific fields ---
     companyName: { type: String },
     companyWebsite: { type: String },
   },
