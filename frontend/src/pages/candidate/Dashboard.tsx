@@ -398,17 +398,16 @@ export const CandidateDashboard = () => {
             <div className="space-y-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
               <h4 className="font-semibold text-sm text-gray-800">Articleship (You can add multiple firms)</h4>
               {caPortfolio.articleships.map((art, idx) => (
-                <div key={idx} className="grid grid-cols-5 gap-3">
+                <div key={idx} className="grid grid-cols-6 gap-3 items-center">
                    <select required className="border-gray-200 rounded p-2 text-sm" value={art.firmType} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].firmType = e.target.value; setCaPortfolio({...caPortfolio, articleships: newArt})}}>
                       <option value="Medium">Medium</option>
                       <option value="Big4">Big4</option>
                       <option value="Small">Small</option>
                    </select>
-                   <input required type="text" placeholder="Name" className="col-span-2 border-gray-200 rounded p-2 text-sm" value={art.firmName} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].firmName = e.target.value; setCaPortfolio({...caPortfolio, articleships: newArt})}}/>
+                   <input required type="text" placeholder="Firm Name" className="col-span-2 border-gray-200 rounded p-2 text-sm" value={art.firmName} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].firmName = e.target.value; setCaPortfolio({...caPortfolio, articleships: newArt})}}/>
                    <input required type="text" placeholder="City" className="border-gray-200 rounded p-2 text-sm" value={art.city} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].city = e.target.value; setCaPortfolio({...caPortfolio, articleships: newArt})}}/>
-                   <div className="flex gap-2">
-                     <input required type="number" placeholder="Months" className="w-full border-gray-200 rounded p-2 text-sm" value={art.noOfMonths} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].noOfMonths = parseInt(e.target.value); setCaPortfolio({...caPortfolio, articleships: newArt})}}/>
-                   </div>
+                   <input required type="number" placeholder="Partners" className="border-gray-200 rounded p-2 text-sm" value={art.noOfPartners} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].noOfPartners = e.target.value; setCaPortfolio({...caPortfolio, articleships: newArt})}}/>
+                   <input required type="number" placeholder="Months" className="border-gray-200 rounded p-2 text-sm" value={art.noOfMonths} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].noOfMonths = parseInt(e.target.value) || 0; setCaPortfolio({...caPortfolio, articleships: newArt})}}/>
                 </div>
               ))}
               <button type="button" onClick={() => setCaPortfolio({...caPortfolio, articleships: [...caPortfolio.articleships, { firmType: 'Medium', firmName: '', city: '', noOfPartners: '2', noOfMonths: 0 }]})} className="text-primary text-sm font-medium hover:underline">+ Add another firm</button>
@@ -464,13 +463,12 @@ export const CandidateDashboard = () => {
               <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                 <h4 className="font-bold text-gray-800 mb-4 pb-2 border-b">Graduation & Other Qualification</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Whether Completed</label>
-                    <select className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white" value={qualifications.graduation.completed} onChange={(e) => setQualifications({...qualifications, graduation: {...qualifications.graduation, completed: e.target.value}})}>
-                      <option value="Yes">Yes</option>
-                      <option value="No/Pursuing">No/Pursuing</option>
-                      <option value="No">No</option>
-                    </select>
+                  <div className="flex flex-col justify-center">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Whether Completed</label>
+                    <div className="flex gap-4">
+                      <label className="flex items-center gap-1 text-sm"><input type="radio" name="gradCompleted" value="Yes" checked={qualifications.graduation.completed === 'Yes'} onChange={(e) => setQualifications({...qualifications, graduation: {...qualifications.graduation, completed: e.target.value}})} /> Yes</label>
+                      <label className="flex items-center gap-1 text-sm"><input type="radio" name="gradCompleted" value="No/Pursuing" checked={qualifications.graduation.completed === 'No/Pursuing'} onChange={(e) => setQualifications({...qualifications, graduation: {...qualifications.graduation, completed: e.target.value}})} /> No/Pursuing</label>
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Year of Completion</label>
@@ -486,12 +484,12 @@ export const CandidateDashboard = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-1">Correspondence / College Name</label>
                     <input type="text" required placeholder="Enter College Name" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white" value={qualifications.graduation.college} onChange={(e) => setQualifications({...qualifications, graduation: {...qualifications.graduation, college: e.target.value}})} />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
-                    <select className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white" value={qualifications.graduation.type} onChange={(e) => setQualifications({...qualifications, graduation: {...qualifications.graduation, type: e.target.value}})}>
-                      <option value="REGULAR">REGULAR</option>
-                      <option value="CORRESPONDENCE">CORRESPONDENCE</option>
-                    </select>
+                  <div className="flex flex-col justify-center">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
+                    <div className="flex flex-col gap-2">
+                      <label className="flex items-center gap-1 text-sm uppercase"><input type="radio" name="gradType" value="REGULAR" checked={qualifications.graduation.type === 'REGULAR'} onChange={(e) => setQualifications({...qualifications, graduation: {...qualifications.graduation, type: e.target.value}})} /> Regular</label>
+                      <label className="flex items-center gap-1 text-sm uppercase"><input type="radio" name="gradType" value="CORRESPONDENCE" checked={qualifications.graduation.type === 'CORRESPONDENCE'} onChange={(e) => setQualifications({...qualifications, graduation: {...qualifications.graduation, type: e.target.value}})} /> Correspondence</label>
+                    </div>
                   </div>
                 </div>
               </div>
