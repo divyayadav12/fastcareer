@@ -41,7 +41,7 @@ export interface IUser extends Document {
       ranker?: string;
       completionSessionMonth?: string;
       completionSessionYear?: string;
-      percentage?: number;
+      percentage?: string;
     };
     caFinal?: {
       bothGroups1stAttempt?: boolean;
@@ -52,20 +52,20 @@ export interface IUser extends Document {
       ranker?: string;
       completionSessionMonth?: string;
       completionSessionYear?: string;
-      percentage?: number;
+      percentage?: string;
     };
     articleships?: {
       firmType?: string;
       firmName?: string;
       city?: string;
       noOfPartners?: string;
-      noOfMonths?: number;
+      noOfMonths?: string;
     }[];
     articleshipCompletionDate?: string;
-    gmcsCompleted?: boolean;
-    big4Articleship?: boolean;
-    industrialTrainee?: boolean;
-    listedCompanyWork?: boolean;
+    gmcsCompleted?: string;
+    big4Articleship?: string;
+    industrialTrainee?: string;
+    listedCompanyWork?: string;
     natureOfWork?: string;
   };
 
@@ -74,17 +74,17 @@ export interface IUser extends Document {
     graduation?: {
       completed?: 'Yes' | 'No/Pursuing' | 'No';
       yearOfCompletion?: string;
-      percentage?: number;
+      percentage?: string;
       college?: string;
       type?: 'REGULAR' | 'CORRESPONDENCE';
     };
     class12?: {
-      percentage?: number;
+      percentage?: string;
       year?: string;
       board?: string;
     };
     class10?: {
-      percentage?: number;
+      percentage?: string;
       year?: string;
       board?: string;
     };
@@ -138,7 +138,7 @@ const UserSchema: Schema = new Schema(
         ranker: { type: String },
         completionSessionMonth: { type: String },
         completionSessionYear: { type: String },
-        percentage: { type: Number },
+        percentage: { type: String },
       },
       caFinal: {
         bothGroups1stAttempt: { type: Boolean, default: false },
@@ -149,20 +149,20 @@ const UserSchema: Schema = new Schema(
         ranker: { type: String },
         completionSessionMonth: { type: String },
         completionSessionYear: { type: String },
-        percentage: { type: Number },
+        percentage: { type: String },
       },
       articleships: [{
         firmType: { type: String }, // e.g., Medium, Big4
         firmName: { type: String },
         city: { type: String },
         noOfPartners: { type: String },
-        noOfMonths: { type: Number },
+        noOfMonths: { type: String },
       }],
       articleshipCompletionDate: { type: String }, // MMM YYYY
-      gmcsCompleted: { type: Boolean },
-      big4Articleship: { type: Boolean },
-      industrialTrainee: { type: Boolean },
-      listedCompanyWork: { type: Boolean },
+      gmcsCompleted: { type: String },
+      big4Articleship: { type: String },
+      industrialTrainee: { type: String },
+      listedCompanyWork: { type: String },
       natureOfWork: { type: String }, // Min 100 words text area
     },
 
@@ -171,17 +171,17 @@ const UserSchema: Schema = new Schema(
       graduation: {
         completed: { type: String, enum: ['Yes', 'No/Pursuing', 'No'] },
         yearOfCompletion: { type: String },
-        percentage: { type: Number },
+        percentage: { type: String },
         college: { type: String },
         type: { type: String, enum: ['REGULAR', 'CORRESPONDENCE'] },
       },
       class12: {
-        percentage: { type: Number },
+        percentage: { type: String },
         year: { type: String },
         board: { type: String },
       },
       class10: {
-        percentage: { type: Number },
+        percentage: { type: String },
         year: { type: String },
         board: { type: String },
       }
