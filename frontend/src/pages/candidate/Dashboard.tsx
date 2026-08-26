@@ -1,24 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { User, FileText, CheckCircle2, ChevronRight, Upload, MapPin, GraduationCap, Briefcase } from 'lucide-react';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import type { RootState } from '../../store';
 import axios from 'axios';
 import { Button } from '../../components/Button';
 import { CandidateLayout } from '../../layouts/CandidateLayout';
 
 const STATES = ['Maharashtra', 'Delhi', 'Karnataka', 'Gujarat', 'Tamil Nadu', 'Uttar Pradesh', 'Rajasthan', 'Madhya Pradesh'];
-const CITIES = ['Mumbai', 'Pune', 'Delhi', 'Bangalore', 'Ahmedabad', 'Chennai', 'Lucknow', 'Jaipur', 'Indore'];
+const CITIES = ['Mumbai', 'Pune', 'Delhi', 'Bangalore', 'Ahmedabad', 'Chennai', 'Lucknow', 'Jaipur', 'Indore', 'Other'];
 const YEARS = Array.from({length: 30}, (_, i) => String(new Date().getFullYear() - i));
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const ATTEMPTS = ['0', '1', '2', '3', '4', '5', '6+'];
+const COLLEGES = ['ICAI', 'Delhi University', 'Mumbai University', 'Pune University', 'IGNOU', 'Other'];
+const BOARDS = ['CBSE', 'ICSE', 'State Board', 'Other'];
 
 export const CandidateDashboard = () => {
   const { user } = useSelector((state: RootState) => state.auth);
   
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [savingProfile, setSavingProfile] = useState(false);
   const [resumeUrl, setResumeUrl] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   // Form State
   const [personal, setPersonal] = useState({
@@ -30,8 +35,8 @@ export const CandidateDashboard = () => {
 
   const [caPortfolio, setCaPortfolio] = useState({
     isFresherCA: false,
-    caInter: { bothGroups1stAttempt: false, group1Attempts: '1', group1Year: '2020', group2Attempts: '1', group2Year: '2020', ranker: 'No', completionSessionMonth: 'May', completionSessionYear: '2020', percentage: '' },
-    caFinal: { bothGroups1stAttempt: false, group1Attempts: '1', group1Year: '2023', group2Attempts: '1', group2Year: '2023', ranker: 'No', completionSessionMonth: 'May', completionSessionYear: '2023', percentage: '' },
+    caInter: { bothGroups1stAttempt: false, group1Attempts: '1', group1Month: 'May', group1Year: '2020', group2Attempts: '1', group2Month: 'May', group2Year: '2020', ranker: 'No', completionSessionMonth: 'May', completionSessionYear: '2020', percentage: '' },
+    caFinal: { bothGroups1stAttempt: false, group1Attempts: '1', group1Month: 'May', group1Year: '2023', group2Attempts: '1', group2Month: 'May', group2Year: '2023', ranker: 'No', completionSessionMonth: 'May', completionSessionYear: '2023', percentage: '' },
     articleships: [{ firmType: 'Medium', firmName: '', city: '', noOfPartners: '2', noOfMonths: '36' }],
     articleshipCompletionDateMonth: 'May',
     articleshipCompletionDateYear: '2023',
@@ -116,8 +121,7 @@ export const CandidateDashboard = () => {
       await axios.put(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/users/profile`, payload, {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
-      alert('Profile updated successfully!');
-      setStep(1);
+      setShowSuccess(true);
     } catch (error) {
       console.error('Error saving profile:', error);
       alert('Failed to save profile.');
@@ -198,12 +202,12 @@ export const CandidateDashboard = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Mobile No. *</label>
-                <input type="text" required value={personal.phone} onChange={(e) => setPersonal({...personal, phone: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" />
+                <input type="tel" required pattern="[0-9]{10}" maxLength={10} title="Please enter a valid 10-digit mobile number" value={personal.phone} onChange={(e) => setPersonal({...personal, phone: e.target.value.replace(/\D/g, '')})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Set Login Password</label>
-                <input type="password" value={personal.password} onChange={(e) => setPersonal({...personal, password: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" placeholder="Leave blank to keep unchanged" />
+                <input type="password" minLength={6} value={personal.password} onChange={(e) => setPersonal({...personal, password: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" placeholder="Leave blank to keep unchanged" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Re-type Password</label>
@@ -212,7 +216,7 @@ export const CandidateDashboard = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Land Line / Alternate No.</label>
-                <input type="text" value={personal.alternatePhone} onChange={(e) => setPersonal({...personal, alternatePhone: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" placeholder="10 Digits" />
+                <input type="tel" pattern="[0-9]{10,11}" maxLength={11} title="Please enter 10 or 11 digits" value={personal.alternatePhone} onChange={(e) => setPersonal({...personal, alternatePhone: e.target.value.replace(/\D/g, '')})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" placeholder="10-11 Digits" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth *</label>
@@ -234,7 +238,7 @@ export const CandidateDashboard = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1 text-red-600">* Completed CA Final Percentage (%)</label>
-                  <input type="number" required value={caPortfolio.caFinal.percentage} onChange={(e) => setCaPortfolio({...caPortfolio, caFinal: {...caPortfolio.caFinal, percentage: e.target.value}})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" placeholder="e.g. 75" />
+                  <input type="number" min="0" max="100" step="0.01" required value={caPortfolio.caFinal.percentage} onChange={(e) => setCaPortfolio({...caPortfolio, caFinal: {...caPortfolio.caFinal, percentage: e.target.value}})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" placeholder="e.g. 75" />
                 </div>
               </div>
 
@@ -337,8 +341,8 @@ export const CandidateDashboard = () => {
                   <tr>
                     <th className="p-3 border">Exam</th>
                     <th className="p-3 border text-center">Both Groups 1st Attempt</th>
-                    <th className="p-3 border" colSpan={2}>Group I (Attempts & Year)</th>
-                    <th className="p-3 border" colSpan={2}>Group II (Attempts & Year)</th>
+                    <th className="p-3 border" colSpan={3}>Group I (Attempts, Month & Year)</th>
+                    <th className="p-3 border" colSpan={3}>Group II (Attempts, Month & Year)</th>
                     <th className="p-3 border">Ranker</th>
                     <th className="p-3 border" colSpan={2}>Completion Session</th>
                     <th className="p-3 border">%</th>
@@ -357,6 +361,12 @@ export const CandidateDashboard = () => {
                         </select>
                       </td>
                       <td className="p-2 border">
+                        <select className="w-full border-gray-200 rounded p-1 text-xs" value={(caPortfolio as any)[examKey].group1Month} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], group1Month: e.target.value}})}>
+                          <option value="">Month</option>
+                          {MONTHS.map(a => <option key={a}>{a}</option>)}
+                        </select>
+                      </td>
+                      <td className="p-2 border">
                         <select className="w-full border-gray-200 rounded p-1 text-xs" value={(caPortfolio as any)[examKey].group1Year} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], group1Year: e.target.value}})}>
                           {YEARS.map(a => <option key={a}>{a}</option>)}
                         </select>
@@ -364,6 +374,12 @@ export const CandidateDashboard = () => {
                       <td className="p-2 border">
                         <select className="w-full border-gray-200 rounded p-1 text-xs" value={(caPortfolio as any)[examKey].group2Attempts} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], group2Attempts: e.target.value}})}>
                           {ATTEMPTS.map(a => <option key={a}>{a}</option>)}
+                        </select>
+                      </td>
+                      <td className="p-2 border">
+                        <select className="w-full border-gray-200 rounded p-1 text-xs" value={(caPortfolio as any)[examKey].group2Month} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], group2Month: e.target.value}})}>
+                          <option value="">Month</option>
+                          {MONTHS.map(a => <option key={a}>{a}</option>)}
                         </select>
                       </td>
                       <td className="p-2 border">
@@ -387,7 +403,7 @@ export const CandidateDashboard = () => {
                         </select>
                       </td>
                       <td className="p-2 border">
-                        <input type="number" required placeholder="%" className="w-16 border-gray-200 rounded p-1 text-xs" value={(caPortfolio as any)[examKey].percentage} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], percentage: e.target.value}})} />
+                        <input type="number" min="0" max="100" step="0.01" required placeholder="%" className="w-16 border-gray-200 rounded p-1 text-xs" value={(caPortfolio as any)[examKey].percentage} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], percentage: e.target.value}})} />
                       </td>
                     </tr>
                   ))}
@@ -404,10 +420,13 @@ export const CandidateDashboard = () => {
                       <option value="Big4">Big4</option>
                       <option value="Small">Small</option>
                    </select>
-                   <input required type="text" placeholder="Firm Name" className="col-span-2 border-gray-200 rounded p-2 text-sm" value={art.firmName} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].firmName = e.target.value; setCaPortfolio({...caPortfolio, articleships: newArt})}}/>
-                   <input required type="text" placeholder="City" className="border-gray-200 rounded p-2 text-sm" value={art.city} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].city = e.target.value; setCaPortfolio({...caPortfolio, articleships: newArt})}}/>
-                   <input required type="number" placeholder="Partners" className="border-gray-200 rounded p-2 text-sm" value={art.noOfPartners} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].noOfPartners = e.target.value; setCaPortfolio({...caPortfolio, articleships: newArt})}}/>
-                   <input required type="number" placeholder="Months" className="border-gray-200 rounded p-2 text-sm" value={art.noOfMonths} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].noOfMonths = parseInt(e.target.value) || 0; setCaPortfolio({...caPortfolio, articleships: newArt})}}/>
+                   <input required type="text" pattern="[A-Za-z0-9\s\.\,\&]+" title="Only alphanumeric characters, spaces, and . , & are allowed" placeholder="Firm Name" className="col-span-2 border-gray-200 rounded p-2 text-sm" value={art.firmName} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].firmName = e.target.value; setCaPortfolio({...caPortfolio, articleships: newArt})}}/>
+                   <select required className="border-gray-200 rounded p-2 text-sm bg-white" value={art.city} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].city = e.target.value; setCaPortfolio({...caPortfolio, articleships: newArt})}}>
+                     <option value="">City</option>
+                     {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+                   </select>
+                   <input required type="number" min="1" max="100" placeholder="Partners" className="border-gray-200 rounded p-2 text-sm" value={art.noOfPartners} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].noOfPartners = e.target.value; setCaPortfolio({...caPortfolio, articleships: newArt})}}/>
+                   <input required type="number" min="1" max="120" placeholder="Months" className="border-gray-200 rounded p-2 text-sm" value={art.noOfMonths} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].noOfMonths = parseInt(e.target.value) || 0; setCaPortfolio({...caPortfolio, articleships: newArt})}}/>
                 </div>
               ))}
               <button type="button" onClick={() => setCaPortfolio({...caPortfolio, articleships: [...caPortfolio.articleships, { firmType: 'Medium', firmName: '', city: '', noOfPartners: '2', noOfMonths: 0 }]})} className="text-primary text-sm font-medium hover:underline">+ Add another firm</button>
@@ -478,11 +497,14 @@ export const CandidateDashboard = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">% (Avg of 3 years)</label>
-                    <input type="number" required placeholder="Graduation %" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white" value={qualifications.graduation.percentage} onChange={(e) => setQualifications({...qualifications, graduation: {...qualifications.graduation, percentage: e.target.value}})} />
+                    <input type="number" min="0" max="100" step="0.01" required placeholder="Graduation %" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white" value={qualifications.graduation.percentage} onChange={(e) => setQualifications({...qualifications, graduation: {...qualifications.graduation, percentage: e.target.value}})} />
                   </div>
                   <div className="lg:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-1">Correspondence / College Name</label>
-                    <input type="text" required placeholder="Enter College Name" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white" value={qualifications.graduation.college} onChange={(e) => setQualifications({...qualifications, graduation: {...qualifications.graduation, college: e.target.value}})} />
+                    <select required className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white" value={qualifications.graduation.college} onChange={(e) => setQualifications({...qualifications, graduation: {...qualifications.graduation, college: e.target.value}})}>
+                      <option value="">Select College</option>
+                      {COLLEGES.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
                   </div>
                   <div className="flex flex-col justify-center">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
@@ -502,7 +524,7 @@ export const CandidateDashboard = () => {
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">XII Percentage (%)</label>
-                      <input type="number" required placeholder="e.g. 85" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20" value={qualifications.class12.percentage} onChange={(e) => setQualifications({...qualifications, class12: {...qualifications.class12, percentage: e.target.value}})} />
+                      <input type="number" min="0" max="100" step="0.01" required placeholder="e.g. 85" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20" value={qualifications.class12.percentage} onChange={(e) => setQualifications({...qualifications, class12: {...qualifications.class12, percentage: e.target.value}})} />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">XII Year</label>
@@ -512,7 +534,10 @@ export const CandidateDashboard = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">XII Board Name</label>
-                      <input type="text" required placeholder="e.g. CBSE" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20" value={qualifications.class12.board} onChange={(e) => setQualifications({...qualifications, class12: {...qualifications.class12, board: e.target.value}})} />
+                      <select required className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20" value={qualifications.class12.board} onChange={(e) => setQualifications({...qualifications, class12: {...qualifications.class12, board: e.target.value}})}>
+                        <option value="">Select Board</option>
+                        {BOARDS.map(b => <option key={b} value={b}>{b}</option>)}
+                      </select>
                     </div>
                   </div>
                 </div>
@@ -523,7 +548,7 @@ export const CandidateDashboard = () => {
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">X Percentage (%)</label>
-                      <input type="number" required placeholder="e.g. 90" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20" value={qualifications.class10.percentage} onChange={(e) => setQualifications({...qualifications, class10: {...qualifications.class10, percentage: e.target.value}})} />
+                      <input type="number" min="0" max="100" step="0.01" required placeholder="e.g. 90" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20" value={qualifications.class10.percentage} onChange={(e) => setQualifications({...qualifications, class10: {...qualifications.class10, percentage: e.target.value}})} />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">X Year</label>
@@ -533,7 +558,10 @@ export const CandidateDashboard = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">X Board Name</label>
-                      <input type="text" required placeholder="e.g. ICSE" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20" value={qualifications.class10.board} onChange={(e) => setQualifications({...qualifications, class10: {...qualifications.class10, board: e.target.value}})} />
+                      <select required className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20" value={qualifications.class10.board} onChange={(e) => setQualifications({...qualifications, class10: {...qualifications.class10, board: e.target.value}})}>
+                        <option value="">Select Board</option>
+                        {BOARDS.map(b => <option key={b} value={b}>{b}</option>)}
+                      </select>
                     </div>
                   </div>
                 </div>
@@ -549,6 +577,28 @@ export const CandidateDashboard = () => {
           </form>
         )}
       </div>
+
+      {/* Success Popup */}
+      {showSuccess && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-8 max-w-sm w-full text-center shadow-2xl animate-in fade-in zoom-in duration-300">
+            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <CheckCircle2 size={40} className="text-green-500" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">Success!</h3>
+            <p className="text-gray-500 mb-8">Your profile has been successfully saved and updated.</p>
+            <Button 
+              className="w-full py-3 text-lg" 
+              onClick={() => {
+                setShowSuccess(false);
+                navigate('/candidate/resume-print');
+              }}
+            >
+              View My Profile
+            </Button>
+          </div>
+        </div>
+      )}
 
     </CandidateLayout>
   );

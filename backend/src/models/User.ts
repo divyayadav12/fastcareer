@@ -35,8 +35,10 @@ export interface IUser extends Document {
     caInter?: {
       bothGroups1stAttempt?: boolean;
       group1Attempts?: string;
+      group1Month?: string;
       group1Year?: string;
       group2Attempts?: string;
+      group2Month?: string;
       group2Year?: string;
       ranker?: string;
       completionSessionMonth?: string;
@@ -46,8 +48,10 @@ export interface IUser extends Document {
     caFinal?: {
       bothGroups1stAttempt?: boolean;
       group1Attempts?: string;
+      group1Month?: string;
       group1Year?: string;
       group2Attempts?: string;
+      group2Month?: string;
       group2Year?: string;
       ranker?: string;
       completionSessionMonth?: string;
