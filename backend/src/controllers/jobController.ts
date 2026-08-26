@@ -15,6 +15,18 @@ export const getJobs = async (req: Request, res: Response) => {
   }
 };
 
+// @desc    Get logged in employer's jobs
+// @route   GET /api/jobs/employer
+// @access  Private/Employer
+export const getEmployerJobs = async (req: any, res: Response) => {
+  try {
+    const jobs = await Job.find({ postedBy: req.user._id }).sort({ createdAt: -1 });
+    res.json(jobs);
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
 // @desc    Get single job
 // @route   GET /api/jobs/:id
 // @access  Public
@@ -34,11 +46,11 @@ export const getJobById = async (req: Request, res: Response) => {
 // @desc    Create a job
 // @route   POST /api/jobs
 // @access  Private/Employer
-export const createJob = async (req: Request, res: Response) => {
+export const createJob = async (req: any, res: Response) => {
   try {
     const job = new Job({
       ...req.body,
-      // postedBy: req.user._id // To be implemented with auth
+      postedBy: req.user._id 
     });
 
     const createdJob = await job.save();
