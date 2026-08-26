@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { EmployerLayout } from '../../layouts/EmployerLayout';
-import { Database, Download, Star, Briefcase, RefreshCw, MessageSquareQuote } from 'lucide-react';
+import { Database, Download, Star, Briefcase, RefreshCw, MessageSquareQuote, Users, FileText, CheckCircle, Clock } from 'lucide-react';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
+import { getResumeUrl } from '../../utils/urlHelper';
 
 export const PlatformData = () => {
   const { user } = useSelector((state: RootState) => state.auth);
@@ -154,8 +155,8 @@ export const PlatformData = () => {
                         </td>
                         <td className="p-4">
                           {ref.resumeUrl ? (
-                            <a href={ref.resumeUrl.startsWith('http') ? ref.resumeUrl : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${ref.resumeUrl}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-primary hover:underline text-sm font-medium">
-                              <Download size={14} /> Download
+                            <a href={getResumeUrl(ref.resumeUrl)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-primary hover:underline text-sm font-medium">
+                              <FileText size={14} /> Resume
                             </a>
                           ) : (
                             <span className="text-gray-400 text-sm">N/A</span>

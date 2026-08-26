@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { User, FileText, CheckCircle2, ChevronRight, Upload, MapPin, GraduationCap, Briefcase } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { getResumeUrl } from '../../utils/urlHelper';
 import type { RootState } from '../../store';
 import axios from 'axios';
 import { Button } from '../../components/Button';
@@ -183,7 +184,7 @@ export const CandidateDashboard = () => {
               <label className="block text-sm font-semibold text-blue-900 mb-2">Resume Upload *</label>
               <div className="flex items-center gap-4">
                 <input type="file" accept=".pdf,.doc,.docx" onChange={handleFileUpload} disabled={uploading} className="text-sm" />
-                {resumeUrl && <a href={resumeUrl.startsWith('http') ? resumeUrl : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${resumeUrl}`} target="_blank" className="text-blue-600 hover:underline font-medium text-sm flex items-center gap-1"><FileText size={16}/> View Current Resume</a>}
+                {resumeUrl && <a href={getResumeUrl(resumeUrl)} target="_blank" className="text-blue-600 hover:underline font-medium text-sm flex items-center gap-1"><FileText size={16}/> View Current Resume</a>}
               </div>
             </div>
 

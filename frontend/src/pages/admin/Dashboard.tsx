@@ -7,6 +7,7 @@ import axios from 'axios';
 import * as XLSX from 'xlsx';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
+import { getResumeUrl } from '../../utils/urlHelper';
 
 interface Candidate {
   _id: string;
@@ -25,6 +26,11 @@ interface Candidate {
     institution: string;
     passingYear: string;
   }[];
+  qualifications?: {
+    graduation?: {
+      yearOfCompletion?: string;
+    };
+  };
   createdAt: string;
 }
 
@@ -74,7 +80,7 @@ export const AdminDashboard = () => {
                       ? `${candidate.education[0].degree} from ${candidate.education[0].institution} (${candidate.education[0].passingYear})` 
                       : 'Not provided',
         'Completion Year': candidate.qualifications?.graduation?.yearOfCompletion || '',
-        'Resume Link': candidate.resumeUrl ? (candidate.resumeUrl.startsWith('http') ? candidate.resumeUrl : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${candidate.resumeUrl}`) : 'Not uploaded'
+        'Resume Link': candidate.resumeUrl ? getResumeUrl(candidate.resumeUrl) : 'Not uploaded'
       }));
 
       // 2. Generate Excel file and add to ZIP
@@ -92,7 +98,7 @@ export const AdminDashboard = () => {
         const fetchPromises = candidates.map(async (candidate) => {
           if (candidate.resumeUrl) {
             try {
-              const resumeUrl = candidate.resumeUrl.startsWith('http') ? candidate.resumeUrl : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${candidate.resumeUrl}`;
+              const resumeUrl = getResumeUrl(candidate.resumeUrl);
               const response = await axios.get(resumeUrl, { responseType: 'arraybuffer' });
               const fileName = candidate.resumeUrl.split('/').pop() || `${candidate.firstName}_${candidate.lastName}_Resume.pdf`;
               resumesFolder.file(fileName, response.data);
@@ -218,7 +224,7 @@ export const AdminDashboard = () => {
                       <td className="px-6 py-4">
                         {candidate.resumeUrl ? (
                           <a 
-                            href={candidate.resumeUrl.startsWith('http') ? candidate.resumeUrl : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${candidate.resumeUrl}`} 
+                            href={getResumeUrl(candidate.resumeUrl)} 
                             target="_blank" 
                             rel="noreferrer" 
                             className="inline-flex items-center gap-1 text-primary hover:text-blue-700 text-sm font-medium"

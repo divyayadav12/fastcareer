@@ -4,6 +4,7 @@ import { Search, Filter, MapPin, GraduationCap, Download } from 'lucide-react';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
+import { getResumeUrl } from '../../utils/urlHelper';
 
 interface Candidate {
   _id: string;
@@ -101,7 +102,7 @@ export const EmployerCandidates = () => {
 
               {candidate.resumeUrl ? (
                 <a 
-                  href={candidate.resumeUrl.startsWith('http') ? candidate.resumeUrl : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${candidate.resumeUrl}`} 
+                  href={getResumeUrl(candidate.resumeUrl)} 
                   target="_blank" 
                   rel="noreferrer"
                   className="w-full flex items-center justify-center gap-2 py-2 border border-primary text-primary rounded-lg font-medium hover:bg-primary hover:text-white transition-colors"

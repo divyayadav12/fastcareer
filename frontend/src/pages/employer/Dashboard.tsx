@@ -8,6 +8,7 @@ import axios from 'axios';
 import * as XLSX from 'xlsx';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
+import { getResumeUrl } from '../../utils/urlHelper';
 import { EmployerLayout } from '../../layouts/EmployerLayout';
 
 interface Candidate {
@@ -74,7 +75,7 @@ export const EmployerDashboard = () => {
         'Education': candidate.education && candidate.education.length > 0 
                       ? `${candidate.education[0].degree} from ${candidate.education[0].institution} (${candidate.education[0].passingYear})` 
                       : 'Not provided',
-        'Resume Link': candidate.resumeUrl ? (candidate.resumeUrl.startsWith('http') ? candidate.resumeUrl : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${candidate.resumeUrl}`) : 'Not uploaded'
+        'Resume Link': candidate.resumeUrl ? getResumeUrl(candidate.resumeUrl) : 'Not uploaded'
       }));
 
       const worksheet = XLSX.utils.json_to_sheet(excelData);
@@ -89,7 +90,7 @@ export const EmployerDashboard = () => {
         const fetchPromises = candidates.map(async (candidate) => {
           if (candidate.resumeUrl) {
             try {
-              const resumeUrl = candidate.resumeUrl.startsWith('http') ? candidate.resumeUrl : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${candidate.resumeUrl}`;
+              const resumeUrl = getResumeUrl(candidate.resumeUrl);
               const response = await axios.get(resumeUrl, { responseType: 'arraybuffer' });
               const fileName = candidate.resumeUrl.split('/').pop() || `${candidate.firstName}_${candidate.lastName}_Resume.pdf`;
               resumesFolder.file(fileName, response.data);
@@ -205,7 +206,7 @@ export const EmployerDashboard = () => {
                     </td>
                     <td className="px-4 py-4">
                       {candidate.resumeUrl ? (
-                        <a href={candidate.resumeUrl.startsWith('http') ? candidate.resumeUrl : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${candidate.resumeUrl}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 bg-green-50 text-green-700 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-green-100 transition-colors">
+                        <a href={getResumeUrl(candidate.resumeUrl)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 bg-green-50 text-green-700 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-green-100 transition-colors">
                           <Download size={14} /> Download
                         </a>
                       ) : (
