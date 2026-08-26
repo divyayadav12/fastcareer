@@ -412,25 +412,62 @@ export const CandidateDashboard = () => {
             </div>
 
             <div className="space-y-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
-              <h4 className="font-semibold text-sm text-gray-800">Articleship (You can add multiple firms)</h4>
-              {caPortfolio.articleships.map((art, idx) => (
-                <div key={idx} className="grid grid-cols-6 gap-3 items-center">
-                   <select required className="border-gray-200 rounded p-2 text-sm" value={art.firmType} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].firmType = e.target.value; setCaPortfolio({...caPortfolio, articleships: newArt})}}>
-                      <option value="Medium">Medium</option>
-                      <option value="Big4">Big4</option>
-                      <option value="Small">Small</option>
-                   </select>
-                   <input required type="text" pattern="[A-Za-z0-9\s\.\,\&]+" title="Only alphanumeric characters, spaces, and . , & are allowed" placeholder="Firm Name" className="col-span-2 border-gray-200 rounded p-2 text-sm" value={art.firmName} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].firmName = e.target.value; setCaPortfolio({...caPortfolio, articleships: newArt})}}/>
-                   <select required className="border-gray-200 rounded p-2 text-sm bg-white" value={art.city} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].city = e.target.value; setCaPortfolio({...caPortfolio, articleships: newArt})}}>
-                     <option value="">City</option>
-                     {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
-                   </select>
-                   <input required type="number" min="1" max="100" placeholder="Partners" className="border-gray-200 rounded p-2 text-sm" value={art.noOfPartners} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].noOfPartners = e.target.value; setCaPortfolio({...caPortfolio, articleships: newArt})}}/>
-                   <input required type="number" min="1" max="120" placeholder="Months" className="border-gray-200 rounded p-2 text-sm" value={art.noOfMonths} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].noOfMonths = parseInt(e.target.value) || 0; setCaPortfolio({...caPortfolio, articleships: newArt})}}/>
-                </div>
-              ))}
-              <button type="button" onClick={() => setCaPortfolio({...caPortfolio, articleships: [...caPortfolio.articleships, { firmType: 'Medium', firmName: '', city: '', noOfPartners: '2', noOfMonths: 0 }]})} className="text-primary text-sm font-medium hover:underline">+ Add another firm</button>
-            </div>
+              <h4 className="text-sm text-gray-800">Articleship (You can add multiple firms here starting with latest)</h4>
+              
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead>
+                    <tr className="text-gray-600 font-medium">
+                      <th className="pb-2 text-center font-normal">Type</th>
+                      <th className="pb-2 text-center font-normal">Name</th>
+                      <th className="pb-2 text-center font-normal">City</th>
+                      <th className="pb-2 text-center font-normal">No. of Partners</th>
+                      <th className="pb-2 text-center font-normal">No. of Months</th>
+                      <th className="pb-2"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {caPortfolio.articleships.map((art, idx) => (
+                      <tr key={idx}>
+                        <td className="pr-2 pb-2">
+                          <select required className="w-full border border-gray-300 rounded p-1 text-sm bg-white" value={art.firmType} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].firmType = e.target.value; setCaPortfolio({...caPortfolio, articleships: newArt})}}>
+                            <option value="Medium">Medium</option>
+                            <option value="Big4">Big4</option>
+                            <option value="Small">Small</option>
+                          </select>
+                        </td>
+                        <td className="pr-2 pb-2 min-w-[200px]">
+                          <input required type="text" pattern="[A-Za-z0-9\s\.\,\&]+" title="Only alphanumeric characters, spaces, and . , & are allowed" className="w-full border border-gray-300 rounded p-1 text-sm bg-white" value={art.firmName} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].firmName = e.target.value; setCaPortfolio({...caPortfolio, articleships: newArt})}}/>
+                        </td>
+                        <td className="pr-2 pb-2">
+                          <select required className="w-full border border-gray-300 rounded p-1 text-sm bg-white" value={art.city} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].city = e.target.value; setCaPortfolio({...caPortfolio, articleships: newArt})}}>
+                            <option value="">Select</option>
+                            {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+                          </select>
+                        </td>
+                        <td className="pr-2 pb-2 min-w-[100px]">
+                          <select required className="w-full border border-gray-300 rounded p-1 text-sm bg-white" value={art.noOfPartners} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].noOfPartners = e.target.value; setCaPortfolio({...caPortfolio, articleships: newArt})}}>
+                            <option value="">Select</option>
+                            {Array.from({length: 10}, (_, i) => String(i+1)).map(n => <option key={n} value={n}>{n}</option>)}
+                            <option value="11-20">11-20</option>
+                            <option value="20+">20+</option>
+                          </select>
+                        </td>
+                        <td className="pr-2 pb-2 w-20">
+                          <input required type="number" min="1" max="120" className="w-full border border-gray-300 rounded p-1 text-sm bg-white text-center" value={art.noOfMonths} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].noOfMonths = parseInt(e.target.value) || 0; setCaPortfolio({...caPortfolio, articleships: newArt})}}/>
+                        </td>
+                        <td className="pb-2">
+                          {idx === caPortfolio.articleships.length - 1 && (
+                            <button type="button" onClick={() => setCaPortfolio({...caPortfolio, articleships: [...caPortfolio.articleships, { firmType: 'Medium', firmName: '', city: '', noOfPartners: '2', noOfMonths: 0 }]})} className="bg-[#1a446c] text-white px-3 py-1 text-xs font-medium rounded hover:bg-[#123150] transition-colors whitespace-nowrap">
+                              Click Here To Confirm
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 text-sm text-gray-700">
               <div className="flex justify-between items-center">
