@@ -23,7 +23,7 @@ export const CandidateDashboard = () => {
   const [savingProfile, setSavingProfile] = useState(false);
   const [resumeUrl, setResumeUrl] = useState('');
   const [uploading, setUploading] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [popup, setPopup] = useState<{show: boolean, type: 'success'|'error', title: string, message: string, action?: string}>({ show: false, type: 'success', title: '', message: '' });
 
   // Form State
   const [personal, setPersonal] = useState({
@@ -87,9 +87,9 @@ export const CandidateDashboard = () => {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       setResumeUrl(url);
-      alert('Resume uploaded successfully!');
+      setPopup({ show: true, type: 'success', title: 'Upload Successful', message: 'Resume uploaded successfully!' });
     } catch (error) {
-      alert('Failed to upload resume.');
+      setPopup({ show: true, type: 'error', title: 'Upload Failed', message: 'Failed to upload resume.' });
     } finally {
       setUploading(false);
     }
@@ -121,10 +121,10 @@ export const CandidateDashboard = () => {
       await axios.put(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/users/profile`, payload, {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
-      setShowSuccess(true);
+      setPopup({ show: true, type: 'success', title: 'Success!', message: 'Your profile has been successfully saved and updated.', action: 'navigate_profile' });
     } catch (error) {
       console.error('Error saving profile:', error);
-      alert('Failed to save profile.');
+      setPopup({ show: true, type: 'error', title: 'Save Failed', message: 'Failed to save profile.' });
     } finally {
       setSavingProfile(false);
     }
@@ -170,8 +170,8 @@ export const CandidateDashboard = () => {
         {step === 1 && (
           <form onSubmit={(e) => {
             e.preventDefault();
-            if (personal.password && personal.password !== personal.confirmPassword) {
-              alert('Passwords do not match');
+            if (step === 1 && personal.password !== personal.confirmPassword) {
+              setPopup({ show: true, type: 'error', title: 'Error', message: 'Passwords do not match' });
               return;
             }
             handleNext(e);
@@ -223,24 +223,7 @@ export const CandidateDashboard = () => {
                 <input type="date" required value={personal.dateOfBirth} onChange={(e) => setPersonal({...personal, dateOfBirth: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" />
               </div>
 
-              {/* Completed CA Final */}
-              <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 bg-blue-50 p-4 rounded-lg border border-blue-100">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 text-red-600">* Completed CA Final In (Session & Year)</label>
-                  <div className="flex gap-2">
-                    <select className="w-full px-3 py-2 border border-gray-200 rounded-lg" value={caPortfolio.caFinal.completionSessionMonth} onChange={(e) => setCaPortfolio({...caPortfolio, caFinal: {...caPortfolio.caFinal, completionSessionMonth: e.target.value}})}>
-                      {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
-                    </select>
-                    <select className="w-full px-3 py-2 border border-gray-200 rounded-lg" value={caPortfolio.caFinal.completionSessionYear} onChange={(e) => setCaPortfolio({...caPortfolio, caFinal: {...caPortfolio.caFinal, completionSessionYear: e.target.value}})}>
-                      {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
-                    </select>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 text-red-600">* Completed CA Final Percentage (%)</label>
-                  <input type="number" min="0" max="100" step="0.01" required value={caPortfolio.caFinal.percentage} onChange={(e) => setCaPortfolio({...caPortfolio, caFinal: {...caPortfolio.caFinal, percentage: e.target.value}})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" placeholder="e.g. 75" />
-                </div>
-              </div>
+              {/* Removed CA Final block from here as per user request */}
 
               {/* Addresses */}
               <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -615,23 +598,26 @@ export const CandidateDashboard = () => {
         )}
       </div>
 
-      {/* Success Popup */}
-      {showSuccess && (
+      {/* Unified Popup */}
+      {popup.show && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-8 max-w-sm w-full text-center shadow-2xl animate-in fade-in zoom-in duration-300">
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <CheckCircle2 size={40} className="text-green-500" />
+            <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 ${popup.type === 'success' ? 'bg-green-100 text-green-500' : 'bg-red-100 text-red-500'}`}>
+              <CheckCircle2 size={40} className={popup.type === 'success' ? 'block' : 'hidden'} />
+              <div className={popup.type === 'error' ? 'text-4xl font-bold block' : 'hidden'}>!</div>
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">Success!</h3>
-            <p className="text-gray-500 mb-8">Your profile has been successfully saved and updated.</p>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">{popup.title}</h3>
+            <p className="text-gray-500 mb-8">{popup.message}</p>
             <Button 
               className="w-full py-3 text-lg" 
               onClick={() => {
-                setShowSuccess(false);
-                navigate('/candidate/resume-print');
+                setPopup(p => ({ ...p, show: false }));
+                if (popup.action === 'navigate_profile') {
+                  navigate('/candidate/resume-print');
+                }
               }}
             >
-              View My Profile
+              {popup.action === 'navigate_profile' ? 'View My Profile' : 'OK'}
             </Button>
           </div>
         </div>
