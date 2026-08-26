@@ -20,7 +20,7 @@ export const ResumePrint = () => {
           <p className="text-gray-500">Auto-generated resume based on your profile details.</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" className="flex items-center gap-2">
+          <Button variant="outline" onClick={handlePrint} className="flex items-center gap-2">
             <Download size={18} /> Save PDF
           </Button>
           <Button onClick={handlePrint} className="flex items-center gap-2">

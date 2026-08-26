@@ -43,7 +43,7 @@ export const ResumeDownloads = () => {
               </li>
             </ul>
             
-            <button className="w-full flex items-center justify-center gap-2 py-2 border border-primary text-primary rounded-lg font-medium hover:bg-primary hover:text-white transition-colors">
+            <button onClick={() => alert(`Starting download for ${template.name}...`)} className="w-full flex items-center justify-center gap-2 py-2 border border-primary text-primary rounded-lg font-medium hover:bg-primary hover:text-white transition-colors">
               <Download size={16} /> Download ({template.size})
             </button>
           </div>
