@@ -8,8 +8,19 @@ import axios from 'axios';
 import { Button } from '../../components/Button';
 import { CandidateLayout } from '../../layouts/CandidateLayout';
 
-const STATES = ['Maharashtra', 'Delhi', 'Karnataka', 'Gujarat', 'Tamil Nadu', 'Uttar Pradesh', 'Rajasthan', 'Madhya Pradesh'];
-const CITIES = ['Mumbai', 'Pune', 'Delhi', 'Bangalore', 'Ahmedabad', 'Chennai', 'Lucknow', 'Jaipur', 'Indore', 'Other'];
+const STATE_CITY_MAP: Record<string, string[]> = {
+  'Maharashtra': ['Mumbai', 'Pune', 'Nagpur', 'Thane', 'Nashik', 'Other'],
+  'Delhi': ['New Delhi', 'Other'],
+  'Karnataka': ['Bangalore', 'Mysore', 'Hubli', 'Other'],
+  'Gujarat': ['Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Other'],
+  'Tamil Nadu': ['Chennai', 'Coimbatore', 'Madurai', 'Other'],
+  'Uttar Pradesh': ['Lucknow', 'Kanpur', 'Noida', 'Agra', 'Other'],
+  'Rajasthan': ['Jaipur', 'Jodhpur', 'Udaipur', 'Other'],
+  'Madhya Pradesh': ['Indore', 'Bhopal', 'Gwalior', 'Other'],
+  'Other': ['Other']
+};
+const STATES = Object.keys(STATE_CITY_MAP);
+const ALL_CITIES = Array.from(new Set(Object.values(STATE_CITY_MAP).flat())).sort();
 const YEARS = Array.from({length: 30}, (_, i) => String(new Date().getFullYear() - i));
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const ATTEMPTS = ['0', '1', '2', '3', '4', '5', '6+'];
@@ -238,14 +249,14 @@ export const CandidateDashboard = () => {
                       <label className="block text-xs font-medium text-gray-700 mb-1">State *</label>
                       <select required value={personal.currentState} onChange={(e) => setPersonal({...personal, currentState: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
                         <option value="">Select</option>
-                        {STATES.map(s => <option key={s} value={s}>{s}</option>)}
+                        {Object.keys(STATE_CITY_MAP).map(s => <option key={s} value={s}>{s}</option>)}
                       </select>
                     </div>
                     <div>
                       <label className="block text-xs font-medium text-gray-700 mb-1">City *</label>
-                      <select required value={personal.currentCity} onChange={(e) => setPersonal({...personal, currentCity: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
-                        <option value="">Select</option>
-                        {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+                      <select required className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors" value={personal.currentCity} onChange={(e) => setPersonal({...personal, currentCity: e.target.value})}>
+                        <option value="">Select City</option>
+                        {(STATE_CITY_MAP[personal.currentState] || []).map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
                     </div>
                   </div>
@@ -266,14 +277,14 @@ export const CandidateDashboard = () => {
                       <label className="block text-xs font-medium text-gray-700 mb-1">State *</label>
                       <select required value={personal.permanentState} onChange={(e) => setPersonal({...personal, permanentState: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20" disabled={personal.permanentAddressSameAsCurrent}>
                         <option value="">Select</option>
-                        {STATES.map(s => <option key={s} value={s}>{s}</option>)}
+                        {Object.keys(STATE_CITY_MAP).map(s => <option key={s} value={s}>{s}</option>)}
                       </select>
                     </div>
                     <div>
                       <label className="block text-xs font-medium text-gray-700 mb-1">City *</label>
-                      <select required value={personal.permanentCity} onChange={(e) => setPersonal({...personal, permanentCity: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20" disabled={personal.permanentAddressSameAsCurrent}>
-                        <option value="">Select</option>
-                        {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+                      <select required className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors" value={personal.permanentCity} onChange={(e) => setPersonal({...personal, permanentCity: e.target.value})} disabled={personal.permanentAddressSameAsCurrent}>
+                        <option value="">Select City</option>
+                        {(STATE_CITY_MAP[personal.permanentState] || []).map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
                     </div>
                   </div>
@@ -297,9 +308,17 @@ export const CandidateDashboard = () => {
               </div>
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">City Where do u wanted to participate in Fast Campuses *</label>
-                <select required value={personal.preferredCampusCity} onChange={(e) => setPersonal({...personal, preferredCampusCity: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20">
-                  <option value="">Select City</option>
-                  {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+                <select required className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors" value={personal.prefCity1} onChange={(e) => setPersonal({...personal, prefCity1: e.target.value})}>
+                  <option value="">Pref. City 1</option>
+                  {Object.values(STATE_CITY_MAP).flat().map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+                <select className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors" value={personal.prefCity2} onChange={(e) => setPersonal({...personal, prefCity2: e.target.value})}>
+                  <option value="">Pref. City 2 (Opt)</option>
+                  {Object.values(STATE_CITY_MAP).flat().map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+                <select className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors" value={personal.prefCity3} onChange={(e) => setPersonal({...personal, prefCity3: e.target.value})}>
+                  <option value="">Pref. City 3 (Opt)</option>
+                  {Object.values(STATE_CITY_MAP).flat().map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
             </div>
@@ -426,7 +445,7 @@ export const CandidateDashboard = () => {
                         <td className="pr-2 pb-2">
                           <select required className="w-full border border-gray-300 rounded p-1 text-sm bg-white" value={art.city} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].city = e.target.value; setCaPortfolio({...caPortfolio, articleships: newArt})}}>
                             <option value="">Select</option>
-                            {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+                            {Object.values(STATE_CITY_MAP).flat().map(c => <option key={c} value={c}>{c}</option>)}
                           </select>
                         </td>
                         <td className="pr-2 pb-2 min-w-[100px]">
