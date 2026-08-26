@@ -32,6 +32,9 @@ export const EmployerCandidates = () => {
   const [loading, setLoading] = useState(true);
   
   const [searchTerm, setSearchTerm] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [filterCity, setFilterCity] = useState('');
+  const [filterCourse, setFilterCourse] = useState('');
   
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isExporting, setIsExporting] = useState(false);
@@ -78,7 +81,12 @@ export const EmployerCandidates = () => {
     const fullName = `${c.firstName} ${c.lastName}`.toLowerCase();
     const city = c.personalDetails?.currentCity?.toLowerCase() || '';
     const course = c.qualifications?.graduation?.courseName?.toLowerCase() || '';
-    return fullName.includes(term) || city.includes(term) || course.includes(term);
+    
+    const matchesSearch = fullName.includes(term) || city.includes(term) || course.includes(term);
+    const matchesCity = filterCity ? city.includes(filterCity.toLowerCase()) : true;
+    const matchesCourse = filterCourse ? course.includes(filterCourse.toLowerCase()) : true;
+    
+    return matchesSearch && matchesCity && matchesCourse;
   });
 
   const exportToCSV = () => {
@@ -194,10 +202,35 @@ export const EmployerCandidates = () => {
             className="w-full pl-10 pr-4 py-3 rounded-lg bg-gray-50 border-none outline-none focus:ring-2 focus:ring-primary/20 transition-all"
           />
         </div>
-        <button className="flex items-center gap-2 px-6 py-3 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 font-medium transition-colors">
+        <button onClick={() => setShowFilters(!showFilters)} className="flex items-center gap-2 px-6 py-3 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 font-medium transition-colors">
           <Filter size={18} /> Filters
         </button>
       </div>
+
+      {showFilters && (
+        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm text-gray-600 mb-1">Filter by City</label>
+            <input 
+              type="text" 
+              value={filterCity}
+              onChange={e => setFilterCity(e.target.value)}
+              placeholder="e.g. Mumbai"
+              className="w-full px-4 py-2 rounded-lg bg-gray-50 border-none outline-none focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+          <div>
+            <label className="block text-sm text-gray-600 mb-1">Filter by Education / Course</label>
+            <input 
+              type="text" 
+              value={filterCourse}
+              onChange={e => setFilterCourse(e.target.value)}
+              placeholder="e.g. B.Com, CA"
+              className="w-full px-4 py-2 rounded-lg bg-gray-50 border-none outline-none focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+        </div>
+      )}
 
       {!loading && filteredCandidates.length > 0 && (
         <div className="mb-4 flex items-center gap-2">
