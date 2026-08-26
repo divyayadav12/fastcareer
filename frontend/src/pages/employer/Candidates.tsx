@@ -31,6 +31,8 @@ export const EmployerCandidates = () => {
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [loading, setLoading] = useState(true);
   
+  const [searchTerm, setSearchTerm] = useState('');
+  
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isExporting, setIsExporting] = useState(false);
   const [isZipping, setIsZipping] = useState(false);
@@ -64,22 +66,30 @@ export const EmployerCandidates = () => {
   };
 
   const toggleSelectAll = () => {
-    if (selectedIds.size === candidates.length && candidates.length > 0) {
+    if (selectedIds.size === filteredCandidates.length && filteredCandidates.length > 0) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(candidates.map(c => c._id)));
+      setSelectedIds(new Set(filteredCandidates.map(c => c._id)));
     }
   };
 
+  const filteredCandidates = candidates.filter(c => {
+    const term = searchTerm.toLowerCase();
+    const fullName = `${c.firstName} ${c.lastName}`.toLowerCase();
+    const city = c.personalDetails?.currentCity?.toLowerCase() || '';
+    const course = c.qualifications?.graduation?.courseName?.toLowerCase() || '';
+    return fullName.includes(term) || city.includes(term) || course.includes(term);
+  });
+
   const exportToCSV = () => {
-    if (candidates.length === 0) return;
+    if (filteredCandidates.length === 0) return;
     setIsExporting(true);
     
     // Create CSV Header
     const headers = ['First Name', 'Last Name', 'Email', 'City', 'State', 'Graduation', 'Resume Link'];
     
     // Create rows
-    const rows = candidates.map(c => {
+    const rows = filteredCandidates.map(c => {
       const city = c.personalDetails?.currentCity || 'N/A';
       const state = c.personalDetails?.currentState || 'N/A';
       const grad = c.qualifications?.graduation?.courseName || 'N/A';
@@ -179,8 +189,8 @@ export const EmployerCandidates = () => {
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
           <input 
-            type="text" 
-            placeholder="Search by skills, title, or keyword" 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-3 rounded-lg bg-gray-50 border-none outline-none focus:ring-2 focus:ring-primary/20 transition-all"
           />
         </div>
@@ -189,10 +199,10 @@ export const EmployerCandidates = () => {
         </button>
       </div>
 
-      {!loading && candidates.length > 0 && (
+      {!loading && filteredCandidates.length > 0 && (
         <div className="mb-4 flex items-center gap-2">
           <button onClick={toggleSelectAll} className="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors font-medium">
-            {selectedIds.size === candidates.length ? <CheckSquare size={20} className="text-primary"/> : <Square size={20} />}
+            {selectedIds.size === filteredCandidates.length ? <CheckSquare size={20} className="text-primary"/> : <Square size={20} />}
             Select All
           </button>
           <span className="text-gray-400 text-sm">({selectedIds.size} selected)</span>
@@ -202,10 +212,10 @@ export const EmployerCandidates = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {loading ? (
           <p className="text-gray-500">Loading candidates...</p>
-        ) : candidates.length === 0 ? (
-          <p className="text-gray-500">No candidates available.</p>
+        ) : filteredCandidates.length === 0 ? (
+          <p className="text-gray-500">No candidates match your search.</p>
         ) : (
-          candidates.map(candidate => {
+          filteredCandidates.map(candidate => {
             const isSelected = selectedIds.has(candidate._id);
             return (
               <div 
