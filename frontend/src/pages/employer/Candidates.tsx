@@ -105,6 +105,7 @@ export const EmployerCandidates = () => {
                       </span>
                     </div>
                   </div>
+                </div>
 
               {candidate.resumeUrl ? (
                 <a 
