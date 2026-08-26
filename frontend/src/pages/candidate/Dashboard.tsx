@@ -22,6 +22,7 @@ export const CandidateDashboard = () => {
 
   // Form State
   const [personal, setPersonal] = useState({
+    phone: '', password: '', confirmPassword: '',
     alternatePhone: '', currentAddress: '', currentState: '', currentCity: '',
     permanentAddressSameAsCurrent: false, permanentAddress: '', permanentState: '', permanentCity: '',
     dateOfBirth: '', gender: 'Male', maritalStatus: 'Unmarried', preferredCampusCity: ''
@@ -55,9 +56,10 @@ export const CandidateDashboard = () => {
         });
         const data = res.data;
         if (data.resumeUrl) setResumeUrl(data.resumeUrl);
-        if (data.personalDetails) setPersonal({ ...personal, ...data.personalDetails });
-        if (data.caPortfolio) setCaPortfolio({ ...caPortfolio, ...data.caPortfolio });
-        if (data.qualifications) setQualifications({ ...qualifications, ...data.qualifications });
+        if (data.phone) setPersonal(prev => ({ ...prev, phone: data.phone }));
+        if (data.personalDetails) setPersonal(prev => ({ ...prev, ...data.personalDetails }));
+        if (data.caPortfolio) setCaPortfolio(prev => ({ ...prev, ...data.caPortfolio }));
+        if (data.qualifications) setQualifications(prev => ({ ...prev, ...data.qualifications }));
       } catch (error) {
         console.error('Error fetching profile:', error);
       }
@@ -102,6 +104,8 @@ export const CandidateDashboard = () => {
     setSavingProfile(true);
     try {
       const payload = {
+        phone: personal.phone,
+        password: personal.password || undefined,
         personalDetails: personal,
         caPortfolio: {
           ...caPortfolio,
@@ -160,7 +164,14 @@ export const CandidateDashboard = () => {
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-8">
         {step === 1 && (
-          <form onSubmit={handleNext} className="space-y-6">
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            if (personal.password && personal.password !== personal.confirmPassword) {
+              alert('Passwords do not match');
+              return;
+            }
+            handleNext(e);
+          }} className="space-y-6">
             <h3 className="text-lg font-bold border-b pb-2 mb-4 text-primary">Personal Details</h3>
             
             {/* Resume Upload - Only visible in Step 1 */}
@@ -175,27 +186,56 @@ export const CandidateDashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
-                <input type="text" value={user?.firstName || ''} disabled className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50" />
+                <input type="text" value={user?.firstName || ''} disabled className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-500" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-                <input type="text" value={user?.lastName || ''} disabled className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50" />
+                <input type="text" value={user?.lastName || ''} disabled className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-500" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Email Id *</label>
-                <input type="email" value={user?.email || ''} disabled className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50" />
+                <input type="email" value={user?.email || ''} disabled className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-500" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Mobile No. *</label>
-                <input type="text" value={user?.phone || ''} disabled className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50" />
+                <input type="text" required value={personal.phone} onChange={(e) => setPersonal({...personal, phone: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Set Login Password</label>
+                <input type="password" value={personal.password} onChange={(e) => setPersonal({...personal, password: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" placeholder="Leave blank to keep unchanged" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Alternate No.</label>
-                <input type="text" value={personal.alternatePhone} onChange={(e) => setPersonal({...personal, alternatePhone: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg" placeholder="10 Digits" />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Re-type Password</label>
+                <input type="password" value={personal.confirmPassword} onChange={(e) => setPersonal({...personal, confirmPassword: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" placeholder="Re-type new password" />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Land Line / Alternate No.</label>
+                <input type="text" value={personal.alternatePhone} onChange={(e) => setPersonal({...personal, alternatePhone: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" placeholder="10 Digits" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth *</label>
-                <input type="date" required value={personal.dateOfBirth} onChange={(e) => setPersonal({...personal, dateOfBirth: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg" />
+                <input type="date" required value={personal.dateOfBirth} onChange={(e) => setPersonal({...personal, dateOfBirth: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" />
+              </div>
+
+              {/* Completed CA Final */}
+              <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 bg-blue-50 p-4 rounded-lg border border-blue-100">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 text-red-600">* Completed CA Final In (Session & Year)</label>
+                  <div className="flex gap-2">
+                    <select className="w-full px-3 py-2 border border-gray-200 rounded-lg" value={caPortfolio.caFinal.completionSessionMonth} onChange={(e) => setCaPortfolio({...caPortfolio, caFinal: {...caPortfolio.caFinal, completionSessionMonth: e.target.value}})}>
+                      {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
+                    </select>
+                    <select className="w-full px-3 py-2 border border-gray-200 rounded-lg" value={caPortfolio.caFinal.completionSessionYear} onChange={(e) => setCaPortfolio({...caPortfolio, caFinal: {...caPortfolio.caFinal, completionSessionYear: e.target.value}})}>
+                      {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 text-red-600">* Completed CA Final Percentage (%)</label>
+                  <input type="number" required value={caPortfolio.caFinal.percentage} onChange={(e) => setCaPortfolio({...caPortfolio, caFinal: {...caPortfolio.caFinal, percentage: e.target.value}})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" placeholder="e.g. 75" />
+                </div>
               </div>
 
               {/* Addresses */}
@@ -203,19 +243,19 @@ export const CandidateDashboard = () => {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Current Address *</label>
-                    <textarea required rows={2} value={personal.currentAddress} onChange={(e) => setPersonal({...personal, currentAddress: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg" />
+                    <textarea required rows={2} value={personal.currentAddress} onChange={(e) => setPersonal({...personal, currentAddress: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" />
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="block text-xs font-medium text-gray-700 mb-1">State *</label>
-                      <select required value={personal.currentState} onChange={(e) => setPersonal({...personal, currentState: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">
+                      <select required value={personal.currentState} onChange={(e) => setPersonal({...personal, currentState: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
                         <option value="">Select</option>
                         {STATES.map(s => <option key={s} value={s}>{s}</option>)}
                       </select>
                     </div>
                     <div>
                       <label className="block text-xs font-medium text-gray-700 mb-1">City *</label>
-                      <select required value={personal.currentCity} onChange={(e) => setPersonal({...personal, currentCity: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">
+                      <select required value={personal.currentCity} onChange={(e) => setPersonal({...personal, currentCity: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
                         <option value="">Select</option>
                         {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
@@ -231,19 +271,19 @@ export const CandidateDashboard = () => {
                         <input type="checkbox" checked={personal.permanentAddressSameAsCurrent} onChange={handleSameAddress} /> Same as above
                       </label>
                     </div>
-                    <textarea required rows={2} value={personal.permanentAddress} onChange={(e) => setPersonal({...personal, permanentAddress: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg" disabled={personal.permanentAddressSameAsCurrent}/>
+                    <textarea required rows={2} value={personal.permanentAddress} onChange={(e) => setPersonal({...personal, permanentAddress: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" disabled={personal.permanentAddressSameAsCurrent}/>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="block text-xs font-medium text-gray-700 mb-1">State *</label>
-                      <select required value={personal.permanentState} onChange={(e) => setPersonal({...personal, permanentState: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" disabled={personal.permanentAddressSameAsCurrent}>
+                      <select required value={personal.permanentState} onChange={(e) => setPersonal({...personal, permanentState: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20" disabled={personal.permanentAddressSameAsCurrent}>
                         <option value="">Select</option>
                         {STATES.map(s => <option key={s} value={s}>{s}</option>)}
                       </select>
                     </div>
                     <div>
                       <label className="block text-xs font-medium text-gray-700 mb-1">City *</label>
-                      <select required value={personal.permanentCity} onChange={(e) => setPersonal({...personal, permanentCity: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" disabled={personal.permanentAddressSameAsCurrent}>
+                      <select required value={personal.permanentCity} onChange={(e) => setPersonal({...personal, permanentCity: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20" disabled={personal.permanentAddressSameAsCurrent}>
                         <option value="">Select</option>
                         {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
@@ -254,7 +294,7 @@ export const CandidateDashboard = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Gender *</label>
-                <select required value={personal.gender} onChange={(e) => setPersonal({...personal, gender: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg">
+                <select required value={personal.gender} onChange={(e) => setPersonal({...personal, gender: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20">
                   <option value="Male">Male</option>
                   <option value="Female">Female</option>
                   <option value="Other">Other</option>
@@ -262,14 +302,14 @@ export const CandidateDashboard = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Marital Status *</label>
-                <select required value={personal.maritalStatus} onChange={(e) => setPersonal({...personal, maritalStatus: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg">
+                <select required value={personal.maritalStatus} onChange={(e) => setPersonal({...personal, maritalStatus: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20">
                   <option value="Unmarried">Unmarried</option>
                   <option value="Married">Married</option>
                 </select>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Preferred Campus City *</label>
-                <select required value={personal.preferredCampusCity} onChange={(e) => setPersonal({...personal, preferredCampusCity: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg">
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">City Where do u wanted to participate in Fast Campuses *</label>
+                <select required value={personal.preferredCampusCity} onChange={(e) => setPersonal({...personal, preferredCampusCity: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20">
                   <option value="">Select City</option>
                   {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
@@ -419,85 +459,87 @@ export const CandidateDashboard = () => {
           <form onSubmit={handleSubmit} className="space-y-8">
             <h3 className="text-lg font-bold border-b pb-2 mb-4 text-primary">Graduation & Other Qualification</h3>
             
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left border border-gray-200">
-                <thead className="bg-gray-100 text-gray-700">
-                  <tr>
-                    <th className="p-3 border"></th>
-                    <th className="p-3 border text-center">Whether Completed</th>
-                    <th className="p-3 border">Year of Completion</th>
-                    <th className="p-3 border">% (Avg of 3 years)</th>
-                    <th className="p-3 border">Correspondence / College / Board</th>
-                    <th className="p-3 border">Type</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {/* Graduation */}
-                  <tr>
-                    <td className="p-3 border font-medium">Graduation</td>
-                    <td className="p-3 border text-center">
-                      <select className="border-gray-200 rounded p-1 text-xs w-full" value={qualifications.graduation.completed} onChange={(e) => setQualifications({...qualifications, graduation: {...qualifications.graduation, completed: e.target.value}})}>
-                        <option value="Yes">Yes</option>
-                        <option value="No/Pursuing">No/Pursuing</option>
-                        <option value="No">No</option>
-                      </select>
-                    </td>
-                    <td className="p-2 border">
-                      <select className="w-full border-gray-200 rounded p-1 text-xs" value={qualifications.graduation.yearOfCompletion} onChange={(e) => setQualifications({...qualifications, graduation: {...qualifications.graduation, yearOfCompletion: e.target.value}})}>
-                        {YEARS.map(a => <option key={a}>{a}</option>)}
-                      </select>
-                    </td>
-                    <td className="p-2 border">
-                      <input type="number" required placeholder="%" className="w-full border-gray-200 rounded p-1 text-xs" value={qualifications.graduation.percentage} onChange={(e) => setQualifications({...qualifications, graduation: {...qualifications.graduation, percentage: e.target.value}})} />
-                    </td>
-                    <td className="p-2 border">
-                      <input type="text" required placeholder="College Name" className="w-full border-gray-200 rounded p-1 text-xs" value={qualifications.graduation.college} onChange={(e) => setQualifications({...qualifications, graduation: {...qualifications.graduation, college: e.target.value}})} />
-                    </td>
-                    <td className="p-2 border">
-                      <select className="border-gray-200 rounded p-1 text-xs w-full" value={qualifications.graduation.type} onChange={(e) => setQualifications({...qualifications, graduation: {...qualifications.graduation, type: e.target.value}})}>
-                        <option value="REGULAR">REGULAR</option>
-                        <option value="CORRESPONDENCE">CORRESPONDENCE</option>
-                      </select>
-                    </td>
-                  </tr>
-                  
-                  {/* Class 12 */}
-                  <tr>
-                    <td className="p-3 border font-medium">XII</td>
-                    <td className="p-3 border bg-gray-50 text-center text-gray-400">N/A</td>
-                    <td className="p-2 border">
-                      <select className="w-full border-gray-200 rounded p-1 text-xs" value={qualifications.class12.year} onChange={(e) => setQualifications({...qualifications, class12: {...qualifications.class12, year: e.target.value}})}>
-                        {YEARS.map(a => <option key={a}>{a}</option>)}
-                      </select>
-                    </td>
-                    <td className="p-2 border">
-                      <input type="number" required placeholder="XII %" className="w-full border-gray-200 rounded p-1 text-xs" value={qualifications.class12.percentage} onChange={(e) => setQualifications({...qualifications, class12: {...qualifications.class12, percentage: e.target.value}})} />
-                    </td>
-                    <td className="p-2 border">
-                      <input type="text" required placeholder="XII Board" className="w-full border-gray-200 rounded p-1 text-xs" value={qualifications.class12.board} onChange={(e) => setQualifications({...qualifications, class12: {...qualifications.class12, board: e.target.value}})} />
-                    </td>
-                    <td className="p-3 border bg-gray-50 text-center text-gray-400">N/A</td>
-                  </tr>
+            <div className="space-y-6">
+              {/* Graduation */}
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <h4 className="font-bold text-gray-800 mb-4 pb-2 border-b">Graduation & Other Qualification</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Whether Completed</label>
+                    <select className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white" value={qualifications.graduation.completed} onChange={(e) => setQualifications({...qualifications, graduation: {...qualifications.graduation, completed: e.target.value}})}>
+                      <option value="Yes">Yes</option>
+                      <option value="No/Pursuing">No/Pursuing</option>
+                      <option value="No">No</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Year of Completion</label>
+                    <select className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white" value={qualifications.graduation.yearOfCompletion} onChange={(e) => setQualifications({...qualifications, graduation: {...qualifications.graduation, yearOfCompletion: e.target.value}})}>
+                      {YEARS.map(a => <option key={a}>{a}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">% (Avg of 3 years)</label>
+                    <input type="number" required placeholder="Graduation %" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white" value={qualifications.graduation.percentage} onChange={(e) => setQualifications({...qualifications, graduation: {...qualifications.graduation, percentage: e.target.value}})} />
+                  </div>
+                  <div className="lg:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Correspondence / College Name</label>
+                    <input type="text" required placeholder="Enter College Name" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white" value={qualifications.graduation.college} onChange={(e) => setQualifications({...qualifications, graduation: {...qualifications.graduation, college: e.target.value}})} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                    <select className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white" value={qualifications.graduation.type} onChange={(e) => setQualifications({...qualifications, graduation: {...qualifications.graduation, type: e.target.value}})}>
+                      <option value="REGULAR">REGULAR</option>
+                      <option value="CORRESPONDENCE">CORRESPONDENCE</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
 
-                  {/* Class 10 */}
-                  <tr>
-                    <td className="p-3 border font-medium">X</td>
-                    <td className="p-3 border bg-gray-50 text-center text-gray-400">N/A</td>
-                    <td className="p-2 border">
-                      <select className="w-full border-gray-200 rounded p-1 text-xs" value={qualifications.class10.year} onChange={(e) => setQualifications({...qualifications, class10: {...qualifications.class10, year: e.target.value}})}>
+              {/* Class 12 & 10 Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Class 12 */}
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                  <h4 className="font-bold text-blue-900 mb-4">Class XII</h4>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">XII Percentage (%)</label>
+                      <input type="number" required placeholder="e.g. 85" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20" value={qualifications.class12.percentage} onChange={(e) => setQualifications({...qualifications, class12: {...qualifications.class12, percentage: e.target.value}})} />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">XII Year</label>
+                      <select className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white" value={qualifications.class12.year} onChange={(e) => setQualifications({...qualifications, class12: {...qualifications.class12, year: e.target.value}})}>
                         {YEARS.map(a => <option key={a}>{a}</option>)}
                       </select>
-                    </td>
-                    <td className="p-2 border">
-                      <input type="number" required placeholder="X %" className="w-full border-gray-200 rounded p-1 text-xs" value={qualifications.class10.percentage} onChange={(e) => setQualifications({...qualifications, class10: {...qualifications.class10, percentage: e.target.value}})} />
-                    </td>
-                    <td className="p-2 border">
-                      <input type="text" required placeholder="X Board" className="w-full border-gray-200 rounded p-1 text-xs" value={qualifications.class10.board} onChange={(e) => setQualifications({...qualifications, class10: {...qualifications.class10, board: e.target.value}})} />
-                    </td>
-                    <td className="p-3 border bg-gray-50 text-center text-gray-400">N/A</td>
-                  </tr>
-                </tbody>
-              </table>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">XII Board Name</label>
+                      <input type="text" required placeholder="e.g. CBSE" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20" value={qualifications.class12.board} onChange={(e) => setQualifications({...qualifications, class12: {...qualifications.class12, board: e.target.value}})} />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Class 10 */}
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                  <h4 className="font-bold text-blue-900 mb-4">Class X</h4>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">X Percentage (%)</label>
+                      <input type="number" required placeholder="e.g. 90" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20" value={qualifications.class10.percentage} onChange={(e) => setQualifications({...qualifications, class10: {...qualifications.class10, percentage: e.target.value}})} />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">X Year</label>
+                      <select className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white" value={qualifications.class10.year} onChange={(e) => setQualifications({...qualifications, class10: {...qualifications.class10, year: e.target.value}})}>
+                        {YEARS.map(a => <option key={a}>{a}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">X Board Name</label>
+                      <input type="text" required placeholder="e.g. ICSE" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20" value={qualifications.class10.board} onChange={(e) => setQualifications({...qualifications, class10: {...qualifications.class10, board: e.target.value}})} />
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
             
             <p className="text-xs text-red-500 font-medium text-center">Note: Please fill details accurately as these shall be printed on your site generated resume. Also for saving data please click on Submit button.</p>

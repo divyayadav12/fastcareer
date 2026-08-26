@@ -99,6 +99,7 @@ export const updateUserProfile = async (req: Request, res: Response) => {
       if (req.body.headline !== undefined) user.headline = req.body.headline;
       if (req.body.skills !== undefined) user.skills = req.body.skills;
       if (req.body.phone !== undefined) user.phone = req.body.phone;
+      if (req.body.password) user.password = req.body.password;
       
       if (req.body.personalDetails !== undefined) user.personalDetails = req.body.personalDetails;
       if (req.body.caPortfolio !== undefined) user.caPortfolio = req.body.caPortfolio;
