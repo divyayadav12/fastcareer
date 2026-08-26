@@ -12,17 +12,17 @@ interface Candidate {
   lastName: string;
   email: string;
   resumeUrl?: string;
-  address?: {
-    street?: string;
-    city?: string;
-    state?: string;
-    zip?: string;
+  personalDetails?: {
+    currentCity?: string;
+    currentState?: string;
   };
-  education?: {
-    degree: string;
-    institution: string;
-    passingYear: string;
-  }[];
+  qualifications?: {
+    graduation?: {
+      courseName?: string;
+      collegeName?: string;
+      yearOfCompletion?: string;
+    };
+  };
 }
 
 export const EmployerCandidates = () => {
@@ -88,17 +88,23 @@ export const EmployerCandidates = () => {
               </div>
               
               <div className="space-y-2 mb-6">
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <MapPin size={16} className="text-gray-400" />
-                  {candidate.address?.city ? `${candidate.address.city}, ${candidate.address.state}` : 'Location not provided'}
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <GraduationCap size={16} className="text-gray-400" />
-                  {candidate.education && candidate.education.length > 0 
-                    ? `${candidate.education[0].degree}` 
-                    : 'Education not provided'}
-                </div>
-              </div>
+                  <div className="flex items-center gap-1.5 text-gray-600 mb-2">
+                    <MapPin size={16} className="text-gray-400" />
+                    <span className="text-sm">
+                      {candidate.personalDetails?.currentCity ? `${candidate.personalDetails.currentCity}, ${candidate.personalDetails.currentState}` : 'Location not provided'}
+                    </span>
+                  </div>
+
+                  <div className="flex flex-col gap-1.5 text-gray-600 mb-4">
+                    <div className="flex items-center gap-1.5">
+                      <GraduationCap size={16} className="text-gray-400" />
+                      <span className="text-sm">
+                        {candidate.qualifications?.graduation?.collegeName 
+                          ? `${candidate.qualifications.graduation.courseName || 'Graduation'} - ${candidate.qualifications.graduation.yearOfCompletion}` 
+                          : 'Education not provided'}
+                      </span>
+                    </div>
+                  </div>
 
               {candidate.resumeUrl ? (
                 <a 

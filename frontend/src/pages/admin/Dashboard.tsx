@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Shield, Users, Building, Briefcase, FileText, Settings, Activity, Download } from 'lucide-react';
+import { Shield, Users, Building, Briefcase, FileText, Settings, Activity, Download, MapPin, GraduationCap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
@@ -15,19 +15,14 @@ interface Candidate {
   lastName: string;
   email: string;
   resumeUrl?: string;
-  address?: {
-    street?: string;
-    city?: string;
-    state?: string;
-    zip?: string;
+  personalDetails?: {
+    currentCity?: string;
+    currentState?: string;
   };
-  education?: {
-    degree: string;
-    institution: string;
-    passingYear: string;
-  }[];
   qualifications?: {
     graduation?: {
+      courseName?: string;
+      collegeName?: string;
       yearOfCompletion?: string;
     };
   };
@@ -75,9 +70,9 @@ export const AdminDashboard = () => {
         'Last Name': candidate.lastName,
         'Email': candidate.email,
         'Registered On': new Date(candidate.createdAt).toLocaleDateString(),
-        'Location': candidate.address?.city ? `${candidate.address.city}, ${candidate.address.state}` : 'Not provided',
-        'Education': candidate.education && candidate.education.length > 0 
-                      ? `${candidate.education[0].degree} from ${candidate.education[0].institution} (${candidate.education[0].passingYear})` 
+        'Location': candidate.personalDetails?.currentCity ? `${candidate.personalDetails.currentCity}, ${candidate.personalDetails.currentState || ''}` : 'Not provided',
+        'Education': candidate.qualifications?.graduation?.collegeName 
+                      ? `${candidate.qualifications.graduation.courseName || 'Graduation'} from ${candidate.qualifications.graduation.collegeName} (${candidate.qualifications.graduation.yearOfCompletion})` 
                       : 'Not provided',
         'Completion Year': candidate.qualifications?.graduation?.yearOfCompletion || '',
         'Resume Link': candidate.resumeUrl ? getResumeUrl(candidate.resumeUrl) : 'Not uploaded'
@@ -207,17 +202,23 @@ export const AdminDashboard = () => {
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">
-                        {candidate.address?.city ? `${candidate.address.city}, ${candidate.address.state}` : '-'}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">
-                        {candidate.education && candidate.education.length > 0 ? (
-                          <div>
-                            <div>{candidate.education[0].degree}</div>
-                            <div className="text-xs text-gray-500">{candidate.education[0].institution}</div>
-                          </div>
-                        ) : '-'}
-                      </td>
+                      <td className="px-6 py-4">
+                      {candidate.personalDetails?.currentCity ? (
+                        <div className="flex items-center gap-1 text-gray-600"><MapPin size={14}/> {candidate.personalDetails.currentCity}, {candidate.personalDetails.currentState}</div>
+                      ) : (
+                        <span className="text-gray-400 text-sm italic">Not provided</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      {candidate.qualifications?.graduation?.collegeName ? (
+                        <div>
+                          <div className="font-medium text-gray-800 flex items-center gap-1"><GraduationCap size={14}/> {candidate.qualifications.graduation.courseName || 'Graduation'}</div>
+                          <div className="text-xs text-gray-500">{candidate.qualifications.graduation.collegeName} ({candidate.qualifications.graduation.yearOfCompletion})</div>
+                        </div>
+                      ) : (
+                        <span className="text-gray-400 text-sm italic">Not provided</span>
+                      )}
+                    </td>
                       <td className="px-6 py-4 text-sm text-gray-600">
                         {new Date(candidate.createdAt).toLocaleDateString()}
                       </td>

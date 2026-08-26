@@ -17,17 +17,17 @@ interface Candidate {
   lastName: string;
   email: string;
   resumeUrl?: string;
-  address?: {
-    street?: string;
-    city?: string;
-    state?: string;
-    zip?: string;
+  personalDetails?: {
+    currentCity?: string;
+    currentState?: string;
   };
-  education?: {
-    degree: string;
-    institution: string;
-    passingYear: string;
-  }[];
+  qualifications?: {
+    graduation?: {
+      courseName?: string;
+      collegeName?: string;
+      yearOfCompletion?: string;
+    };
+  };
   createdAt: string;
 }
 
@@ -71,10 +71,11 @@ export const EmployerDashboard = () => {
         'Last Name': candidate.lastName,
         'Email': candidate.email,
         'Registered On': new Date(candidate.createdAt).toLocaleDateString(),
-        'Location': candidate.address?.city ? `${candidate.address.city}, ${candidate.address.state}` : 'Not provided',
-        'Education': candidate.education && candidate.education.length > 0 
-                      ? `${candidate.education[0].degree} from ${candidate.education[0].institution} (${candidate.education[0].passingYear})` 
+        'Location': candidate.personalDetails?.currentCity ? `${candidate.personalDetails.currentCity}, ${candidate.personalDetails.currentState || ''}` : 'Not provided',
+        'Education': candidate.qualifications?.graduation?.collegeName 
+                      ? `${candidate.qualifications.graduation.courseName || 'Graduation'} from ${candidate.qualifications.graduation.collegeName} (${candidate.qualifications.graduation.yearOfCompletion})` 
                       : 'Not provided',
+        'Completion Year': candidate.qualifications?.graduation?.yearOfCompletion || '',
         'Resume Link': candidate.resumeUrl ? getResumeUrl(candidate.resumeUrl) : 'Not uploaded'
       }));
 
@@ -188,17 +189,17 @@ export const EmployerDashboard = () => {
                       <div className="text-xs text-gray-500">{candidate.email}</div>
                     </td>
                     <td className="px-4 py-4 text-sm text-gray-600">
-                      {candidate.address?.city ? (
-                        <div className="flex items-center gap-1"><MapPin size={14}/> {candidate.address.city}, {candidate.address.state}</div>
+                      {candidate.personalDetails?.currentCity ? (
+                        <div className="flex items-center gap-1"><MapPin size={14}/> {candidate.personalDetails.currentCity}, {candidate.personalDetails.currentState}</div>
                       ) : (
                         <span className="text-gray-400 italic">Not provided</span>
                       )}
                     </td>
                     <td className="px-4 py-4 text-sm text-gray-600">
-                      {candidate.education && candidate.education.length > 0 ? (
+                      {candidate.qualifications?.graduation?.collegeName ? (
                         <div>
-                          <div className="font-medium flex items-center gap-1"><GraduationCap size={14}/> {candidate.education[0].degree}</div>
-                          <div className="text-xs text-gray-500">{candidate.education[0].institution} ({candidate.education[0].passingYear})</div>
+                          <div className="font-medium flex items-center gap-1"><GraduationCap size={14}/> {candidate.qualifications.graduation.courseName || 'Graduation'}</div>
+                          <div className="text-xs text-gray-500">{candidate.qualifications.graduation.collegeName} ({candidate.qualifications.graduation.yearOfCompletion})</div>
                         </div>
                       ) : (
                         <span className="text-gray-400 italic">Not provided</span>
