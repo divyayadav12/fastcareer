@@ -158,11 +158,11 @@ export const ResumePrint = () => {
           )}
 
           {/* Graduation */}
-          {user?.qualifications?.graduation?.courseName && (
+          {user?.qualifications?.graduation?.college && (
             <div className="flex justify-between items-start mb-2 mt-4">
               <div>
-                <h4 className="font-bold text-gray-900">{user.qualifications.graduation.courseName}</h4>
-                <div className="text-gray-600 font-medium text-sm">{user.qualifications.graduation.collegeName}</div>
+                <h4 className="font-bold text-gray-900">{'Graduation'}</h4>
+                <div className="text-gray-600 font-medium text-sm">{user.qualifications.graduation.college}</div>
               </div>
               <span className="text-primary font-medium text-sm">{user.qualifications.graduation.yearOfCompletion}</span>
             </div>

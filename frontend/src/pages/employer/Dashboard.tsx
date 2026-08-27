@@ -196,10 +196,20 @@ export const EmployerDashboard = () => {
                       )}
                     </td>
                     <td className="px-4 py-4 text-sm text-gray-600">
-                      {candidate.qualifications?.graduation?.collegeName ? (
+                      {(candidate.caPortfolio?.caFinal?.group1Attempts || candidate.caPortfolio?.caFinal?.group2Attempts || candidate.caPortfolio?.caFinal?.bothGroups1stAttempt) ? (
                         <div>
-                          <div className="font-medium flex items-center gap-1"><GraduationCap size={14}/> {candidate.qualifications.graduation.courseName || 'Graduation'}</div>
-                          <div className="text-xs text-gray-500">{candidate.qualifications.graduation.collegeName} ({candidate.qualifications.graduation.yearOfCompletion})</div>
+                          <div className="font-medium flex items-center gap-1"><GraduationCap size={14}/> CA Final</div>
+                          <div className="text-xs text-gray-500">ICAI</div>
+                        </div>
+                      ) : (candidate.caPortfolio?.caInter?.group1Attempts || candidate.caPortfolio?.caInter?.group2Attempts || candidate.caPortfolio?.caInter?.bothGroups1stAttempt) ? (
+                        <div>
+                          <div className="font-medium flex items-center gap-1"><GraduationCap size={14}/> CA Inter</div>
+                          <div className="text-xs text-gray-500">ICAI</div>
+                        </div>
+                      ) : candidate.qualifications?.graduation?.college ? (
+                        <div>
+                          <div className="font-medium flex items-center gap-1"><GraduationCap size={14}/> Graduation</div>
+                          <div className="text-xs text-gray-500">{candidate.qualifications.graduation.college} ({candidate.qualifications.graduation.yearOfCompletion || ''})</div>
                         </div>
                       ) : (
                         <span className="text-gray-400 italic">Not provided</span>

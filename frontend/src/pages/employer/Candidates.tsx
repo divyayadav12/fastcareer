@@ -633,9 +633,10 @@ export const EmployerCandidates = () => {
                       <div className="flex items-center gap-1.5">
                         <GraduationCap size={16} className="text-gray-400" />
                         <span className="text-sm">
-                          {candidate.qualifications?.graduation?.collegeName 
-                            ? `${candidate.qualifications.graduation.courseName || 'Graduation'} - ${candidate.qualifications.graduation.yearOfCompletion}` 
-                            : 'Education not provided'}
+                          {(candidate.caPortfolio?.caFinal?.group1Attempts || candidate.caPortfolio?.caFinal?.group2Attempts || candidate.caPortfolio?.caFinal?.bothGroups1stAttempt) ? 'CA Final' 
+                              : (candidate.caPortfolio?.caInter?.group1Attempts || candidate.caPortfolio?.caInter?.group2Attempts || candidate.caPortfolio?.caInter?.bothGroups1stAttempt) ? 'CA Inter'
+                              : candidate.qualifications?.graduation?.college ? `Graduation - ${candidate.qualifications.graduation.yearOfCompletion || ''}` 
+                              : 'Education not provided'}
                         </span>
                       </div>
                     </div>
