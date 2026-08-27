@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { STATES, STATE_CITY_MAP, ALL_CITIES, YEARS, MONTHS, BOARDS } from '../utils/constants';
+import { STATES, STATE_CITY_MAP, ALL_CITIES, YEARS, MONTHS, BOARDS, ATTEMPTS } from '../utils/constants';
 
 export const PlacementDriveForm = () => {
   const navigate = useNavigate();
@@ -362,7 +362,10 @@ export const PlacementDriveForm = () => {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">Group 1 Attempts</label>
-                    <input type="text" name="caInter_group1Attempts" value={formData.caInter_group1Attempts} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                    <select name="caInter_group1Attempts" value={formData.caInter_group1Attempts} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                      <option value="">Select...</option>
+                      {ATTEMPTS.map(a => <option key={a} value={a}>{a}</option>)}
+                    </select>
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">Group 1 Month</label>
@@ -380,7 +383,10 @@ export const PlacementDriveForm = () => {
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">Group 2 Attempts</label>
-                    <input type="text" name="caInter_group2Attempts" value={formData.caInter_group2Attempts} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                    <select name="caInter_group2Attempts" value={formData.caInter_group2Attempts} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                      <option value="">Select...</option>
+                      {ATTEMPTS.map(a => <option key={a} value={a}>{a}</option>)}
+                    </select>
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">Group 2 Month</label>
@@ -420,7 +426,10 @@ export const PlacementDriveForm = () => {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">Group 1 Attempts</label>
-                    <input type="text" name="caFinal_group1Attempts" value={formData.caFinal_group1Attempts} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                    <select name="caFinal_group1Attempts" value={formData.caFinal_group1Attempts} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                      <option value="">Select...</option>
+                      {ATTEMPTS.map(a => <option key={a} value={a}>{a}</option>)}
+                    </select>
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">Group 1 Month</label>
@@ -438,7 +447,10 @@ export const PlacementDriveForm = () => {
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">Group 2 Attempts</label>
-                    <input type="text" name="caFinal_group2Attempts" value={formData.caFinal_group2Attempts} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                    <select name="caFinal_group2Attempts" value={formData.caFinal_group2Attempts} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                      <option value="">Select...</option>
+                      {ATTEMPTS.map(a => <option key={a} value={a}>{a}</option>)}
+                    </select>
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">Group 2 Month</label>
