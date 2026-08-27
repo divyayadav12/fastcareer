@@ -9,15 +9,205 @@ import { Button } from '../../components/Button';
 import { CandidateLayout } from '../../layouts/CandidateLayout';
 
 const STATE_CITY_MAP: Record<string, string[]> = {
-  'Maharashtra': ['Mumbai', 'Pune', 'Nagpur', 'Thane', 'Nashik', 'Other'],
-  'Delhi': ['New Delhi', 'Other'],
-  'Karnataka': ['Bangalore', 'Mysore', 'Hubli', 'Other'],
-  'Gujarat': ['Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Other'],
-  'Tamil Nadu': ['Chennai', 'Coimbatore', 'Madurai', 'Other'],
-  'Uttar Pradesh': ['Lucknow', 'Kanpur', 'Noida', 'Agra', 'Other'],
-  'Rajasthan': ['Jaipur', 'Jodhpur', 'Udaipur', 'Other'],
-  'Madhya Pradesh': ['Indore', 'Bhopal', 'Gwalior', 'Other'],
-  'Other': ['Other']
+  "Andhra Pradesh": [
+    "Visakhapatnam",
+    "Vijayawada",
+    "Guntur",
+    "Nellore",
+    "Kurnool",
+    "Other"
+  ],
+  "Arunachal Pradesh": [
+    "Itanagar",
+    "Naharlagun",
+    "Other"
+  ],
+  "Assam": [
+    "Guwahati",
+    "Silchar",
+    "Dibrugarh",
+    "Jorhat",
+    "Other"
+  ],
+  "Bihar": [
+    "Patna",
+    "Gaya",
+    "Bhagalpur",
+    "Muzaffarpur",
+    "Other"
+  ],
+  "Chhattisgarh": [
+    "Raipur",
+    "Bhilai",
+    "Bilaspur",
+    "Korba",
+    "Other"
+  ],
+  "Goa": [
+    "Panaji",
+    "Margao",
+    "Vasco da Gama",
+    "Other"
+  ],
+  "Gujarat": [
+    "Ahmedabad",
+    "Surat",
+    "Vadodara",
+    "Rajkot",
+    "Gandhinagar",
+    "Other"
+  ],
+  "Haryana": [
+    "Faridabad",
+    "Gurugram",
+    "Panipat",
+    "Ambala",
+    "Other"
+  ],
+  "Himachal Pradesh": [
+    "Shimla",
+    "Dharamshala",
+    "Mandi",
+    "Other"
+  ],
+  "Jharkhand": [
+    "Ranchi",
+    "Jamshedpur",
+    "Dhanbad",
+    "Bokaro",
+    "Other"
+  ],
+  "Karnataka": [
+    "Bangalore",
+    "Mysore",
+    "Hubli",
+    "Mangalore",
+    "Belgaum",
+    "Other"
+  ],
+  "Kerala": [
+    "Thiruvananthapuram",
+    "Kochi",
+    "Kozhikode",
+    "Thrissur",
+    "Other"
+  ],
+  "Madhya Pradesh": [
+    "Indore",
+    "Bhopal",
+    "Jabalpur",
+    "Gwalior",
+    "Ujjain",
+    "Other"
+  ],
+  "Maharashtra": [
+    "Mumbai",
+    "Pune",
+    "Nagpur",
+    "Thane",
+    "Nashik",
+    "Aurangabad",
+    "Other"
+  ],
+  "Manipur": [
+    "Imphal",
+    "Other"
+  ],
+  "Meghalaya": [
+    "Shillong",
+    "Other"
+  ],
+  "Mizoram": [
+    "Aizawl",
+    "Other"
+  ],
+  "Nagaland": [
+    "Dimapur",
+    "Kohima",
+    "Other"
+  ],
+  "Odisha": [
+    "Bhubaneswar",
+    "Cuttack",
+    "Rourkela",
+    "Berhampur",
+    "Other"
+  ],
+  "Punjab": [
+    "Ludhiana",
+    "Amritsar",
+    "Jalandhar",
+    "Patiala",
+    "Other"
+  ],
+  "Rajasthan": [
+    "Jaipur",
+    "Jodhpur",
+    "Udaipur",
+    "Kota",
+    "Bikaner",
+    "Other"
+  ],
+  "Sikkim": [
+    "Gangtok",
+    "Other"
+  ],
+  "Tamil Nadu": [
+    "Chennai",
+    "Coimbatore",
+    "Madurai",
+    "Tiruchirappalli",
+    "Salem",
+    "Other"
+  ],
+  "Telangana": [
+    "Hyderabad",
+    "Warangal",
+    "Nizamabad",
+    "Other"
+  ],
+  "Tripura": [
+    "Agartala",
+    "Other"
+  ],
+  "Uttar Pradesh": [
+    "Lucknow",
+    "Kanpur",
+    "Ghaziabad",
+    "Agra",
+    "Varanasi",
+    "Noida",
+    "Other"
+  ],
+  "Uttarakhand": [
+    "Dehradun",
+    "Haridwar",
+    "Roorkee",
+    "Other"
+  ],
+  "West Bengal": [
+    "Kolkata",
+    "Howrah",
+    "Darjeeling",
+    "Siliguri",
+    "Other"
+  ],
+  "Delhi": [
+    "New Delhi",
+    "Other"
+  ],
+  "Jammu and Kashmir": [
+    "Srinagar",
+    "Jammu",
+    "Other"
+  ],
+  "Chandigarh": [
+    "Chandigarh",
+    "Other"
+  ],
+  "Other": [
+    "Other"
+  ]
 };
 const STATES = Object.keys(STATE_CITY_MAP);
 const ALL_CITIES = Array.from(new Set(Object.values(STATE_CITY_MAP).flat())).sort();

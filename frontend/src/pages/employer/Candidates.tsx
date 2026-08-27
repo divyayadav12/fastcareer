@@ -339,11 +339,151 @@ export const EmployerCandidates = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm text-gray-600 mb-1">State</label>
-              <input type="text" value={filterState} onChange={e => setFilterState(e.target.value)} placeholder="e.g. Maharashtra" className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20" />
+              <input type="text" list="statesList" value={filterState} onChange={e => setFilterState(e.target.value)} placeholder="e.g. Maharashtra" className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20" />
+              <datalist id="statesList">
+                <option value="Andhra Pradesh" />
+                <option value="Arunachal Pradesh" />
+                <option value="Assam" />
+                <option value="Bihar" />
+                <option value="Chhattisgarh" />
+                <option value="Goa" />
+                <option value="Gujarat" />
+                <option value="Haryana" />
+                <option value="Himachal Pradesh" />
+                <option value="Jharkhand" />
+                <option value="Karnataka" />
+                <option value="Kerala" />
+                <option value="Madhya Pradesh" />
+                <option value="Maharashtra" />
+                <option value="Manipur" />
+                <option value="Meghalaya" />
+                <option value="Mizoram" />
+                <option value="Nagaland" />
+                <option value="Odisha" />
+                <option value="Punjab" />
+                <option value="Rajasthan" />
+                <option value="Sikkim" />
+                <option value="Tamil Nadu" />
+                <option value="Telangana" />
+                <option value="Tripura" />
+                <option value="Uttar Pradesh" />
+                <option value="Uttarakhand" />
+                <option value="West Bengal" />
+                <option value="Delhi" />
+                <option value="Jammu and Kashmir" />
+                <option value="Chandigarh" />
+                <option value="Other" />
+              </datalist>
             </div>
             <div>
               <label className="block text-sm text-gray-600 mb-1">City</label>
-              <input type="text" value={filterCity} onChange={e => setFilterCity(e.target.value)} placeholder="e.g. Mumbai" className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20" />
+              <input type="text" list="citiesList" value={filterCity} onChange={e => setFilterCity(e.target.value)} placeholder="e.g. Mumbai" className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20" />
+              <datalist id="citiesList">
+                <option value="Agartala" />
+                <option value="Agra" />
+                <option value="Ahmedabad" />
+                <option value="Aizawl" />
+                <option value="Ambala" />
+                <option value="Amritsar" />
+                <option value="Aurangabad" />
+                <option value="Bangalore" />
+                <option value="Belgaum" />
+                <option value="Berhampur" />
+                <option value="Bhagalpur" />
+                <option value="Bhilai" />
+                <option value="Bhopal" />
+                <option value="Bhubaneswar" />
+                <option value="Bikaner" />
+                <option value="Bilaspur" />
+                <option value="Bokaro" />
+                <option value="Chandigarh" />
+                <option value="Chennai" />
+                <option value="Coimbatore" />
+                <option value="Cuttack" />
+                <option value="Darjeeling" />
+                <option value="Dehradun" />
+                <option value="Dhanbad" />
+                <option value="Dharamshala" />
+                <option value="Dibrugarh" />
+                <option value="Dimapur" />
+                <option value="Faridabad" />
+                <option value="Gandhinagar" />
+                <option value="Gangtok" />
+                <option value="Gaya" />
+                <option value="Ghaziabad" />
+                <option value="Guntur" />
+                <option value="Gurugram" />
+                <option value="Guwahati" />
+                <option value="Gwalior" />
+                <option value="Haridwar" />
+                <option value="Howrah" />
+                <option value="Hubli" />
+                <option value="Hyderabad" />
+                <option value="Imphal" />
+                <option value="Indore" />
+                <option value="Itanagar" />
+                <option value="Jabalpur" />
+                <option value="Jaipur" />
+                <option value="Jalandhar" />
+                <option value="Jammu" />
+                <option value="Jamshedpur" />
+                <option value="Jodhpur" />
+                <option value="Jorhat" />
+                <option value="Kanpur" />
+                <option value="Kochi" />
+                <option value="Kohima" />
+                <option value="Kolkata" />
+                <option value="Korba" />
+                <option value="Kota" />
+                <option value="Kozhikode" />
+                <option value="Kurnool" />
+                <option value="Lucknow" />
+                <option value="Ludhiana" />
+                <option value="Madurai" />
+                <option value="Mandi" />
+                <option value="Mangalore" />
+                <option value="Margao" />
+                <option value="Mumbai" />
+                <option value="Muzaffarpur" />
+                <option value="Mysore" />
+                <option value="Nagpur" />
+                <option value="Naharlagun" />
+                <option value="Nashik" />
+                <option value="Nellore" />
+                <option value="New Delhi" />
+                <option value="Nizamabad" />
+                <option value="Noida" />
+                <option value="Other" />
+                <option value="Panaji" />
+                <option value="Panipat" />
+                <option value="Patiala" />
+                <option value="Patna" />
+                <option value="Pune" />
+                <option value="Raipur" />
+                <option value="Rajkot" />
+                <option value="Ranchi" />
+                <option value="Roorkee" />
+                <option value="Rourkela" />
+                <option value="Salem" />
+                <option value="Shillong" />
+                <option value="Shimla" />
+                <option value="Silchar" />
+                <option value="Siliguri" />
+                <option value="Srinagar" />
+                <option value="Surat" />
+                <option value="Thane" />
+                <option value="Thiruvananthapuram" />
+                <option value="Thrissur" />
+                <option value="Tiruchirappalli" />
+                <option value="Udaipur" />
+                <option value="Ujjain" />
+                <option value="Vadodara" />
+                <option value="Varanasi" />
+                <option value="Vasco da Gama" />
+                <option value="Vijayawada" />
+                <option value="Visakhapatnam" />
+                <option value="Warangal" />
+              </datalist>
             </div>
             <div>
               <label className="block text-sm text-gray-600 mb-1">Gender</label>
@@ -476,7 +616,7 @@ export const EmployerCandidates = () => {
                       )}
                     </div>
                   </div>
-                  <div onClick={e => e.stopPropagation()}>
+                  <div onClick={(e) => { e.stopPropagation(); toggleSelection(candidate._id); }} className="cursor-pointer">
                     {isSelected ? <CheckSquare size={24} className="text-primary"/> : <Square size={24} className="text-gray-300"/>}
                   </div>
                 </div>
