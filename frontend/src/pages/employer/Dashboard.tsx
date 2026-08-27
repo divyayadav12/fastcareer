@@ -38,6 +38,8 @@ export const EmployerDashboard = () => {
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(false);
+  const [applications, setApplications] = useState<any[]>([]);
+  const [loadingApps, setLoadingApps] = useState(true);
 
   useEffect(() => {
     const fetchApplications = async () => {
