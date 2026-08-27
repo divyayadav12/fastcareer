@@ -24,7 +24,7 @@ export const ManageJobs = () => {
 
   const fetchJobs = async () => {
     try {
-      const { data } = await axios.get('/api/jobs/employer', {
+      const { data } = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/jobs/employer`, {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       setJobs(data);
@@ -50,7 +50,7 @@ export const ManageJobs = () => {
         responsibilities: formData.responsibilities.split('\n').filter(r => r.trim())
       };
       
-      await axios.post('/api/jobs', payload, {
+      await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/jobs`, payload, {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       

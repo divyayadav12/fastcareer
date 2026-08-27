@@ -12,6 +12,9 @@ interface Candidate {
   firstName: string;
   lastName: string;
   email: string;
+  headline?: string;
+  skills?: string[];
+  experience?: number;
   resumeUrl?: string;
   personalDetails?: {
     currentCity?: string;
@@ -357,7 +360,11 @@ export const EmployerCandidates = () => {
                     </div>
                     <div>
                       <h3 className="font-bold text-text">{candidate.firstName} {candidate.lastName}</h3>
-                      <p className="text-sm text-gray-500 truncate w-40" title={candidate.email}>{candidate.email}</p>
+                      {candidate.headline ? (
+                        <p className="text-sm font-medium text-gray-700 truncate w-48" title={candidate.headline}>{candidate.headline}</p>
+                      ) : (
+                        <p className="text-sm text-gray-500 truncate w-48" title={candidate.email}>{candidate.email}</p>
+                      )}
                     </div>
                   </div>
                   <div onClick={e => e.stopPropagation()}>
@@ -383,6 +390,27 @@ export const EmployerCandidates = () => {
                         </span>
                       </div>
                     </div>
+                    
+                    {candidate.experience !== undefined && candidate.experience !== null && (
+                      <div className="text-sm text-gray-600 mb-2">
+                        <span className="font-medium">Experience:</span> {candidate.experience} years
+                      </div>
+                    )}
+
+                    {candidate.skills && candidate.skills.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mt-2">
+                        {candidate.skills.slice(0, 4).map((skill, idx) => (
+                          <span key={idx} className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs font-medium border border-gray-200">
+                            {skill}
+                          </span>
+                        ))}
+                        {candidate.skills.length > 4 && (
+                          <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs font-medium border border-gray-200">
+                            +{candidate.skills.length - 4} more
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                 <div onClick={e => e.stopPropagation()}>
