@@ -318,7 +318,13 @@ export const CandidateDashboard = () => {
         if (data.resumeUrl) setResumeUrl(data.resumeUrl);
         if (data.phone) setPersonal(prev => ({ ...prev, phone: data.phone }));
         if (data.personalDetails) setPersonal(prev => ({ ...prev, ...data.personalDetails }));
-        if (data.caPortfolio) setCaPortfolio(prev => ({ ...prev, ...data.caPortfolio }));
+        if (data.caPortfolio) {
+          const fetchedCaPortfolio = data.caPortfolio;
+          if (!fetchedCaPortfolio.articleships || fetchedCaPortfolio.articleships.length === 0) {
+            fetchedCaPortfolio.articleships = [{ firmType: 'Medium', firmName: '', city: '', noOfPartners: '2', noOfMonths: '36' }];
+          }
+          setCaPortfolio(prev => ({ ...prev, ...fetchedCaPortfolio }));
+        }
         if (data.qualifications) setQualifications(prev => ({ ...prev, ...data.qualifications }));
       } catch (error) {
         console.error('Error fetching profile:', error);
@@ -696,7 +702,7 @@ export const CandidateDashboard = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {caPortfolio.articleships.map((art, idx) => (
+                    {(caPortfolio.articleships || []).map((art, idx) => (
                       <tr key={idx}>
                         <td className="pr-2 pb-2">
                           <select required className="w-full border border-gray-300 rounded p-1 text-sm bg-white" value={art.firmType} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].firmType = e.target.value; setCaPortfolio({...caPortfolio, articleships: newArt})}}>
@@ -737,6 +743,15 @@ export const CandidateDashboard = () => {
                         </td>
                       </tr>
                     ))}
+                    {(!caPortfolio.articleships || caPortfolio.articleships.length === 0) && (
+                      <tr>
+                        <td colSpan={6} className="text-center p-4">
+                          <button type="button" onClick={() => setCaPortfolio({...caPortfolio, articleships: [{ firmType: 'Medium', firmName: '', city: '', noOfPartners: '2', noOfMonths: 0 }]})} className="bg-[#1a446c] text-white px-3 py-1 text-xs font-medium rounded hover:bg-[#123150] transition-colors whitespace-nowrap">
+                            Add Firm
+                          </button>
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -752,7 +767,7 @@ export const CandidateDashboard = () => {
               </div>
               <div className="flex justify-between items-center">
                 <span>Total Articleship Months:</span>
-                <span className="font-bold text-gray-900 bg-gray-100 px-3 py-1 rounded">{caPortfolio.articleships.reduce((acc, curr) => acc + (curr.noOfMonths || 0), 0)}</span>
+                <span className="font-bold text-gray-900 bg-gray-100 px-3 py-1 rounded">{(caPortfolio.articleships || []).reduce((acc, curr) => acc + (curr.noOfMonths || 0), 0)}</span>
               </div>
 
               {[
