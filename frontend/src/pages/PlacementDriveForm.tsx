@@ -6,12 +6,14 @@ export const PlacementDriveForm = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
     phone: '',
     password: '',
+    resumeUrl: '',
     currentCity: '',
     caStatus: '',
     grad_completed: '',
@@ -81,13 +83,40 @@ export const PlacementDriveForm = () => {
     aboutMe: ''
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target as HTMLInputElement;
-    const checked = type === 'checkbox' ? (e.target as HTMLInputElement).checked : undefined;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
+    setFormData({
+      ...formData,
+      [name]: type === 'checkbox' ? checked : value
+    });
+  };
+
+  const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert("File size must be less than 5MB");
+      return;
+    }
+
+    try {
+      setUploading(true);
+      const uploadData = new FormData();
+      uploadData.append('resume', file);
+      
+      const res = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/upload`, uploadData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      setFormData(prev => ({ ...prev, resumeUrl: res.data.url }));
+    } catch (error) {
+      console.error("Resume upload failed:", error);
+      alert("Failed to upload resume. Please try again.");
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -454,6 +483,13 @@ export const PlacementDriveForm = () => {
                   <option value="Yes">Yes</option>
                   <option value="No">No</option>
                 </select>
+              </div>
+              
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Upload Resume (PDF, DOCX) *</label>
+                <input required={!formData.resumeUrl} type="file" accept=".pdf,.doc,.docx" onChange={handleResumeUpload} disabled={uploading} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition" />
+                {uploading && <p className="text-sm text-blue-600 mt-1">Uploading...</p>}
+                {formData.resumeUrl && <p className="text-sm text-green-600 mt-1">Resume uploaded successfully!</p>}
               </div>
 
             </div>

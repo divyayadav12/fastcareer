@@ -14,7 +14,7 @@ export const handleZohoWebhook = async (req: Request, res: Response): Promise<vo
 
     // Personal Details
     const {
-      email, firstName, lastName, phone, password,
+      email, firstName, lastName, phone, password, resumeUrl,
       alternatePhone, currentAddress, currentState, currentCity,
       permanentAddressSameAsCurrent, permanentAddress, permanentState, permanentCity,
       dateOfBirth, gender, maritalStatus, preferredCampusCity
@@ -132,6 +132,7 @@ export const handleZohoWebhook = async (req: Request, res: Response): Promise<vo
       if (lastName) user.lastName = lastName;
       if (phone) user.phone = phone;
       if (password) user.password = password;
+      if (resumeUrl) user.resumeUrl = resumeUrl;
 
       // Merge personalDetails
       user.personalDetails = {
@@ -175,6 +176,7 @@ export const handleZohoWebhook = async (req: Request, res: Response): Promise<vo
         email,
         password: generatedPassword,
         phone: phone || '',
+        resumeUrl: resumeUrl || '',
         role: 'candidate',
         personalDetails: mappedPersonalDetails,
         caPortfolio: mappedCaPortfolio,
