@@ -23,16 +23,16 @@ export const handleZohoWebhook = async (req: Request, res: Response): Promise<vo
     // CA Portfolio Details
     const {
       caStatus, // To determine isFresherCA
-      caInter_bothGroups1stAttempt, caInter_group1Attempts, caInter_group1Year,
-      caInter_group2Attempts, caInter_group2Year, caInter_ranker,
+      caInter_bothGroups1stAttempt, caInter_group1Attempts, caInter_group1Month, caInter_group1Year,
+      caInter_group2Attempts, caInter_group2Month, caInter_group2Year, caInter_ranker,
       caInter_completionSessionMonth, caInter_completionSessionYear, caInter_percentage,
       
-      caFinal_bothGroups1stAttempt, caFinal_group1Attempts, caFinal_group1Year,
-      caFinal_group2Attempts, caFinal_group2Year, caFinal_ranker,
+      caFinal_bothGroups1stAttempt, caFinal_group1Attempts, caFinal_group1Month, caFinal_group1Year,
+      caFinal_group2Attempts, caFinal_group2Month, caFinal_group2Year, caFinal_ranker,
       caFinal_completionSessionMonth, caFinal_completionSessionYear, caFinal_percentage,
 
       articleshipFirmType, articleshipFirmName, articleshipCity, articleshipPartners, articleshipMonths,
-      articleshipCompletionDate, gmcsCompleted, big4Articleship, industrialTrainee,
+      articleshipCompletionDateMonth, articleshipCompletionDateYear, gmcsCompleted, big4Articleship, industrialTrainee,
       listedCompanyWork, natureOfWork, auditExperience, communicationSkills, aboutMe
     } = payload;
 
@@ -70,8 +70,10 @@ export const handleZohoWebhook = async (req: Request, res: Response): Promise<vo
       caInter: {
         bothGroups1stAttempt: caInter_bothGroups1stAttempt === 'true' || caInter_bothGroups1stAttempt === true,
         group1Attempts: caInter_group1Attempts || '',
+        group1Month: caInter_group1Month || '',
         group1Year: caInter_group1Year || '',
         group2Attempts: caInter_group2Attempts || '',
+        group2Month: caInter_group2Month || '',
         group2Year: caInter_group2Year || '',
         ranker: caInter_ranker || '',
         completionSessionMonth: caInter_completionSessionMonth || '',
@@ -81,8 +83,10 @@ export const handleZohoWebhook = async (req: Request, res: Response): Promise<vo
       caFinal: {
         bothGroups1stAttempt: caFinal_bothGroups1stAttempt === 'true' || caFinal_bothGroups1stAttempt === true,
         group1Attempts: caFinal_group1Attempts || '',
+        group1Month: caFinal_group1Month || '',
         group1Year: caFinal_group1Year || '',
         group2Attempts: caFinal_group2Attempts || '',
+        group2Month: caFinal_group2Month || '',
         group2Year: caFinal_group2Year || '',
         ranker: caFinal_ranker || '',
         completionSessionMonth: caFinal_completionSessionMonth || '',
@@ -96,7 +100,8 @@ export const handleZohoWebhook = async (req: Request, res: Response): Promise<vo
         firmType: articleshipFirmType || 'Medium',
         noOfPartners: articleshipPartners || '2'
       }] : [],
-      articleshipCompletionDate: articleshipCompletionDate || '',
+      articleshipCompletionDateMonth: articleshipCompletionDateMonth || '',
+      articleshipCompletionDateYear: articleshipCompletionDateYear || '',
       gmcsCompleted: gmcsCompleted || '',
       big4Articleship: big4Articleship || '',
       industrialTrainee: industrialTrainee || '',
