@@ -136,7 +136,18 @@ export const ManageJobs = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Location *</label>
-                    <input required type="text" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 outline-none" placeholder="e.g. Mumbai, Maharashtra"/>
+                    <select required value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 outline-none">
+                      <option value="">Select Location</option>
+                      <option value="Mumbai">Mumbai</option>
+                      <option value="Delhi">Delhi</option>
+                      <option value="Bangalore">Bangalore</option>
+                      <option value="Pune">Pune</option>
+                      <option value="Ahmedabad">Ahmedabad</option>
+                      <option value="Chennai">Chennai</option>
+                      <option value="Kolkata">Kolkata</option>
+                      <option value="Hyderabad">Hyderabad</option>
+                      <option value="Other">Other</option>
+                    </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Job Type *</label>
@@ -150,11 +161,28 @@ export const ManageJobs = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
-                    <input required type="text" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 outline-none" placeholder="e.g. Auditing, Taxation"/>
+                    <select required value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 outline-none">
+                      <option value="">Select Category</option>
+                      <option value="Auditing">Auditing</option>
+                      <option value="Taxation">Taxation</option>
+                      <option value="Finance">Finance</option>
+                      <option value="Accounting">Accounting</option>
+                      <option value="Consulting">Consulting</option>
+                      <option value="Other">Other</option>
+                    </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Salary / Stipend *</label>
-                    <input required type="text" value={formData.salaryRange} onChange={e => setFormData({...formData, salaryRange: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 outline-none" placeholder="e.g. ₹5,000 - ₹8,000 / month"/>
+                    <select required value={formData.salaryRange} onChange={e => setFormData({...formData, salaryRange: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 outline-none">
+                      <option value="">Select Salary / Stipend</option>
+                      <option value="₹5,000 - ₹10,000 / month">₹5,000 - ₹10,000 / month</option>
+                      <option value="₹10,000 - ₹20,000 / month">₹10,000 - ₹20,000 / month</option>
+                      <option value="₹20,000 - ₹50,000 / month">₹20,000 - ₹50,000 / month</option>
+                      <option value="₹3LPA - ₹5LPA">₹3LPA - ₹5LPA</option>
+                      <option value="₹5LPA - ₹10LPA">₹5LPA - ₹10LPA</option>
+                      <option value="₹10LPA+">₹10LPA+</option>
+                      <option value="Not Disclosed">Not Disclosed</option>
+                    </select>
                   </div>
                 </div>
 
