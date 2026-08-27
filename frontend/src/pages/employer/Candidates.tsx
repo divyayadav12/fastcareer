@@ -20,9 +20,12 @@ interface Candidate {
     currentCity?: string;
     currentState?: string;
     gender?: string;
+    maritalStatus?: string;
   };
   qualifications?: {
     graduation?: {
+      completed?: string;
+      type?: string;
       courseName?: string;
       collegeName?: string;
       yearOfCompletion?: string;
@@ -32,11 +35,21 @@ interface Candidate {
     isFresherCA?: boolean;
     caInter?: {
       bothGroups1stAttempt?: boolean;
+      group1Attempts?: string;
+      group2Attempts?: string;
+      ranker?: string;
     };
     caFinal?: {
       bothGroups1stAttempt?: boolean;
+      group1Attempts?: string;
+      group2Attempts?: string;
+      ranker?: string;
     };
+    articleships?: Array<{ firmType?: string }>;
     big4Articleship?: string;
+    gmcsCompleted?: string;
+    industrialTrainee?: string;
+    listedCompanyWork?: string;
   };
 }
 
@@ -49,12 +62,26 @@ export const EmployerCandidates = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [filterCity, setFilterCity] = useState('');
+  const [filterState, setFilterState] = useState('');
+  const [filterMaritalStatus, setFilterMaritalStatus] = useState('');
   const [filterCourse, setFilterCourse] = useState('');
   const [filterGender, setFilterGender] = useState('');
   const [filterFresherCA, setFilterFresherCA] = useState('');
   const [filterInter1stAttempt, setFilterInter1stAttempt] = useState('');
+  const [filterInterGroup1Attempts, setFilterInterGroup1Attempts] = useState('');
+  const [filterInterGroup2Attempts, setFilterInterGroup2Attempts] = useState('');
+  const [filterInterRanker, setFilterInterRanker] = useState('');
   const [filterFinal1stAttempt, setFilterFinal1stAttempt] = useState('');
+  const [filterFinalGroup1Attempts, setFilterFinalGroup1Attempts] = useState('');
+  const [filterFinalGroup2Attempts, setFilterFinalGroup2Attempts] = useState('');
+  const [filterFinalRanker, setFilterFinalRanker] = useState('');
   const [filterBig4, setFilterBig4] = useState('');
+  const [filterFirmType, setFilterFirmType] = useState('');
+  const [filterGmcs, setFilterGmcs] = useState('');
+  const [filterIndustrialTrainee, setFilterIndustrialTrainee] = useState('');
+  const [filterListedCompany, setFilterListedCompany] = useState('');
+  const [filterGradCompleted, setFilterGradCompleted] = useState('');
+  const [filterGradType, setFilterGradType] = useState('');
   
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isExporting, setIsExporting] = useState(false);
@@ -104,22 +131,40 @@ export const EmployerCandidates = () => {
     
     const matchesSearch = fullName.includes(term) || city.includes(term) || course.includes(term);
     const matchesCity = filterCity ? city.includes(filterCity.toLowerCase()) : true;
+    const matchesState = filterState ? c.personalDetails?.currentState === filterState : true;
     const matchesCourse = filterCourse ? course.includes(filterCourse.toLowerCase()) : true;
     const matchesGender = filterGender ? c.personalDetails?.gender === filterGender : true;
+    const matchesMaritalStatus = filterMaritalStatus ? c.personalDetails?.maritalStatus === filterMaritalStatus : true;
     
     const isFresher = c.caPortfolio?.isFresherCA ? 'Yes' : 'No';
     const matchesFresher = filterFresherCA ? isFresher === filterFresherCA : true;
     
     const inter1st = c.caPortfolio?.caInter?.bothGroups1stAttempt ? 'Yes' : 'No';
     const matchesInter1st = filterInter1stAttempt ? inter1st === filterInter1stAttempt : true;
+    const matchesInterG1 = filterInterGroup1Attempts ? c.caPortfolio?.caInter?.group1Attempts === filterInterGroup1Attempts : true;
+    const matchesInterG2 = filterInterGroup2Attempts ? c.caPortfolio?.caInter?.group2Attempts === filterInterGroup2Attempts : true;
+    const matchesInterRanker = filterInterRanker ? c.caPortfolio?.caInter?.ranker === filterInterRanker : true;
 
     const final1st = c.caPortfolio?.caFinal?.bothGroups1stAttempt ? 'Yes' : 'No';
     const matchesFinal1st = filterFinal1stAttempt ? final1st === filterFinal1stAttempt : true;
+    const matchesFinalG1 = filterFinalGroup1Attempts ? c.caPortfolio?.caFinal?.group1Attempts === filterFinalGroup1Attempts : true;
+    const matchesFinalG2 = filterFinalGroup2Attempts ? c.caPortfolio?.caFinal?.group2Attempts === filterFinalGroup2Attempts : true;
+    const matchesFinalRanker = filterFinalRanker ? c.caPortfolio?.caFinal?.ranker === filterFinalRanker : true;
 
     const big4 = (c.caPortfolio?.big4Articleship && c.caPortfolio.big4Articleship !== 'No' && c.caPortfolio.big4Articleship !== 'none' && c.caPortfolio.big4Articleship !== '') ? 'Yes' : 'No';
     const matchesBig4 = filterBig4 ? big4 === filterBig4 : true;
+    
+    const hasFirmType = c.caPortfolio?.articleships?.some(a => a.firmType === filterFirmType);
+    const matchesFirmType = filterFirmType ? hasFirmType : true;
+    
+    const matchesGmcs = filterGmcs ? c.caPortfolio?.gmcsCompleted === filterGmcs : true;
+    const matchesInd = filterIndustrialTrainee ? c.caPortfolio?.industrialTrainee === filterIndustrialTrainee : true;
+    const matchesListed = filterListedCompany ? c.caPortfolio?.listedCompanyWork === filterListedCompany : true;
+    
+    const matchesGradComp = filterGradCompleted ? c.qualifications?.graduation?.completed === filterGradCompleted : true;
+    const matchesGradType = filterGradType ? c.qualifications?.graduation?.type === filterGradType : true;
 
-    return matchesSearch && matchesCity && matchesCourse && matchesGender && matchesFresher && matchesInter1st && matchesFinal1st && matchesBig4;
+    return matchesSearch && matchesCity && matchesState && matchesCourse && matchesGender && matchesMaritalStatus && matchesFresher && matchesInter1st && matchesInterG1 && matchesInterG2 && matchesInterRanker && matchesFinal1st && matchesFinalG1 && matchesFinalG2 && matchesFinalRanker && matchesBig4 && matchesFirmType && matchesGmcs && matchesInd && matchesListed && matchesGradComp && matchesGradType;
   });
 
   const exportToCSV = () => {
@@ -127,21 +172,39 @@ export const EmployerCandidates = () => {
     setIsExporting(true);
     
     // Create CSV Header
-    const headers = ['First Name', 'Last Name', 'Email', 'Gender', 'City', 'State', 'Graduation', 'Fresher CA', 'Inter 1st Attempt Both Grps', 'Final 1st Attempt Both Grps', 'Big4', 'Resume Link'];
+    const headers = ['First Name', 'Last Name', 'Email', 'Gender', 'Marital Status', 'State', 'City', 'Graduation Completed', 'Graduation Type', 'Graduation Course', 'Fresher CA', 'CA Inter 1st Att. Both', 'CA Inter Grp1', 'CA Inter Grp2', 'CA Inter Ranker', 'CA Final 1st Att. Both', 'CA Final Grp1', 'CA Final Grp2', 'CA Final Ranker', 'Articleship Firm', 'Big4 Articleship', 'GMCS', 'Industrial Trainee', 'Listed Company', 'Resume Link'];
     
     // Create rows
     const rows = filteredCandidates.map(c => {
       const gender = c.personalDetails?.gender || 'N/A';
+      const maritalStatus = c.personalDetails?.maritalStatus || 'N/A';
       const city = c.personalDetails?.currentCity || 'N/A';
       const state = c.personalDetails?.currentState || 'N/A';
+      
+      const gradComp = c.qualifications?.graduation?.completed || 'N/A';
+      const gradType = c.qualifications?.graduation?.type || 'N/A';
       const grad = c.qualifications?.graduation?.courseName || 'N/A';
+      
       const isFresher = c.caPortfolio?.isFresherCA ? 'Yes' : 'No';
       const inter1st = c.caPortfolio?.caInter?.bothGroups1stAttempt ? 'Yes' : 'No';
+      const interG1 = c.caPortfolio?.caInter?.group1Attempts || 'N/A';
+      const interG2 = c.caPortfolio?.caInter?.group2Attempts || 'N/A';
+      const interRanker = c.caPortfolio?.caInter?.ranker || 'N/A';
+      
       const final1st = c.caPortfolio?.caFinal?.bothGroups1stAttempt ? 'Yes' : 'No';
+      const finalG1 = c.caPortfolio?.caFinal?.group1Attempts || 'N/A';
+      const finalG2 = c.caPortfolio?.caFinal?.group2Attempts || 'N/A';
+      const finalRanker = c.caPortfolio?.caFinal?.ranker || 'N/A';
+      
+      const firm = c.caPortfolio?.articleships?.[0]?.firmType || 'N/A';
       const big4 = (c.caPortfolio?.big4Articleship && c.caPortfolio.big4Articleship !== 'No' && c.caPortfolio.big4Articleship !== 'none' && c.caPortfolio.big4Articleship !== '') ? 'Yes' : 'No';
+      const gmcs = c.caPortfolio?.gmcsCompleted || 'N/A';
+      const indTrainee = c.caPortfolio?.industrialTrainee || 'N/A';
+      const listed = c.caPortfolio?.listedCompanyWork || 'N/A';
+
       const resume = c.resumeUrl ? getResumeUrl(c.resumeUrl) : 'No Resume';
       
-      return [c.firstName, c.lastName, c.email, gender, city, state, grad, isFresher, inter1st, final1st, big4, resume]
+      return [c.firstName, c.lastName, c.email, gender, maritalStatus, state, city, gradComp, gradType, grad, isFresher, inter1st, interG1, interG2, interRanker, final1st, finalG1, finalG2, finalRanker, firm, big4, gmcs, indTrainee, listed, resume]
         .map(field => `"${String(field).replace(/"/g, '""')}"`) // Escape quotes
         .join(',');
     });
@@ -203,12 +266,26 @@ export const EmployerCandidates = () => {
 
   const resetFilters = () => {
     setFilterCity('');
+    setFilterState('');
+    setFilterMaritalStatus('');
     setFilterCourse('');
     setFilterGender('');
     setFilterFresherCA('');
     setFilterInter1stAttempt('');
+    setFilterInterGroup1Attempts('');
+    setFilterInterGroup2Attempts('');
+    setFilterInterRanker('');
     setFilterFinal1stAttempt('');
+    setFilterFinalGroup1Attempts('');
+    setFilterFinalGroup2Attempts('');
+    setFilterFinalRanker('');
     setFilterBig4('');
+    setFilterFirmType('');
+    setFilterGmcs('');
+    setFilterIndustrialTrainee('');
+    setFilterListedCompany('');
+    setFilterGradCompleted('');
+    setFilterGradType('');
   }
 
   return (
@@ -261,64 +338,96 @@ export const EmployerCandidates = () => {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm text-gray-600 mb-1">City</label>
-              <input 
-                type="text" 
-                value={filterCity}
-                onChange={e => setFilterCity(e.target.value)}
-                placeholder="e.g. Mumbai"
-                className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"
-              />
+              <label className="block text-sm text-gray-600 mb-1">State</label>
+              <input type="text" value={filterState} onChange={e => setFilterState(e.target.value)} placeholder="e.g. Maharashtra" className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20" />
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Education / Course</label>
-              <input 
-                type="text" 
-                value={filterCourse}
-                onChange={e => setFilterCourse(e.target.value)}
-                placeholder="e.g. B.Com"
-                className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"
-              />
+              <label className="block text-sm text-gray-600 mb-1">City</label>
+              <input type="text" value={filterCity} onChange={e => setFilterCity(e.target.value)} placeholder="e.g. Mumbai" className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20" />
             </div>
             <div>
               <label className="block text-sm text-gray-600 mb-1">Gender</label>
-              <select value={filterGender} onChange={e => setFilterGender(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20">
-                <option value="">All</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-              </select>
+              <select value={filterGender} onChange={e => setFilterGender(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="Male">Male</option><option value="Female">Female</option></select>
             </div>
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">Marital Status</label>
+              <select value={filterMaritalStatus} onChange={e => setFilterMaritalStatus(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="Unmarried">Unmarried</option><option value="Married">Married</option></select>
+            </div>
+            
+            {/* Qualification Filters */}
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">Graduation Completed</label>
+              <select value={filterGradCompleted} onChange={e => setFilterGradCompleted(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="Yes">Yes</option><option value="No/Pursuing">No/Pursuing</option></select>
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">Graduation Type</label>
+              <select value={filterGradType} onChange={e => setFilterGradType(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="REGULAR">Regular</option><option value="CORRESPONDENCE">Correspondence</option></select>
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">Education / Course</label>
+              <input type="text" value={filterCourse} onChange={e => setFilterCourse(e.target.value)} placeholder="e.g. B.Com" className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20" />
+            </div>
+
+            {/* CA Inter Filters */}
             <div>
               <label className="block text-sm text-gray-600 mb-1">Fresher CA</label>
-              <select value={filterFresherCA} onChange={e => setFilterFresherCA(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20">
-                <option value="">All</option>
-                <option value="Yes">Yes</option>
-                <option value="No">No</option>
-              </select>
+              <select value={filterFresherCA} onChange={e => setFilterFresherCA(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="Yes">Yes</option><option value="No">No</option></select>
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">CA Inter Both Grps (1st Attempt)</label>
-              <select value={filterInter1stAttempt} onChange={e => setFilterInter1stAttempt(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20">
-                <option value="">All</option>
-                <option value="Yes">Yes</option>
-                <option value="No">No</option>
-              </select>
+              <label className="block text-sm text-gray-600 mb-1">CA Inter Both Grps (1st Att)</label>
+              <select value={filterInter1stAttempt} onChange={e => setFilterInter1stAttempt(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="Yes">Yes</option><option value="No">No</option></select>
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">CA Final Both Grps (1st Attempt)</label>
-              <select value={filterFinal1stAttempt} onChange={e => setFilterFinal1stAttempt(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20">
-                <option value="">All</option>
-                <option value="Yes">Yes</option>
-                <option value="No">No</option>
-              </select>
+              <label className="block text-sm text-gray-600 mb-1">CA Inter Grp 1 Attempts</label>
+              <select value={filterInterGroup1Attempts} onChange={e => setFilterInterGroup1Attempts(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option>{['0','1','2','3','4','5','6+'].map(a=><option key={a} value={a}>{a}</option>)}</select>
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Big 4 Articleship</label>
-              <select value={filterBig4} onChange={e => setFilterBig4(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20">
-                <option value="">All</option>
-                <option value="Yes">Yes</option>
-                <option value="No">No</option>
-              </select>
+              <label className="block text-sm text-gray-600 mb-1">CA Inter Grp 2 Attempts</label>
+              <select value={filterInterGroup2Attempts} onChange={e => setFilterInterGroup2Attempts(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option>{['0','1','2','3','4','5','6+'].map(a=><option key={a} value={a}>{a}</option>)}</select>
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">CA Inter Ranker</label>
+              <select value={filterInterRanker} onChange={e => setFilterInterRanker(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="Yes">Yes</option><option value="No">No</option></select>
+            </div>
+
+            {/* CA Final Filters */}
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">CA Final Both Grps (1st Att)</label>
+              <select value={filterFinal1stAttempt} onChange={e => setFilterFinal1stAttempt(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="Yes">Yes</option><option value="No">No</option></select>
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">CA Final Grp 1 Attempts</label>
+              <select value={filterFinalGroup1Attempts} onChange={e => setFilterFinalGroup1Attempts(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option>{['0','1','2','3','4','5','6+'].map(a=><option key={a} value={a}>{a}</option>)}</select>
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">CA Final Grp 2 Attempts</label>
+              <select value={filterFinalGroup2Attempts} onChange={e => setFilterFinalGroup2Attempts(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option>{['0','1','2','3','4','5','6+'].map(a=><option key={a} value={a}>{a}</option>)}</select>
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">CA Final Ranker</label>
+              <select value={filterFinalRanker} onChange={e => setFilterFinalRanker(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="Yes">Yes</option><option value="No">No</option></select>
+            </div>
+
+            {/* Articleship & Others */}
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">Articleship Firm Type</label>
+              <select value={filterFirmType} onChange={e => setFilterFirmType(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="Big4">Big4</option><option value="Medium">Medium</option><option value="Small">Small</option></select>
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">Big 4 Articleship (Anytime)</label>
+              <select value={filterBig4} onChange={e => setFilterBig4(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="Yes">Yes</option><option value="No">No</option></select>
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">GMCS Completed</label>
+              <select value={filterGmcs} onChange={e => setFilterGmcs(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="Yes">Yes</option><option value="No">No</option></select>
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">Industrial Trainee</label>
+              <select value={filterIndustrialTrainee} onChange={e => setFilterIndustrialTrainee(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="Yes">Yes</option><option value="No">No</option></select>
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">Listed Company Work</label>
+              <select value={filterListedCompany} onChange={e => setFilterListedCompany(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="Yes">Yes</option><option value="No">No</option></select>
             </div>
           </div>
         </div>
