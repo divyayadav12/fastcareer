@@ -12,18 +12,35 @@ export const handleZohoWebhook = async (req: Request, res: Response): Promise<vo
       return;
     }
 
-    // Extract standardized keys we instruct Zoho to send
+    // Personal Details
     const {
-      email,
-      firstName,
-      lastName,
-      phone,
-      currentCity,
-      caStatus, // "CA Fresher (Jan'26 Qualified)" etc.
-      experience,
-      articleshipFirm,
-      articleshipCity,
-      articleshipMonths
+      email, firstName, lastName, phone,
+      alternatePhone, currentAddress, currentState, currentCity,
+      permanentAddressSameAsCurrent, permanentAddress, permanentState, permanentCity,
+      dateOfBirth, gender, maritalStatus, preferredCampusCity
+    } = payload;
+
+    // CA Portfolio Details
+    const {
+      caStatus, // To determine isFresherCA
+      caInter_bothGroups1stAttempt, caInter_group1Attempts, caInter_group1Year,
+      caInter_group2Attempts, caInter_group2Year, caInter_ranker,
+      caInter_completionSessionMonth, caInter_completionSessionYear, caInter_percentage,
+      
+      caFinal_bothGroups1stAttempt, caFinal_group1Attempts, caFinal_group1Year,
+      caFinal_group2Attempts, caFinal_group2Year, caFinal_ranker,
+      caFinal_completionSessionMonth, caFinal_completionSessionYear, caFinal_percentage,
+
+      articleshipFirmType, articleshipFirmName, articleshipCity, articleshipPartners, articleshipMonths,
+      articleshipCompletionDate, gmcsCompleted, big4Articleship, industrialTrainee,
+      listedCompanyWork, natureOfWork, auditExperience, communicationSkills, aboutMe
+    } = payload;
+
+    // Qualifications
+    const {
+      grad_completed, grad_yearOfCompletion, grad_percentage, grad_college, grad_type,
+      class12_percentage, class12_year, class12_board,
+      class10_percentage, class10_year, class10_board
     } = payload;
 
     if (!email) {
@@ -31,25 +48,78 @@ export const handleZohoWebhook = async (req: Request, res: Response): Promise<vo
       return;
     }
 
-    // Attempt to find existing user
-    let user = await User.findOne({ email });
+    const mappedPersonalDetails = {
+      alternatePhone: alternatePhone || '',
+      currentAddress: currentAddress || '',
+      currentState: currentState || '',
+      currentCity: currentCity || '',
+      permanentAddressSameAsCurrent: permanentAddressSameAsCurrent === 'true' || permanentAddressSameAsCurrent === true,
+      permanentAddress: permanentAddress || '',
+      permanentState: permanentState || '',
+      permanentCity: permanentCity || '',
+      dateOfBirth: dateOfBirth || '',
+      gender: gender || '',
+      maritalStatus: maritalStatus || '',
+      preferredCampusCity: preferredCampusCity || ''
+    };
 
     const isFresher = caStatus && caStatus.toLowerCase().includes('fresher');
 
     const mappedCaPortfolio = {
       isFresherCA: isFresher || false,
-      articleships: articleshipFirm ? [{
-        firmName: articleshipFirm,
+      caInter: {
+        bothGroups1stAttempt: caInter_bothGroups1stAttempt === 'true' || caInter_bothGroups1stAttempt === true,
+        group1Attempts: caInter_group1Attempts || '',
+        group1Year: caInter_group1Year || '',
+        group2Attempts: caInter_group2Attempts || '',
+        group2Year: caInter_group2Year || '',
+        ranker: caInter_ranker || '',
+        completionSessionMonth: caInter_completionSessionMonth || '',
+        completionSessionYear: caInter_completionSessionYear || '',
+        percentage: caInter_percentage || ''
+      },
+      caFinal: {
+        bothGroups1stAttempt: caFinal_bothGroups1stAttempt === 'true' || caFinal_bothGroups1stAttempt === true,
+        group1Attempts: caFinal_group1Attempts || '',
+        group1Year: caFinal_group1Year || '',
+        group2Attempts: caFinal_group2Attempts || '',
+        group2Year: caFinal_group2Year || '',
+        ranker: caFinal_ranker || '',
+        completionSessionMonth: caFinal_completionSessionMonth || '',
+        completionSessionYear: caFinal_completionSessionYear || '',
+        percentage: caFinal_percentage || ''
+      },
+      articleships: articleshipFirmName ? [{
+        firmName: articleshipFirmName,
         city: articleshipCity || '',
         noOfMonths: articleshipMonths || '36',
-        firmType: 'Medium',
-        noOfPartners: '2'
-      }] : []
+        firmType: articleshipFirmType || 'Medium',
+        noOfPartners: articleshipPartners || '2'
+      }] : [],
+      articleshipCompletionDate: articleshipCompletionDate || '',
+      gmcsCompleted: gmcsCompleted || '',
+      big4Articleship: big4Articleship || '',
+      industrialTrainee: industrialTrainee || '',
+      listedCompanyWork: listedCompanyWork || '',
+      natureOfWork: natureOfWork || '',
+      auditExperience: auditExperience ? (typeof auditExperience === 'string' ? auditExperience.split(',') : auditExperience) : [],
+      communicationSkills: communicationSkills ? parseInt(communicationSkills) : 4,
+      aboutMe: aboutMe || ''
     };
 
-    const mappedPersonalDetails = {
-      currentCity: currentCity || '',
+    const mappedQualifications = {
+      graduation: {
+        completed: grad_completed || '',
+        yearOfCompletion: grad_yearOfCompletion || '',
+        percentage: grad_percentage || '',
+        college: grad_college || '',
+        type: grad_type || 'REGULAR'
+      },
+      class12: { percentage: class12_percentage || '', year: class12_year || '', board: class12_board || '' },
+      class10: { percentage: class10_percentage || '', year: class10_year || '', board: class10_board || '' }
     };
+
+    let user = await User.findOne({ email });
 
     if (user) {
       // Update existing user
@@ -65,19 +135,26 @@ export const handleZohoWebhook = async (req: Request, res: Response): Promise<vo
 
       // Merge caPortfolio
       // Only append/update articleships if the incoming payload has them
-      if (articleshipFirm) {
+      if (articleshipFirmName) {
         const existingArticleships = user.caPortfolio?.articleships || [];
         user.caPortfolio = {
           ...(user.caPortfolio || {}),
-          isFresherCA: mappedCaPortfolio.isFresherCA,
+          ...mappedCaPortfolio,
           articleships: [...existingArticleships, ...mappedCaPortfolio.articleships]
         };
       } else {
         user.caPortfolio = {
           ...(user.caPortfolio || {}),
-          isFresherCA: mappedCaPortfolio.isFresherCA
+          ...mappedCaPortfolio,
+          articleships: user.caPortfolio?.articleships || []
         };
       }
+      
+      // Merge qualifications
+      user.qualifications = {
+        ...(user.qualifications || {}),
+        ...mappedQualifications
+      };
 
       await user.save();
       console.log(`Updated user via Webhook: ${email}`);
@@ -94,7 +171,8 @@ export const handleZohoWebhook = async (req: Request, res: Response): Promise<vo
         phone: phone || '',
         role: 'candidate',
         personalDetails: mappedPersonalDetails,
-        caPortfolio: mappedCaPortfolio
+        caPortfolio: mappedCaPortfolio,
+        qualifications: mappedQualifications
       });
 
       console.log(`Created new user via Webhook: ${email} with password ${generatedPassword}`);
