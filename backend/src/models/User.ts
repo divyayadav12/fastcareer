@@ -168,6 +168,9 @@ const UserSchema: Schema = new Schema(
       industrialTrainee: { type: String },
       listedCompanyWork: { type: String },
       natureOfWork: { type: String }, // Min 100 words text area
+      auditExperience: [{ type: String }],
+      communicationSkills: { type: Number },
+      aboutMe: { type: String },
     },
 
     // Step 3: Qualifications

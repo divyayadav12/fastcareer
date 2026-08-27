@@ -211,7 +211,60 @@ const STATE_CITY_MAP: Record<string, string[]> = {
 };
 const STATES = Object.keys(STATE_CITY_MAP);
 const ALL_CITIES = Array.from(new Set(Object.values(STATE_CITY_MAP).flat())).sort();
-const YEARS = Array.from({length: 30}, (_, i) => String(new Date().getFullYear() - i));
+const YEARS = Array.from({length: 30}, (_, i) => String(new Date().getFullYear() - i));  
+const STATE_CITY_MAP_V2 = {
+  ...STATE_CITY_MAP,
+  'West Bengal': ['Alipore', 'Alipurduar', 'Asansol', 'Baharampur', 'Bally', 'Balurghat', 'Bankura', 'Barasat', 'Bardhaman', 'Bidhan Nagar', 'Chinsura', 'Contai', 'Cooch Behar', 'Darjeeling', 'Durgapur', 'Haldia', 'Howrah', 'Hugli', 'Jalpaiguri', 'Kharagpur', 'Kolkata', 'Krishnanagar', 'Malda', 'Midnapore', 'Murshidabad', 'Navadwip', 'Palashi', 'Panihati', 'Purulia', 'Raiganj', 'Santipur', 'Shantiniketan', 'Shrirampur', 'Siliguri', 'Tamluk', 'Titagarh']
+};
+
+const ATTEMPT_YEARS = ['Sept\'25', 'Jan\'26', 'May\'25', 'Nov\'24', 'May\'24', 'Nov\'23', 'May\'23', 'Nov\'22', 'May\'22', 'Nov\'21', 'May\'21', 'Nov\'20', 'May\'20'];
+const AUDIT_EXPERIENCE_OPTIONS = ['Audit of Listed Companies', 'Statutory Audit', 'Internal Audit', 'Internal Financial Control (IFC Clause 49 work)', 'Standard Operating Procedures SOP Drafting', 'Statutory Bank Audits', 'Tax Audit assignments of companies', 'Concurrent audit of banks', 'Revenue Audits', 'Stock Audits', 'Other', 'None'];
+
+const CA_FIRMS = [
+  'If Not Exists In Given List',
+  'A. BAFNA & COMPANY',
+  'AIYAR & CO',
+  'ANEJA ASSOCIATES',
+  'B S R & COMPANY / KPMG',
+  'BANSI S. MEHTA & CO.',
+  'BATLIBOI & PUROHIT',
+  'BDO - MZSK & ASSOCIATES',
+  'BHUTA SHAH & CO',
+  'BORKAR & MUZUMDAR',
+  'BRAHMYA & CO.',
+  'C C CHOKSI & CO. / A.F FERGUSON & CO. / DELOITTE HASKINS & SELLS',
+  'C C CHOKSI & CO. LLP',
+  'P.R. MEHRA & CO.',
+  'R BHUPATHY & CO.',
+  'R G N PRICE & CO.',
+  'RAY AND RAY',
+  'RSM & CO.',
+  'S R BATLIBOI & CO.',
+  'S. BHANDARI & CO.',
+  'S. R. DINODIA & COMPANY',
+  'S. R. GOYAL & CO.',
+  'S. RAMANAND AIYAR & CO.',
+  'S.C VASUDEVA & CO.',
+  'S.N. DHAWAN & CO. / MAZARS',
+  'S.P NAGRATH & CO.',
+  'S.R. BATLIBOI & COMPANY / ERNST & YOUNG (E&Y)',
+  'SAHNI NATARAJAN & BEHL / SNB',
+  'SHARP & TANNAN',
+  'SINGHI & CO.',
+  'SRIDHAR & SANTHANAM / PKF SHRISHAR SANTHANAM',
+  'SS KOTHARI MEHTA & CO. / SSKM',
+  'SUDIT K. PAREKH & CO',
+  'SURESH SURANA & ASSOCIATES',
+  'T.R. CHADDHA & CO.',
+  'THAKUR VAIDYANATH AIYAR & CO.',
+  'UBEROI SOOD & KAPOOR',
+  'V. SANKAR AIYAR & CO.',
+  'V.K. DHINGRA & CO.',
+  'VED JAIN & ASSOCIATES',
+  'VERMA & VERMA ASSOCIATES',
+  'WALKER CHANDIOK & COMPANY / GRANT THORNTON (GT)'
+];
+
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const ATTEMPTS = ['0', '1', '2', '3', '4', '5', '6+'];
 const COLLEGES = ['ICAI', 'Delhi University', 'Mumbai University', 'Pune University', 'IGNOU', 'Other'];
@@ -472,10 +525,7 @@ export const CandidateDashboard = () => {
                     </div>
                     <div>
                       <label className="block text-xs font-medium text-gray-700 mb-1">City *</label>
-                      <select required className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors" value={personal.permanentCity} onChange={(e) => setPersonal({...personal, permanentCity: e.target.value})} disabled={personal.permanentAddressSameAsCurrent}>
-                        <option value="">Select City</option>
-                        {(STATE_CITY_MAP[personal.permanentState] || []).map(c => <option key={c} value={c}>{c}</option>)}
-                      </select>
+                      <input type="text" list="allCitiesList" required className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors" placeholder="Type or Select City" value={personal.permanentCity} onChange={(e) => setPersonal({...personal, permanentCity: e.target.value})} disabled={personal.permanentAddressSameAsCurrent} />
                     </div>
                   </div>
                 </div>
@@ -585,15 +635,27 @@ export const CandidateDashboard = () => {
                           <option>No</option><option>Yes</option>
                         </select>
                       </td>
-                      <td className="p-2 border">
-                        <select className="w-full border-gray-200 rounded p-1 text-xs" value={(caPortfolio as any)[examKey].completionSessionMonth} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], completionSessionMonth: e.target.value}})}>
-                          {MONTHS.map(a => <option key={a}>{a}</option>)}
-                        </select>
-                      </td>
-                      <td className="p-2 border">
-                        <select className="w-full border-gray-200 rounded p-1 text-xs" value={(caPortfolio as any)[examKey].completionSessionYear} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], completionSessionYear: e.target.value}})}>
-                          {YEARS.map(a => <option key={a}>{a}</option>)}
-                        </select>
+                      <td className="p-2 border" colSpan={2}>
+                        <input 
+                          type="text" 
+                          list="attemptYearsList"
+                          className="w-full border-gray-200 rounded p-1 text-xs" 
+                          value={(caPortfolio as any)[examKey].completionSessionMonth + "'" + (caPortfolio as any)[examKey].completionSessionYear?.slice(-2)} 
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val.includes("'")) {
+                              const [m, y] = val.split("'");
+                              const fullYear = (parseInt(y) < 50 ? '20' : '19') + y;
+                              setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], completionSessionMonth: m, completionSessionYear: fullYear}});
+                            } else {
+                              setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], completionSessionMonth: val}});
+                            }
+                          }}
+                          placeholder="e.g. Sept'25"
+                        />
+                        <datalist id="attemptYearsList">
+                          {ATTEMPT_YEARS.map(ay => <option key={ay} value={ay}>{ay}</option>)}
+                        </datalist>
                       </td>
                       <td className="p-2 border">
                         <input type="number" min="0" max="100" step="0.01" required placeholder="%" className="w-16 border-gray-200 rounded p-1 text-xs" value={(caPortfolio as any)[examKey].percentage} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], percentage: e.target.value}})} />
@@ -630,7 +692,10 @@ export const CandidateDashboard = () => {
                           </select>
                         </td>
                         <td className="pr-2 pb-2 min-w-[200px]">
-                          <input required type="text" pattern="[A-Za-z0-9\s\.\,\&]+" title="Only alphanumeric characters, spaces, and . , & are allowed" className="w-full border border-gray-300 rounded p-1 text-sm bg-white" value={art.firmName} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].firmName = e.target.value; setCaPortfolio({...caPortfolio, articleships: newArt})}}/>
+                          <input required type="text" list="caFirmsList" pattern="[A-Za-z0-9\s\.\,\&\/\-]+" title="Only alphanumeric characters, spaces, and . , & / - are allowed" className="w-full border border-gray-300 rounded p-1 text-sm bg-white" placeholder="Select or type firm name" value={art.firmName} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].firmName = e.target.value; setCaPortfolio({...caPortfolio, articleships: newArt})}}/>
+                          <datalist id="caFirmsList">
+                            {CA_FIRMS.map(firm => <option key={firm} value={firm}>{firm}</option>)}
+                          </datalist>
                         </td>
                         <td className="pr-2 pb-2">
                           <select required className="w-full border border-gray-300 rounded p-1 text-sm bg-white" value={art.city} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].city = e.target.value; setCaPortfolio({...caPortfolio, articleships: newArt})}}>
@@ -706,9 +771,69 @@ export const CandidateDashboard = () => {
               </select>
             </div>
 
+              {/* --- NEW FIELDS --- */}
+              <div className="space-y-6 pt-6 border-t border-gray-200">
+                <h3 className="text-lg font-bold text-primary mb-4">Additional Details</h3>
+                
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">We would like to know about your articleship experience in Audit *</label>
+                  <p className="text-xs text-gray-500 mb-3">Please tick those areas only which you have actually done</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {AUDIT_EXPERIENCE_OPTIONS.map(opt => (
+                      <label key={opt} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                        <input 
+                          type="checkbox" 
+                          className="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary/20"
+                          checked={caPortfolio.auditExperience?.includes(opt) || false}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setCaPortfolio({...caPortfolio, auditExperience: [...(caPortfolio.auditExperience || []), opt]});
+                            } else {
+                              setCaPortfolio({...caPortfolio, auditExperience: (caPortfolio.auditExperience || []).filter(item => item !== opt)});
+                            }
+                          }}
+                        />
+                        {opt}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Rate Your Communication Skills *</label>
+                  <div className="flex items-center gap-4">
+                    <input 
+                      type="range" 
+                      min="0" max="10" 
+                      value={caPortfolio.communicationSkills || 4} 
+                      onChange={e => setCaPortfolio({...caPortfolio, communicationSkills: parseInt(e.target.value)})}
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary"
+                    />
+                    <span className="font-bold text-primary w-8 text-center bg-green-50 px-2 py-1 rounded border border-green-100">{caPortfolio.communicationSkills || 4}</span>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-400 mt-1">
+                    <span>0</span>
+                    <span>10</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Tell us a bit about yourself <span className="text-xl">😃</span></label>
+                  <p className="text-xs text-gray-500 mb-2">About your journey, articleship, work, achievements, strengths etc.</p>
+                  <textarea 
+                    rows={4} 
+                    value={caPortfolio.aboutMe || ''}
+                    onChange={e => setCaPortfolio({...caPortfolio, aboutMe: e.target.value})}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20"
+                    placeholder="E.g., I am a driven CA professional..."
+                  />
+                </div>
+              </div>
+              {/* --- END NEW FIELDS --- */}
+
             <div className="flex justify-end gap-4 mt-6">
               <Button type="button" variant="outline" onClick={handlePrev}>&lt;&lt; Previous</Button>
-              <Button type="submit">Next &gt;&gt;</Button>
+              <Button type="submit">{savingProfile ? 'Saving...' : 'Save & Next >>'}</Button>
             </div>
           </form>
         )}
