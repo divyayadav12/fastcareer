@@ -503,8 +503,17 @@ export const CandidateDashboard = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">* Briefly Explain Other Nature of Work Done During Articleship (Min 100 words):</label>
-              <textarea required rows={4} minLength={100} className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm" placeholder="Mention type of audits & other assignment list of key clients etc. This will be printed on system generated resume" value={caPortfolio.natureOfWork} onChange={(e) => setCaPortfolio({...caPortfolio, natureOfWork: e.target.value})}></textarea>
+              <label className="block text-sm font-medium text-gray-700 mb-2">* Nature of Work Done During Articleship:</label>
+              <select required className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm bg-white" value={caPortfolio.natureOfWork} onChange={(e) => setCaPortfolio({...caPortfolio, natureOfWork: e.target.value})}>
+                <option value="">Select Nature of Work</option>
+                <option value="Statutory Audit">Statutory Audit</option>
+                <option value="Internal Audit">Internal Audit</option>
+                <option value="Direct Tax">Direct Tax</option>
+                <option value="Indirect Tax">Indirect Tax</option>
+                <option value="Corporate Finance">Corporate Finance</option>
+                <option value="Transfer Pricing">Transfer Pricing</option>
+                <option value="Loan Syndication">Loan Syndication</option>
+              </select>
             </div>
 
             <div className="flex justify-end gap-4 mt-6">
