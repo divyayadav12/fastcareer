@@ -1,12 +1,16 @@
 import multer from 'multer';
 import path from 'path';
+import fs from 'fs';
 
 // For this MVP, we will use local disk storage. 
 // In a production environment with proper API keys, you would use multer-storage-cloudinary
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    // In a real app, ensure this directory exists
-    cb(null, 'uploads/');
+    const dir = 'uploads/';
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    cb(null, dir);
   },
   filename: function (req, file, cb) {
     cb(null, `${file.fieldname}-${Date.now()}${path.extname(file.originalname)}`);
