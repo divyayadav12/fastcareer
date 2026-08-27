@@ -16,13 +16,39 @@ export const PlacementDriveForm = () => {
     caStatus: '',
     grad_completed: '',
     caInter_bothGroups1stAttempt: false,
-    caFinal_bothGroups1stAttempt: false,
     articleshipFirmName: '',
+    articleshipCity: '',
     articleshipMonths: '',
+    articleshipFirmType: '',
+    articleshipPartners: '',
+    grad_completed: '',
     grad_percentage: '',
     grad_college: '',
+    grad_yearOfCompletion: '',
     class12_percentage: '',
+    class12_year: '',
     class10_percentage: '',
+    class10_year: '',
+    alternatePhone: '',
+    dateOfBirth: '',
+    gender: '',
+    maritalStatus: '',
+    currentAddress: '',
+    currentState: '',
+    permanentAddress: '',
+    permanentCity: '',
+    permanentState: '',
+    preferredCampusCity: '',
+    caInter_group1Attempts: '',
+    caInter_group1Year: '',
+    caInter_percentage: '',
+    caFinal_group1Attempts: '',
+    caFinal_group1Year: '',
+    caFinal_percentage: '',
+    gmcsCompleted: '',
+    big4Articleship: '',
+    industrialTrainee: '',
+    natureOfWork: '',
     aboutMe: ''
   });
 
@@ -100,6 +126,59 @@ export const PlacementDriveForm = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
                 <input required type="tel" name="phone" value={formData.phone} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Alternate Phone Number</label>
+                <input type="tel" name="alternatePhone" value={formData.alternatePhone} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+                <input type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                <select name="gender" value={formData.gender} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
+                  <option value="">Select Gender...</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Marital Status</label>
+                <select name="maritalStatus" value={formData.maritalStatus} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
+                  <option value="">Select Status...</option>
+                  <option value="Single">Single</option>
+                  <option value="Married">Married</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Current Address</label>
+                <input type="text" name="currentAddress" value={formData.currentAddress} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Current City</label>
+                <input type="text" name="currentCity" value={formData.currentCity} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Current State</label>
+                <input type="text" name="currentState" value={formData.currentState} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Permanent Address</label>
+                <input type="text" name="permanentAddress" value={formData.permanentAddress} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Permanent City</label>
+                <input type="text" name="permanentCity" value={formData.permanentCity} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Permanent State</label>
+                <input type="text" name="permanentState" value={formData.permanentState} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Preferred Campus City</label>
+                <input type="text" name="preferredCampusCity" value={formData.preferredCampusCity} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
+              </div>
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Create Password *</label>
                 <input required type="password" name="password" value={formData.password} onChange={handleChange} placeholder="Minimum 6 characters" className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
@@ -108,50 +187,18 @@ export const PlacementDriveForm = () => {
             </div>
           </div>
 
-          {/* Section: Professional Details */}
-          <div>
-            <h3 className="text-xl font-semibold text-gray-900 border-b pb-2 mb-4">Professional Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Current City</label>
-                <input type="text" name="currentCity" value={formData.currentCity} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">CA Status</label>
-                <select name="caStatus" value={formData.caStatus} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
-                  <option value="">Select Status...</option>
-                  <option value="CA Fresher">CA Fresher</option>
-                  <option value="CA Experienced">CA Experienced</option>
-                  <option value="CA Inter">CA Inter</option>
-                </select>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Articleship Firm Name</label>
-                <input type="text" name="articleshipFirmName" value={formData.articleshipFirmName} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Articleship Duration (Months)</label>
-                <input type="number" name="articleshipMonths" value={formData.articleshipMonths} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
-              </div>
-
-              <div className="md:col-span-2 flex items-center space-x-4 bg-gray-50 p-4 rounded-xl border border-gray-200">
-                <input type="checkbox" name="caInter_bothGroups1stAttempt" checked={formData.caInter_bothGroups1stAttempt} onChange={handleChange} className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500 cursor-pointer" id="caInter_bothGroups1stAttempt" />
-                <label htmlFor="caInter_bothGroups1stAttempt" className="text-sm font-medium text-gray-700 cursor-pointer">Cleared CA Inter Both Groups in 1st Attempt</label>
-              </div>
-
-              <div className="md:col-span-2 flex items-center space-x-4 bg-gray-50 p-4 rounded-xl border border-gray-200">
-                <input type="checkbox" name="caFinal_bothGroups1stAttempt" checked={formData.caFinal_bothGroups1stAttempt} onChange={handleChange} className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500 cursor-pointer" id="caFinal_bothGroups1stAttempt" />
-                <label htmlFor="caFinal_bothGroups1stAttempt" className="text-sm font-medium text-gray-700 cursor-pointer">Cleared CA Final Both Groups in 1st Attempt</label>
-              </div>
-
-            </div>
-          </div>
-
           {/* Section: Educational Qualifications */}
           <div>
             <h3 className="text-xl font-semibold text-gray-900 border-b pb-2 mb-4">Educational Qualifications</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Graduation Completed?</label>
+                <select name="grad_completed" value={formData.grad_completed} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
+                  <option value="">Select...</option>
+                  <option value="Yes">Yes</option>
+                  <option value="No/Pursuing">No/Pursuing</option>
+                </select>
+              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Graduation College Name</label>
                 <input type="text" name="grad_college" value={formData.grad_college} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
@@ -161,13 +208,142 @@ export const PlacementDriveForm = () => {
                 <input type="number" name="grad_percentage" value={formData.grad_percentage} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
               </div>
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Graduation Year of Completion</label>
+                <input type="text" name="grad_yearOfCompletion" value={formData.grad_yearOfCompletion} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Class 12th Percentage</label>
                 <input type="number" name="class12_percentage" value={formData.class12_percentage} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Class 12th Year</label>
+                <input type="text" name="class12_year" value={formData.class12_year} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Class 10th Percentage</label>
                 <input type="number" name="class10_percentage" value={formData.class10_percentage} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Class 10th Year</label>
+                <input type="text" name="class10_year" value={formData.class10_year} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
+              </div>
+            </div>
+          </div>
+
+          {/* Section: Professional Details */}
+          <div>
+            <h3 className="text-xl font-semibold text-gray-900 border-b pb-2 mb-4">CA Portfolio Details</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">CA Status</label>
+                <select name="caStatus" value={formData.caStatus} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
+                  <option value="">Select Status...</option>
+                  <option value="CA Fresher">CA Fresher</option>
+                  <option value="CA Experienced">CA Experienced</option>
+                  <option value="CA Inter">CA Inter</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">GMCS Completed?</label>
+                <select name="gmcsCompleted" value={formData.gmcsCompleted} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
+                  <option value="">Select...</option>
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+              </div>
+
+              <div className="md:col-span-2">
+                <h4 className="text-md font-semibold text-gray-800 mt-4 mb-2">CA Inter Details</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Group 1 Attempts</label>
+                    <input type="text" name="caInter_group1Attempts" value={formData.caInter_group1Attempts} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Group 1 Year</label>
+                    <input type="text" name="caInter_group1Year" value={formData.caInter_group1Year} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Percentage</label>
+                    <input type="text" name="caInter_percentage" value={formData.caInter_percentage} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3 mt-3">
+                  <input type="checkbox" name="caInter_bothGroups1stAttempt" checked={formData.caInter_bothGroups1stAttempt} onChange={handleChange} className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 cursor-pointer" id="caInter_bothGroups1stAttempt" />
+                  <label htmlFor="caInter_bothGroups1stAttempt" className="text-sm font-medium text-gray-700 cursor-pointer">Cleared Both Groups in 1st Attempt</label>
+                </div>
+              </div>
+
+              <div className="md:col-span-2">
+                <h4 className="text-md font-semibold text-gray-800 mt-4 mb-2">CA Final Details</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Group 1 Attempts</label>
+                    <input type="text" name="caFinal_group1Attempts" value={formData.caFinal_group1Attempts} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Group 1 Year</label>
+                    <input type="text" name="caFinal_group1Year" value={formData.caFinal_group1Year} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Percentage</label>
+                    <input type="text" name="caFinal_percentage" value={formData.caFinal_percentage} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3 mt-3">
+                  <input type="checkbox" name="caFinal_bothGroups1stAttempt" checked={formData.caFinal_bothGroups1stAttempt} onChange={handleChange} className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 cursor-pointer" id="caFinal_bothGroups1stAttempt" />
+                  <label htmlFor="caFinal_bothGroups1stAttempt" className="text-sm font-medium text-gray-700 cursor-pointer">Cleared Both Groups in 1st Attempt</label>
+                </div>
+              </div>
+
+              <div className="md:col-span-2 mt-4">
+                <h4 className="text-md font-semibold text-gray-800 mb-2">Articleship Details</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Firm Name</label>
+                    <input type="text" name="articleshipFirmName" value={formData.articleshipFirmName} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">City</label>
+                    <input type="text" name="articleshipCity" value={formData.articleshipCity} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Duration (Months)</label>
+                    <input type="number" name="articleshipMonths" value={formData.articleshipMonths} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Firm Type</label>
+                    <select name="articleshipFirmType" value={formData.articleshipFirmType} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                      <option value="">Select...</option>
+                      <option value="Big 4">Big 4</option>
+                      <option value="Medium">Medium Size</option>
+                      <option value="Small">Small Size</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">No. of Partners</label>
+                    <input type="number" name="articleshipPartners" value={formData.articleshipPartners} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Big 4 Articleship?</label>
+                    <select name="big4Articleship" value={formData.big4Articleship} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                      <option value="">Select...</option>
+                      <option value="Yes">Yes</option>
+                      <option value="No">No</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Industrial Trainee?</label>
+                <select name="industrialTrainee" value={formData.industrialTrainee} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
+                  <option value="">Select...</option>
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+              </div>
+
             </div>
           </div>
 
@@ -175,8 +351,12 @@ export const PlacementDriveForm = () => {
           <div>
             <h3 className="text-xl font-semibold text-gray-900 border-b pb-2 mb-4">Additional Information</h3>
             <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Nature of Work in Articleship</label>
+              <textarea name="natureOfWork" value={formData.natureOfWork} onChange={handleChange} rows={3} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition resize-none"></textarea>
+            </div>
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">About Me / Extra-curricular Activities</label>
-              <textarea name="aboutMe" value={formData.aboutMe} onChange={handleChange} rows={4} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition resize-none"></textarea>
+              <textarea name="aboutMe" value={formData.aboutMe} onChange={handleChange} rows={3} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition resize-none"></textarea>
             </div>
           </div>
 
