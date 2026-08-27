@@ -204,7 +204,7 @@ export const PlacementDriveForm = () => {
       <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden mt-8">
         <div className="bg-blue-600 py-6 px-8 text-white">
           <h2 className="text-3xl font-bold">CA Placement Drive Registration</h2>
-          <p className="text-gray-600 mt-2">Fill in your details below to register for the upcoming placement drive.</p>
+          <p className="text-white mt-2">Fill in your details below to register for the upcoming placement drive.</p>
         </div>
 
         {error && (
