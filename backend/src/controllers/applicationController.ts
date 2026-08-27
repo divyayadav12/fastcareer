@@ -8,10 +8,10 @@ import Job from '../models/Job';
 // @access  Private (Candidate)
 export const applyForJob = async (req: Request, res: Response) => {
   const { jobId } = req.params;
-  const { coverLetter } = req.body;
+  const { coverLetter, existingResumeUrl } = req.body;
   
   // The uploaded file path will be in req.file if using multer
-  const resumeUrl = req.file ? req.file.path : null;
+  const resumeUrl = req.file ? req.file.path : existingResumeUrl;
 
   if (!resumeUrl) {
     res.status(400).json({ message: 'Resume is required' });

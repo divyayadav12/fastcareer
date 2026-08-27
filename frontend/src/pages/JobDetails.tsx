@@ -18,7 +18,23 @@ export const JobDetails = () => {
   const { user } = useSelector((state: RootState) => state.auth);
   
   const [job, setJob] = useState<any>(null);
+  const [profileData, setProfileData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = localStorage.getItem('token') || (user as any)?.token;
+        const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/users/profile`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setProfileData(res.data);
+      } catch (err) {
+        console.error('Failed to fetch profile', err);
+      }
+    };
+    if (user) fetchProfile();
+  }, [user]);
 
   useEffect(() => {
     const fetchJob = async () => {
@@ -55,7 +71,7 @@ export const JobDetails = () => {
       navigate('/login');
       return;
     }
-    if (!resumeFile) {
+    if (!resumeFile && !profileData?.resumeUrl) {
       alert('Please upload a resume.');
       return;
     }
@@ -63,7 +79,11 @@ export const JobDetails = () => {
     setIsSubmitting(true);
     try {
       const formData = new FormData();
-      formData.append('resume', resumeFile);
+      if (resumeFile) {
+        formData.append('resume', resumeFile);
+      } else if (profileData?.resumeUrl) {
+        formData.append('existingResumeUrl', profileData.resumeUrl);
+      }
       if (coverLetter) {
         formData.append('coverLetter', coverLetter);
       }
@@ -178,7 +198,7 @@ export const JobDetails = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Resume / CV *</label>
                   <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-primary transition-colors cursor-pointer bg-gray-50" onClick={() => fileInputRef.current?.click()}>
                     <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                    {resumeFile ? <p className="text-sm font-medium text-primary">{resumeFile.name}</p> : <p className="text-sm font-medium text-gray-700">Click to upload or drag and drop</p>}
+                    {resumeFile ? <p className="text-sm font-medium text-primary">{resumeFile.name}</p> : profileData?.resumeUrl ? <p className="text-sm font-medium text-primary">Using profile resume (Click to upload new)</p> : <p className="text-sm font-medium text-gray-700">Click to upload or drag and drop</p>}
                     <p className="text-xs text-gray-500 mt-1">PDF, DOCX up to 5MB</p>
                     <input type="file" className="hidden" accept=".pdf,.doc,.docx" required ref={fileInputRef} onChange={(e) => setResumeFile(e.target.files ? e.target.files[0] : null)} />
                   </div>
