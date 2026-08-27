@@ -139,9 +139,12 @@ export const JobListings = () => {
                       <p className="text-gray-600 text-sm line-clamp-2">{job.description}</p>
                     </div>
                     
-                    <div className="flex md:flex-col items-center md:items-end justify-between md:justify-start gap-4 shrink-0">
+                    <div className="flex md:flex-col items-center md:items-end justify-between md:justify-start gap-3 shrink-0">
                       <Link to={`/jobs/${job.id}`}>
-                        <Button variant="outline" className="w-full md:w-auto">View Details</Button>
+                        <Button className="w-full md:w-auto px-8">Apply Now</Button>
+                      </Link>
+                      <Link to={`/jobs/${job.id}`} className="text-sm font-medium text-gray-500 hover:text-primary transition-colors">
+                        View Details
                       </Link>
                     </div>
                   </div>

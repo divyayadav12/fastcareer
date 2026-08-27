@@ -1,4 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import axios from 'axios';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../store';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { MapPin, Briefcase, IndianRupee, Clock, ArrowLeft, Share2, Bookmark, CheckCircle2, X, Upload } from 'lucide-react';
 import { Button } from '../components/Button';
@@ -9,6 +12,10 @@ export const JobDetails = () => {
   const navigate = useNavigate();
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [coverLetter, setCoverLetter] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { user } = useSelector((state: RootState) => state.auth);
   
   const job = mockJobs.find(j => j.id === id);
 
@@ -22,15 +29,43 @@ export const JobDetails = () => {
     );
   }
 
-  const handleApply = (e: React.FormEvent) => {
+  const handleApply = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      alert('Please login to apply for jobs.');
+      navigate('/login');
+      return;
+    }
+    if (!resumeFile) {
+      alert('Please upload a resume.');
+      return;
+    }
+
     setIsSubmitting(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setShowApplyModal(false);
+    try {
+      const formData = new FormData();
+      formData.append('resume', resumeFile);
+      if (coverLetter) {
+        formData.append('coverLetter', coverLetter);
+      }
+
+      const token = localStorage.getItem('token') || (user as any).token;
+      await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/applications/${id}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
       alert('Application submitted successfully!');
-    }, 1500);
+      setShowApplyModal(false);
+      setResumeFile(null);
+      setCoverLetter('');
+    } catch (error: any) {
+      alert(error.response?.data?.message || 'Failed to submit application. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -122,11 +157,11 @@ export const JobDetails = () => {
               <div className="space-y-5">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Resume / CV *</label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-primary transition-colors cursor-pointer bg-gray-50">
+                  <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-primary transition-colors cursor-pointer bg-gray-50" onClick={() => fileInputRef.current?.click()}>
                     <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-sm font-medium text-gray-700">Click to upload or drag and drop</p>
+                    {resumeFile ? <p className="text-sm font-medium text-primary">{resumeFile.name}</p> : <p className="text-sm font-medium text-gray-700">Click to upload or drag and drop</p>}
                     <p className="text-xs text-gray-500 mt-1">PDF, DOCX up to 5MB</p>
-                    <input type="file" className="hidden" accept=".pdf,.doc,.docx" required />
+                    <input type="file" className="hidden" accept=".pdf,.doc,.docx" required ref={fileInputRef} onChange={(e) => setResumeFile(e.target.files ? e.target.files[0] : null)} />
                   </div>
                 </div>
                 
@@ -135,6 +170,8 @@ export const JobDetails = () => {
                   <textarea 
                     className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
                     rows={4}
+                    value={coverLetter}
+                    onChange={(e) => setCoverLetter(e.target.value)}
                     placeholder="Briefly explain why you're a great fit for this role..."
                   ></textarea>
                 </div>

@@ -26,12 +26,15 @@ export const applyForJob = async (req: Request, res: Response) => {
     }
 
     // Check if user already applied
-    // const existingApplication = await Application.findOne({ job: jobId, candidate: req.user._id });
-    // if (existingApplication) { ... }
+    const existingApplication = await Application.findOne({ job: jobId, candidate: (req as any).user._id });
+    if (existingApplication) {
+      res.status(400).json({ message: 'You have already applied for this job' });
+      return;
+    }
 
     const application = await Application.create({
       job: new mongoose.Types.ObjectId(jobId as string),
-      candidate: new mongoose.Types.ObjectId('66a1a1b2c3d4e5f600000000'), // Stub user ID until auth middleware is ready
+      candidate: new mongoose.Types.ObjectId((req as any).user._id as string),
       resumeUrl,
       coverLetter,
       status: 'applied'
@@ -73,6 +76,24 @@ export const updateApplicationStatus = async (req: Request, res: Response) => {
     } else {
       res.status(404).json({ message: 'Application not found' });
     }
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// @desc    Get all applications for employer's jobs
+// @route   GET /api/applications/employer
+// @access  Private (Employer)
+export const getEmployerApplications = async (req: Request, res: Response) => {
+  try {
+    const jobs = await Job.find({ employer: (req as any).user._id });
+    const jobIds = jobs.map(j => j._id);
+    
+    const applications = await Application.find({ job: { $in: jobIds } })
+      .populate('candidate', 'firstName lastName email personalDetails qualifications caPortfolio experience skills')
+      .populate('job', 'title company');
+      
+    res.json(applications);
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }

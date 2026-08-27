@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Eye } from 'lucide-react';
 import { Building, Users, FileText, Settings, Bell, PlusCircle, Briefcase, BarChart2, MapPin, GraduationCap, Download } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '../../components/Button';
@@ -38,6 +39,22 @@ export const EmployerDashboard = () => {
   const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
+    const fetchApplications = async () => {
+      try {
+        const token = localStorage.getItem('token') || (user as any)?.token;
+        const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/applications/employer`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setApplications(res.data);
+      } catch (err) {
+        console.error('Error fetching applications:', err);
+      } finally {
+        setLoadingApps(false);
+      }
+    };
+    
+    fetchApplications();
+
     const fetchCandidates = async () => {
       try {
         const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/users/candidates`, {
@@ -231,6 +248,60 @@ export const EmployerDashboard = () => {
           </table>
         </div>
       </div>
+          {/* Recent Applications Section */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mt-8">
+        <h2 className="text-lg font-bold text-text mb-6">Recent Applications</h2>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-gray-100 text-sm text-gray-500 bg-gray-50">
+                <th className="px-4 py-3 font-medium">Applicant</th>
+                <th className="px-4 py-3 font-medium">Job Title</th>
+                <th className="px-4 py-3 font-medium">Applied On</th>
+                <th className="px-4 py-3 font-medium">Status</th>
+                <th className="px-4 py-3 font-medium text-right">Resume</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {loadingApps ? (
+                <tr><td colSpan={5} className="py-8 text-center text-gray-500">Loading applications...</td></tr>
+              ) : applications.length === 0 ? (
+                <tr><td colSpan={5} className="py-8 text-center text-gray-500">No applications received yet.</td></tr>
+              ) : (
+                applications.map(app => (
+                  <tr key={app._id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-4">
+                      <div className="font-medium text-text">{app.candidate?.firstName} {app.candidate?.lastName}</div>
+                      <div className="text-xs text-gray-500">{app.candidate?.email}</div>
+                    </td>
+                    <td className="px-4 py-4 text-sm font-medium text-primary">
+                      {app.job?.title}
+                    </td>
+                    <td className="px-4 py-4 text-sm text-gray-500">
+                      {new Date(app.appliedAt || app.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-4 py-4">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 capitalize">
+                        {app.status || 'Applied'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4 text-right">
+                      {app.resumeUrl ? (
+                        <a href={app.resumeUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 bg-green-50 text-green-700 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-green-100 transition-colors">
+                          <Eye size={14}/> View CV
+                        </a>
+                      ) : (
+                        <span className="text-gray-400 text-sm italic">No CV</span>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </EmployerLayout>
   );
 };

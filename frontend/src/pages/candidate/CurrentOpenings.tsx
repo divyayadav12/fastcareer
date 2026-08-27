@@ -95,7 +95,7 @@ export const CurrentOpenings = () => {
                   <Clock size={14} /> 
                   {new Date(job.createdAt).toLocaleDateString()}
                 </div>
-                <span className="text-sm font-medium text-primary group-hover:underline">View Details</span>
+                <span className="text-sm font-medium text-white bg-primary px-3 py-1.5 rounded-lg group-hover:bg-primary/90 transition-colors">Apply Now</span>
               </div>
             </Link>
           ))
