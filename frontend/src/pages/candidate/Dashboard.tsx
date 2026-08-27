@@ -646,7 +646,11 @@ export const CandidateDashboard = () => {
                           type="text" 
                           list="attemptYearsList"
                           className="w-full border-gray-200 rounded p-1 text-xs" 
-                          value={(caPortfolio as any)[examKey].completionSessionMonth + "'" + (caPortfolio as any)[examKey].completionSessionYear?.slice(-2)} 
+                          value={
+                            ((caPortfolio as any)[examKey].completionSessionMonth && (caPortfolio as any)[examKey].completionSessionYear) 
+                            ? \`\${(caPortfolio as any)[examKey].completionSessionMonth}'\${(caPortfolio as any)[examKey].completionSessionYear.slice(-2)}\` 
+                            : ((caPortfolio as any)[examKey].completionSessionMonth || '')
+                          } 
                           onChange={(e) => {
                             const val = e.target.value;
                             if (val.includes("'")) {
