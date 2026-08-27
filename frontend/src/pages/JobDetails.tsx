@@ -200,7 +200,7 @@ export const JobDetails = () => {
                     <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
                     {resumeFile ? <p className="text-sm font-medium text-primary">{resumeFile.name}</p> : profileData?.resumeUrl ? <p className="text-sm font-medium text-primary">Using profile resume (Click to upload new)</p> : <p className="text-sm font-medium text-gray-700">Click to upload or drag and drop</p>}
                     <p className="text-xs text-gray-500 mt-1">PDF, DOCX up to 5MB</p>
-                    <input type="file" className="hidden" accept=".pdf,.doc,.docx" required ref={fileInputRef} onChange={(e) => setResumeFile(e.target.files ? e.target.files[0] : null)} />
+                    <input type="file" className="hidden" accept=".pdf,.doc,.docx" ref={fileInputRef} onChange={(e) => setResumeFile(e.target.files ? e.target.files[0] : null)} />
                   </div>
                 </div>
                 
