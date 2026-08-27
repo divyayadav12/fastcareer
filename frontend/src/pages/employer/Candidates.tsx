@@ -84,6 +84,12 @@ export const EmployerCandidates = () => {
   const [filterGradCompleted, setFilterGradCompleted] = useState('');
   const [filterGradType, setFilterGradType] = useState('');
   
+  // New Filters
+  const [filterFinalPassMonth, setFilterFinalPassMonth] = useState('');
+  const [filterFinalPassYear, setFilterFinalPassYear] = useState('');
+  const [filterResumeFromDate, setFilterResumeFromDate] = useState('');
+  const [filterResumeToDate, setFilterResumeToDate] = useState('');
+  
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isExporting, setIsExporting] = useState(false);
   const [isZipping, setIsZipping] = useState(false);
@@ -148,6 +154,24 @@ export const EmployerCandidates = () => {
 
     const final1st = c.caPortfolio?.caFinal?.bothGroups1stAttempt ? 'Yes' : 'No';
     const matchesFinal1st = filterFinal1stAttempt ? final1st === filterFinal1stAttempt : true;
+    
+    const matchesFinalMonth = filterFinalPassMonth ? c.caPortfolio?.caFinal?.completionSessionMonth === filterFinalPassMonth : true;
+    const matchesFinalYear = filterFinalPassYear ? c.caPortfolio?.caFinal?.completionSessionYear === filterFinalPassYear : true;
+    
+    // Date filter (assuming updatedAt is when resume was uploaded/profile modified)
+    let matchesDate = true;
+    if (filterResumeFromDate || filterResumeToDate) {
+      const uploadDate = new Date(c.updatedAt || c.createdAt);
+      if (filterResumeFromDate) {
+        matchesDate = matchesDate && uploadDate >= new Date(filterResumeFromDate);
+      }
+      if (filterResumeToDate) {
+        // Set to end of the day for accurate inclusive filtering
+        const toDate = new Date(filterResumeToDate);
+        toDate.setHours(23, 59, 59, 999);
+        matchesDate = matchesDate && uploadDate <= toDate;
+      }
+    }
     const matchesFinalG1 = filterFinalGroup1Attempts ? c.caPortfolio?.caFinal?.group1Attempts === filterFinalGroup1Attempts : true;
     const matchesFinalG2 = filterFinalGroup2Attempts ? c.caPortfolio?.caFinal?.group2Attempts === filterFinalGroup2Attempts : true;
     const matchesFinalRanker = filterFinalRanker ? c.caPortfolio?.caFinal?.ranker === filterFinalRanker : true;
@@ -532,6 +556,26 @@ export const EmployerCandidates = () => {
             </div>
 
             {/* CA Final Filters */}
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">CA Final Passing Month (Batch)</label>
+              <select value={filterFinalPassMonth} onChange={e => setFilterFinalPassMonth(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20">
+                <option value="">All</option>
+                <option value="May">May</option>
+                <option value="November">November</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">CA Final Passing Year</label>
+              <input type="number" placeholder="e.g. 2024" value={filterFinalPassYear} onChange={e => setFilterFinalPassYear(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20" />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">Resume Uploaded (From Date)</label>
+              <input type="date" value={filterResumeFromDate} onChange={e => setFilterResumeFromDate(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20" />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">Resume Uploaded (To Date)</label>
+              <input type="date" value={filterResumeToDate} onChange={e => setFilterResumeToDate(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20" />
+            </div>
             <div>
               <label className="block text-sm text-gray-600 mb-1">CA Final Both Grps (1st Att)</label>
               <select value={filterFinal1stAttempt} onChange={e => setFilterFinal1stAttempt(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="Yes">Yes</option><option value="No">No</option></select>
