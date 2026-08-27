@@ -18,7 +18,12 @@ export const PlacementDriveForm = () => {
     caInter_bothGroups1stAttempt: false,
     caFinal_bothGroups1stAttempt: false,
     articleshipFirmName: '',
-    articleshipMonths: ''
+    articleshipMonths: '',
+    grad_percentage: '',
+    grad_college: '',
+    class12_percentage: '',
+    class10_percentage: '',
+    aboutMe: ''
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -35,7 +40,7 @@ export const PlacementDriveForm = () => {
     setLoading(true);
     try {
       // Post to the webhook endpoint which acts as a universal intake endpoint
-      await axios.post(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/webhooks/zoho`, formData);
+      await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/webhooks/zoho`, formData);
       setSuccess(true);
     } catch (error) {
       console.error('Error submitting form', error);
@@ -140,6 +145,38 @@ export const PlacementDriveForm = () => {
                 <label htmlFor="caFinal_bothGroups1stAttempt" className="text-sm font-medium text-gray-700 cursor-pointer">Cleared CA Final Both Groups in 1st Attempt</label>
               </div>
 
+            </div>
+          </div>
+
+          {/* Section: Educational Qualifications */}
+          <div>
+            <h3 className="text-xl font-semibold text-gray-900 border-b pb-2 mb-4">Educational Qualifications</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Graduation College Name</label>
+                <input type="text" name="grad_college" value={formData.grad_college} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Graduation Percentage</label>
+                <input type="number" name="grad_percentage" value={formData.grad_percentage} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Class 12th Percentage</label>
+                <input type="number" name="class12_percentage" value={formData.class12_percentage} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Class 10th Percentage</label>
+                <input type="number" name="class10_percentage" value={formData.class10_percentage} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
+              </div>
+            </div>
+          </div>
+
+          {/* Section: Additional Information */}
+          <div>
+            <h3 className="text-xl font-semibold text-gray-900 border-b pb-2 mb-4">Additional Information</h3>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">About Me / Extra-curricular Activities</label>
+              <textarea name="aboutMe" value={formData.aboutMe} onChange={handleChange} rows={4} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition resize-none"></textarea>
             </div>
           </div>
 
