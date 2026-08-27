@@ -7,6 +7,7 @@ export const PlacementDriveForm = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
     firstName: '',
@@ -122,14 +123,51 @@ export const PlacementDriveForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+
+    // Validation
+    if (formData.phone && !/^\d{10}$/.test(formData.phone)) {
+      setError("Phone number must be exactly 10 digits.");
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    if (formData.alternatePhone && !/^\d{10}$/.test(formData.alternatePhone)) {
+      setError("Alternate phone number must be exactly 10 digits.");
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    if (formData.password && formData.password.length < 6) {
+      setError("Password must be at least 6 characters.");
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    const percentages = [
+      formData.grad_percentage, formData.class12_percentage, formData.class10_percentage,
+      formData.caInter_percentage, formData.caFinal_percentage
+    ];
+    for (const p of percentages) {
+      if (p) {
+        const num = parseFloat(p);
+        if (isNaN(num) || num < 0 || num > 100) {
+          setError("Percentages must be a valid number between 0 and 100.");
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          return;
+        }
+      }
+    }
+
     setLoading(true);
     try {
       // Post to the webhook endpoint which acts as a universal intake endpoint
       await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/webhooks/zoho`, formData);
       setSuccess(true);
-    } catch (error) {
-      console.error('Error submitting form', error);
-      alert('Error submitting form. Please try again.');
+    } catch (err) {
+      console.error('Error submitting form', err);
+      setError('Error submitting form. Please try again.');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setLoading(false);
     }
@@ -160,9 +198,16 @@ export const PlacementDriveForm = () => {
       <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden mt-8">
         <div className="bg-blue-600 py-6 px-8 text-white">
           <h2 className="text-3xl font-bold">CA Placement Drive Registration</h2>
-          <p className="mt-2 text-blue-100">Fill out this form to register for the upcoming placement drive.</p>
+          <p className="text-gray-600 mt-2">Fill in your details below to register for the upcoming placement drive.</p>
         </div>
-        
+
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded shadow-sm">
+            <p className="font-medium">Please correct the following errors:</p>
+            <p className="text-sm mt-1">{error}</p>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="p-8 space-y-8">
           
           {/* Section: Account Details */}
