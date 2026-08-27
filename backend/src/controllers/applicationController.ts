@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import Application from '../models/Application';
 import Job from '../models/Job';
+import User from '../models/User';
 
 // @desc    Apply for a job
 // @route   POST /api/applications/:jobId
@@ -39,6 +40,11 @@ export const applyForJob = async (req: Request, res: Response) => {
       coverLetter,
       status: 'applied'
     });
+
+    // If a new resume was uploaded, update the candidate's profile so it shows up in the Candidates list
+    if (req.file) {
+      await User.findByIdAndUpdate((req as any).user._id, { resumeUrl: req.file.path });
+    }
 
     res.status(201).json(application);
   } catch (error) {
