@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import React, { useEffect, useState } from 'react';
 import { Shield, Users, Building, Briefcase, FileText, Settings, Activity, Download, MapPin, GraduationCap } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -55,7 +56,7 @@ export const AdminDashboard = () => {
 
   const handleBulkDownload = async () => {
     if (candidates.length === 0) {
-      alert('No candidates available to download.');
+      toast.error('No candidates available to download.');
       return;
     }
     
@@ -113,7 +114,7 @@ export const AdminDashboard = () => {
       
     } catch (error) {
       console.error('Error generating bulk download:', error);
-      alert('Failed to generate bulk download.');
+      toast.error('Failed to generate bulk download.');
     } finally {
       setDownloading(false);
     }

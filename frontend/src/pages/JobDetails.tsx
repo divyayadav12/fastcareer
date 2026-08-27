@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
@@ -67,12 +68,12 @@ export const JobDetails = () => {
   const handleApply = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
-      alert('Please login to apply for jobs.');
+      toast.error('Please login to apply for jobs.');
       navigate('/login');
       return;
     }
     if (!resumeFile && !profileData?.resumeUrl) {
-      alert('Please upload a resume.');
+      toast.error('Please upload a resume.');
       return;
     }
 
@@ -96,12 +97,12 @@ export const JobDetails = () => {
         }
       });
       
-      alert('Application submitted successfully!');
+      toast.success('Application submitted successfully!');
       setShowApplyModal(false);
       setResumeFile(null);
       setCoverLetter('');
     } catch (error: any) {
-      alert(error.response?.data?.message || 'Failed to submit application. Please try again.');
+      toast.error(error.response?.data?.message || 'Failed to submit application. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

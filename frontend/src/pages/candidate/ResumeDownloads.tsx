@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import React from 'react';
 import { CandidateLayout } from '../../layouts/CandidateLayout';
 import { Download, FileText, CheckCircle2 } from 'lucide-react';
@@ -43,7 +44,7 @@ export const ResumeDownloads = () => {
               </li>
             </ul>
             
-            <button onClick={() => alert(`Starting download for ${template.name}...`)} className="w-full flex items-center justify-center gap-2 py-2 border border-primary text-primary rounded-lg font-medium hover:bg-primary hover:text-white transition-colors">
+            <button onClick={() => toast.success(`Starting download for ${template.name}...`)} className="w-full flex items-center justify-center gap-2 py-2 border border-primary text-primary rounded-lg font-medium hover:bg-primary hover:text-white transition-colors">
               <Download size={16} /> Download ({template.size})
             </button>
           </div>

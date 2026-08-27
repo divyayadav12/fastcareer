@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import React, { useState, useEffect } from 'react';
 import { Eye } from 'lucide-react';
 import { Building, Users, FileText, Settings, Bell, PlusCircle, Briefcase, BarChart2, MapPin, GraduationCap, Download } from 'lucide-react';
@@ -74,7 +75,7 @@ export const EmployerDashboard = () => {
 
   const handleBulkDownload = async () => {
     if (candidates.length === 0) {
-      alert('No candidates available to download.');
+      toast.error('No candidates available to download.');
       return;
     }
     
@@ -125,7 +126,7 @@ export const EmployerDashboard = () => {
       
     } catch (error) {
       console.error('Error generating bulk download:', error);
-      alert('Failed to generate bulk download.');
+      toast.error('Failed to generate bulk download.');
     } finally {
       setDownloading(false);
     }

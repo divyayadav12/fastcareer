@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import React, { useState, useEffect } from 'react';
 import { EmployerLayout } from '../../layouts/EmployerLayout';
 import { PlusCircle, Briefcase, X, MapPin, Building, DollarSign } from 'lucide-react';
@@ -69,7 +70,7 @@ export const ManageJobs = () => {
       fetchJobs();
     } catch (error) {
       console.error('Error creating job:', error);
-      alert('Error creating job. Please ensure all fields are filled properly.');
+      toast.error('Error creating job. Please ensure all fields are filled properly.');
     }
   };
 

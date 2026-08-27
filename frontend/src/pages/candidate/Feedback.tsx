@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import React, { useState } from 'react';
 import { CandidateLayout } from '../../layouts/CandidateLayout';
 import { Button } from '../../components/Button';
@@ -24,7 +25,7 @@ export const Feedback = () => {
         { rating, message: feedback },
         { headers: { Authorization: `Bearer ${user?.token}` } }
       );
-      alert('Thank you for your valuable feedback!');
+      toast.success('Thank you for your valuable feedback!');
       setRating(0);
       setFeedback('');
     } catch (err: any) {

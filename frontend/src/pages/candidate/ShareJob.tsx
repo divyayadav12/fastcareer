@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import React, { useState } from 'react';
 import { CandidateLayout } from '../../layouts/CandidateLayout';
 import { Button } from '../../components/Button';
@@ -32,7 +33,7 @@ export const ShareJob = () => {
       await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/shared-jobs`, formData, {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
-      alert('Job Opportunity Shared Successfully! Admin will review it.');
+      toast.success('Job Opportunity Shared Successfully! Admin will review it.');
       setFormData({
         industry: '', companyName: '', jobDescription: '', location: '', 
         region: '', noOfPost: '', concernedPerson: '', mobileNo: '', emailId: ''

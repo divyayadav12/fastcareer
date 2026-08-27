@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import React, { useState } from 'react';
 import { EmployerLayout } from '../../layouts/EmployerLayout';
 import { Button } from '../../components/Button';
@@ -25,7 +26,7 @@ export const CompanyProfile = () => {
     // Mock save
     setTimeout(() => {
       setSaving(false);
-      alert('Company profile updated successfully!');
+      toast.success('Company profile updated successfully!');
     }, 1000);
   };
 

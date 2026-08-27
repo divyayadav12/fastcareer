@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import React, { useState } from 'react';
 import { CandidateLayout } from '../../layouts/CandidateLayout';
 import { Button } from '../../components/Button';
@@ -40,7 +41,7 @@ export const ReferFriend = () => {
         }
       });
 
-      alert('Referral Submitted Successfully! We will contact them soon.');
+      toast.success('Referral Submitted Successfully! We will contact them soon.');
       setFormData({ friendName: '', friendEmail: '', friendPhone: '', relation: '' });
       setFile(null);
     } catch (err: any) {

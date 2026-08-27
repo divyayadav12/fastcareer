@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Phone, MapPin, Send } from 'lucide-react';
@@ -18,7 +19,7 @@ export const Contact = () => {
   const onSubmit = (data: ContactFormData) => {
     // Placeholder for actual API submission
     console.log(data);
-    alert('Thank you for contacting us. We will get back to you shortly.');
+    toast.success('Thank you for contacting us. We will get back to you shortly.');
   };
 
   return (

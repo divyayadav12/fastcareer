@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import React, { useState } from 'react';
 import { CandidateLayout } from '../../layouts/CandidateLayout';
 import { Button } from '../../components/Button';
@@ -28,7 +29,7 @@ export const WantToChangeJob = () => {
       await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/candidate/job-change`, formData, {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
-      alert('Your request has been submitted. Our career counselors will contact you soon!');
+      toast.success('Your request has been submitted. Our career counselors will contact you soon!');
       setFormData({
         currentCompany: '', currentDesignation: '', currentCTC: '', expectedCTC: '', noticePeriod: '30 Days', reason: ''
       });

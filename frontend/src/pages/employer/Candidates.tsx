@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import React, { useState, useEffect } from 'react';
 import { EmployerLayout } from '../../layouts/EmployerLayout';
 import { Search, Filter, MapPin, GraduationCap, Download, DownloadCloud, FileSpreadsheet, CheckSquare, Square } from 'lucide-react';
@@ -218,7 +219,7 @@ export const EmployerCandidates = () => {
 
   const downloadSelectedAsZip = async () => {
     if (selectedIds.size === 0) {
-      alert('Please select at least one candidate to download.');
+      toast.error('Please select at least one candidate to download.');
       return;
     }
     
@@ -229,7 +230,7 @@ export const EmployerCandidates = () => {
     const selectedCandidates = candidates.filter(c => selectedIds.has(c._id) && c.resumeUrl);
     
     if (selectedCandidates.length === 0) {
-      alert('None of the selected candidates have resumes.');
+      toast.error('None of the selected candidates have resumes.');
       setIsZipping(false);
       return;
     }
@@ -258,7 +259,7 @@ export const EmployerCandidates = () => {
       
     } catch (error) {
       console.error('Error creating ZIP:', error);
-      alert('An error occurred while creating the ZIP file.');
+      toast.error('An error occurred while creating the ZIP file.');
     } finally {
       setIsZipping(false);
     }
