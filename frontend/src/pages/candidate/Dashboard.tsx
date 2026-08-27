@@ -350,9 +350,38 @@ export const CandidateDashboard = () => {
     }
   };
 
-  const handleNext = (e: React.FormEvent) => {
+  const handleNext = async (e: React.FormEvent) => {
     e.preventDefault();
-    setStep(step + 1);
+    if (step === 1 && !resumeUrl) {
+      toast.error('Resume is required. Please upload your resume to proceed.');
+      return;
+    }
+    setSavingProfile(true);
+    try {
+      const payload: any = {
+        phone: personal.phone,
+        password: personal.password || undefined,
+        personalDetails: personal
+      };
+      
+      // Save CA Portfolio on step 2
+      if (step === 2) {
+        payload.caPortfolio = {
+          ...caPortfolio,
+          articleshipCompletionDate: `${caPortfolio.articleshipCompletionDateMonth} ${caPortfolio.articleshipCompletionDateYear}`
+        };
+      }
+
+      await axios.put(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/users/profile`, payload, {
+        headers: { Authorization: `Bearer ${user?.token}` }
+      });
+      setStep(step + 1);
+      toast.success(`Step ${step} saved successfully!`);
+    } catch (error) {
+      toast.error('Failed to save data. Please try again.');
+    } finally {
+      setSavingProfile(false);
+    }
   };
 
   const handlePrev = () => {
@@ -497,10 +526,7 @@ export const CandidateDashboard = () => {
                     </div>
                     <div>
                       <label className="block text-xs font-medium text-gray-700 mb-1">City *</label>
-                      <select required className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors" value={personal.currentCity} onChange={(e) => setPersonal({...personal, currentCity: e.target.value})}>
-                        <option value="">Select City</option>
-                        {(STATE_CITY_MAP[personal.currentState] || []).map(c => <option key={c} value={c}>{c}</option>)}
-                      </select>
+                      <input type="text" list="allCitiesList" required className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors" placeholder="Type or Select City" value={personal.currentCity} onChange={(e) => setPersonal({...personal, currentCity: e.target.value})} />
                     </div>
                   </div>
                 </div>
@@ -548,22 +574,18 @@ export const CandidateDashboard = () => {
               </div>
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">City Where do u wanted to participate in Fast Campuses *</label>
-                <select required className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors" value={personal.prefCity1} onChange={(e) => setPersonal({...personal, prefCity1: e.target.value})}>
-                  <option value="">Pref. City 1</option>
-                  {Object.values(STATE_CITY_MAP).flat().map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-                <select className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors" value={personal.prefCity2} onChange={(e) => setPersonal({...personal, prefCity2: e.target.value})}>
-                  <option value="">Pref. City 2 (Opt)</option>
-                  {Object.values(STATE_CITY_MAP).flat().map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-                <select className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors" value={personal.prefCity3} onChange={(e) => setPersonal({...personal, prefCity3: e.target.value})}>
-                  <option value="">Pref. City 3 (Opt)</option>
-                  {Object.values(STATE_CITY_MAP).flat().map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
+                <input type="text" list="allCitiesList" placeholder="Pref. City 1" value={personal.prefCity1} onChange={(e) => setPersonal({...personal, prefCity1: e.target.value})} className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" />
+                <input type="text" list="allCitiesList" placeholder="Pref. City 2 (Opt)" value={personal.prefCity2} onChange={(e) => setPersonal({...personal, prefCity2: e.target.value})} className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" />
+                <input type="text" list="allCitiesList" placeholder="Pref. City 3 (Opt)" value={personal.prefCity3} onChange={(e) => setPersonal({...personal, prefCity3: e.target.value})} className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" />
+                
+                {/* Global Datalist for Cities */}
+                <datalist id="allCitiesList">
+                  {ALL_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+                </datalist>
               </div>
             </div>
             <div className="flex justify-end mt-6">
-              <Button type="submit">Next &gt;&gt;</Button>
+              <Button type="submit">{savingProfile ? 'Saving...' : 'Save & Next >>'}</Button>
             </div>
           </form>
         )}
