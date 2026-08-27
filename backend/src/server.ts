@@ -30,6 +30,8 @@ app.use(morgan('dev'));
 // Static folder for uploads
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
+import webhookRoutes from './routes/webhookRoutes';
+
 // Routes
 app.use('/api/jobs', jobRoutes);
 app.use('/api/users', userRoutes);
@@ -37,6 +39,7 @@ app.use('/api/applications', applicationRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/shared-jobs', sharedJobRoutes);
 app.use('/api/candidate', candidateDashboardRoutes);
+app.use('/api/webhooks', webhookRoutes);
 
 // Basic Route
 app.get('/', (req: Request, res: Response) => {
