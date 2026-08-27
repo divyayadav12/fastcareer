@@ -97,8 +97,8 @@ export const PlacementDriveForm = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+    <div className="min-h-screen bg-gray-50 pt-32 pb-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden mt-8">
         <div className="bg-blue-600 py-6 px-8 text-white">
           <h2 className="text-3xl font-bold">CA Placement Drive Registration</h2>
           <p className="mt-2 text-blue-100">Fill out this form to register for the upcoming placement drive.</p>
