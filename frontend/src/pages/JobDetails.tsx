@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../store';
@@ -17,7 +17,26 @@ export const JobDetails = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useSelector((state: RootState) => state.auth);
   
-  const job = mockJobs.find(j => j.id === id);
+  const [job, setJob] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchJob = async () => {
+      try {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/jobs/${id}`);
+        setJob(res.data);
+      } catch (err) {
+        console.error("Failed to fetch job", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (id) fetchJob();
+  }, [id]);
+
+  if (loading) {
+    return <div className="min-h-[60vh] flex flex-col items-center justify-center">Loading job details...</div>;
+  }
 
   if (!job) {
     return (
@@ -83,8 +102,8 @@ export const JobDetails = () => {
           <div className="flex flex-wrap gap-4 text-sm text-gray-300">
             <span className="flex items-center gap-1.5"><MapPin size={18} /> {job.location}</span>
             <span className="flex items-center gap-1.5"><Briefcase size={18} /> {job.type}</span>
-            <span className="flex items-center gap-1.5"><IndianRupee size={18} /> {job.salaryRange}</span>
-            <span className="flex items-center gap-1.5"><Clock size={18} /> Posted {job.postedAt}</span>
+            <span className="flex items-center gap-1.5"><IndianRupee size={18} /> {job.salaryMin ? `₹${(job.salaryMin / 100000).toFixed(1)}L - ₹${(job.salaryMax / 100000).toFixed(1)}L` : 'Not disclosed'}</span>
+            <span className="flex items-center gap-1.5"><Clock size={18} /> Posted {new Date(job.createdAt).toLocaleDateString()}</span>
           </div>
         </div>
       </div>
