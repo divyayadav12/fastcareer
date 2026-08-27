@@ -144,6 +144,12 @@ export const PlacementDriveForm = () => {
       return;
     }
 
+    if (!formData.resumeUrl) {
+      setError("Please upload your resume.");
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
     const percentages = [
       formData.grad_percentage, formData.class12_percentage, formData.class10_percentage,
       formData.caInter_percentage, formData.caFinal_percentage
