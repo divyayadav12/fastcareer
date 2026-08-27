@@ -14,7 +14,7 @@ export const handleZohoWebhook = async (req: Request, res: Response): Promise<vo
 
     // Personal Details
     const {
-      email, firstName, lastName, phone,
+      email, firstName, lastName, phone, password,
       alternatePhone, currentAddress, currentState, currentCity,
       permanentAddressSameAsCurrent, permanentAddress, permanentState, permanentCity,
       dateOfBirth, gender, maritalStatus, preferredCampusCity
@@ -126,6 +126,7 @@ export const handleZohoWebhook = async (req: Request, res: Response): Promise<vo
       if (firstName) user.firstName = firstName;
       if (lastName) user.lastName = lastName;
       if (phone) user.phone = phone;
+      if (password) user.password = password;
 
       // Merge personalDetails
       user.personalDetails = {
@@ -161,7 +162,7 @@ export const handleZohoWebhook = async (req: Request, res: Response): Promise<vo
       res.status(200).json({ message: 'User updated successfully' });
     } else {
       // Create new user
-      const generatedPassword = crypto.randomBytes(8).toString('hex'); // Generate random password
+      const generatedPassword = password || crypto.randomBytes(8).toString('hex'); // Generate random password if not provided
 
       user = await User.create({
         firstName: firstName || 'Zoho',
@@ -175,7 +176,7 @@ export const handleZohoWebhook = async (req: Request, res: Response): Promise<vo
         qualifications: mappedQualifications
       });
 
-      console.log(`Created new user via Webhook: ${email} with password ${generatedPassword}`);
+      console.log(`Created new user via Webhook/Form: ${email} with password setup`);
       res.status(201).json({ message: 'User created successfully', generatedPassword });
     }
   } catch (error: any) {

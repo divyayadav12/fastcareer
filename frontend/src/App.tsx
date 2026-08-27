@@ -12,6 +12,7 @@ import { JobListings } from './pages/JobListings';
 import { JobDetails } from './pages/JobDetails';
 import { Login } from './pages/auth/Login';
 import { Register } from './pages/auth/Register';
+import { PlacementDriveForm } from './pages/PlacementDriveForm';
 import { CandidateDashboard } from './pages/candidate/Dashboard';
 import { JobFair } from './pages/candidate/JobFair';
 import { CurrentOpenings } from './pages/candidate/CurrentOpenings';
@@ -51,6 +52,7 @@ function App() {
             <Route path="/jobs/:id" element={<JobDetails />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/placement-drive" element={<PlacementDriveForm />} />
             
             {/* Candidate Routes */}
             <Route path="/candidate/dashboard" element={<CandidateDashboard />} />
