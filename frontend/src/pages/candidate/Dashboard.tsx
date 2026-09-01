@@ -468,7 +468,7 @@ export const CandidateDashboard = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Preferred Campus City</label>
-                <select className="w-full border border-gray-200 rounded-lg p-2 pr-8 text-sm bg-white" value={personal.preferredCampusCity} onChange={(e) => setPersonal({...personal, preferredCampusCity: e.target.value})}>
+                <select className="w-full border border-gray-200 rounded-lg p-2 pr-2 text-sm bg-white" value={personal.preferredCampusCity} onChange={(e) => setPersonal({...personal, preferredCampusCity: e.target.value})}>
                   <option value="">Select</option>
                   {PREFERRED_CAMPUS_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
@@ -500,7 +500,7 @@ export const CandidateDashboard = () => {
                     </div>
                     <div>
                       <label className="block text-xs font-medium text-gray-700 mb-1">City *</label>
-                      <select required className="w-full px-4 py-2 pr-8 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors" value={(personal.currentCity === 'Other' || (personal.currentCity && personal.currentState && STATE_CITY_MAP[personal.currentState] && !STATE_CITY_MAP[personal.currentState].includes(personal.currentCity))) ? 'Other' : personal.currentCity} onChange={(e) => setPersonal({...personal, currentCity: e.target.value})} disabled={!personal.currentState}>
+                      <select required className="w-full px-4 py-2 pr-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors" value={(personal.currentCity === 'Other' || (personal.currentCity && personal.currentState && STATE_CITY_MAP[personal.currentState] && !STATE_CITY_MAP[personal.currentState].includes(personal.currentCity))) ? 'Other' : personal.currentCity} onChange={(e) => setPersonal({...personal, currentCity: e.target.value})} disabled={!personal.currentState}>
                         <option value="">Select City...</option>
                         {(personal.currentState ? STATE_CITY_MAP[personal.currentState] || ALL_CITIES : ALL_CITIES).map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
@@ -531,7 +531,7 @@ export const CandidateDashboard = () => {
                     </div>
                     <div>
                       <label className="block text-xs font-medium text-gray-700 mb-1">City *</label>
-                      <select required className="w-full px-4 py-2 pr-8 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors" value={(personal.permanentCity === 'Other' || (personal.permanentCity && personal.permanentState && STATE_CITY_MAP[personal.permanentState] && !STATE_CITY_MAP[personal.permanentState].includes(personal.permanentCity))) ? 'Other' : personal.permanentCity} onChange={(e) => setPersonal({...personal, permanentCity: e.target.value})} disabled={personal.permanentAddressSameAsCurrent || !personal.permanentState}>
+                      <select required className="w-full px-4 py-2 pr-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors" value={(personal.permanentCity === 'Other' || (personal.permanentCity && personal.permanentState && STATE_CITY_MAP[personal.permanentState] && !STATE_CITY_MAP[personal.permanentState].includes(personal.permanentCity))) ? 'Other' : personal.permanentCity} onChange={(e) => setPersonal({...personal, permanentCity: e.target.value})} disabled={personal.permanentAddressSameAsCurrent || !personal.permanentState}>
                         <option value="">Select City...</option>
                         {(personal.permanentState ? STATE_CITY_MAP[personal.permanentState] || ALL_CITIES : ALL_CITIES).map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
@@ -610,7 +610,7 @@ export const CandidateDashboard = () => {
                         <input type="text" list="attemptsList" className="w-full border-gray-200 rounded p-1 text-xs text-center" value={(caPortfolio as any)[examKey].group1Attempts} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], group1Attempts: e.target.value}})} placeholder="0" />
                       </td>
                       <td className="p-2 border">
-                        <select className="w-full border border-gray-200 rounded p-1 pr-8 text-xs text-center bg-white" value={(caPortfolio as any)[examKey].group1Month} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], group1Month: e.target.value}})}>
+                        <select className="w-full border border-gray-200 rounded p-1 pr-2 text-xs text-center bg-white" value={(caPortfolio as any)[examKey].group1Month} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], group1Month: e.target.value}})}>
                           <option value="">Month</option>
                           {CA_EXAM_MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
                         </select>
@@ -622,7 +622,7 @@ export const CandidateDashboard = () => {
                         <input type="text" list="attemptsList" className="w-full border-gray-200 rounded p-1 text-xs text-center" value={(caPortfolio as any)[examKey].group2Attempts} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], group2Attempts: e.target.value}})} placeholder="0" />
                       </td>
                       <td className="p-2 border">
-                        <select className="w-full border border-gray-200 rounded p-1 pr-8 text-xs text-center bg-white" value={(caPortfolio as any)[examKey].group2Month} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], group2Month: e.target.value}})}>
+                        <select className="w-full border border-gray-200 rounded p-1 pr-2 text-xs text-center bg-white" value={(caPortfolio as any)[examKey].group2Month} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], group2Month: e.target.value}})}>
                           <option value="">Month</option>
                           {CA_EXAM_MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
                         </select>
@@ -635,11 +635,11 @@ export const CandidateDashboard = () => {
                       </td>
                       <td className="p-2 border" colSpan={2}>
                         <div className="flex gap-1">
-                          <select className="w-1/2 border border-gray-200 rounded p-1 pr-8 text-xs bg-white" value={(caPortfolio as any)[examKey].completionSessionMonth} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], completionSessionMonth: e.target.value}})}>
+                          <select className="w-1/2 border border-gray-200 rounded p-1 pr-2 text-xs bg-white" value={(caPortfolio as any)[examKey].completionSessionMonth} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], completionSessionMonth: e.target.value}})}>
                             <option value="">Month</option>
                             {CA_EXAM_MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
                           </select>
-                          <select className="w-1/2 border border-gray-200 rounded p-1 pr-8 text-xs bg-white" value={(caPortfolio as any)[examKey].completionSessionYear} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], completionSessionYear: e.target.value}})}>
+                          <select className="w-1/2 border border-gray-200 rounded p-1 pr-2 text-xs bg-white" value={(caPortfolio as any)[examKey].completionSessionYear} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], completionSessionYear: e.target.value}})}>
                             <option value="">Year</option>
                             {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
                           </select>
@@ -677,12 +677,12 @@ export const CandidateDashboard = () => {
                     {(caPortfolio.articleships || []).map((art, idx) => (
                       <tr key={idx}>
                         <td className="pr-2 pb-2">
-                          <select required className="w-full border border-gray-300 rounded p-1 pr-8 text-sm bg-white" value={art.type || 'Articleship'} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].type = e.target.value; setCaPortfolio({...caPortfolio, articleships: newArt})}}>
+                          <select required className="w-full border border-gray-300 rounded p-1 pr-2 text-sm bg-white" value={art.type || 'Articleship'} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].type = e.target.value; setCaPortfolio({...caPortfolio, articleships: newArt})}}>
                             {ARTICLESHIP_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                           </select>
                         </td>
                         <td className="pr-2 pb-2 min-w-[200px]">
-                          <select required className="w-full border border-gray-300 rounded p-1 pr-8 text-sm bg-white mb-1" value={CA_FIRMS.includes(art.firmName || '') && art.firmName !== 'Other' ? art.firmName : (art.firmName ? 'Other' : '')} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].firmName = e.target.value; setCaPortfolio({...caPortfolio, articleships: newArt})}}>
+                          <select required className="w-full border border-gray-300 rounded p-1 pr-2 text-sm bg-white mb-1" value={CA_FIRMS.includes(art.firmName || '') && art.firmName !== 'Other' ? art.firmName : (art.firmName ? 'Other' : '')} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].firmName = e.target.value; setCaPortfolio({...caPortfolio, articleships: newArt})}}>
                             <option value="">Select firm name</option>
                             {CA_FIRMS.map(firm => <option key={firm} value={firm}>{firm}</option>)}
                           </select>
@@ -691,13 +691,13 @@ export const CandidateDashboard = () => {
                           )}
                         </td>
                         <td className="pr-2 pb-2">
-                          <select required className="w-full border border-gray-300 rounded p-1 pr-8 text-sm bg-white" value={art.city} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].city = e.target.value; setCaPortfolio({...caPortfolio, articleships: newArt})}}>
+                          <select required className="w-full border border-gray-300 rounded p-1 pr-2 text-sm bg-white" value={art.city} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].city = e.target.value; setCaPortfolio({...caPortfolio, articleships: newArt})}}>
                             <option value="">Select</option>
                             {ALL_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
                           </select>
                         </td>
                         <td className="pr-2 pb-2 min-w-[100px]">
-                          <select required className="w-full border border-gray-300 rounded p-1 pr-8 text-sm bg-white" value={art.noOfPartners} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].noOfPartners = e.target.value; setCaPortfolio({...caPortfolio, articleships: newArt})}}>
+                          <select required className="w-full border border-gray-300 rounded p-1 pr-2 text-sm bg-white" value={art.noOfPartners} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].noOfPartners = e.target.value; setCaPortfolio({...caPortfolio, articleships: newArt})}}>
                             <option value="">Select</option>
                             {Array.from({length: 10}, (_, i) => String(i+1)).map(n => <option key={n} value={n}>{n}</option>)}
                             <option value="11-20">11-20</option>
@@ -708,9 +708,14 @@ export const CandidateDashboard = () => {
                           <input required type="number" min="1" max="120" className="w-full border border-gray-300 rounded p-1 text-sm bg-white text-center" value={art.noOfMonths} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].noOfMonths = parseInt(e.target.value) || 0; setCaPortfolio({...caPortfolio, articleships: newArt})}}/>
                         </td>
                         <td className="pb-2">
-                          {idx === caPortfolio.articleships.length - 1 && (
+                          {idx === caPortfolio.articleships.length - 1 && caPortfolio.articleships.reduce((sum, a) => sum + (parseInt(a.noOfMonths as any) || 0), 0) < 36 && (
                             <button type="button" onClick={() => setCaPortfolio({...caPortfolio, articleships: [...caPortfolio.articleships, { type: 'Articleship', firmName: '', city: '', noOfPartners: '2', noOfMonths: 0 }]})} className="bg-[#1a446c] text-white px-3 py-1 text-xs font-medium rounded hover:bg-[#123150] transition-colors whitespace-nowrap">
                               Click Here To Confirm
+                            </button>
+                          )}
+                          {idx > 0 && (
+                            <button type="button" onClick={() => { const newArt = [...caPortfolio.articleships]; newArt.splice(idx, 1); setCaPortfolio({...caPortfolio, articleships: newArt})}} className="bg-red-500 text-white px-2 py-1 text-xs font-medium rounded hover:bg-red-600 transition-colors ml-2" title="Remove">
+                              ✕
                             </button>
                           )}
                         </td>
@@ -734,8 +739,8 @@ export const CandidateDashboard = () => {
               <div className="flex justify-between items-center">
                 <span>Articleship Completion Date / Due Date:</span>
                 <div className="flex gap-2">
-                  <select className="border-gray-200 rounded p-1 pr-8 text-xs" value={caPortfolio.articleshipCompletionDateMonth} onChange={(e) => setCaPortfolio({...caPortfolio, articleshipCompletionDateMonth: e.target.value})}>{MONTHS.map(a=><option key={a}>{a}</option>)}</select>
-                  <select className="border-gray-200 rounded p-1 pr-8 text-xs" value={caPortfolio.articleshipCompletionDateYear} onChange={(e) => setCaPortfolio({...caPortfolio, articleshipCompletionDateYear: e.target.value})}>{YEARS.map(a=><option key={a}>{a}</option>)}</select>
+                  <select className="border-gray-200 rounded p-1 pr-2 text-xs" value={caPortfolio.articleshipCompletionDateMonth} onChange={(e) => setCaPortfolio({...caPortfolio, articleshipCompletionDateMonth: e.target.value})}>{MONTHS.map(a=><option key={a}>{a}</option>)}</select>
+                  <select className="border-gray-200 rounded p-1 pr-2 text-xs" value={caPortfolio.articleshipCompletionDateYear} onChange={(e) => setCaPortfolio({...caPortfolio, articleshipCompletionDateYear: e.target.value})}>{YEARS.map(a=><option key={a}>{a}</option>)}</select>
                 </div>
               </div>
               <div className="flex justify-between items-center">
@@ -761,7 +766,7 @@ export const CandidateDashboard = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">* Nature of Work Done During Articleship:</label>
-              <select required className="w-full px-4 py-2 pr-8 border border-gray-200 rounded-lg text-sm bg-white mb-2" value={NATURE_OF_WORK.includes(caPortfolio.natureOfWork || '') && caPortfolio.natureOfWork !== 'Other' ? caPortfolio.natureOfWork : (caPortfolio.natureOfWork ? 'Other' : '')} onChange={(e) => setCaPortfolio({...caPortfolio, natureOfWork: e.target.value})}>
+              <select required className="w-full px-4 py-2 pr-2 border border-gray-200 rounded-lg text-sm bg-white mb-2" value={NATURE_OF_WORK.includes(caPortfolio.natureOfWork || '') && caPortfolio.natureOfWork !== 'Other' ? caPortfolio.natureOfWork : (caPortfolio.natureOfWork ? 'Other' : '')} onChange={(e) => setCaPortfolio({...caPortfolio, natureOfWork: e.target.value})}>
                 <option value="">Select Nature of Work</option>
                 {NATURE_OF_WORK.map(work => (
                   <option key={work} value={work}>{work}</option>
@@ -799,7 +804,7 @@ export const CandidateDashboard = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Year of Completion</label>
-                    <select className="w-full px-3 py-2 pr-8 border border-gray-200 rounded-lg text-sm bg-white" value={qualifications.graduation.yearOfCompletion} onChange={(e) => setQualifications({...qualifications, graduation: {...qualifications.graduation, yearOfCompletion: e.target.value}})}>
+                    <select className="w-full px-3 py-2 pr-2 border border-gray-200 rounded-lg text-sm bg-white" value={qualifications.graduation.yearOfCompletion} onChange={(e) => setQualifications({...qualifications, graduation: {...qualifications.graduation, yearOfCompletion: e.target.value}})}>
                       {YEARS.map(a => <option key={a}>{a}</option>)}
                     </select>
                   </div>
@@ -809,7 +814,7 @@ export const CandidateDashboard = () => {
                   </div>
                   <div className="lg:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-1">Correspondence / College Name</label>
-                    <select required className="w-full px-3 py-2 pr-8 border border-gray-200 rounded-lg text-sm bg-white" value={qualifications.graduation.college} onChange={(e) => setQualifications({...qualifications, graduation: {...qualifications.graduation, college: e.target.value}})}>
+                    <select required className="w-full px-3 py-2 pr-2 border border-gray-200 rounded-lg text-sm bg-white" value={qualifications.graduation.college} onChange={(e) => setQualifications({...qualifications, graduation: {...qualifications.graduation, college: e.target.value}})}>
                       <option value="">Select College</option>
                       {COLLEGES.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
@@ -836,13 +841,13 @@ export const CandidateDashboard = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">XII Year</label>
-                      <select className="w-full px-3 py-2 pr-8 border border-gray-200 rounded-lg text-sm bg-white" value={qualifications.class12.year} onChange={(e) => setQualifications({...qualifications, class12: {...qualifications.class12, year: e.target.value}})}>
+                      <select className="w-full px-3 py-2 pr-2 border border-gray-200 rounded-lg text-sm bg-white" value={qualifications.class12.year} onChange={(e) => setQualifications({...qualifications, class12: {...qualifications.class12, year: e.target.value}})}>
                         {YEARS.map(a => <option key={a}>{a}</option>)}
                       </select>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">XII Board Name</label>
-                      <select required className="w-full px-3 py-2 pr-8 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20" value={qualifications.class12.board} onChange={(e) => setQualifications({...qualifications, class12: {...qualifications.class12, board: e.target.value}})}>
+                      <select required className="w-full px-3 py-2 pr-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20" value={qualifications.class12.board} onChange={(e) => setQualifications({...qualifications, class12: {...qualifications.class12, board: e.target.value}})}>
                         <option value="">Select Board</option>
                         {BOARDS.map(b => <option key={b} value={b}>{b}</option>)}
                       </select>
@@ -860,13 +865,13 @@ export const CandidateDashboard = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">X Year</label>
-                      <select className="w-full px-3 py-2 pr-8 border border-gray-200 rounded-lg text-sm bg-white" value={qualifications.class10.year} onChange={(e) => setQualifications({...qualifications, class10: {...qualifications.class10, year: e.target.value}})}>
+                      <select className="w-full px-3 py-2 pr-2 border border-gray-200 rounded-lg text-sm bg-white" value={qualifications.class10.year} onChange={(e) => setQualifications({...qualifications, class10: {...qualifications.class10, year: e.target.value}})}>
                         {YEARS.map(a => <option key={a}>{a}</option>)}
                       </select>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">X Board Name</label>
-                      <select required className="w-full px-3 py-2 pr-8 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20" value={qualifications.class10.board} onChange={(e) => setQualifications({...qualifications, class10: {...qualifications.class10, board: e.target.value}})}>
+                      <select required className="w-full px-3 py-2 pr-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20" value={qualifications.class10.board} onChange={(e) => setQualifications({...qualifications, class10: {...qualifications.class10, board: e.target.value}})}>
                         <option value="">Select Board</option>
                         {BOARDS.map(b => <option key={b} value={b}>{b}</option>)}
                       </select>
