@@ -304,7 +304,7 @@ export const PlacementDriveForm = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
-                    <select name="gender" value={formData.gender} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
+                    <select name="gender" value={formData.gender} onChange={handleChange} className="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
                       <option value="">Select Gender...</option>
                       <option value="Male">Male</option>
                       <option value="Female">Female</option>
@@ -313,7 +313,7 @@ export const PlacementDriveForm = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Marital Status</label>
-                    <select name="maritalStatus" value={formData.maritalStatus} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
+                    <select name="maritalStatus" value={formData.maritalStatus} onChange={handleChange} className="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
                       <option value="">Select Status...</option>
                       <option value="Single">Single</option>
                       <option value="Married">Married</option>
@@ -325,14 +325,14 @@ export const PlacementDriveForm = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Current State</label>
-                    <select name="currentState" value={formData.currentState} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
+                    <select name="currentState" value={formData.currentState} onChange={handleChange} className="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
                       <option value="">Select State...</option>
                       {STATES.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Current City</label>
-                    <select name="currentCity" value={formData.currentCity} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white" disabled={!formData.currentState}>
+                    <select name="currentCity" value={formData.currentCity} onChange={handleChange} className="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white" disabled={!formData.currentState}>
                       <option value="">Select City...</option>
                       {(formData.currentState ? STATE_CITY_MAP[formData.currentState] || ALL_CITIES : ALL_CITIES).map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
@@ -347,21 +347,21 @@ export const PlacementDriveForm = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Permanent State</label>
-                    <select name="permanentState" value={formData.permanentState} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white" disabled={formData.permanentAddressSameAsCurrent}>
+                    <select name="permanentState" value={formData.permanentState} onChange={handleChange} className="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white" disabled={formData.permanentAddressSameAsCurrent}>
                       <option value="">Select State...</option>
                       {STATES.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Permanent City</label>
-                    <select name="permanentCity" value={formData.permanentCity} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white" disabled={formData.permanentAddressSameAsCurrent || !formData.permanentState}>
+                    <select name="permanentCity" value={formData.permanentCity} onChange={handleChange} className="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white" disabled={formData.permanentAddressSameAsCurrent || !formData.permanentState}>
                       <option value="">Select City...</option>
                       {(formData.permanentState ? STATE_CITY_MAP[formData.permanentState] || ALL_CITIES : ALL_CITIES).map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
                   </div>
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-1">Preferred Campus City</label>
-                    <select name="preferredCampusCity" value={formData.preferredCampusCity} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
+                    <select name="preferredCampusCity" value={formData.preferredCampusCity} onChange={handleChange} className="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
                       <option value="">Select...</option>
                       {PREFERRED_CAMPUS_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
@@ -378,7 +378,7 @@ export const PlacementDriveForm = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">CA Status</label>
-                    <select name="caStatus" value={formData.caStatus} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
+                    <select name="caStatus" value={formData.caStatus} onChange={handleChange} className="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
                       <option value="">Select Status...</option>
                       <option value="CA Fresher">CA Fresher</option>
                       <option value="CA Experienced">CA Experienced</option>
@@ -387,7 +387,7 @@ export const PlacementDriveForm = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">GMCS Completed?</label>
-                    <select name="gmcsCompleted" value={formData.gmcsCompleted} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
+                    <select name="gmcsCompleted" value={formData.gmcsCompleted} onChange={handleChange} className="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
                       <option value="">Select...</option>
                       <option value="Yes">Yes</option>
                       <option value="No">No</option>
@@ -399,49 +399,49 @@ export const PlacementDriveForm = () => {
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                       <div>
                         <label className="block text-xs font-medium text-gray-700 mb-1">Group 1 Attempts</label>
-                        <select name="caInter_group1Attempts" value={formData.caInter_group1Attempts} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                        <select name="caInter_group1Attempts" value={formData.caInter_group1Attempts} onChange={handleChange} className="w-full p-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
                           <option value="">Select...</option>
                           {ATTEMPTS.map(a => <option key={a} value={a}>{a}</option>)}
                         </select>
                       </div>
                       <div>
                         <label className="block text-xs font-medium text-gray-700 mb-1">Group 1 Month</label>
-                        <select name="caInter_group1Month" value={formData.caInter_group1Month} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                        <select name="caInter_group1Month" value={formData.caInter_group1Month} onChange={handleChange} className="w-full p-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
                           <option value="">Month...</option>
                           {CA_EXAM_MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
                         </select>
                       </div>
                       <div>
                         <label className="block text-xs font-medium text-gray-700 mb-1">Group 1 Year</label>
-                        <select name="caInter_group1Year" value={formData.caInter_group1Year} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                        <select name="caInter_group1Year" value={formData.caInter_group1Year} onChange={handleChange} className="w-full p-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
                           <option value="">Year...</option>
                           {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
                         </select>
                       </div>
                       <div>
                         <label className="block text-xs font-medium text-gray-700 mb-1">Group 2 Attempts</label>
-                        <select name="caInter_group2Attempts" value={formData.caInter_group2Attempts} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                        <select name="caInter_group2Attempts" value={formData.caInter_group2Attempts} onChange={handleChange} className="w-full p-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
                           <option value="">Select...</option>
                           {ATTEMPTS.map(a => <option key={a} value={a}>{a}</option>)}
                         </select>
                       </div>
                       <div>
                         <label className="block text-xs font-medium text-gray-700 mb-1">Group 2 Month</label>
-                        <select name="caInter_group2Month" value={formData.caInter_group2Month} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                        <select name="caInter_group2Month" value={formData.caInter_group2Month} onChange={handleChange} className="w-full p-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
                           <option value="">Month...</option>
                           {CA_EXAM_MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
                         </select>
                       </div>
                       <div>
                         <label className="block text-xs font-medium text-gray-700 mb-1">Group 2 Year</label>
-                        <select name="caInter_group2Year" value={formData.caInter_group2Year} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                        <select name="caInter_group2Year" value={formData.caInter_group2Year} onChange={handleChange} className="w-full p-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
                           <option value="">Year...</option>
                           {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
                         </select>
                       </div>
                       <div>
                         <label className="block text-xs font-medium text-gray-700 mb-1">Ranker</label>
-                        <select name="caInter_ranker" value={formData.caInter_ranker} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                        <select name="caInter_ranker" value={formData.caInter_ranker} onChange={handleChange} className="w-full p-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
                           <option value="">Select...</option>
                           <option value="Yes">Yes</option>
                           <option value="No">No</option>
@@ -463,49 +463,49 @@ export const PlacementDriveForm = () => {
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                       <div>
                         <label className="block text-xs font-medium text-gray-700 mb-1">Group 1 Attempts</label>
-                        <select name="caFinal_group1Attempts" value={formData.caFinal_group1Attempts} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                        <select name="caFinal_group1Attempts" value={formData.caFinal_group1Attempts} onChange={handleChange} className="w-full p-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
                           <option value="">Select...</option>
                           {ATTEMPTS.map(a => <option key={a} value={a}>{a}</option>)}
                         </select>
                       </div>
                       <div>
                         <label className="block text-xs font-medium text-gray-700 mb-1">Group 1 Month</label>
-                        <select name="caFinal_group1Month" value={formData.caFinal_group1Month} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                        <select name="caFinal_group1Month" value={formData.caFinal_group1Month} onChange={handleChange} className="w-full p-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
                           <option value="">Month...</option>
                           {CA_EXAM_MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
                         </select>
                       </div>
                       <div>
                         <label className="block text-xs font-medium text-gray-700 mb-1">Group 1 Year</label>
-                        <select name="caFinal_group1Year" value={formData.caFinal_group1Year} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                        <select name="caFinal_group1Year" value={formData.caFinal_group1Year} onChange={handleChange} className="w-full p-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
                           <option value="">Year...</option>
                           {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
                         </select>
                       </div>
                       <div>
                         <label className="block text-xs font-medium text-gray-700 mb-1">Group 2 Attempts</label>
-                        <select name="caFinal_group2Attempts" value={formData.caFinal_group2Attempts} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                        <select name="caFinal_group2Attempts" value={formData.caFinal_group2Attempts} onChange={handleChange} className="w-full p-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
                           <option value="">Select...</option>
                           {ATTEMPTS.map(a => <option key={a} value={a}>{a}</option>)}
                         </select>
                       </div>
                       <div>
                         <label className="block text-xs font-medium text-gray-700 mb-1">Group 2 Month</label>
-                        <select name="caFinal_group2Month" value={formData.caFinal_group2Month} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                        <select name="caFinal_group2Month" value={formData.caFinal_group2Month} onChange={handleChange} className="w-full p-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
                           <option value="">Month...</option>
                           {CA_EXAM_MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
                         </select>
                       </div>
                       <div>
                         <label className="block text-xs font-medium text-gray-700 mb-1">Group 2 Year</label>
-                        <select name="caFinal_group2Year" value={formData.caFinal_group2Year} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                        <select name="caFinal_group2Year" value={formData.caFinal_group2Year} onChange={handleChange} className="w-full p-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
                           <option value="">Year...</option>
                           {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
                         </select>
                       </div>
                       <div>
                         <label className="block text-xs font-medium text-gray-700 mb-1">Ranker</label>
-                        <select name="caFinal_ranker" value={formData.caFinal_ranker} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                        <select name="caFinal_ranker" value={formData.caFinal_ranker} onChange={handleChange} className="w-full p-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
                           <option value="">Select...</option>
                           <option value="Yes">Yes</option>
                           <option value="No">No</option>
@@ -529,7 +529,7 @@ export const PlacementDriveForm = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">Type</label>
-                    <select name="articleshipType" value={formData.articleshipType} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                    <select name="articleshipType" value={formData.articleshipType} onChange={handleChange} className="w-full p-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
                       <option value="">Select...</option>
                       {ARTICLESHIP_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                     </select>
@@ -548,7 +548,7 @@ export const PlacementDriveForm = () => {
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">Firm Type</label>
-                    <select name="articleshipFirmType" value={formData.articleshipFirmType} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                    <select name="articleshipFirmType" value={formData.articleshipFirmType} onChange={handleChange} className="w-full p-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
                       <option value="">Select...</option>
                       <option value="Big 4">Big 4</option>
                       <option value="Medium">Medium Size</option>
@@ -561,7 +561,7 @@ export const PlacementDriveForm = () => {
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">Big 4 Articleship?</label>
-                    <select name="big4Articleship" value={formData.big4Articleship} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                    <select name="big4Articleship" value={formData.big4Articleship} onChange={handleChange} className="w-full p-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
                       <option value="">Select...</option>
                       <option value="Yes">Yes</option>
                       <option value="No">No</option>
@@ -569,14 +569,14 @@ export const PlacementDriveForm = () => {
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">Completion Month</label>
-                    <select name="articleshipCompletionDateMonth" value={formData.articleshipCompletionDateMonth} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                    <select name="articleshipCompletionDateMonth" value={formData.articleshipCompletionDateMonth} onChange={handleChange} className="w-full p-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
                       <option value="">Month...</option>
                       {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">Completion Year</label>
-                    <select name="articleshipCompletionDateYear" value={formData.articleshipCompletionDateYear} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                    <select name="articleshipCompletionDateYear" value={formData.articleshipCompletionDateYear} onChange={handleChange} className="w-full p-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
                       <option value="">Year...</option>
                       {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
                     </select>
@@ -584,7 +584,7 @@ export const PlacementDriveForm = () => {
                   <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Industrial Trainee?</label>
-                      <select name="industrialTrainee" value={formData.industrialTrainee} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                      <select name="industrialTrainee" value={formData.industrialTrainee} onChange={handleChange} className="w-full p-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
                         <option value="">Select...</option>
                         <option value="Yes">Yes</option>
                         <option value="No">No</option>
@@ -592,7 +592,7 @@ export const PlacementDriveForm = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Listed Company Work Experience?</label>
-                      <select name="listedCompanyWork" value={formData.listedCompanyWork} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                      <select name="listedCompanyWork" value={formData.listedCompanyWork} onChange={handleChange} className="w-full p-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
                         <option value="">Select...</option>
                         <option value="Yes">Yes</option>
                         <option value="No">No</option>
@@ -600,7 +600,7 @@ export const PlacementDriveForm = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Nature of Work in Articleship</label>
-                      <select name="natureOfWork" value={formData.natureOfWork} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                      <select name="natureOfWork" value={formData.natureOfWork} onChange={handleChange} className="w-full p-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
                         <option value="">Select...</option>
                         {NATURE_OF_WORK.map(work => (
                           <option key={work} value={work}>{work}</option>
@@ -620,7 +620,7 @@ export const PlacementDriveForm = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Graduation Completed?</label>
-                    <select name="grad_completed" value={formData.grad_completed} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
+                    <select name="grad_completed" value={formData.grad_completed} onChange={handleChange} className="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
                       <option value="">Select...</option>
                       <option value="Yes">Yes</option>
                       <option value="No/Pursuing">No/Pursuing</option>
@@ -628,7 +628,7 @@ export const PlacementDriveForm = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Graduation College Name</label>
-                    <select name="grad_college" value={formData.grad_college} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
+                    <select name="grad_college" value={formData.grad_college} onChange={handleChange} className="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
                       <option value="">Select College...</option>
                       {COLLEGES.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
@@ -639,21 +639,21 @@ export const PlacementDriveForm = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Graduation Year</label>
-                    <select name="grad_yearOfCompletion" value={formData.grad_yearOfCompletion} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
+                    <select name="grad_yearOfCompletion" value={formData.grad_yearOfCompletion} onChange={handleChange} className="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
                       <option value="">Select Year...</option>
                       {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Graduation Type</label>
-                    <select name="grad_type" value={formData.grad_type} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
+                    <select name="grad_type" value={formData.grad_type} onChange={handleChange} className="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
                       <option value="REGULAR">Regular</option>
                       <option value="CORRESPONDENCE">Correspondence</option>
                     </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Class 12th Board</label>
-                    <select name="class12_board" value={formData.class12_board} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
+                    <select name="class12_board" value={formData.class12_board} onChange={handleChange} className="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
                       <option value="">Select Board...</option>
                       {BOARDS.map(b => <option key={b} value={b}>{b}</option>)}
                     </select>
@@ -664,14 +664,14 @@ export const PlacementDriveForm = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Class 12th Year</label>
-                    <select name="class12_year" value={formData.class12_year} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
+                    <select name="class12_year" value={formData.class12_year} onChange={handleChange} className="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
                       <option value="">Select Year...</option>
                       {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Class 10th Board</label>
-                    <select name="class10_board" value={formData.class10_board} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
+                    <select name="class10_board" value={formData.class10_board} onChange={handleChange} className="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
                       <option value="">Select Board...</option>
                       {BOARDS.map(b => <option key={b} value={b}>{b}</option>)}
                     </select>
@@ -682,7 +682,7 @@ export const PlacementDriveForm = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Class 10th Year</label>
-                    <select name="class10_year" value={formData.class10_year} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
+                    <select name="class10_year" value={formData.class10_year} onChange={handleChange} className="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
                       <option value="">Select Year...</option>
                       {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
                     </select>
@@ -692,12 +692,12 @@ export const PlacementDriveForm = () => {
             </div>
           )}
 
-          <div className="pt-6 flex justify-between gap-4">
+          <div className="pt-6 flex flex-col-reverse sm:flex-row justify-between gap-4">
             {currentStep > 1 && (
               <button
                 type="button"
                 onClick={handlePrev}
-                className="w-1/3 text-lg font-bold py-4 px-8 rounded-xl shadow-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-all duration-300"
+                className="w-full sm:w-1/3 text-base sm:text-lg font-bold py-3 sm:py-4 px-4 sm:px-8 rounded-xl shadow-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-all duration-300"
               >
                 Previous
               </button>
@@ -707,7 +707,7 @@ export const PlacementDriveForm = () => {
               <button
                 type="button"
                 onClick={handleNext}
-                className={`${currentStep === 1 ? 'w-full' : 'w-2/3'} text-lg font-bold py-4 px-8 rounded-xl shadow-lg bg-blue-600 hover:bg-blue-700 hover:shadow-blue-500/30 text-white hover:-translate-y-1 transition-all duration-300`}
+                className={`w-full ${currentStep === 1 ? '' : 'sm:w-2/3'} text-base sm:text-lg font-bold py-3 sm:py-4 px-4 sm:px-8 rounded-xl shadow-lg bg-primary hover:bg-primary-hover hover:shadow-primary/30 text-white hover:-translate-y-1 transition-all duration-300`}
               >
                 Next
               </button>
@@ -715,8 +715,8 @@ export const PlacementDriveForm = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className={`w-2/3 text-lg font-bold py-4 px-8 rounded-xl shadow-lg transition-all duration-300 ${
-                  loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 hover:shadow-green-500/30 text-white hover:-translate-y-1'
+                className={`w-full sm:w-2/3 text-base sm:text-lg font-bold py-3 sm:py-4 px-4 sm:px-8 rounded-xl shadow-lg transition-all duration-300 ${
+                  loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary hover:bg-primary-hover hover:shadow-primary/30 text-white hover:-translate-y-1'
                 }`}
               >
                 {loading ? 'Submitting...' : 'Complete Registration'}
