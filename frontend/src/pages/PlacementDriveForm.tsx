@@ -232,10 +232,10 @@ export const PlacementDriveForm = () => {
   return (
     <div className="min-h-screen bg-gray-50 pt-32 pb-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden mt-8">
-        <div className="bg-blue-600 py-6 px-8 text-white">
+        <div className="bg-primary py-6 px-8 text-white">
           <h2 className="text-3xl font-bold">CA Placement Drive Registration</h2>
           <p className="text-white mt-2">Fill in your details below to register for the upcoming placement drive. (Step {currentStep} of 3)</p>
-          <div className="w-full bg-blue-400 rounded-full h-2 mt-4">
+          <div className="w-full bg-white/20 rounded-full h-2 mt-4">
             <div className="bg-white h-2 rounded-full transition-all duration-300" style={{ width: `${(currentStep / 3) * 100}%` }}></div>
           </div>
         </div>
