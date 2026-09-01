@@ -334,6 +334,7 @@ export const CandidateDashboard = () => {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       setStep(step + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       alert('Failed to save data. Please try again.');
     } finally {
@@ -381,6 +382,7 @@ export const CandidateDashboard = () => {
 
   const handlePrev = () => {
     setStep(step - 1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -498,7 +500,10 @@ export const CandidateDashboard = () => {
                     </div>
                     <div>
                       <label className="block text-xs font-medium text-gray-700 mb-1">City *</label>
-                      <input type="text" list="allCitiesList" required className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors" placeholder="Type or Select City" value={personal.currentCity} onChange={(e) => setPersonal({...personal, currentCity: e.target.value})} />
+                      <select required className="w-full px-4 py-2 pr-8 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors" value={personal.currentCity} onChange={(e) => setPersonal({...personal, currentCity: e.target.value})} disabled={!personal.currentState}>
+                        <option value="">Select City...</option>
+                        {(personal.currentState ? STATE_CITY_MAP[personal.currentState] || ALL_CITIES : ALL_CITIES).map(c => <option key={c} value={c}>{c}</option>)}
+                      </select>
                     </div>
                   </div>
                 </div>
@@ -523,7 +528,10 @@ export const CandidateDashboard = () => {
                     </div>
                     <div>
                       <label className="block text-xs font-medium text-gray-700 mb-1">City *</label>
-                      <input type="text" list="allCitiesList" required className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors" placeholder="Type or Select City" value={personal.permanentCity} onChange={(e) => setPersonal({...personal, permanentCity: e.target.value})} disabled={personal.permanentAddressSameAsCurrent} />
+                      <select required className="w-full px-4 py-2 pr-8 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors" value={personal.permanentCity} onChange={(e) => setPersonal({...personal, permanentCity: e.target.value})} disabled={personal.permanentAddressSameAsCurrent || !personal.permanentState}>
+                        <option value="">Select City...</option>
+                        {(personal.permanentState ? STATE_CITY_MAP[personal.permanentState] || ALL_CITIES : ALL_CITIES).map(c => <option key={c} value={c}>{c}</option>)}
+                      </select>
                     </div>
                   </div>
                 </div>
