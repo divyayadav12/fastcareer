@@ -587,7 +587,7 @@ export const CandidateDashboard = () => {
             </div>
             
             <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left border border-gray-200">
+              <table className="w-full text-sm text-left border border-gray-200 min-w-[900px]">
                 <thead className="bg-gray-100 text-gray-700">
                   <tr>
                     <th className="p-3 border">Exam</th>
@@ -662,7 +662,7 @@ export const CandidateDashboard = () => {
               <h4 className="text-sm text-gray-800">Articleship (You can add multiple firms here starting with latest)</h4>
               
               <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left">
+                <table className="w-full text-sm text-left min-w-[900px]">
                   <thead>
                     <tr className="text-gray-600 font-medium">
                       <th className="pb-2 text-center font-normal">Type</th>
