@@ -332,10 +332,13 @@ export const PlacementDriveForm = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Current City</label>
-                    <select name="currentCity" value={formData.currentCity} onChange={handleChange} className="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white" disabled={!formData.currentState}>
+                    <select name="currentCity" value={(formData.currentCity === 'Other' || (formData.currentCity && formData.currentState && STATE_CITY_MAP[formData.currentState] && !STATE_CITY_MAP[formData.currentState].includes(formData.currentCity))) ? 'Other' : formData.currentCity} onChange={handleChange} className="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white" disabled={!formData.currentState}>
                       <option value="">Select City...</option>
                       {(formData.currentState ? STATE_CITY_MAP[formData.currentState] || ALL_CITIES : ALL_CITIES).map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
+                    {(formData.currentCity === 'Other' || (formData.currentCity && formData.currentState && STATE_CITY_MAP[formData.currentState] && !STATE_CITY_MAP[formData.currentState].includes(formData.currentCity))) && (
+                      <input type="text" name="currentCity" placeholder="Enter your city" value={formData.currentCity === 'Other' ? '' : formData.currentCity} onChange={handleChange} required className="mt-2 w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Permanent Address</label>
@@ -354,10 +357,13 @@ export const PlacementDriveForm = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Permanent City</label>
-                    <select name="permanentCity" value={formData.permanentCity} onChange={handleChange} className="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white" disabled={formData.permanentAddressSameAsCurrent || !formData.permanentState}>
+                    <select name="permanentCity" value={(formData.permanentCity === 'Other' || (formData.permanentCity && formData.permanentState && STATE_CITY_MAP[formData.permanentState] && !STATE_CITY_MAP[formData.permanentState].includes(formData.permanentCity))) ? 'Other' : formData.permanentCity} onChange={handleChange} className="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white" disabled={formData.permanentAddressSameAsCurrent || !formData.permanentState}>
                       <option value="">Select City...</option>
                       {(formData.permanentState ? STATE_CITY_MAP[formData.permanentState] || ALL_CITIES : ALL_CITIES).map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
+                    {(formData.permanentCity === 'Other' || (formData.permanentCity && formData.permanentState && STATE_CITY_MAP[formData.permanentState] && !STATE_CITY_MAP[formData.permanentState].includes(formData.permanentCity))) && (
+                      <input type="text" name="permanentCity" placeholder="Enter your city" value={formData.permanentCity === 'Other' ? '' : formData.permanentCity} onChange={handleChange} required disabled={formData.permanentAddressSameAsCurrent} className="mt-2 w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
+                    )}
                   </div>
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-1">Preferred Campus City</label>
