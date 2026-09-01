@@ -607,7 +607,7 @@ export const CandidateDashboard = () => {
                         <input type="checkbox" checked={(caPortfolio as any)[examKey].bothGroups1stAttempt} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], bothGroups1stAttempt: e.target.checked}})} />
                       </td>
                       <td className="p-2 border">
-                        <input type="text" list="attemptsList" className="w-full border-gray-200 rounded p-1 text-xs text-center" value={(caPortfolio as any)[examKey].group1Attempts} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], group1Attempts: e.target.value}})} placeholder="0" />
+                        <input type="text" list="attemptsList" className="w-full border-gray-200 rounded p-1 text-xs text-center min-w-[50px]" value={(caPortfolio as any)[examKey].group1Attempts} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], group1Attempts: e.target.value}})} placeholder="0" />
                       </td>
                       <td className="p-2 border">
                         <select className="w-full border border-gray-200 rounded p-1 pr-8 text-xs text-center bg-white min-w-[110px]" value={(caPortfolio as any)[examKey].group1Month} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], group1Month: e.target.value}})}>
@@ -616,10 +616,10 @@ export const CandidateDashboard = () => {
                         </select>
                       </td>
                       <td className="p-2 border">
-                        <input type="text" list="yearsList" className="w-full border-gray-200 rounded p-1 text-xs text-center" value={(caPortfolio as any)[examKey].group1Year} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], group1Year: e.target.value}})} placeholder="Year" />
+                        <input type="text" list="yearsList" className="w-full border-gray-200 rounded p-1 text-xs text-center min-w-[60px]" value={(caPortfolio as any)[examKey].group1Year} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], group1Year: e.target.value}})} placeholder="Year" />
                       </td>
                       <td className="p-2 border">
-                        <input type="text" list="attemptsList" className="w-full border-gray-200 rounded p-1 text-xs text-center" value={(caPortfolio as any)[examKey].group2Attempts} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], group2Attempts: e.target.value}})} placeholder="0" />
+                        <input type="text" list="attemptsList" className="w-full border-gray-200 rounded p-1 text-xs text-center min-w-[50px]" value={(caPortfolio as any)[examKey].group2Attempts} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], group2Attempts: e.target.value}})} placeholder="0" />
                       </td>
                       <td className="p-2 border">
                         <select className="w-full border border-gray-200 rounded p-1 pr-8 text-xs text-center bg-white min-w-[110px]" value={(caPortfolio as any)[examKey].group2Month} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], group2Month: e.target.value}})}>
@@ -628,7 +628,7 @@ export const CandidateDashboard = () => {
                         </select>
                       </td>
                       <td className="p-2 border">
-                        <input type="text" list="yearsList" className="w-full border-gray-200 rounded p-1 text-xs text-center" value={(caPortfolio as any)[examKey].group2Year} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], group2Year: e.target.value}})} placeholder="Year" />
+                        <input type="text" list="yearsList" className="w-full border-gray-200 rounded p-1 text-xs text-center min-w-[60px]" value={(caPortfolio as any)[examKey].group2Year} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], group2Year: e.target.value}})} placeholder="Year" />
                       </td>
                       <td className="p-2 border">
                         <input type="text" list="rankerList" className="w-full border-gray-200 rounded p-1 text-xs text-center" value={(caPortfolio as any)[examKey].ranker} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], ranker: e.target.value}})} placeholder="No" />
