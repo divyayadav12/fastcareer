@@ -7,6 +7,7 @@ import type { RootState } from '../../store';
 import axios from 'axios';
 import { Button } from '../../components/Button';
 import { CandidateLayout } from '../../layouts/CandidateLayout';
+import { NATURE_OF_WORK } from '../../utils/constants';
 
 const STATE_CITY_MAP: Record<string, string[]> = {
   "Andhra Pradesh": [
@@ -359,7 +360,7 @@ export const CandidateDashboard = () => {
   const handleNext = async (e: React.FormEvent) => {
     e.preventDefault();
     if (step === 1 && !resumeUrl) {
-      toast.error('Resume is required. Please upload your resume to proceed.');
+      alert('Resume is required. Please upload your resume to proceed.');
       return;
     }
     setSavingProfile(true);
@@ -382,9 +383,8 @@ export const CandidateDashboard = () => {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       setStep(step + 1);
-      toast.success(`Step ${step} saved successfully!`);
     } catch (error) {
-      toast.error('Failed to save data. Please try again.');
+      alert('Failed to save data. Please try again.');
     } finally {
       setSavingProfile(false);
     }
@@ -512,8 +512,6 @@ export const CandidateDashboard = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth *</label>
                 <input type="date" required value={personal.dateOfBirth} onChange={(e) => setPersonal({...personal, dateOfBirth: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" />
               </div>
-
-              {/* Removed CA Final block from here as per user request */}
 
               {/* Addresses */}
               <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -792,13 +790,9 @@ export const CandidateDashboard = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">* Nature of Work Done During Articleship:</label>
               <select required className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm bg-white" value={caPortfolio.natureOfWork} onChange={(e) => setCaPortfolio({...caPortfolio, natureOfWork: e.target.value})}>
                 <option value="">Select Nature of Work</option>
-                <option value="Statutory Audit">Statutory Audit</option>
-                <option value="Internal Audit">Internal Audit</option>
-                <option value="Direct Tax">Direct Tax</option>
-                <option value="Indirect Tax">Indirect Tax</option>
-                <option value="Corporate Finance">Corporate Finance</option>
-                <option value="Transfer Pricing">Transfer Pricing</option>
-                <option value="Loan Syndication">Loan Syndication</option>
+                {NATURE_OF_WORK.map(work => (
+                  <option key={work} value={work}>{work}</option>
+                ))}
               </select>
             </div>
 
@@ -848,17 +842,7 @@ export const CandidateDashboard = () => {
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">Tell us a bit about yourself <span className="text-xl">😃</span></label>
-                  <p className="text-xs text-gray-500 mb-2">About your journey, articleship, work, achievements, strengths etc.</p>
-                  <textarea 
-                    rows={4} 
-                    value={caPortfolio.aboutMe || ''}
-                    onChange={e => setCaPortfolio({...caPortfolio, aboutMe: e.target.value})}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20"
-                    placeholder="E.g., I am a driven CA professional..."
-                  />
-                </div>
+
               </div>
               {/* --- END NEW FIELDS --- */}
 
