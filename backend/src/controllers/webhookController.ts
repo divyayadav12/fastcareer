@@ -31,7 +31,7 @@ export const handleZohoWebhook = async (req: Request, res: Response): Promise<vo
       caFinal_group2Attempts, caFinal_group2Month, caFinal_group2Year, caFinal_ranker,
       caFinal_completionSessionMonth, caFinal_completionSessionYear, caFinal_percentage,
 
-      articleshipFirmType, articleshipFirmName, articleshipCity, articleshipPartners, articleshipMonths,
+      articleshipType, articleshipFirmType, articleshipFirmName, articleshipCity, articleshipPartners, articleshipMonths,
       articleshipCompletionDateMonth, articleshipCompletionDateYear, gmcsCompleted, big4Articleship, industrialTrainee,
       listedCompanyWork, natureOfWork, auditExperience, communicationSkills, aboutMe
     } = payload;
@@ -94,6 +94,7 @@ export const handleZohoWebhook = async (req: Request, res: Response): Promise<vo
         percentage: caFinal_percentage || ''
       },
       articleships: articleshipFirmName ? [{
+        type: articleshipType || 'Articleship',
         firmName: articleshipFirmName,
         city: articleshipCity || '',
         noOfMonths: articleshipMonths || '36',

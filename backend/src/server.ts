@@ -13,6 +13,7 @@ import candidateDashboardRoutes from './routes/candidateDashboardRoutes';
 import connectDB from './config/db';
 
 dotenv.config();
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 // Connect to MongoDB
 connectDB();

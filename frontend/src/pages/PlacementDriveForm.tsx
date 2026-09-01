@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { STATES, STATE_CITY_MAP, ALL_CITIES, YEARS, MONTHS, BOARDS, ATTEMPTS, CA_EXAM_MONTHS, NATURE_OF_WORK } from '../utils/constants';
+import { STATES, STATE_CITY_MAP, ALL_CITIES, YEARS, MONTHS, BOARDS, ATTEMPTS, CA_EXAM_MONTHS, NATURE_OF_WORK, COLLEGES, PREFERRED_CAMPUS_CITIES, ARTICLESHIP_TYPES } from '../utils/constants';
 
 export const PlacementDriveForm = () => {
   const navigate = useNavigate();
@@ -24,6 +24,7 @@ export const PlacementDriveForm = () => {
     articleshipFirmName: '',
     articleshipCity: '',
     articleshipMonths: '',
+    articleshipType: '',
     articleshipFirmType: '',
     articleshipPartners: '',
     grad_percentage: '',
@@ -353,7 +354,10 @@ export const PlacementDriveForm = () => {
                   </div>
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-1">Preferred Campus City</label>
-                    <input type="text" name="preferredCampusCity" value={formData.preferredCampusCity} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
+                    <select name="preferredCampusCity" value={formData.preferredCampusCity} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
+                      <option value="">Select...</option>
+                      {PREFERRED_CAMPUS_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
                   </div>
                 </div>
               </div>
@@ -517,6 +521,13 @@ export const PlacementDriveForm = () => {
                 <h3 className="text-xl font-semibold text-gray-900 border-b pb-2 mb-4">Articleship Details</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Type</label>
+                    <select name="articleshipType" value={formData.articleshipType} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                      <option value="">Select...</option>
+                      {ARTICLESHIP_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                  </div>
+                  <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">Firm Name</label>
                     <input type="text" name="articleshipFirmName" value={formData.articleshipFirmName} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
                   </div>
@@ -610,7 +621,10 @@ export const PlacementDriveForm = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Graduation College Name</label>
-                    <input type="text" name="grad_college" value={formData.grad_college} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
+                    <select name="grad_college" value={formData.grad_college} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
+                      <option value="">Select College...</option>
+                      {COLLEGES.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Graduation Percentage</label>

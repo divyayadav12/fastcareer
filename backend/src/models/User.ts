@@ -59,6 +59,7 @@ export interface IUser extends Document {
       percentage?: string;
     };
     articleships?: {
+      type?: string;
       firmType?: string;
       firmName?: string;
       city?: string;
@@ -156,6 +157,7 @@ const UserSchema: Schema = new Schema(
         percentage: { type: String },
       },
       articleships: [{
+        type: { type: String },
         firmType: { type: String }, // e.g., Medium, Big4
         firmName: { type: String },
         city: { type: String },
