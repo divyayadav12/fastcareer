@@ -346,7 +346,7 @@ export const PlacementDriveForm = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Permanent Address</label>
-                    <input type="text" name="permanentAddress" value={formData.permanentAddress} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
+                    <input type="text" name="permanentAddress" value={formData.permanentAddress} onChange={handleChange} disabled={formData.permanentAddressSameAsCurrent} className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
                   </div>
                   <div className="md:col-span-2 flex items-center space-x-4 bg-gray-50 p-4 rounded-xl border border-gray-200">
                     <input type="checkbox" name="permanentAddressSameAsCurrent" checked={formData.permanentAddressSameAsCurrent} onChange={handleChange} className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500 cursor-pointer" id="permanentAddressSameAsCurrent" />
