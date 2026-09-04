@@ -83,9 +83,12 @@ export const PlacementDriveForm = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
     const checked = (e.target as HTMLInputElement).checked;
-    setFormData({
-      ...formData,
-      [name]: type === 'checkbox' ? checked : value
+    setFormData(prev => {
+      const newData = { ...prev, [name]: type === 'checkbox' ? checked : value };
+      if (name === 'permanentAddressSameAsCurrent') {
+        newData.permanentAddress = checked ? prev.currentAddress : prev.permanentAddress;
+      }
+      return newData;
     });
   };
 
@@ -350,23 +353,23 @@ export const PlacementDriveForm = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Permanent State</label>
-                    <select name="permanentState" value={formData.permanentState} onChange={handleChange} className="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white" disabled={formData.permanentAddressSameAsCurrent}>
+                    <select name="permanentState" value={formData.permanentState} onChange={handleChange} className="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
                       <option value="">Select State...</option>
                       {STATES.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Permanent City</label>
-                    <select name="permanentCity" value={(formData.permanentCity === 'Other' || (formData.permanentCity && formData.permanentState && STATE_CITY_MAP[formData.permanentState] && !STATE_CITY_MAP[formData.permanentState].includes(formData.permanentCity))) ? 'Other' : formData.permanentCity} onChange={handleChange} className="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white" disabled={formData.permanentAddressSameAsCurrent || !formData.permanentState}>
+                    <select name="permanentCity" value={(formData.permanentCity === 'Other' || (formData.permanentCity && formData.permanentState && STATE_CITY_MAP[formData.permanentState] && !STATE_CITY_MAP[formData.permanentState].includes(formData.permanentCity))) ? 'Other' : formData.permanentCity} onChange={handleChange} className="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white" disabled={!formData.permanentState}>
                       <option value="">Select City...</option>
                       {(formData.permanentState ? STATE_CITY_MAP[formData.permanentState] || ALL_CITIES : ALL_CITIES).map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
                     {(formData.permanentCity === 'Other' || (formData.permanentCity && formData.permanentState && STATE_CITY_MAP[formData.permanentState] && !STATE_CITY_MAP[formData.permanentState].includes(formData.permanentCity))) && (
-                      <input type="text" name="permanentCity" placeholder="Enter your city" value={formData.permanentCity === 'Other' ? '' : formData.permanentCity} onChange={handleChange} required disabled={formData.permanentAddressSameAsCurrent} className="mt-2 w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
+                      <input type="text" name="permanentCity" placeholder="Enter your city" value={formData.permanentCity === 'Other' ? '' : formData.permanentCity} onChange={handleChange} required className="mt-2 w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
                     )}
                   </div>
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Preferred Campus City</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">City Where do u wanted to participate in Fast Campuses</label>
                     <select name="preferredCampusCity" value={formData.preferredCampusCity} onChange={handleChange} className="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
                       <option value="">Select...</option>
                       {PREFERRED_CAMPUS_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
