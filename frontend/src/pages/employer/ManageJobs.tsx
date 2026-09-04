@@ -5,6 +5,7 @@ import { PlusCircle, Briefcase, X, MapPin, Building, DollarSign } from 'lucide-r
 import { Button } from '../../components/Button';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
+import { ALL_CITIES } from '../../utils/constants';
 
 export const ManageJobs = () => {
   const { user } = useSelector((state: any) => state.auth);
@@ -137,18 +138,10 @@ export const ManageJobs = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Location *</label>
-                    <select required value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 outline-none">
-                      <option value="">Select Location</option>
-                      <option value="Mumbai">Mumbai</option>
-                      <option value="Delhi">Delhi</option>
-                      <option value="Bangalore">Bangalore</option>
-                      <option value="Pune">Pune</option>
-                      <option value="Ahmedabad">Ahmedabad</option>
-                      <option value="Chennai">Chennai</option>
-                      <option value="Kolkata">Kolkata</option>
-                      <option value="Hyderabad">Hyderabad</option>
-                      <option value="Other">Other</option>
-                    </select>
+                    <input required type="text" list="allCitiesList" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} placeholder="Search city..." className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 outline-none" />
+                    <datalist id="allCitiesList">
+                      {ALL_CITIES.map(c => <option key={c} value={c} />)}
+                    </datalist>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Job Type *</label>

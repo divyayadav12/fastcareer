@@ -9,208 +9,6 @@ import { Button } from '../../components/Button';
 import { CandidateLayout } from '../../layouts/CandidateLayout';
 import { STATES, STATE_CITY_MAP, ALL_CITIES, YEARS, MONTHS, CA_EXAM_MONTHS, NATURE_OF_WORK, COLLEGES, PREFERRED_CAMPUS_CITIES, ARTICLESHIP_TYPES, CA_FIRMS, BOARDS } from '../../utils/constants';
 
-const STATE_CITY_MAP_INTERNAL: Record<string, string[]> = {
-  "Andhra Pradesh": [
-    "Visakhapatnam",
-    "Vijayawada",
-    "Guntur",
-    "Nellore",
-    "Kurnool",
-    "Other"
-  ],
-  "Arunachal Pradesh": [
-    "Itanagar",
-    "Naharlagun",
-    "Other"
-  ],
-  "Assam": [
-    "Guwahati",
-    "Silchar",
-    "Dibrugarh",
-    "Jorhat",
-    "Other"
-  ],
-  "Bihar": [
-    "Patna",
-    "Gaya",
-    "Bhagalpur",
-    "Muzaffarpur",
-    "Other"
-  ],
-  "Chhattisgarh": [
-    "Raipur",
-    "Bhilai",
-    "Bilaspur",
-    "Korba",
-    "Other"
-  ],
-  "Goa": [
-    "Panaji",
-    "Margao",
-    "Vasco da Gama",
-    "Other"
-  ],
-  "Gujarat": [
-    "Ahmedabad",
-    "Surat",
-    "Vadodara",
-    "Rajkot",
-    "Gandhinagar",
-    "Other"
-  ],
-  "Haryana": [
-    "Faridabad",
-    "Gurugram",
-    "Panipat",
-    "Ambala",
-    "Other"
-  ],
-  "Himachal Pradesh": [
-    "Shimla",
-    "Dharamshala",
-    "Mandi",
-    "Other"
-  ],
-  "Jharkhand": [
-    "Ranchi",
-    "Jamshedpur",
-    "Dhanbad",
-    "Bokaro",
-    "Other"
-  ],
-  "Karnataka": [
-    "Bangalore",
-    "Mysore",
-    "Hubli",
-    "Mangalore",
-    "Belgaum",
-    "Other"
-  ],
-  "Kerala": [
-    "Thiruvananthapuram",
-    "Kochi",
-    "Kozhikode",
-    "Thrissur",
-    "Other"
-  ],
-  "Madhya Pradesh": [
-    "Indore",
-    "Bhopal",
-    "Jabalpur",
-    "Gwalior",
-    "Ujjain",
-    "Other"
-  ],
-  "Maharashtra": [
-    "Mumbai",
-    "Pune",
-    "Nagpur",
-    "Thane",
-    "Nashik",
-    "Aurangabad",
-    "Other"
-  ],
-  "Manipur": [
-    "Imphal",
-    "Other"
-  ],
-  "Meghalaya": [
-    "Shillong",
-    "Other"
-  ],
-  "Mizoram": [
-    "Aizawl",
-    "Other"
-  ],
-  "Nagaland": [
-    "Dimapur",
-    "Kohima",
-    "Other"
-  ],
-  "Odisha": [
-    "Bhubaneswar",
-    "Cuttack",
-    "Rourkela",
-    "Berhampur",
-    "Other"
-  ],
-  "Punjab": [
-    "Ludhiana",
-    "Amritsar",
-    "Jalandhar",
-    "Patiala",
-    "Other"
-  ],
-  "Rajasthan": [
-    "Jaipur",
-    "Jodhpur",
-    "Udaipur",
-    "Kota",
-    "Bikaner",
-    "Other"
-  ],
-  "Sikkim": [
-    "Gangtok",
-    "Other"
-  ],
-  "Tamil Nadu": [
-    "Chennai",
-    "Coimbatore",
-    "Madurai",
-    "Tiruchirappalli",
-    "Salem",
-    "Other"
-  ],
-  "Telangana": [
-    "Hyderabad",
-    "Warangal",
-    "Nizamabad",
-    "Other"
-  ],
-  "Tripura": [
-    "Agartala",
-    "Other"
-  ],
-  "Uttar Pradesh": [
-    "Lucknow",
-    "Kanpur",
-    "Ghaziabad",
-    "Agra",
-    "Varanasi",
-    "Noida",
-    "Other"
-  ],
-  "Uttarakhand": [
-    "Dehradun",
-    "Haridwar",
-    "Roorkee",
-    "Other"
-  ],
-  "West Bengal": [
-    "Kolkata",
-    "Howrah",
-    "Darjeeling",
-    "Siliguri",
-    "Other"
-  ],
-  "Delhi": [
-    "New Delhi",
-    "Other"
-  ],
-  "Jammu and Kashmir": [
-    "Srinagar",
-    "Jammu",
-    "Other"
-  ],
-  "Chandigarh": [
-    "Chandigarh",
-    "Other"
-  ],
-  "Other": [
-    "Other"
-  ]
-};
-
 const ATTEMPT_YEARS = ['Sept\'25', 'Jan\'26', 'May\'25', 'Nov\'24', 'May\'24', 'Nov\'23', 'May\'23', 'Nov\'22', 'May\'22', 'Nov\'21', 'May\'21', 'Nov\'20', 'May\'20'];
 const ATTEMPT_MONTHS = ['May', 'Nov'];
 const AUDIT_EXPERIENCE_OPTIONS = ['Audit of Listed Companies', 'Statutory Audit', 'Internal Audit', 'Internal Financial Control (IFC Clause 49 work)', 'Standard Operating Procedures SOP Drafting', 'Statutory Bank Audits', 'Tax Audit assignments of companies', 'Concurrent audit of banks', 'Revenue Audits', 'Stock Audits', 'Other', 'None'];
@@ -464,13 +262,7 @@ export const CandidateDashboard = () => {
                   </button>
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">City Where do u wanted to participate in Fast Campuses</label>
-                <select className="w-full border border-gray-200 rounded-lg p-2 pr-2 text-sm bg-white" value={personal.preferredCampusCity} onChange={(e) => setPersonal({...personal, preferredCampusCity: e.target.value})}>
-                  <option value="">Select</option>
-                  {PREFERRED_CAMPUS_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-              </div>
+
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Land Line / Alternate No.</label>
@@ -491,7 +283,7 @@ export const CandidateDashboard = () => {
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="block text-xs font-medium text-gray-700 mb-1">State *</label>
-                      <select required value={personal.currentState} onChange={(e) => setPersonal({...personal, currentState: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
+                      <select required value={personal.currentState} onChange={(e) => setPersonal({...personal, currentState: e.target.value, currentCity: ''})} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
                         <option value="">Select</option>
                         {Object.keys(STATE_CITY_MAP).map(s => <option key={s} value={s}>{s}</option>)}
                       </select>
@@ -522,7 +314,7 @@ export const CandidateDashboard = () => {
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="block text-xs font-medium text-gray-700 mb-1">State *</label>
-                      <select required value={personal.permanentState} onChange={(e) => setPersonal({...personal, permanentState: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
+                      <select required value={personal.permanentState} onChange={(e) => setPersonal({...personal, permanentState: e.target.value, permanentCity: ''})} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
                         <option value="">Select</option>
                         {Object.keys(STATE_CITY_MAP).map(s => <option key={s} value={s}>{s}</option>)}
                       </select>
@@ -556,20 +348,7 @@ export const CandidateDashboard = () => {
                   <option value="Married">Married</option>
                 </select>
               </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">City Where do u wanted to participate in Fast Campuses *</label>
-                <div className="flex flex-wrap gap-2">
-                  <input type="text" list="allCitiesList" placeholder="Pref. City 1" value={personal.prefCity1} onChange={(e) => setPersonal({...personal, prefCity1: e.target.value})} className="flex-1 min-w-[120px] px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" />
-                  <input type="text" list="allCitiesList" placeholder="Pref. City 2 (Opt)" value={personal.prefCity2} onChange={(e) => setPersonal({...personal, prefCity2: e.target.value})} className="flex-1 min-w-[120px] px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" />
-                  <input type="text" list="allCitiesList" placeholder="Pref. City 3 (Opt)" value={personal.prefCity3} onChange={(e) => setPersonal({...personal, prefCity3: e.target.value})} className="flex-1 min-w-[120px] px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" />
-                  <input type="text" list="allCitiesList" placeholder="Pref. City 4 (Opt)" value={personal.prefCity4} onChange={(e) => setPersonal({...personal, prefCity4: e.target.value})} className="flex-1 min-w-[120px] px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" />
-                  <input type="text" list="allCitiesList" placeholder="Pref. City 5 (Opt)" value={personal.prefCity5} onChange={(e) => setPersonal({...personal, prefCity5: e.target.value})} className="flex-1 min-w-[120px] px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" />
-                </div>
-                {/* Global Datalist for Cities */}
-                <datalist id="allCitiesList">
-                  {ALL_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
-                </datalist>
-              </div>
+
             </div>
             <div className="flex justify-end mt-6">
               <Button type="submit">{savingProfile ? 'Saving...' : 'Save & Next >>'}</Button>

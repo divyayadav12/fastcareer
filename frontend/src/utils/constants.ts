@@ -11,6 +11,14 @@ indianStates.forEach(state => {
   }
 });
 
+// Explicit Business Mappings
+if (STATE_CITY_MAP['Punjab']) {
+  STATE_CITY_MAP['Punjab'] = [...new Set([...STATE_CITY_MAP['Punjab'], 'Chandigarh'])].sort();
+}
+if (STATE_CITY_MAP['Haryana']) {
+  STATE_CITY_MAP['Haryana'] = [...new Set([...STATE_CITY_MAP['Haryana'], 'Chandigarh'])].sort();
+}
+
 export const STATES = Object.keys(STATE_CITY_MAP);
 export const ALL_CITIES = Array.from(new Set(Object.values(STATE_CITY_MAP).flat())).sort();
 export const YEARS = Array.from({length: 30}, (_, i) => String(new Date().getFullYear() - i));

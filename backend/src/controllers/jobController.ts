@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import Job from '../models/Job';
 import User from '../models/User';
 import { calculateMatchScore } from '../utils/matchAlgorithm';
+import { isValidCity } from '../utils/locationHelper';
 
 // @desc    Get all jobs
 // @route   GET /api/jobs
@@ -48,6 +49,13 @@ export const getJobById = async (req: Request, res: Response) => {
 // @access  Private/Employer
 export const createJob = async (req: any, res: Response) => {
   try {
+    const { location } = req.body;
+    
+    if (location && !isValidCity(location)) {
+      res.status(400).json({ message: 'Invalid location. Please select a valid city from the list.' });
+      return;
+    }
+
     const job = new Job({
       ...req.body,
       postedBy: req.user._id 
