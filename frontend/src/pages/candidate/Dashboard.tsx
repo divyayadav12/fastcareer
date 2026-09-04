@@ -237,7 +237,7 @@ export const CandidateDashboard = () => {
     alternatePhone: '', currentAddress: '', currentState: '', currentCity: '',
     permanentAddressSameAsCurrent: false, permanentAddress: '', permanentState: '', permanentCity: '',
     dateOfBirth: '', gender: 'Male', maritalStatus: 'Unmarried', preferredCampusCity: '',
-    prefCity1: '', prefCity2: '', prefCity3: ''
+    prefCity1: '', prefCity2: '', prefCity3: '', prefCity4: '', prefCity5: ''
   });
 
   const [caPortfolio, setCaPortfolio] = useState({
@@ -558,10 +558,13 @@ export const CandidateDashboard = () => {
               </div>
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">City Where do u wanted to participate in Fast Campuses *</label>
-                <input type="text" list="allCitiesList" placeholder="Pref. City 1" value={personal.prefCity1} onChange={(e) => setPersonal({...personal, prefCity1: e.target.value})} className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" />
-                <input type="text" list="allCitiesList" placeholder="Pref. City 2 (Opt)" value={personal.prefCity2} onChange={(e) => setPersonal({...personal, prefCity2: e.target.value})} className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" />
-                <input type="text" list="allCitiesList" placeholder="Pref. City 3 (Opt)" value={personal.prefCity3} onChange={(e) => setPersonal({...personal, prefCity3: e.target.value})} className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" />
-                
+                <div className="flex flex-wrap gap-2">
+                  <input type="text" list="allCitiesList" placeholder="Pref. City 1" value={personal.prefCity1} onChange={(e) => setPersonal({...personal, prefCity1: e.target.value})} className="flex-1 min-w-[120px] px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" />
+                  <input type="text" list="allCitiesList" placeholder="Pref. City 2 (Opt)" value={personal.prefCity2} onChange={(e) => setPersonal({...personal, prefCity2: e.target.value})} className="flex-1 min-w-[120px] px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" />
+                  <input type="text" list="allCitiesList" placeholder="Pref. City 3 (Opt)" value={personal.prefCity3} onChange={(e) => setPersonal({...personal, prefCity3: e.target.value})} className="flex-1 min-w-[120px] px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" />
+                  <input type="text" list="allCitiesList" placeholder="Pref. City 4 (Opt)" value={personal.prefCity4} onChange={(e) => setPersonal({...personal, prefCity4: e.target.value})} className="flex-1 min-w-[120px] px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" />
+                  <input type="text" list="allCitiesList" placeholder="Pref. City 5 (Opt)" value={personal.prefCity5} onChange={(e) => setPersonal({...personal, prefCity5: e.target.value})} className="flex-1 min-w-[120px] px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" />
+                </div>
                 {/* Global Datalist for Cities */}
                 <datalist id="allCitiesList">
                   {ALL_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
