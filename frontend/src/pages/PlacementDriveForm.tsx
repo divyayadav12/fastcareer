@@ -50,6 +50,7 @@ export const PlacementDriveForm = () => {
     permanentCity: '',
     permanentState: '',
     preferredCampusCity: '',
+    prefCity1: '', prefCity2: '', prefCity3: '', prefCity4: '', prefCity5: '',
     caInter_group1Attempts: '',
     caInter_group1Month: '',
     caInter_group1Year: '',
@@ -369,11 +370,18 @@ export const PlacementDriveForm = () => {
                     )}
                   </div>
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">City Where do u wanted to participate in Fast Campuses</label>
-                    <select name="preferredCampusCity" value={formData.preferredCampusCity} onChange={handleChange} className="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
-                      <option value="">Select...</option>
-                      {PREFERRED_CAMPUS_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">City Where do u wanted to participate in Fast Campuses *</label>
+                    <div className="flex flex-wrap gap-2">
+                      <input type="text" name="prefCity1" list="allCitiesList" placeholder="Pref. City 1" value={formData.prefCity1} onChange={handleChange} required className="flex-1 min-w-[120px] p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
+                      <input type="text" name="prefCity2" list="allCitiesList" placeholder="Pref. City 2 (Opt)" value={formData.prefCity2} onChange={handleChange} className="flex-1 min-w-[120px] p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
+                      <input type="text" name="prefCity3" list="allCitiesList" placeholder="Pref. City 3 (Opt)" value={formData.prefCity3} onChange={handleChange} className="flex-1 min-w-[120px] p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
+                      <input type="text" name="prefCity4" list="allCitiesList" placeholder="Pref. City 4 (Opt)" value={formData.prefCity4} onChange={handleChange} className="flex-1 min-w-[120px] p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
+                      <input type="text" name="prefCity5" list="allCitiesList" placeholder="Pref. City 5 (Opt)" value={formData.prefCity5} onChange={handleChange} className="flex-1 min-w-[120px] p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
+                    </div>
+                    {/* Global Datalist for Cities */}
+                    <datalist id="allCitiesList">
+                      {ALL_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+                    </datalist>
                   </div>
                 </div>
               </div>
