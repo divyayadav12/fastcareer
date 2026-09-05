@@ -123,17 +123,16 @@ interface RecruiterMarqueeProps {
 
 export const RecruiterMarquee: React.FC<RecruiterMarqueeProps> = () => {
   // Triple array for seamless infinite sliding
-  const row1 = [...COMPANY_TILES, ...COMPANY_TILES, ...COMPANY_TILES];
-  const row2 = [...COMPANY_TILES.slice().reverse(), ...COMPANY_TILES.slice().reverse(), ...COMPANY_TILES.slice().reverse()];
+  const row = [...COMPANY_TILES, ...COMPANY_TILES, ...COMPANY_TILES];
 
   return (
-    <section className="w-full bg-[#1E293B] text-white pt-16 pb-20 sm:pt-20 sm:pb-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden shadow-xl">
+    <section className="w-full bg-[#1E293B] text-white pt-12 pb-16 sm:pt-16 sm:pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden shadow-xl">
       {/* Background Soft Glow */}
       <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Top Header Section */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 sm:mb-16">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 sm:mb-12">
           <div>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white mb-3">
               Trusted by Top Companies
@@ -151,36 +150,18 @@ export const RecruiterMarquee: React.FC<RecruiterMarqueeProps> = () => {
           </Link>
         </div>
 
-        {/* Marquee Animation Rows positioned lower with compact, elegant white cards */}
-        <div className="relative overflow-hidden pt-4 mt-2 sm:mt-4 select-none">
+        {/* Single Row Continuous Smooth Marquee */}
+        <div className="relative overflow-hidden pt-2 select-none">
           {/* Edge fade gradients for seamless infinite look */}
           <div className="absolute left-0 top-0 bottom-0 w-16 sm:w-28 z-20 pointer-events-none bg-gradient-to-r from-[#1E293B] to-transparent" />
           <div className="absolute right-0 top-0 bottom-0 w-16 sm:w-28 z-20 pointer-events-none bg-gradient-to-l from-[#1E293B] to-transparent" />
 
-          {/* Row 1: Smooth Continuous Scroll */}
-          <div className="flex overflow-hidden mb-3.5 sm:mb-4">
-            <div className="animate-marquee flex items-center gap-3 sm:gap-4 py-1">
-              {row1.map((item, idx) => (
-                <Link
-                  key={`tile-r1-${item.id}-${idx}`}
-                  to="/candidate/companies"
-                  title={`${item.name} (${item.category})`}
-                  className="bg-white rounded-xl sm:rounded-2xl w-28 sm:w-36 md:w-40 h-12 sm:h-14 md:h-16 flex items-center justify-center px-3 py-2 shadow-md hover:shadow-xl hover:scale-105 transition-all duration-300 flex-shrink-0 border border-white/90 group cursor-pointer"
-                >
-                  <div className="group-hover:scale-105 transition-transform duration-300 flex items-center justify-center">
-                    {item.logo}
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          {/* Row 2: Reverse Smooth Continuous Scroll */}
+          {/* Single Row: Smooth Continuous Scroll */}
           <div className="flex overflow-hidden">
-            <div className="animate-marquee-reverse flex items-center gap-3 sm:gap-4 py-1">
-              {row2.map((item, idx) => (
+            <div className="animate-marquee flex items-center gap-3 sm:gap-4 py-1">
+              {row.map((item, idx) => (
                 <Link
-                  key={`tile-r2-${item.id}-${idx}`}
+                  key={`tile-${item.id}-${idx}`}
                   to="/candidate/companies"
                   title={`${item.name} (${item.category})`}
                   className="bg-white rounded-xl sm:rounded-2xl w-28 sm:w-36 md:w-40 h-12 sm:h-14 md:h-16 flex items-center justify-center px-3 py-2 shadow-md hover:shadow-xl hover:scale-105 transition-all duration-300 flex-shrink-0 border border-white/90 group cursor-pointer"
