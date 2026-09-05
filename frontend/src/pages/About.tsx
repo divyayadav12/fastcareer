@@ -32,10 +32,8 @@ const coreValues = [
 export const About = () => {
   return (
     <div className="w-full">
-      {/* Hero Section - Exact Color from Image (#1F2937) */}
+      {/* Hero Section - Solid #1F2937 Background */}
       <section className="bg-[#1F2937] text-white pt-32 pb-20 px-4 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
-        
         <div className="max-w-7xl mx-auto text-center relative z-10">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}

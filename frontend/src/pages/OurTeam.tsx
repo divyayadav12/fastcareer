@@ -410,12 +410,8 @@ export const OurTeam: React.FC = () => {
 
   return (
     <div className="bg-gray-50 min-h-screen pt-24 pb-16">
-      {/* Professional Corporate Hero Banner - Exact Color from Image (#1F2937) */}
+      {/* Professional Corporate Hero Banner - Solid #1F2937 Background */}
       <div className="relative bg-[#1F2937] text-white py-16 px-4 sm:px-6 lg:px-8 overflow-hidden shadow-xl">
-        {/* Subtle decorative glow */}
-        <div className="absolute top-0 right-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-10 w-80 h-80 bg-blue-400/10 rounded-full blur-3xl pointer-events-none" />
-
         <div className="max-w-7xl mx-auto text-center relative z-10">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-blue-200 text-xs sm:text-sm font-semibold mb-4 shadow-sm">
             <Sparkles size={16} className="text-yellow-400" />
