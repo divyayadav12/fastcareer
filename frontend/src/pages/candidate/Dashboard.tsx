@@ -201,16 +201,16 @@ export const CandidateDashboard = () => {
         </Link>
       </div>
 
-      {/* Top Corporate Recruiters Actively Hiring - Exact Home Page Design */}
-      <div className="bg-[#1E293B] rounded-2xl p-5 sm:p-6 text-white shadow-xl mb-8 border border-slate-700/80 relative overflow-hidden">
+      {/* Top Corporate Recruiters Actively Hiring - Single Row Compact Marquee */}
+      <div className="bg-[#1E293B] rounded-2xl p-4 sm:p-4.5 text-white shadow-lg mb-6 border border-slate-700/80 relative overflow-hidden">
         {/* Soft Background Glow */}
-        <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-[600px] h-[250px] bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-[500px] h-[180px] bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
 
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 relative z-10">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-3.5 relative z-10">
           <div>
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-              <h2 className="font-extrabold text-base sm:text-lg tracking-tight text-white">
+              <h2 className="font-extrabold text-sm sm:text-base tracking-tight text-white">
                 Top Recruiters Actively Hiring CAs & Finance Talent
               </h2>
             </div>
@@ -219,13 +219,13 @@ export const CandidateDashboard = () => {
             </p>
           </div>
 
-          <div className="flex items-center gap-3 self-start sm:self-auto">
-            <span className="text-[11px] font-bold text-blue-200 bg-white/10 px-2.5 py-1 rounded-full border border-white/10">
+          <div className="flex items-center gap-2.5 self-start sm:self-auto">
+            <span className="text-[11px] font-bold text-blue-200 bg-white/10 px-2.5 py-0.5 rounded-full border border-white/10">
               350+ Live Openings
             </span>
             <Link 
               to="/candidate/companies" 
-              className="text-xs text-gray-900 bg-white hover:bg-gray-100 px-3.5 py-1.5 rounded-xl font-extrabold flex items-center gap-1.5 transition-all shadow-md hover:scale-105"
+              className="text-xs text-gray-900 bg-white hover:bg-gray-100 px-3 py-1.5 rounded-xl font-extrabold flex items-center gap-1.5 transition-all shadow-md hover:scale-105"
             >
               <span>Explore All ({TOP_RECRUITERS.length})</span>
               <ChevronRight size={13} />
@@ -233,39 +233,21 @@ export const CandidateDashboard = () => {
           </div>
         </div>
 
-        {/* Continuous Infinite Scrolling White Logo Cards - Exact Home Page Design */}
-        <div className="relative overflow-hidden pt-2 select-none">
+        {/* Single Row Continuous Infinite Scrolling White Logo Cards */}
+        <div className="relative overflow-hidden pt-1 select-none">
           {/* Edge fade gradients for seamless infinite look */}
-          <div className="absolute left-0 top-0 bottom-0 w-12 sm:w-24 z-20 pointer-events-none bg-gradient-to-r from-[#1E293B] to-transparent" />
-          <div className="absolute right-0 top-0 bottom-0 w-12 sm:w-24 z-20 pointer-events-none bg-gradient-to-l from-[#1E293B] to-transparent" />
+          <div className="absolute left-0 top-0 bottom-0 w-10 sm:w-20 z-20 pointer-events-none bg-gradient-to-r from-[#1E293B] to-transparent" />
+          <div className="absolute right-0 top-0 bottom-0 w-10 sm:w-20 z-20 pointer-events-none bg-gradient-to-l from-[#1E293B] to-transparent" />
 
-          {/* Row 1: Continuous Smooth Marquee */}
-          <div className="flex overflow-hidden mb-3 sm:mb-3.5">
+          {/* Single Continuous Smooth Marquee Row */}
+          <div className="flex overflow-hidden">
             <div className="animate-marquee flex items-center gap-3 sm:gap-4 py-1">
               {[...COMPANY_TILES, ...COMPANY_TILES, ...COMPANY_TILES].map((item, idx) => (
                 <Link
                   key={`dash-tile-r1-${item.id}-${idx}`}
                   to="/candidate/companies"
                   title={`${item.name} (${item.category})`}
-                  className="bg-white rounded-xl sm:rounded-2xl w-28 sm:w-36 md:w-40 h-12 sm:h-14 md:h-16 flex items-center justify-center px-3 py-2 shadow-md hover:shadow-xl hover:scale-105 transition-all duration-300 flex-shrink-0 border border-white/90 group cursor-pointer"
-                >
-                  <div className="group-hover:scale-105 transition-transform duration-300 flex items-center justify-center">
-                    {item.logo}
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          {/* Row 2: Reverse Continuous Smooth Marquee */}
-          <div className="flex overflow-hidden">
-            <div className="animate-marquee-reverse flex items-center gap-3 sm:gap-4 py-1">
-              {[...COMPANY_TILES.slice().reverse(), ...COMPANY_TILES.slice().reverse(), ...COMPANY_TILES.slice().reverse()].map((item, idx) => (
-                <Link
-                  key={`dash-tile-r2-${item.id}-${idx}`}
-                  to="/candidate/companies"
-                  title={`${item.name} (${item.category})`}
-                  className="bg-white rounded-xl sm:rounded-2xl w-28 sm:w-36 md:w-40 h-12 sm:h-14 md:h-16 flex items-center justify-center px-3 py-2 shadow-md hover:shadow-xl hover:scale-105 transition-all duration-300 flex-shrink-0 border border-white/90 group cursor-pointer"
+                  className="bg-white rounded-xl sm:rounded-2xl w-28 sm:w-36 md:w-40 h-12 sm:h-14 md:h-15 flex items-center justify-center px-3 py-2 shadow-md hover:shadow-xl hover:scale-105 transition-all duration-300 flex-shrink-0 border border-white/90 group cursor-pointer"
                 >
                   <div className="group-hover:scale-105 transition-transform duration-300 flex items-center justify-center">
                     {item.logo}
