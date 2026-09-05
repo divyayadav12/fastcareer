@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ChevronDown, HelpCircle, MessageSquare, Sparkles, UserCheck, Building2, PhoneCall } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronDown, HelpCircle, MessageSquare, PhoneCall, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface FAQItem {
@@ -87,13 +88,30 @@ export const FAQSection: React.FC = () => {
   };
 
   return (
-    <section className="py-20 bg-gradient-to-b from-white via-slate-50 to-white relative overflow-hidden" id="faq">
-      {/* Background Decorative Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-blue-100/40 rounded-full blur-3xl pointer-events-none" />
+    <section className="py-20 sm:py-24 bg-gradient-to-b from-white via-slate-50 to-white relative overflow-hidden" id="faq">
+      {/* Background Decorative Glow with Floating Animation */}
+      <motion.div
+        animate={{
+          scale: [1, 1.1, 1],
+          opacity: [0.35, 0.5, 0.35]
+        }}
+        transition={{
+          duration: 8,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[750px] h-[450px] bg-blue-100/50 rounded-full blur-3xl pointer-events-none"
+      />
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-12">
+        {/* Scroll-Triggered Header Animation */}
+        <motion.div
+          initial={{ opacity: 0, y: 35 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="text-center max-w-3xl mx-auto mb-12"
+        >
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-xs sm:text-sm font-bold mb-3 shadow-xs">
             <HelpCircle size={16} className="text-primary" />
             <span>Got Questions? We Have Answers</span>
@@ -106,10 +124,16 @@ export const FAQSection: React.FC = () => {
           <p className="text-gray-600 text-sm sm:text-base leading-relaxed">
             Everything you need to know about CA recruitment, corporate hiring partnerships, and profile shortlisting on FAST Careers.
           </p>
-        </div>
+        </motion.div>
 
-        {/* Category Filters */}
-        <div className="flex flex-wrap items-center justify-center gap-2 mb-10">
+        {/* Scroll-Triggered Category Filters */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.5, delay: 0.15 }}
+          className="flex flex-wrap items-center justify-center gap-2 mb-10"
+        >
           {categories.map((cat) => (
             <button
               key={cat}
@@ -123,15 +147,23 @@ export const FAQSection: React.FC = () => {
               {cat === 'All' ? `All Questions (${FAQS.length})` : cat}
             </button>
           ))}
-        </div>
+        </motion.div>
 
-        {/* Accordion FAQ List */}
+        {/* Accordion FAQ List with Scroll Trigger & Staggered Reveal */}
         <div className="space-y-3.5 mb-12">
-          {filteredFaqs.map((faq) => {
+          {filteredFaqs.map((faq, idx) => {
             const isOpen = openId === faq.id;
             return (
-              <div
+              <motion.div
                 key={faq.id}
+                initial={{ opacity: 0, y: 28 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{
+                  duration: 0.45,
+                  delay: Math.min(idx * 0.07, 0.4),
+                  ease: "easeOut"
+                }}
                 className={`bg-white rounded-2xl border transition-all duration-300 overflow-hidden ${
                   isOpen
                     ? 'border-primary/40 shadow-lg ring-2 ring-primary/10'
@@ -145,7 +177,11 @@ export const FAQSection: React.FC = () => {
                   aria-expanded={isOpen}
                 >
                   <div className="flex items-center gap-3.5 pr-2">
-                    <div
+                    <motion.div
+                      animate={{
+                        scale: isOpen ? [1, 1.15, 1] : 1
+                      }}
+                      transition={{ duration: 0.3 }}
                       className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center font-bold text-xs flex-shrink-0 transition-colors ${
                         isOpen
                           ? 'bg-primary text-white shadow-xs'
@@ -153,42 +189,75 @@ export const FAQSection: React.FC = () => {
                       }`}
                     >
                       {faq.id}
-                    </div>
+                    </motion.div>
                     <span className="font-extrabold text-sm sm:text-base text-gray-900 leading-snug">
                       {faq.question}
                     </span>
                   </div>
 
-                  <div
-                    className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 transition-transform duration-300 ${
+                  <motion.div
+                    animate={{ rotate: isOpen ? 180 : 0 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${
                       isOpen
-                        ? 'rotate-180 bg-primary/10 text-primary'
+                        ? 'bg-primary/10 text-primary'
                         : 'bg-gray-100 text-gray-500'
                     }`}
                   >
                     <ChevronDown size={16} />
-                  </div>
+                  </motion.div>
                 </button>
 
-                {isOpen && (
-                  <div className="px-5 pb-5 sm:px-6 sm:pb-6 pt-0 border-t border-gray-100">
-                    <p className="text-gray-600 text-xs sm:text-sm leading-relaxed mt-3">
-                      {faq.answer}
-                    </p>
-                    <div className="mt-3 flex items-center gap-2">
-                      <span className="px-2.5 py-0.5 rounded-md bg-gray-100 text-gray-600 text-[10px] font-semibold">
-                        Tag: {faq.category}
-                      </span>
-                    </div>
-                  </div>
-                )}
-              </div>
+                {/* Animated Smooth Accordion Opening & Closing */}
+                <AnimatePresence initial={false}>
+                  {isOpen && (
+                    <motion.div
+                      key={`answer-${faq.id}`}
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{
+                        opacity: 1,
+                        height: "auto",
+                        transition: {
+                          height: { duration: 0.35, ease: [0.04, 0.62, 0.23, 0.98] },
+                          opacity: { duration: 0.25, delay: 0.05 }
+                        }
+                      }}
+                      exit={{
+                        opacity: 0,
+                        height: 0,
+                        transition: {
+                          height: { duration: 0.25, ease: "easeInOut" },
+                          opacity: { duration: 0.15 }
+                        }
+                      }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-5 pb-5 sm:px-6 sm:pb-6 pt-0 border-t border-gray-100">
+                        <p className="text-gray-600 text-xs sm:text-sm leading-relaxed mt-3">
+                          {faq.answer}
+                        </p>
+                        <div className="mt-3 flex items-center gap-2">
+                          <span className="px-2.5 py-0.5 rounded-md bg-gray-100 text-gray-600 text-[10px] font-semibold">
+                            Tag: {faq.category}
+                          </span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
             );
           })}
         </div>
 
-        {/* Bottom Help CTA Box */}
-        <div className="bg-gradient-to-r from-[#0F2B48] via-[#163e65] to-[#0F2B48] rounded-2xl p-6 sm:p-8 text-white shadow-xl flex flex-col sm:flex-row items-center justify-between gap-6 border border-blue-900/50">
+        {/* Scroll-Triggered Bottom Help CTA Box */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 30 }}
+          whileInView={{ opacity: 1, scale: 1, y: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.55, ease: "easeOut" }}
+          className="bg-gradient-to-r from-[#0F2B48] via-[#163e65] to-[#0F2B48] rounded-2xl p-6 sm:p-8 text-white shadow-xl flex flex-col sm:flex-row items-center justify-between gap-6 border border-blue-900/50"
+        >
           <div className="text-center sm:text-left">
             <h3 className="text-lg sm:text-xl font-extrabold text-white">
               Still have questions or need assistance?
@@ -215,7 +284,7 @@ export const FAQSection: React.FC = () => {
               <span>WhatsApp</span>
             </a>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );
