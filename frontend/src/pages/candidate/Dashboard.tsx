@@ -9,6 +9,7 @@ import { Button } from '../../components/Button';
 import { CandidateLayout } from '../../layouts/CandidateLayout';
 import { STATES, STATE_CITY_MAP, ALL_CITIES, YEARS, MONTHS, CA_EXAM_MONTHS, NATURE_OF_WORK, COLLEGES, PREFERRED_CAMPUS_CITIES, ARTICLESHIP_TYPES, CA_FIRMS, BOARDS } from '../../utils/constants';
 import { TOP_RECRUITERS } from '../home/RecruitersSection';
+import { COMPANY_TILES } from '../../components/RecruiterMarquee';
 
 
 const ATTEMPT_YEARS = ['Sept\'25', 'Jan\'26', 'May\'25', 'Nov\'24', 'May\'24', 'Nov\'23', 'May\'23', 'Nov\'22', 'May\'22', 'Nov\'21', 'May\'21', 'Nov\'20', 'May\'20'];
@@ -200,60 +201,74 @@ export const CandidateDashboard = () => {
         </Link>
       </div>
 
-      {/* Top Corporate Recruiters Actively Hiring Marquee Banner */}
-      <div className="bg-gradient-to-r from-[#0F2B48] via-[#163e65] to-[#0F2B48] rounded-2xl p-4 sm:p-5 text-white shadow-md mb-8 border border-blue-900/40 relative overflow-hidden">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-            <span className="font-extrabold text-xs sm:text-sm tracking-wide text-blue-100">
-              Top Recruiters Actively Hiring CAs & Finance Talent
-            </span>
+      {/* Top Corporate Recruiters Actively Hiring - Exact Home Page Design */}
+      <div className="bg-[#1E293B] rounded-2xl p-5 sm:p-6 text-white shadow-xl mb-8 border border-slate-700/80 relative overflow-hidden">
+        {/* Soft Background Glow */}
+        <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-[600px] h-[250px] bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 relative z-10">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+              <h2 className="font-extrabold text-base sm:text-lg tracking-tight text-white">
+                Top Recruiters Actively Hiring CAs & Finance Talent
+              </h2>
+            </div>
+            <p className="text-gray-400 text-xs mt-0.5">
+              150+ leading corporate enterprises & multinationals rely on FAST Careers for recruitment
+            </p>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="text-[11px] text-blue-200 bg-white/10 px-2.5 py-0.5 rounded-full border border-white/10">
+
+          <div className="flex items-center gap-3 self-start sm:self-auto">
+            <span className="text-[11px] font-bold text-blue-200 bg-white/10 px-2.5 py-1 rounded-full border border-white/10">
               350+ Live Openings
             </span>
             <Link 
               to="/candidate/companies" 
-              className="text-[11px] text-cyan-300 hover:text-white font-bold flex items-center gap-1 transition-colors underline-offset-2 hover:underline"
+              className="text-xs text-gray-900 bg-white hover:bg-gray-100 px-3.5 py-1.5 rounded-xl font-extrabold flex items-center gap-1.5 transition-all shadow-md hover:scale-105"
             >
-              <span>View All ({TOP_RECRUITERS.length})</span>
-              <ChevronRight size={12} />
+              <span>Explore All ({TOP_RECRUITERS.length})</span>
+              <ChevronRight size={13} />
             </Link>
           </div>
         </div>
 
-        {/* Continuous Smooth Marquee Ticker with compact cards */}
-        <div className="relative overflow-hidden pt-1 select-none">
-          {/* Edge fade gradients for seamless infinite scroll look */}
-          <div className="absolute left-0 top-0 bottom-0 w-10 sm:w-16 z-20 pointer-events-none bg-gradient-to-r from-[#0F2B48] to-transparent" />
-          <div className="absolute right-0 top-0 bottom-0 w-10 sm:w-16 z-20 pointer-events-none bg-gradient-to-l from-[#0F2B48] to-transparent" />
+        {/* Continuous Infinite Scrolling White Logo Cards - Exact Home Page Design */}
+        <div className="relative overflow-hidden pt-2 select-none">
+          {/* Edge fade gradients for seamless infinite look */}
+          <div className="absolute left-0 top-0 bottom-0 w-12 sm:w-24 z-20 pointer-events-none bg-gradient-to-r from-[#1E293B] to-transparent" />
+          <div className="absolute right-0 top-0 bottom-0 w-12 sm:w-24 z-20 pointer-events-none bg-gradient-to-l from-[#1E293B] to-transparent" />
 
-          <div className="flex overflow-hidden">
-            <div className="animate-marquee flex items-center gap-2.5 py-1">
-              {[...TOP_RECRUITERS, ...TOP_RECRUITERS, ...TOP_RECRUITERS].map((brand, idx) => (
+          {/* Row 1: Continuous Smooth Marquee */}
+          <div className="flex overflow-hidden mb-3 sm:mb-3.5">
+            <div className="animate-marquee flex items-center gap-3 sm:gap-4 py-1">
+              {[...COMPANY_TILES, ...COMPANY_TILES, ...COMPANY_TILES].map((item, idx) => (
                 <Link
-                  key={`dash-rec-${brand.id}-${idx}`}
+                  key={`dash-tile-r1-${item.id}-${idx}`}
                   to="/candidate/companies"
-                  title={`${brand.name} - ${brand.openings} Openings`}
-                  className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/15 px-3 py-2 rounded-xl transition-all duration-300 group flex items-center gap-2.5 flex-shrink-0 cursor-pointer hover:scale-105 shadow-xs"
+                  title={`${item.name} (${item.category})`}
+                  className="bg-white rounded-xl sm:rounded-2xl w-28 sm:w-36 md:w-40 h-12 sm:h-14 md:h-16 flex items-center justify-center px-3 py-2 shadow-md hover:shadow-xl hover:scale-105 transition-all duration-300 flex-shrink-0 border border-white/90 group cursor-pointer"
                 >
-                  <div className="w-7 h-7 rounded-lg bg-white/20 text-white font-black text-[10px] flex items-center justify-center group-hover:bg-primary transition-colors flex-shrink-0">
-                    {brand.shortName.slice(0, 3)}
+                  <div className="group-hover:scale-105 transition-transform duration-300 flex items-center justify-center">
+                    {item.logo}
                   </div>
-                  <div className="text-left">
-                    <div className="text-xs font-black text-blue-200 group-hover:text-white transition-colors whitespace-nowrap">
-                      {brand.shortName}
-                    </div>
-                    <div className="text-[10px] text-gray-300 whitespace-nowrap">
-                      {brand.category.split('&')[0].trim()}
-                    </div>
-                  </div>
-                  <div className="ml-1 flex items-center gap-1">
-                    <span className="text-[10px] font-bold text-emerald-300 bg-emerald-950/70 px-1.5 py-0.5 rounded border border-emerald-500/40 whitespace-nowrap">
-                      {brand.openings}
-                    </span>
-                    <ChevronRight size={11} className="text-gray-400 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Row 2: Reverse Continuous Smooth Marquee */}
+          <div className="flex overflow-hidden">
+            <div className="animate-marquee-reverse flex items-center gap-3 sm:gap-4 py-1">
+              {[...COMPANY_TILES.slice().reverse(), ...COMPANY_TILES.slice().reverse(), ...COMPANY_TILES.slice().reverse()].map((item, idx) => (
+                <Link
+                  key={`dash-tile-r2-${item.id}-${idx}`}
+                  to="/candidate/companies"
+                  title={`${item.name} (${item.category})`}
+                  className="bg-white rounded-xl sm:rounded-2xl w-28 sm:w-36 md:w-40 h-12 sm:h-14 md:h-16 flex items-center justify-center px-3 py-2 shadow-md hover:shadow-xl hover:scale-105 transition-all duration-300 flex-shrink-0 border border-white/90 group cursor-pointer"
+                >
+                  <div className="group-hover:scale-105 transition-transform duration-300 flex items-center justify-center">
+                    {item.logo}
                   </div>
                 </Link>
               ))}

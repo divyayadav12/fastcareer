@@ -10,7 +10,7 @@ interface CompanyLogoTile {
 }
 
 // Crisp, high-contrast SVG / styled brand emblems for clean white cards
-const COMPANY_TILES: CompanyLogoTile[] = [
+export const COMPANY_TILES: CompanyLogoTile[] = [
   {
     id: 1,
     name: 'ITC Limited',
