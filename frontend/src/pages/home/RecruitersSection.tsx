@@ -233,30 +233,36 @@ export const RecruitersSection: React.FC = () => {
         </div>
 
         {/* Dynamic Infinite Brand Marquee Ticker */}
-        <div className="mb-14 bg-white rounded-2xl p-6 shadow-sm border border-gray-200/80 overflow-hidden">
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest text-center mb-5">
-            Active Hiring Partners & Campus Recruiters
+        <div className="mb-14 bg-white rounded-2xl p-6 shadow-sm border border-gray-200/80 overflow-hidden relative">
+          {/* Subtle edge blur fades */}
+          <div className="absolute left-0 top-0 bottom-0 w-16 z-10 pointer-events-none bg-gradient-to-r from-white to-transparent" />
+          <div className="absolute right-0 top-0 bottom-0 w-16 z-10 pointer-events-none bg-gradient-to-l from-white to-transparent" />
+
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest text-center mb-4">
+            Continuous Hiring Partners & Campus Recruiters
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
-            {TOP_RECRUITERS.slice(0, 9).map((brand) => (
-              <div
-                key={brand.id}
-                className="px-4 py-2 rounded-xl bg-gray-50 border border-gray-200/70 hover:border-primary hover:bg-blue-50/50 transition-all flex items-center gap-2 shadow-xs group cursor-default"
-              >
-                <div className="w-7 h-7 rounded-lg bg-primary/10 text-primary font-black text-xs flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
-                  {brand.shortName.slice(0, 2).toUpperCase()}
+          <div className="flex overflow-hidden select-none py-2">
+            <div className="animate-marquee flex items-center gap-4">
+              {[...TOP_RECRUITERS, ...TOP_RECRUITERS].map((brand, idx) => (
+                <div
+                  key={`ticker-${brand.id}-${idx}`}
+                  className="px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200/70 hover:border-primary hover:bg-blue-50/70 transition-all flex items-center gap-3 shadow-xs group cursor-pointer flex-shrink-0"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#0F2B48] to-[#1a446c] text-white font-black text-xs flex items-center justify-center group-hover:scale-105 transition-transform shadow-xs">
+                    {brand.shortName.slice(0, 3)}
+                  </div>
+                  <div>
+                    <span className="font-extrabold text-xs sm:text-sm text-gray-900 group-hover:text-primary transition-colors">
+                      {brand.name.split('(')[0].trim()}
+                    </span>
+                    <span className="ml-2 px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-md text-[10px] font-bold">
+                      {brand.openings} Openings
+                    </span>
+                  </div>
                 </div>
-                <div>
-                  <span className="font-extrabold text-xs sm:text-sm text-gray-900 group-hover:text-primary transition-colors">
-                    {brand.name.split('(')[0].trim()}
-                  </span>
-                  <span className="ml-1.5 px-1.5 py-0.5 bg-emerald-100 text-emerald-800 rounded text-[10px] font-bold">
-                    {brand.openings} Openings
-                  </span>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
 
