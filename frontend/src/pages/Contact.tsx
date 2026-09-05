@@ -7,19 +7,20 @@ import { Input } from '../components/Input';
 import { useForm } from 'react-hook-form';
 
 type ContactFormData = {
-  name: string;
+  name?: string;
   email: string;
-  subject: string;
-  message: string;
+  phone: string;
+  companyName?: string;
+  message?: string;
 };
 
 export const Contact = () => {
-  const { register, handleSubmit, formState: { errors } } = useForm<ContactFormData>();
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<ContactFormData>();
 
   const onSubmit = (data: ContactFormData) => {
-    // Placeholder for actual API submission
-    console.log(data);
+    console.log('Contact form submitted:', data);
     toast.success('Thank you for contacting us. We will get back to you shortly.');
+    reset();
   };
 
   return (
@@ -92,37 +93,48 @@ export const Contact = () => {
           
           {/* Contact Form */}
           <div className="bg-white p-8 md:p-10 rounded-3xl shadow-sm border border-gray-100">
-            <h3 className="text-2xl font-bold text-text mb-6">Send a Message</h3>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <h3 className="text-2xl font-bold text-text mb-2">Send a Message</h3>
+            <p className="text-xs text-gray-500 mb-6">Fields marked with <span className="text-red-500 font-bold">*</span> are required.</p>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <Input 
-                label="Full Name"
+                label="Full Name (Optional)"
                 placeholder="John Doe"
-                {...register("name", { required: "Name is required" })}
+                {...register("name")}
                 error={errors.name?.message}
               />
               <Input 
-                label="Email Address"
+                label="Email Address *"
                 type="email"
                 placeholder="john@example.com"
                 {...register("email", { 
-                  required: "Email is required",
-                  pattern: { value: /^\S+@\S+$/i, message: "Invalid email format" }
+                  required: "Email address is required",
+                  pattern: { value: /^\S+@\S+\.\S+$/i, message: "Invalid email format" }
                 })}
                 error={errors.email?.message}
               />
               <Input 
-                label="Subject"
-                placeholder="How can we help?"
-                {...register("subject", { required: "Subject is required" })}
-                error={errors.subject?.message}
+                label="Phone Number *"
+                type="tel"
+                placeholder="+91 98765 43210"
+                {...register("phone", { 
+                  required: "Phone number is required",
+                  minLength: { value: 7, message: "Please enter a valid phone number" }
+                })}
+                error={errors.phone?.message}
+              />
+              <Input 
+                label="Company Name (Optional)"
+                placeholder="e.g. Ernst & Young, Tata Motors, ABC Corp"
+                {...register("companyName")}
+                error={errors.companyName?.message}
               />
               
               <div className="flex flex-col">
-                <label className="text-sm font-medium text-text mb-2">Message</label>
+                <label className="text-sm font-medium text-text mb-2">Message (Optional)</label>
                 <textarea 
-                  className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:border-transparent transition-all min-h-[150px] resize-y ${errors.message ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-primary'}`}
-                  placeholder="Your message here..."
-                  {...register("message", { required: "Message is required" })}
+                  className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:border-transparent transition-all min-h-[120px] resize-y ${errors.message ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-primary'}`}
+                  placeholder="How can we help you?"
+                  {...register("message")}
                 ></textarea>
                 {errors.message && <p className="text-red-500 text-sm mt-1">{errors.message.message}</p>}
               </div>
