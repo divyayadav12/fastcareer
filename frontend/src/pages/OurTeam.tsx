@@ -411,34 +411,34 @@ export const OurTeam: React.FC = () => {
   return (
     <div className="bg-gray-50 min-h-screen pt-24 pb-16">
       {/* Professional Corporate Hero Banner - Solid #1F2937 Background */}
-      <div className="relative bg-[#1F2937] text-white py-10 sm:py-12 px-4 sm:px-6 lg:px-8 overflow-hidden shadow-xl">
+      <div className="relative bg-[#1F2937] text-white py-16 px-4 sm:px-6 lg:px-8 overflow-hidden shadow-xl">
         <div className="max-w-7xl mx-auto text-center relative z-10">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-blue-200 text-xs font-semibold mb-3 shadow-sm">
-            <Sparkles size={14} className="text-yellow-400" />
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-blue-200 text-xs sm:text-sm font-semibold mb-4 shadow-sm">
+            <Sparkles size={16} className="text-yellow-400" />
             <span>Culture, Leadership & Learning Moments</span>
           </div>
 
-          <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight mb-2 text-white">
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white">
             Learning Masterclasses & <span className="text-white">Cultural Celebrations</span>
           </h1>
 
           {/* Quick Metrics Bar */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 max-w-4xl mx-auto mt-6 sm:mt-7">
-            <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-xl p-3 sm:p-3.5 text-center hover:bg-white/15 transition-all">
-              <div className="text-xl sm:text-2xl font-extrabold text-white">120+</div>
-              <div className="text-xs text-gray-300 font-medium mt-0.5">Masterclasses & Workshops</div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto mt-8">
+            <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl p-4 text-center hover:bg-white/15 transition-all">
+              <div className="text-2xl sm:text-3xl font-extrabold text-white">120+</div>
+              <div className="text-xs sm:text-sm text-gray-300 font-medium mt-1">Masterclasses & Workshops</div>
             </div>
-            <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-xl p-3 sm:p-3.5 text-center hover:bg-white/15 transition-all">
-              <div className="text-xl sm:text-2xl font-extrabold text-white">100%</div>
-              <div className="text-xs text-gray-300 font-medium mt-0.5">Cultural Festive Spirit</div>
+            <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl p-4 text-center hover:bg-white/15 transition-all">
+              <div className="text-2xl sm:text-3xl font-extrabold text-white">100%</div>
+              <div className="text-xs sm:text-sm text-gray-300 font-medium mt-1">Cultural Festive Spirit</div>
             </div>
-            <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-xl p-3 sm:p-3.5 text-center hover:bg-white/15 transition-all">
-              <div className="text-xl sm:text-2xl font-extrabold text-white">40+</div>
-              <div className="text-xs text-gray-300 font-medium mt-0.5">Corporate Placement Summits</div>
+            <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl p-4 text-center hover:bg-white/15 transition-all">
+              <div className="text-2xl sm:text-3xl font-extrabold text-white">40+</div>
+              <div className="text-xs sm:text-sm text-gray-300 font-medium mt-1">Corporate Placement Summits</div>
             </div>
-            <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-xl p-3 sm:p-3.5 text-center hover:bg-white/15 transition-all">
-              <div className="text-xl sm:text-2xl font-extrabold text-white">15+</div>
-              <div className="text-xs text-gray-300 font-medium mt-0.5">Years of Leadership</div>
+            <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl p-4 text-center hover:bg-white/15 transition-all">
+              <div className="text-2xl sm:text-3xl font-extrabold text-white">15+</div>
+              <div className="text-xs sm:text-sm text-gray-300 font-medium mt-1">Years of Leadership</div>
             </div>
           </div>
         </div>
