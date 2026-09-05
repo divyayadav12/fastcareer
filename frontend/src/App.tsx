@@ -4,6 +4,7 @@ import { Navbar } from './layouts/Navbar';
 import { Footer } from './layouts/Footer';
 import { Home } from './pages/Home';
 import { About } from './pages/About';
+import { OurTeam } from './pages/OurTeam';
 import { Services } from './pages/Services';
 import { Expertise } from './pages/Expertise';
 import { Employers } from './pages/Employers';
@@ -44,6 +45,8 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
+            <Route path="/team" element={<OurTeam />} />
+            <Route path="/our-team" element={<OurTeam />} />
             <Route path="/services" element={<Services />} />
             <Route path="/expertise" element={<Expertise />} />
             <Route path="/employers" element={<Employers />} />

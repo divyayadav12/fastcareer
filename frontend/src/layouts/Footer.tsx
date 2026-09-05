@@ -25,9 +25,9 @@ export const Footer = () => {
             <h4 className="text-lg font-semibold mb-4">Company</h4>
             <ul className="space-y-2 text-sm text-gray-400">
               <li><RouterLink to="/about" className="hover:text-primary transition-colors">About Us</RouterLink></li>
+              <li><RouterLink to="/team" className="hover:text-primary transition-colors">Our Team</RouterLink></li>
               <li><RouterLink to="/services" className="hover:text-primary transition-colors">Services</RouterLink></li>
               <li><RouterLink to="/expertise" className="hover:text-primary transition-colors">Expertise</RouterLink></li>
-              <li><RouterLink to="/leadership" className="hover:text-primary transition-colors">Leadership</RouterLink></li>
               <li><RouterLink to="/contact" className="hover:text-primary transition-colors">Contact</RouterLink></li>
             </ul>
           </div>
