@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { User, FileText, CheckCircle2, ChevronRight, Upload, MapPin, GraduationCap, Briefcase, Eye, EyeOff } from 'lucide-react';
+import { User, FileText, CheckCircle2, ChevronRight, Upload, MapPin, GraduationCap, Briefcase, Eye, EyeOff, Building2 } from 'lucide-react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { getResumeUrl } from '../../utils/urlHelper';
 import type { RootState } from '../../store';
 import axios from 'axios';
 import { Button } from '../../components/Button';
 import { CandidateLayout } from '../../layouts/CandidateLayout';
 import { STATES, STATE_CITY_MAP, ALL_CITIES, YEARS, MONTHS, CA_EXAM_MONTHS, NATURE_OF_WORK, COLLEGES, PREFERRED_CAMPUS_CITIES, ARTICLESHIP_TYPES, CA_FIRMS, BOARDS } from '../../utils/constants';
+import { TOP_RECRUITERS } from '../home/RecruitersSection';
+
 
 const ATTEMPT_YEARS = ['Sept\'25', 'Jan\'26', 'May\'25', 'Nov\'24', 'May\'24', 'Nov\'23', 'May\'23', 'Nov\'22', 'May\'22', 'Nov\'21', 'May\'21', 'Nov\'20', 'May\'20'];
 const ATTEMPT_MONTHS = ['May', 'Nov'];
@@ -183,8 +185,59 @@ export const CandidateDashboard = () => {
 
   return (
     <CandidateLayout>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-text">Update Profile</h1>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-text">Candidate Dashboard</h1>
+          <p className="text-gray-500 text-sm">Keep your CA profile up to date to get shortlisted by India's top recruiting brands.</p>
+        </div>
+        <Link 
+          to="/candidate/companies"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-50 text-primary hover:bg-blue-100 font-bold text-xs transition-colors self-start md:self-auto border border-blue-200 shadow-xs"
+        >
+          <Building2 size={15} />
+          <span>View All Registered Recruiters ({TOP_RECRUITERS.length})</span>
+          <ChevronRight size={14} />
+        </Link>
+      </div>
+
+      {/* Top Corporate Recruiters Actively Hiring Marquee Banner */}
+      <div className="bg-gradient-to-r from-[#0F2B48] via-[#163e65] to-[#0F2B48] rounded-2xl p-5 text-white shadow-md mb-8 border border-blue-900/40 relative overflow-hidden">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+            <span className="font-extrabold text-sm sm:text-base tracking-wide text-blue-100">
+              Top Recruiters Actively Hiring CAs & Finance Talent
+            </span>
+          </div>
+          <span className="text-xs text-blue-200 bg-white/10 px-2.5 py-1 rounded-full border border-white/10">
+            350+ Live Openings
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          {TOP_RECRUITERS.slice(0, 6).map((brand) => (
+            <Link
+              key={brand.id}
+              to="/candidate/companies"
+              className="bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/10 p-3 rounded-xl transition-all group flex flex-col justify-between"
+            >
+              <div>
+                <div className="text-xs font-black text-blue-300 group-hover:text-white transition-colors truncate">
+                  {brand.name.split('(')[0].trim()}
+                </div>
+                <div className="text-[10px] text-gray-300 truncate mt-0.5">
+                  {brand.category.split('&')[0].trim()}
+                </div>
+              </div>
+              <div className="mt-2 flex items-center justify-between">
+                <span className="text-[10px] font-bold text-emerald-300 bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-500/30">
+                  {brand.openings} Openings
+                </span>
+                <ChevronRight size={12} className="text-gray-400 group-hover:text-white" />
+              </div>
+            </Link>
+          ))}
+        </div>
       </div>
 
       {/* Stepper Progress */}

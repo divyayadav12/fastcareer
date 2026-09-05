@@ -1,6 +1,7 @@
 import React from 'react';
 import { Hero } from './home/Hero';
 import { TrustStats } from './home/TrustStats';
+import { RecruitersSection } from './home/RecruitersSection';
 import { AboutSection } from './home/AboutSection';
 import { ServicesSection } from './home/ServicesSection';
 import { ExpertiseSection } from './home/ExpertiseSection';
@@ -15,6 +16,7 @@ export const Home = () => {
     <div className="w-full">
       <Hero />
       <TrustStats />
+      <RecruitersSection />
       <AboutSection />
       <ServicesSection />
       <ExpertiseSection />
