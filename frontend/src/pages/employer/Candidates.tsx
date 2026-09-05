@@ -1,7 +1,7 @@
 import toast from 'react-hot-toast';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { EmployerLayout } from '../../layouts/EmployerLayout';
-import { Search, Filter, MapPin, GraduationCap, Download, DownloadCloud, FileSpreadsheet, CheckSquare, Square } from 'lucide-react';
+import { Search, Filter, MapPin, GraduationCap, Download, DownloadCloud, FileSpreadsheet, CheckSquare, Square, UploadCloud, X, CheckCircle2, AlertCircle } from 'lucide-react';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { getResumeUrl } from '../../utils/urlHelper';
@@ -18,6 +18,7 @@ interface Candidate {
   skills?: string[];
   experience?: number;
   resumeUrl?: string;
+  hasResume?: boolean;
   personalDetails?: {
     currentCity?: string;
     currentState?: string;
@@ -60,6 +61,22 @@ export const EmployerCandidates = () => {
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [loading, setLoading] = useState(true);
   
+  // Excel Matching States
+  const [isExcelMode, setIsExcelMode] = useState(false);
+  const [excelFileName, setExcelFileName] = useState('');
+  const [matchedCandidates, setMatchedCandidates] = useState<Candidate[]>([]);
+  const [excelStats, setExcelStats] = useState<{
+    totalEmails: number;
+    matchedCandidates: number;
+    resumesAvailable: number;
+    resumesUnavailable: number;
+    notFound: number;
+  } | null>(null);
+  const [isProcessingExcel, setIsProcessingExcel] = useState(false);
+  const [processingStep, setProcessingStep] = useState('');
+  const [zipStep, setZipStep] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   // Filtering States
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
@@ -113,31 +130,35 @@ export const EmployerCandidates = () => {
     }
   }, [user]);
 
-  const toggleSelection = (id: string) => {
+  const candidateHasResume = (c: Candidate): boolean => {
+    if (c.hasResume !== undefined) return c.hasResume;
+    return !!(c.resumeUrl && c.resumeUrl.trim().length > 0);
+  };
+
+  const toggleSelection = (candidate: Candidate) => {
+    if (!candidateHasResume(candidate)) {
+      toast.error('Resume not available for this candidate.');
+      return;
+    }
     const newSelected = new Set(selectedIds);
-    if (newSelected.has(id)) {
-      newSelected.delete(id);
+    if (newSelected.has(candidate._id)) {
+      newSelected.delete(candidate._id);
     } else {
-      newSelected.add(id);
+      newSelected.add(candidate._id);
     }
     setSelectedIds(newSelected);
   };
 
-  const toggleSelectAll = () => {
-    if (selectedIds.size === filteredCandidates.length && filteredCandidates.length > 0) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(filteredCandidates.map(c => c._id)));
-    }
-  };
+  // Base list depending on whether Excel filter is active
+  const baseCandidates = isExcelMode ? matchedCandidates : candidates;
 
-  const filteredCandidates = candidates.filter(c => {
+  const filteredCandidates = baseCandidates.filter(c => {
     const term = searchTerm.toLowerCase();
     const fullName = `${c.firstName} ${c.lastName}`.toLowerCase();
     const city = c.personalDetails?.currentCity?.toLowerCase() || '';
     const course = c.qualifications?.graduation?.courseName?.toLowerCase() || '';
     
-    const matchesSearch = fullName.includes(term) || city.includes(term) || course.includes(term);
+    const matchesSearch = fullName.includes(term) || city.includes(term) || course.includes(term) || c.email.toLowerCase().includes(term);
     const matchesCity = filterCity ? city.includes(filterCity.toLowerCase()) : true;
     const matchesState = filterState ? c.personalDetails?.currentState === filterState : true;
     const matchesCourse = filterCourse ? course.includes(filterCourse.toLowerCase()) : true;
@@ -242,51 +263,179 @@ export const EmployerCandidates = () => {
     setIsExporting(false);
   };
 
+  const candidatesWithResumes = filteredCandidates.filter(candidateHasResume);
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === candidatesWithResumes.length && candidatesWithResumes.length > 0) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(candidatesWithResumes.map(c => c._id)));
+    }
+  };
+
+  const handleExcelUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedExtensions = ['.xlsx', '.xls'];
+    const fileExt = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+    if (!allowedExtensions.includes(fileExt)) {
+      toast.error('Please upload a valid Excel file (.xlsx or .xls).');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    setIsProcessingExcel(true);
+    setProcessingStep('Uploading Excel...');
+
+    try {
+      const stepTimer1 = setTimeout(() => setProcessingStep('Reading emails...'), 500);
+      const stepTimer2 = setTimeout(() => setProcessingStep('Matching candidates...'), 1000);
+      const stepTimer3 = setTimeout(() => setProcessingStep('Preparing resumes...'), 1500);
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/users/candidates/match-excel`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${user?.token}`,
+          },
+        }
+      );
+
+      clearTimeout(stepTimer1);
+      clearTimeout(stepTimer2);
+      clearTimeout(stepTimer3);
+
+      const data = res.data;
+      setIsExcelMode(true);
+      setExcelFileName(file.name);
+      setExcelStats({
+        totalEmails: data.totalEmails,
+        matchedCandidates: data.matchedCandidates,
+        resumesAvailable: data.resumesAvailable,
+        resumesUnavailable: data.resumesUnavailable,
+        notFound: data.notFound,
+      });
+      setMatchedCandidates(data.candidates || []);
+
+      // Auto-select all matched candidates that have a resume
+      const availableIds = new Set<string>(
+        (data.candidates || [])
+          .filter((c: Candidate) => candidateHasResume(c))
+          .map((c: Candidate) => c._id)
+      );
+      setSelectedIds(availableIds);
+
+      toast.success(
+        `${data.matchedCandidates} candidates matched from Excel (${data.resumesAvailable} resumes ready to download).`
+      );
+    } catch (err: any) {
+      console.error('Error matching Excel file:', err);
+      const msg = err.response?.data?.message || 'Failed to match candidates from Excel file.';
+      toast.error(msg);
+    } finally {
+      setIsProcessingExcel(false);
+      setProcessingStep('');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const clearExcelMode = () => {
+    setIsExcelMode(false);
+    setExcelFileName('');
+    setExcelStats(null);
+    setMatchedCandidates([]);
+    setSelectedIds(new Set());
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    toast.success('Returned to full candidates list.');
+  };
+
   const downloadSelectedAsZip = async () => {
     if (selectedIds.size === 0) {
       toast.error('Please select at least one candidate to download.');
       return;
     }
     
-    setIsZipping(true);
-    const zip = new JSZip();
-    const folder = zip.folder("candidates_resumes");
-    
-    const selectedCandidates = candidates.filter(c => selectedIds.has(c._id) && c.resumeUrl);
+    const selectedCandidates = baseCandidates.filter(
+      c => selectedIds.has(c._id) && candidateHasResume(c)
+    );
     
     if (selectedCandidates.length === 0) {
       toast.error('None of the selected candidates have resumes.');
-      setIsZipping(false);
       return;
     }
 
-    try {
-      // Fetch all PDFs in parallel
-      const fetchPromises = selectedCandidates.map(async (candidate) => {
-        const url = getResumeUrl(candidate.resumeUrl!);
-        try {
-          const response = await fetch(url);
-          if (!response.ok) throw new Error('Network error');
-          const blob = await response.blob();
-          
-          const fileName = `${candidate.firstName}_${candidate.lastName}_Resume.pdf`.replace(/\s+/g, '_');
-          folder?.file(fileName, blob);
-        } catch (err) {
-          console.error(`Failed to fetch resume for ${candidate.firstName}`, err);
-          folder?.file(`${candidate.firstName}_${candidate.lastName}_error.txt`, `Failed to download PDF from: ${url}`);
-        }
-      });
+    setIsZipping(true);
+    setZipStep('Preparing ZIP...');
 
-      await Promise.all(fetchPromises);
-      
-      const content = await zip.generateAsync({ type: 'blob' });
-      saveAs(content, `FastCareer_Resumes_${new Date().toISOString().split('T')[0]}.zip`);
-      
-    } catch (error) {
-      console.error('Error creating ZIP:', error);
-      toast.error('An error occurred while creating the ZIP file.');
+    try {
+      // 1. First attempt backend API call
+      setZipStep('Downloading...');
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/users/candidates/download-resumes-zip`,
+        { candidateIds: Array.from(selectedIds) },
+        {
+          headers: { Authorization: `Bearer ${user?.token}` },
+          responseType: 'blob',
+        }
+      );
+
+      const blob = new Blob([response.data], { type: 'application/zip' });
+      saveAs(blob, `FAST_Careers_Resumes_${new Date().toISOString().split('T')[0]}.zip`);
+      toast.success(`${selectedCandidates.length} resumes downloaded successfully.`);
+    } catch (backendError) {
+      console.warn('Backend ZIP download encountered an issue, running client-side package fallback:', backendError);
+
+      // 2. Client-side JSZip fallback
+      try {
+        setZipStep('Packaging resumes...');
+        const zip = new JSZip();
+        const folder = zip.folder("candidates_resumes") || zip;
+        const nameTracker = new Map<string, number>();
+
+        const fetchPromises = selectedCandidates.map(async (candidate) => {
+          const url = getResumeUrl(candidate.resumeUrl!);
+          const sanitize = (s: string) => s.replace(/[/\\?%*:|"<>]/g, '').trim().replace(/\s+/g, '_');
+          let base = `${sanitize(candidate.firstName || 'Candidate')}_${sanitize(candidate.lastName || '')}`.replace(/_+$/, '');
+          if (!base) base = `Candidate_${candidate._id.slice(-6)}`;
+
+          let fileName = '';
+          if (!nameTracker.has(base)) {
+            nameTracker.set(base, 1);
+            fileName = `${base}.pdf`;
+          } else {
+            const count = (nameTracker.get(base) || 1) + 1;
+            nameTracker.set(base, count);
+            fileName = `${base}_${count}.pdf`;
+          }
+
+          try {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Network error');
+            const blob = await response.blob();
+            folder.file(fileName, blob);
+          } catch (err) {
+            console.error(`Failed to fetch resume for ${candidate.firstName}`, err);
+            folder.file(`${base}_fetch_error.txt`, `Failed to download PDF from: ${url}`);
+          }
+        });
+
+        await Promise.all(fetchPromises);
+        const content = await zip.generateAsync({ type: 'blob' });
+        saveAs(content, `FAST_Careers_Resumes_${new Date().toISOString().split('T')[0]}.zip`);
+        toast.success(`${selectedCandidates.length} resumes downloaded successfully.`);
+      } catch (clientErr) {
+        console.error('Error creating ZIP on client:', clientErr);
+        toast.error('An error occurred while creating the ZIP file.');
+      }
     } finally {
       setIsZipping(false);
+      setZipStep('');
     }
   };
 
@@ -312,17 +461,36 @@ export const EmployerCandidates = () => {
     setFilterListedCompany('');
     setFilterGradCompleted('');
     setFilterGradType('');
-  }
+  };
 
   return (
     <EmployerLayout>
       <div className="flex flex-col md:flex-row md:justify-between md:items-end mb-8 gap-4">
         <div>
           <h1 className="text-2xl font-bold text-text mb-2">Search Candidates</h1>
-          <p className="text-gray-500">Find the perfect match for your open positions</p>
+          <p className="text-gray-500">
+            {isExcelMode ? 'Viewing candidates matched from uploaded Excel sheet' : 'Find the perfect match for your open positions'}
+          </p>
         </div>
         
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleExcelUpload}
+            accept=".xlsx, .xls"
+            className="hidden"
+          />
+
+          <button 
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isProcessingExcel}
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-lg font-medium hover:bg-indigo-100 transition-colors disabled:opacity-50"
+            title="Upload Excel with candidate emails (.xlsx, .xls)"
+          >
+            <UploadCloud size={18} /> {isProcessingExcel ? (processingStep || 'Processing...') : 'Upload Excel'}
+          </button>
+
           <button 
             onClick={exportToCSV}
             disabled={isExporting || filteredCandidates.length === 0}
@@ -334,12 +502,65 @@ export const EmployerCandidates = () => {
           <button 
             onClick={downloadSelectedAsZip}
             disabled={isZipping || selectedIds.size === 0}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 shadow-sm"
           >
-            <DownloadCloud size={18} /> {isZipping ? 'Zipping...' : `Download ZIP (${selectedIds.size})`}
+            <DownloadCloud size={18} /> {isZipping ? (zipStep || 'Zipping...') : `Download ZIP (${selectedIds.size})`}
           </button>
         </div>
       </div>
+
+      {/* Excel Matching Summary Banner */}
+      {isExcelMode && excelStats && (
+        <div className="bg-white border border-blue-200 rounded-2xl p-6 shadow-sm mb-6 bg-gradient-to-r from-blue-50/50 via-white to-indigo-50/30">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-100">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-blue-100 text-primary rounded-xl">
+                <FileSpreadsheet size={24} />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2 flex-wrap">
+                  Excel Match Results
+                  <span className="text-xs bg-blue-100 text-primary font-semibold px-2.5 py-0.5 rounded-full">
+                    {excelFileName}
+                  </span>
+                </h2>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Showing only candidates whose email matches the uploaded Excel sheet.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={clearExcelMode}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors self-start sm:self-auto cursor-pointer"
+            >
+              <X size={16} /> Reset / Show All Candidates
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mt-4">
+            <div className="bg-white border border-gray-200 p-3.5 rounded-xl shadow-2xs">
+              <p className="text-xs font-medium text-gray-500">Total Emails</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">{excelStats.totalEmails}</p>
+            </div>
+            <div className="bg-white border border-green-200 p-3.5 rounded-xl shadow-2xs bg-green-50/20">
+              <p className="text-xs font-medium text-green-700">Matched Candidates</p>
+              <p className="text-2xl font-bold text-green-700 mt-1">{excelStats.matchedCandidates}</p>
+            </div>
+            <div className="bg-white border border-emerald-200 p-3.5 rounded-xl shadow-2xs bg-emerald-50/20">
+              <p className="text-xs font-medium text-emerald-700">Resumes Available</p>
+              <p className="text-2xl font-bold text-emerald-700 mt-1">{excelStats.resumesAvailable}</p>
+            </div>
+            <div className="bg-white border border-amber-200 p-3.5 rounded-xl shadow-2xs bg-amber-50/20">
+              <p className="text-xs font-medium text-amber-700">Resume Not Available</p>
+              <p className="text-2xl font-bold text-amber-700 mt-1">{excelStats.resumesUnavailable}</p>
+            </div>
+            <div className="bg-white border border-gray-200 p-3.5 rounded-xl shadow-2xs bg-gray-50/50 col-span-2 sm:col-span-1">
+              <p className="text-xs font-medium text-gray-500">Not Found</p>
+              <p className="text-2xl font-bold text-gray-600 mt-1">{excelStats.notFound}</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col sm:flex-row gap-4 mb-6">
         <div className="flex-1 relative">
@@ -486,15 +707,40 @@ export const EmployerCandidates = () => {
       )}
 
       {!loading && filteredCandidates.length > 0 && (
-        <div className="mb-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <button onClick={toggleSelectAll} className="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors font-medium">
-              {selectedIds.size === filteredCandidates.length ? <CheckSquare size={20} className="text-primary"/> : <Square size={20} />}
-              Select All
+        <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white px-4 py-3 rounded-xl border border-gray-100 shadow-2xs">
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={toggleSelectAll} 
+              disabled={candidatesWithResumes.length === 0}
+              className="flex items-center gap-2 text-gray-700 hover:text-primary transition-colors font-medium text-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+            >
+              {selectedIds.size > 0 && selectedIds.size === candidatesWithResumes.length ? (
+                <CheckSquare size={20} className="text-primary"/>
+              ) : (
+                <Square size={20} className="text-gray-400" />
+              )}
+              Select All Available Resumes
             </button>
-            <span className="text-gray-400 text-sm">({selectedIds.size} selected)</span>
+            <span className="text-gray-400 text-sm font-normal">
+              ({selectedIds.size} of {candidatesWithResumes.length} ready to download)
+            </span>
           </div>
-          <div className="text-sm text-gray-500">Showing {filteredCandidates.length} candidates</div>
+
+          <div className="flex items-center gap-3">
+            <div className="text-sm text-gray-500">
+              Showing {filteredCandidates.length} candidate{filteredCandidates.length === 1 ? '' : 's'}
+              {isExcelMode && ' (from Excel match)'}
+            </div>
+            {selectedIds.size > 0 && (
+              <button
+                onClick={downloadSelectedAsZip}
+                disabled={isZipping}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white text-xs font-semibold rounded-lg hover:bg-primary/90 transition-colors shadow-2xs disabled:opacity-50 cursor-pointer"
+              >
+                <DownloadCloud size={14} /> Download Selected ZIP ({selectedIds.size})
+              </button>
+            )}
+          </div>
         </div>
       )}
 
@@ -503,21 +749,25 @@ export const EmployerCandidates = () => {
           <p className="text-gray-500">Loading candidates...</p>
         ) : filteredCandidates.length === 0 ? (
           <div className="col-span-full py-12 text-center text-gray-500 bg-white border border-gray-100 rounded-xl">
-            No candidates match your selected filters.
+            {isExcelMode ? 'No matched candidates found in database.' : 'No candidates match your selected filters.'}
           </div>
         ) : (
           filteredCandidates.map(candidate => {
             const isSelected = selectedIds.has(candidate._id);
+            const hasResume = candidateHasResume(candidate);
+
             return (
               <div 
                 key={candidate._id} 
-                className={`bg-white border-2 rounded-2xl p-6 shadow-sm transition-all cursor-pointer ${isSelected ? 'border-primary bg-blue-50/30' : 'border-gray-100 hover:border-gray-200 hover:shadow-md'}`}
-                onClick={() => toggleSelection(candidate._id)}
+                className={`bg-white border-2 rounded-2xl p-6 shadow-sm transition-all ${
+                  hasResume ? 'cursor-pointer' : 'cursor-default opacity-85'
+                } ${isSelected ? 'border-primary bg-blue-50/30' : 'border-gray-100 hover:border-gray-200 hover:shadow-md'}`}
+                onClick={() => hasResume && toggleSelection(candidate)}
               >
-                <div className="flex justify-between items-start mb-4">
+                <div className="flex justify-between items-start mb-3">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-primary/10 text-primary rounded-full flex items-center justify-center font-bold text-lg uppercase">
-                      {candidate.firstName[0]}{candidate.lastName[0]}
+                      {candidate.firstName?.[0] || 'C'}{candidate.lastName?.[0] || ''}
                     </div>
                     <div>
                       <h3 className="font-bold text-text">{candidate.firstName} {candidate.lastName}</h3>
@@ -528,9 +778,28 @@ export const EmployerCandidates = () => {
                       )}
                     </div>
                   </div>
-                  <div onClick={(e) => { e.stopPropagation(); toggleSelection(candidate._id); }} className="cursor-pointer">
+                  <div 
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      if (hasResume) toggleSelection(candidate); 
+                    }} 
+                    className={hasResume ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
+                    title={hasResume ? (isSelected ? 'Deselect candidate' : 'Select candidate for ZIP') : 'Resume not available'}
+                  >
                     {isSelected ? <CheckSquare size={24} className="text-primary"/> : <Square size={24} className="text-gray-300"/>}
                   </div>
+                </div>
+
+                <div className="mb-4">
+                  {hasResume ? (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Resume Available
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Resume Not Available
+                    </span>
+                  )}
                 </div>
                 
                 <div className="space-y-2 mb-6">
@@ -576,7 +845,7 @@ export const EmployerCandidates = () => {
                   </div>
 
                 <div onClick={e => e.stopPropagation()}>
-                  {candidate.resumeUrl ? (
+                  {hasResume ? (
                     <a 
                       href={getResumeUrl(candidate.resumeUrl)} 
                       target="_blank" 
