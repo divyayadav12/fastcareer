@@ -61,6 +61,69 @@ export const CandidateDashboard = () => {
     class10: { percentage: '', year: '2014', board: '' }
   });
 
+  const handleBothGroupsToggle = (examKey: 'caInter' | 'caFinal', checked: boolean) => {
+    setCaPortfolio(prev => {
+      const current = prev[examKey];
+      if (checked) {
+        // RULE 1: Synchronize Group II and Completion Session to Group I
+        return {
+          ...prev,
+          [examKey]: {
+            ...current,
+            bothGroups1stAttempt: true,
+            group2Month: current.group1Month,
+            group2Year: current.group1Year,
+            completionSessionMonth: current.group1Month,
+            completionSessionYear: current.group1Year
+          }
+        };
+      } else {
+        // RULE 2: Group II becomes editable again; Completion Session syncs to Group II
+        return {
+          ...prev,
+          [examKey]: {
+            ...current,
+            bothGroups1stAttempt: false,
+            completionSessionMonth: current.group2Month,
+            completionSessionYear: current.group2Year
+          }
+        };
+      }
+    });
+  };
+
+  const handleGroup1Change = (examKey: 'caInter' | 'caFinal', field: 'group1Month' | 'group1Year', value: string) => {
+    setCaPortfolio(prev => {
+      const current = prev[examKey];
+      const updated = { ...current, [field]: value };
+      if (current.bothGroups1stAttempt) {
+        if (field === 'group1Month') {
+          updated.group2Month = value;
+          updated.completionSessionMonth = value;
+        } else if (field === 'group1Year') {
+          updated.group2Year = value;
+          updated.completionSessionYear = value;
+        }
+      }
+      return { ...prev, [examKey]: updated };
+    });
+  };
+
+  const handleGroup2Change = (examKey: 'caInter' | 'caFinal', field: 'group2Month' | 'group2Year', value: string) => {
+    setCaPortfolio(prev => {
+      const current = prev[examKey];
+      const updated = { ...current, [field]: value };
+      if (!current.bothGroups1stAttempt) {
+        if (field === 'group2Month') {
+          updated.completionSessionMonth = value;
+        } else if (field === 'group2Year') {
+          updated.completionSessionYear = value;
+        }
+      }
+      return { ...prev, [examKey]: updated };
+    });
+  };
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -76,6 +139,20 @@ export const CandidateDashboard = () => {
           if (!fetchedCaPortfolio.articleships || fetchedCaPortfolio.articleships.length === 0) {
             fetchedCaPortfolio.articleships = [{ type: 'Articleship', firmName: '', city: '', noOfPartners: '2', noOfMonths: '36' }];
           }
+          (['caInter', 'caFinal'] as const).forEach(key => {
+            if (fetchedCaPortfolio[key]) {
+              const ex = fetchedCaPortfolio[key];
+              if (ex.bothGroups1stAttempt) {
+                ex.group2Month = ex.group1Month || ex.group2Month;
+                ex.group2Year = ex.group1Year || ex.group2Year;
+                ex.completionSessionMonth = ex.group1Month || ex.completionSessionMonth;
+                ex.completionSessionYear = ex.group1Year || ex.completionSessionYear;
+              } else {
+                ex.completionSessionMonth = ex.group2Month || ex.completionSessionMonth;
+                ex.completionSessionYear = ex.group2Year || ex.completionSessionYear;
+              }
+            }
+          });
           setCaPortfolio(prev => ({ ...prev, ...fetchedCaPortfolio }));
         }
         if (data.qualifications) setQualifications(prev => ({ ...prev, ...data.qualifications }));
@@ -452,56 +529,134 @@ export const CandidateDashboard = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {['caInter', 'caFinal'].map((examKey, idx) => (
-                    <tr key={examKey}>
-                      <td className="p-3 border font-medium">{idx === 0 ? 'CA Inter (IPCC)' : 'CA Final'}</td>
-                      <td className="p-3 border text-center">
-                        <input type="checkbox" checked={(caPortfolio as any)[examKey].bothGroups1stAttempt} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], bothGroups1stAttempt: e.target.checked}})} />
-                      </td>
-                      <td className="p-2 border">
-                        <input type="text" list="attemptsList" className="w-full border-gray-200 rounded p-1 text-xs text-center min-w-[50px]" value={(caPortfolio as any)[examKey].group1Attempts} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], group1Attempts: e.target.value}})} placeholder="0" />
-                      </td>
-                      <td className="p-2 border">
-                        <select className="w-full border border-gray-200 rounded p-1 pr-8 text-xs text-center bg-white min-w-[110px]" value={(caPortfolio as any)[examKey].group1Month} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], group1Month: e.target.value}})}>
-                          <option value="">Month</option>
-                          {CA_EXAM_MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
-                        </select>
-                      </td>
-                      <td className="p-2 border">
-                        <input type="text" list="yearsList" className="w-full border-gray-200 rounded p-1 text-xs text-center min-w-[60px]" value={(caPortfolio as any)[examKey].group1Year} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], group1Year: e.target.value}})} placeholder="Year" />
-                      </td>
-                      <td className="p-2 border">
-                        <input type="text" list="attemptsList" className="w-full border-gray-200 rounded p-1 text-xs text-center min-w-[50px]" value={(caPortfolio as any)[examKey].group2Attempts} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], group2Attempts: e.target.value}})} placeholder="0" />
-                      </td>
-                      <td className="p-2 border">
-                        <select className="w-full border border-gray-200 rounded p-1 pr-8 text-xs text-center bg-white min-w-[110px]" value={(caPortfolio as any)[examKey].group2Month} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], group2Month: e.target.value}})}>
-                          <option value="">Month</option>
-                          {CA_EXAM_MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
-                        </select>
-                      </td>
-                      <td className="p-2 border">
-                        <input type="text" list="yearsList" className="w-full border-gray-200 rounded p-1 text-xs text-center min-w-[60px]" value={(caPortfolio as any)[examKey].group2Year} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], group2Year: e.target.value}})} placeholder="Year" />
-                      </td>
-                      <td className="p-2 border">
-                        <input type="text" list="rankerList" className="w-full border-gray-200 rounded p-1 text-xs text-center" value={(caPortfolio as any)[examKey].ranker} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], ranker: e.target.value}})} placeholder="No" />
-                      </td>
-                      <td className="p-2 border" colSpan={2}>
-                        <div className="flex gap-1">
-                          <select className="w-1/2 border border-gray-200 rounded p-1 pr-8 text-xs bg-white min-w-[110px]" value={(caPortfolio as any)[examKey].completionSessionMonth} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], completionSessionMonth: e.target.value}})}>
+                  {(['caInter', 'caFinal'] as const).map((examKey, idx) => {
+                    const examData = caPortfolio[examKey];
+                    return (
+                      <tr key={examKey}>
+                        <td className="p-3 border font-medium">{idx === 0 ? 'CA Inter (IPCC)' : 'CA Final'}</td>
+                        <td className="p-3 border text-center">
+                          <input
+                            type="checkbox"
+                            checked={examData.bothGroups1stAttempt}
+                            onChange={(e) => handleBothGroupsToggle(examKey, e.target.checked)}
+                          />
+                        </td>
+                        <td className="p-2 border">
+                          <input
+                            type="text"
+                            list="attemptsList"
+                            className="w-full border-gray-200 rounded p-1 text-xs text-center min-w-[50px]"
+                            value={examData.group1Attempts}
+                            onChange={(e) => setCaPortfolio(prev => ({ ...prev, [examKey]: { ...prev[examKey], group1Attempts: e.target.value } }))}
+                            placeholder="0"
+                          />
+                        </td>
+                        <td className="p-2 border">
+                          <select
+                            className="w-full border border-gray-200 rounded p-1 pr-8 text-xs text-center bg-white min-w-[110px]"
+                            value={examData.group1Month}
+                            onChange={(e) => handleGroup1Change(examKey, 'group1Month', e.target.value)}
+                          >
                             <option value="">Month</option>
                             {CA_EXAM_MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
                           </select>
-                          <select className="w-1/2 border border-gray-200 rounded p-1 pr-8 text-xs bg-white min-w-[110px]" value={(caPortfolio as any)[examKey].completionSessionYear} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], completionSessionYear: e.target.value}})}>
-                            <option value="">Year</option>
-                            {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+                        </td>
+                        <td className="p-2 border">
+                          <input
+                            type="text"
+                            list="yearsList"
+                            className="w-full border-gray-200 rounded p-1 text-xs text-center min-w-[60px]"
+                            value={examData.group1Year}
+                            onChange={(e) => handleGroup1Change(examKey, 'group1Year', e.target.value)}
+                            placeholder="Year"
+                          />
+                        </td>
+                        <td className="p-2 border">
+                          <input
+                            type="text"
+                            list="attemptsList"
+                            className="w-full border-gray-200 rounded p-1 text-xs text-center min-w-[50px]"
+                            value={examData.group2Attempts}
+                            onChange={(e) => setCaPortfolio(prev => ({ ...prev, [examKey]: { ...prev[examKey], group2Attempts: e.target.value } }))}
+                            placeholder="0"
+                          />
+                        </td>
+                        <td className="p-2 border">
+                          <select
+                            disabled={examData.bothGroups1stAttempt}
+                            className={`w-full border border-gray-200 rounded p-1 pr-8 text-xs text-center min-w-[110px] ${examData.bothGroups1stAttempt ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-white'}`}
+                            value={examData.group2Month}
+                            onChange={(e) => handleGroup2Change(examKey, 'group2Month', e.target.value)}
+                          >
+                            <option value="">Month</option>
+                            {CA_EXAM_MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
                           </select>
-                        </div>
-                      </td>
-                      <td className="p-2 border">
-                        <input type="number" min="0" max="100" step="0.01" required placeholder="%" className="w-16 border-gray-200 rounded p-1 text-xs" value={(caPortfolio as any)[examKey].percentage} onChange={(e) => setCaPortfolio({...caPortfolio, [examKey]: {...(caPortfolio as any)[examKey], percentage: e.target.value}})} />
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td className="p-2 border">
+                          <input
+                            type="text"
+                            list="yearsList"
+                            disabled={examData.bothGroups1stAttempt}
+                            className={`w-full border-gray-200 rounded p-1 text-xs text-center min-w-[60px] ${examData.bothGroups1stAttempt ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-white'}`}
+                            value={examData.group2Year}
+                            onChange={(e) => handleGroup2Change(examKey, 'group2Year', e.target.value)}
+                            placeholder="Year"
+                          />
+                        </td>
+                        <td className="p-2 border">
+                          <input
+                            type="text"
+                            list="rankerList"
+                            className="w-full border-gray-200 rounded p-1 text-xs text-center"
+                            value={examData.ranker}
+                            onChange={(e) => setCaPortfolio(prev => ({ ...prev, [examKey]: { ...prev[examKey], ranker: e.target.value } }))}
+                            placeholder="No"
+                          />
+                        </td>
+                        <td className="p-2 border" colSpan={2}>
+                          <div className="flex gap-1">
+                            <select
+                              disabled
+                              className="w-1/2 border border-gray-200 rounded p-1 pr-8 text-xs bg-gray-100 text-gray-500 cursor-not-allowed min-w-[110px]"
+                              value={examData.completionSessionMonth}
+                              aria-readonly="true"
+                            >
+                              <option value="">Month</option>
+                              {CA_EXAM_MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
+                              {examData.completionSessionMonth && !CA_EXAM_MONTHS.includes(examData.completionSessionMonth) && (
+                                <option value={examData.completionSessionMonth}>{examData.completionSessionMonth}</option>
+                              )}
+                            </select>
+                            <select
+                              disabled
+                              className="w-1/2 border border-gray-200 rounded p-1 pr-8 text-xs bg-gray-100 text-gray-500 cursor-not-allowed min-w-[110px]"
+                              value={examData.completionSessionYear}
+                              aria-readonly="true"
+                            >
+                              <option value="">Year</option>
+                              {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+                              {examData.completionSessionYear && !YEARS.includes(examData.completionSessionYear) && (
+                                <option value={examData.completionSessionYear}>{examData.completionSessionYear}</option>
+                              )}
+                            </select>
+                          </div>
+                        </td>
+                        <td className="p-2 border">
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            step="0.01"
+                            required
+                            placeholder="%"
+                            className="w-16 border-gray-200 rounded p-1 text-xs"
+                            value={examData.percentage}
+                            onChange={(e) => setCaPortfolio(prev => ({ ...prev, [examKey]: { ...prev[examKey], percentage: e.target.value } }))}
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
               <datalist id="attemptsList">{ATTEMPTS.map(a => <option key={a} value={a}>{a}</option>)}</datalist>
