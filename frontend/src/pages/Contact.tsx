@@ -1,7 +1,7 @@
 import toast from 'react-hot-toast';
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Mail, Phone, MapPin, Send, MessageCircle } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, MessageCircle, ArrowRight } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { useForm } from 'react-hook-form';
@@ -13,6 +13,19 @@ type ContactFormData = {
   companyName?: string;
   message?: string;
 };
+
+// WhatsApp Icon SVG
+const WhatsAppIcon = ({ size = 20, className = '' }: { size?: number; className?: string }) => (
+  <svg 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="currentColor" 
+    className={className}
+  >
+    <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24zm4.52 11.66c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.03-1.25-.75-.67-1.26-1.5-1.41-1.75-.15-.25-.02-.39.11-.51.11-.11.25-.29.37-.44.13-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43l-.48-.01c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.7 4.29 3.78.6.26 1.07.41 1.43.53.6.19 1.15.16 1.58.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.07-.1-.23-.17-.48-.3z"/>
+  </svg>
+);
 
 export const Contact = () => {
   const { register, handleSubmit, reset, formState: { errors } } = useForm<ContactFormData>();
@@ -27,7 +40,7 @@ export const Contact = () => {
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=Hello%20FAST%20Careers%2C%20I%20would%20like%20to%20inquire%20about%20recruitment%20services.`;
 
   return (
-    <div className="w-full">
+    <div className="w-full relative">
       {/* Hero Section */}
       <section className="bg-secondary text-white pt-32 pb-20 px-4">
         <div className="max-w-7xl mx-auto text-center">
@@ -62,25 +75,31 @@ export const Contact = () => {
             </p>
             
             <div className="space-y-6">
-              {/* WhatsApp Direct Connect Card */}
+              {/* WhatsApp Direct Connect Card (Icon only, no number printed) */}
               <a 
                 href={whatsappUrl} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="group flex items-start p-5 rounded-2xl bg-emerald-50 border border-emerald-200 hover:bg-emerald-100/70 hover:shadow-md transition-all duration-300"
+                className="group flex items-center justify-between p-5 rounded-2xl bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border border-emerald-200 hover:border-emerald-300 hover:shadow-lg transition-all duration-300"
               >
-                <div className="bg-emerald-500 p-3.5 rounded-xl text-white mr-5 shadow-sm group-hover:scale-110 transition-transform">
-                  <MessageCircle className="w-7 h-7" />
-                </div>
-                <div className="flex-grow">
-                  <div className="flex items-center gap-2">
-                    <h4 className="text-lg font-bold text-emerald-950">Chat on WhatsApp</h4>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-200 text-emerald-800">
-                      Online • Fast Reply
-                    </span>
+                <div className="flex items-center gap-4">
+                  <div className="w-13 h-13 p-3.5 rounded-2xl bg-[#25D366] text-white shadow-md group-hover:scale-110 transition-transform flex items-center justify-center">
+                    <WhatsAppIcon size={28} />
                   </div>
-                  <p className="text-emerald-800 font-semibold text-base mt-0.5">+91 88392 50427</p>
-                  <p className="text-emerald-700 text-xs mt-1">Click here to chat directly with our team on WhatsApp</p>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-lg font-bold text-emerald-950">Chat on WhatsApp</h4>
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-200 text-emerald-800">
+                        Instant Connect
+                      </span>
+                    </div>
+                    <p className="text-emerald-700 text-xs sm:text-sm mt-0.5">
+                      Click to chat directly with our recruitment team
+                    </p>
+                  </div>
+                </div>
+                <div className="w-9 h-9 rounded-full bg-emerald-100 group-hover:bg-[#25D366] text-emerald-800 group-hover:text-white flex items-center justify-center transition-colors">
+                  <ArrowRight size={18} />
                 </div>
               </a>
 
@@ -90,7 +109,7 @@ export const Contact = () => {
                 </div>
                 <div>
                   <h4 className="text-base font-semibold text-text mb-0.5">Call Us</h4>
-                  <p className="text-gray-800 font-medium">+91 88392 50427 / +91 11 4567 8900</p>
+                  <p className="text-gray-800 font-medium">+91 11 4567 8900</p>
                   <p className="text-gray-500 text-xs mt-0.5">Mon-Sat, 9:00 AM - 7:00 PM (IST)</p>
                 </div>
               </div>
@@ -125,10 +144,11 @@ export const Contact = () => {
                 href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
+                title="Open WhatsApp Chat"
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-full text-xs font-semibold transition-colors"
               >
-                <MessageCircle size={14} className="text-emerald-600" />
-                <span>WhatsApp Us</span>
+                <WhatsAppIcon size={15} className="text-emerald-600" />
+                <span>WhatsApp</span>
               </a>
             </div>
             <p className="text-xs text-gray-500 mb-6">Fields marked with <span className="text-red-500 font-bold">*</span> are required.</p>
@@ -153,7 +173,7 @@ export const Contact = () => {
               <Input 
                 label="Phone Number *"
                 type="tel"
-                placeholder="+91 88392 50427"
+                placeholder="+91 98765 43210"
                 {...register("phone", { 
                   required: "Phone number is required",
                   minLength: { value: 7, message: "Please enter a valid phone number" }
@@ -181,24 +201,37 @@ export const Contact = () => {
                 Send Message
               </Button>
 
-              {/* Instant WhatsApp Quick Connect Banner */}
+              {/* Instant WhatsApp Quick Connect Banner (No number text printed) */}
               <div className="pt-2 text-center">
-                <p className="text-xs text-gray-500 mb-2 font-medium">Need immediate assistance?</p>
+                <p className="text-xs text-gray-500 mb-2 font-medium">Prefer immediate chat?</p>
                 <a
                   href={whatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#25D366] hover:bg-[#20bd5a] text-white font-semibold rounded-xl text-sm transition-all duration-200 shadow-sm hover:shadow"
+                  className="w-full inline-flex items-center justify-center gap-2.5 px-4 py-3 bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold rounded-xl text-sm transition-all duration-200 shadow-md hover:shadow-lg hover:-translate-y-0.5"
                 >
-                  <MessageCircle size={18} />
-                  <span>Connect on WhatsApp (+91 88392 50427)</span>
+                  <WhatsAppIcon size={20} />
+                  <span>Chat with Us on WhatsApp</span>
                 </a>
               </div>
             </form>
           </div>
         </div>
       </section>
+
+      {/* Floating WhatsApp Action Widget (Bottom-Right) */}
+      <a
+        href={whatsappUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        title="Chat with FAST Careers on WhatsApp"
+        className="fixed bottom-6 right-6 z-50 group flex items-center gap-2.5 bg-[#25D366] hover:bg-[#20bd5a] text-white p-3.5 sm:px-5 sm:py-3.5 rounded-full shadow-2xl hover:shadow-emerald-500/50 hover:scale-105 transition-all duration-300"
+      >
+        <WhatsAppIcon size={26} className="text-white animate-bounce" />
+        <span className="hidden sm:inline font-bold text-sm tracking-wide">
+          Chat on WhatsApp
+        </span>
+      </a>
     </div>
   );
 };
-
