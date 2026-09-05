@@ -33,16 +33,16 @@ export const About = () => {
   return (
     <div className="w-full">
       {/* Hero Section */}
-      <section className="bg-secondary text-white pt-32 pb-20 px-4 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+      <section className="bg-gradient-to-br from-[#083C5A] via-[#0B4C72] to-[#126191] text-white pt-32 pb-20 px-4 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-sky-300/15 rounded-full blur-3xl pointer-events-none" />
         
         <div className="max-w-7xl mx-auto text-center relative z-10">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 text-blue-200 text-xs sm:text-sm font-semibold mb-4 border border-white/10 shadow-sm"
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/15 text-blue-100 text-xs sm:text-sm font-semibold mb-4 border border-white/20 shadow-sm"
           >
-            <Sparkles size={15} className="text-yellow-400" />
+            <Sparkles size={15} className="text-yellow-300" />
             <span>Pioneering Finance & CA Headhunting Since 2008</span>
           </motion.div>
 
@@ -52,7 +52,7 @@ export const About = () => {
             transition={{ duration: 0.6 }}
             className="text-4xl md:text-6xl font-extrabold mb-6 tracking-tight text-white"
           >
-            About <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 via-sky-200 to-teal-300">FAST CAREERS</span>
+            About <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-200 via-white to-sky-100">FAST CAREERS</span>
           </motion.h1>
           
           <motion.p 
