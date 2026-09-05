@@ -126,6 +126,7 @@ export const updateUserProfile = async (req: Request, res: Response) => {
 import path from 'path';
 import fs from 'fs';
 import * as xlsx from 'xlsx';
+import { seed20 } from '../seed20Candidates';
 const archiver = require('archiver');
 
 // Helper to fetch buffer of resume
@@ -144,12 +145,24 @@ const fetchResumeBuffer = async (url: string): Promise<Buffer | null> => {
       return Buffer.from(arrayBuffer);
     }
 
-    // Local file path
+    // Local file path - check multiple locations
     const normalizedPath = cleanUrl.replace(/^\/+/, '');
-    const localFilePath = path.join(__dirname, '../../', normalizedPath);
-    if (fs.existsSync(localFilePath)) {
-      return fs.readFileSync(localFilePath);
+    const filename = path.basename(normalizedPath);
+    const possiblePaths = [
+      path.join(__dirname, '../../', normalizedPath),
+      path.join(__dirname, '../', normalizedPath),
+      path.join(process.cwd(), normalizedPath),
+      path.join(process.cwd(), 'uploads', filename),
+      path.join(__dirname, '../../uploads', filename),
+      path.join(__dirname, '../uploads', filename),
+    ];
+
+    for (const p of possiblePaths) {
+      if (fs.existsSync(p)) {
+        return fs.readFileSync(p);
+      }
     }
+
     return null;
   } catch (err) {
     console.error('Error fetching resume buffer:', err);
@@ -160,6 +173,24 @@ const fetchResumeBuffer = async (url: string): Promise<Buffer | null> => {
 const sanitizeFilename = (name: string): string => {
   return name.replace(/[/\\?%*:|"<>]/g, '').trim().replace(/\s+/g, '_');
 };
+
+// @desc    Seed 20 test candidates and resumes to the connected MongoDB database
+// @route   GET /api/users/seed-test-candidates
+// @access  Public / Admin
+export const seedLiveCandidates = async (req: Request, res: Response) => {
+  try {
+    const result = await seed20(false);
+    res.json({
+      success: true,
+      message: 'Successfully seeded 20 realistic candidate records and generated PDF resumes in database!',
+      data: result,
+    });
+  } catch (error: any) {
+    console.error('Error in seedLiveCandidates:', error);
+    res.status(500).json({ message: error.message || 'Error seeding candidates' });
+  }
+};
+
 
 // @desc    Get all candidates
 // @route   GET /api/users/candidates

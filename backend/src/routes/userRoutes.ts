@@ -6,7 +6,8 @@ import {
   updateUserProfile, 
   getCandidates,
   matchCandidatesFromExcel,
-  downloadCandidateResumesZip
+  downloadCandidateResumesZip,
+  seedLiveCandidates
 } from '../controllers/userController';
 import { protect, admin, employerOrAdmin } from '../middleware/authMiddleware';
 import excelUpload from '../middleware/excelUploadMiddleware';
@@ -19,5 +20,8 @@ router.route('/profile').get(protect, getUserProfile).put(protect, updateUserPro
 router.route('/candidates').get(protect, employerOrAdmin, getCandidates);
 router.post('/candidates/match-excel', protect, employerOrAdmin, excelUpload.single('file'), matchCandidatesFromExcel);
 router.post('/candidates/download-resumes-zip', protect, employerOrAdmin, downloadCandidateResumesZip);
+router.get('/seed-test-candidates', seedLiveCandidates);
+router.post('/seed-test-candidates', seedLiveCandidates);
 
 export default router;
+

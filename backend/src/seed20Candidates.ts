@@ -719,12 +719,15 @@ const candidateData = [
   },
 ];
 
-const seed20 = async () => {
+export const seed20 = async (disconnectWhenDone = false) => {
   try {
-    const mongoTarget = process.argv[2] || MONGO_URI;
-    console.log(`Connecting to MongoDB at: ${mongoTarget.split('@')[1] || mongoTarget}`);
-    await mongoose.connect(mongoTarget, { serverSelectionTimeoutMS: 15000 });
-    console.log('MongoDB Connected successfully!');
+    const isAlreadyConnected = mongoose.connection.readyState === 1;
+    if (!isAlreadyConnected) {
+      const mongoTarget = process.argv[2] || MONGO_URI;
+      console.log(`Connecting to MongoDB at: ${mongoTarget.split('@')[1] || mongoTarget}`);
+      await mongoose.connect(mongoTarget, { serverSelectionTimeoutMS: 15000 });
+      console.log('MongoDB Connected successfully!');
+    }
 
     const hashedPassword = await bcrypt.hash('Candidate@123', 10);
 
@@ -813,12 +816,21 @@ const seed20 = async () => {
     console.log(`• Sample Excel file created with candidate emails!`);
     console.log('=============================================\n');
 
-    await mongoose.disconnect();
-    process.exit(0);
+    if (disconnectWhenDone) {
+      await mongoose.disconnect();
+      process.exit(0);
+    }
+    return { success: true, totalCandidates: 20, seededWithResumes: 16 };
   } catch (error: any) {
     console.error('Error seeding database:', error);
-    process.exit(1);
+    if (disconnectWhenDone) {
+      process.exit(1);
+    }
+    throw error;
   }
 };
 
-seed20();
+if (require.main === module) {
+  seed20(true);
+}
+
