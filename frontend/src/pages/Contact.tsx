@@ -1,7 +1,7 @@
 import toast from 'react-hot-toast';
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Mail, Phone, MapPin, Send, MessageCircle, ArrowRight } from 'lucide-react';
+import { Mail, Phone, MapPin, Send } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { useForm } from 'react-hook-form';
@@ -14,16 +14,23 @@ type ContactFormData = {
   message?: string;
 };
 
-// WhatsApp Icon SVG
-const WhatsAppIcon = ({ size = 20, className = '' }: { size?: number; className?: string }) => (
+// Exact Official WhatsApp Brand Logo SVG
+const OfficialWhatsAppLogo = ({ size = 26, className = '' }: { size?: number; className?: string }) => (
   <svg 
     width={size} 
     height={size} 
-    viewBox="0 0 24 24" 
-    fill="currentColor" 
+    viewBox="0 0 48 48" 
+    fill="none" 
+    xmlns="http://www.w3.org/2000/svg"
     className={className}
   >
-    <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24zm4.52 11.66c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.03-1.25-.75-.67-1.26-1.5-1.41-1.75-.15-.25-.02-.39.11-.51.11-.11.25-.29.37-.44.13-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43l-.48-.01c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.7 4.29 3.78.6.26 1.07.41 1.43.53.6.19 1.15.16 1.58.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.07-.1-.23-.17-.48-.3z"/>
+    <circle cx="24" cy="24" r="24" fill="#25D366" />
+    <path 
+      fillRule="evenodd" 
+      clipRule="evenodd" 
+      d="M24 10C16.268 10 10 16.268 10 24c0 2.658.742 5.143 2.035 7.262L10 38l6.945-1.996A13.918 13.918 0 0024 38c7.732 0 14-6.268 14-14s-6.268-14-14-14zm7.982 19.866c-.347.973-1.745 1.789-2.427 1.895-.648.1-1.488.143-2.408-.15-1.92-.612-4.417-2.31-6.195-4.512-1.442-1.787-2.417-3.882-2.417-5.918 0-2.148 1.135-3.21 1.542-3.645.385-.41.839-.514 1.116-.514.278 0 .556.004.798.016.257.012.602-.098.942.718.347.834 1.185 2.894 1.289 3.107.104.214.174.464.035.742-.14.278-.21.45-.417.695-.208.245-.438.547-.626.734-.208.208-.426.435-.183.852.243.418 1.08 1.777 2.316 2.878 1.59 1.417 2.932 1.857 3.348 2.065.417.208.66.174.903-.105.244-.278 1.042-1.215 1.32-1.632.278-.417.556-.347.938-.208.382.139 2.43 1.146 2.847 1.354.417.209.695.313.798.487.104.174.104 1.007-.243 1.98z" 
+      fill="#FFFFFF"
+    />
   </svg>
 );
 
@@ -117,10 +124,10 @@ export const Contact = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 title="Open WhatsApp Chat"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-full text-xs font-semibold transition-colors"
+                className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-full text-xs font-bold transition-all shadow-sm"
               >
-                <WhatsAppIcon size={15} className="text-emerald-600" />
-                <span>WhatsApp</span>
+                <OfficialWhatsAppLogo size={18} />
+                <span>WhatsApp Us</span>
               </a>
             </div>
             <p className="text-xs text-gray-500 mb-6">Fields marked with <span className="text-red-500 font-bold">*</span> are required.</p>
@@ -173,17 +180,16 @@ export const Contact = () => {
                 Send Message
               </Button>
 
-              {/* Instant WhatsApp Quick Connect Banner (No number text printed) */}
+              {/* Exact WhatsApp Action Banner */}
               <div className="pt-2 text-center">
-                <p className="text-xs text-gray-500 mb-2 font-medium">Prefer immediate chat?</p>
                 <a
                   href={whatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full inline-flex items-center justify-center gap-2.5 px-4 py-3 bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold rounded-xl text-sm transition-all duration-200 shadow-md hover:shadow-lg hover:-translate-y-0.5"
+                  className="w-full inline-flex items-center justify-center gap-3 px-5 py-3.5 bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold rounded-2xl text-base transition-all duration-200 shadow-md hover:shadow-xl hover:-translate-y-0.5"
                 >
-                  <WhatsAppIcon size={20} />
-                  <span>Chat with Us on WhatsApp</span>
+                  <OfficialWhatsAppLogo size={26} />
+                  <span>Chat on WhatsApp</span>
                 </a>
               </div>
             </form>
@@ -197,9 +203,9 @@ export const Contact = () => {
         target="_blank"
         rel="noopener noreferrer"
         title="Chat with FAST Careers on WhatsApp"
-        className="fixed bottom-6 right-6 z-50 group flex items-center gap-2.5 bg-[#25D366] hover:bg-[#20bd5a] text-white p-3.5 sm:px-5 sm:py-3.5 rounded-full shadow-2xl hover:shadow-emerald-500/50 hover:scale-105 transition-all duration-300"
+        className="fixed bottom-6 right-6 z-50 group flex items-center gap-3 bg-[#25D366] hover:bg-[#20bd5a] text-white p-3.5 sm:px-5 sm:py-3.5 rounded-full shadow-2xl hover:shadow-emerald-500/50 hover:scale-105 transition-all duration-300"
       >
-        <WhatsAppIcon size={26} className="text-white animate-bounce" />
+        <OfficialWhatsAppLogo size={28} className="drop-shadow-sm" />
         <span className="hidden sm:inline font-bold text-sm tracking-wide">
           Chat on WhatsApp
         </span>
