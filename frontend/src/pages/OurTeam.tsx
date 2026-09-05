@@ -410,20 +410,20 @@ export const OurTeam: React.FC = () => {
 
   return (
     <div className="bg-gray-50 min-h-screen pt-24 pb-16">
-      {/* Professional Corporate Hero Banner - Exact FAST Logo Blue Theme */}
-      <div className="relative bg-gradient-to-br from-[#083C5A] via-[#0B4C72] to-[#126191] text-white py-16 px-4 sm:px-6 lg:px-8 overflow-hidden shadow-xl">
+      {/* Professional Corporate Hero Banner - Exact Color from Image (#1F2937) */}
+      <div className="relative bg-[#1F2937] text-white py-16 px-4 sm:px-6 lg:px-8 overflow-hidden shadow-xl">
         {/* Subtle decorative glow */}
-        <div className="absolute top-0 right-10 w-96 h-96 bg-sky-300/15 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-10 w-80 h-80 bg-blue-300/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 right-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-10 w-80 h-80 bg-blue-400/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="max-w-7xl mx-auto text-center relative z-10">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-blue-100 text-xs sm:text-sm font-semibold mb-4 shadow-sm">
-            <Sparkles size={16} className="text-yellow-300" />
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-blue-200 text-xs sm:text-sm font-semibold mb-4 shadow-sm">
+            <Sparkles size={16} className="text-yellow-400" />
             <span>Culture, Leadership & Learning Moments</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-4 text-white">
-            Learning Masterclasses & <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-200 via-white to-sky-100">Cultural Celebrations</span>
+            Learning Masterclasses & <span className="text-white">Cultural Celebrations</span>
           </h1>
 
           <p className="max-w-3xl mx-auto text-base sm:text-lg text-gray-300 leading-relaxed">
