@@ -9,6 +9,7 @@ import { ProcessSection } from './home/ProcessSection';
 import { CandidateSection } from './home/CandidateSection';
 import { EmployerSection } from './home/EmployerSection';
 import { TestimonialSection } from './home/TestimonialSection';
+import { FAQSection } from './home/FAQSection';
 import { CTASection } from './home/CTASection';
 
 export const Home = () => {
@@ -24,6 +25,7 @@ export const Home = () => {
       <CandidateSection />
       <EmployerSection />
       <TestimonialSection />
+      <FAQSection />
       <CTASection />
     </div>
   );
