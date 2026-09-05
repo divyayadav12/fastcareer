@@ -75,34 +75,6 @@ export const Contact = () => {
             </p>
             
             <div className="space-y-6">
-              {/* WhatsApp Direct Connect Card (Icon only, no number printed) */}
-              <a 
-                href={whatsappUrl} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="group flex items-center justify-between p-5 rounded-2xl bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border border-emerald-200 hover:border-emerald-300 hover:shadow-lg transition-all duration-300"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-13 h-13 p-3.5 rounded-2xl bg-[#25D366] text-white shadow-md group-hover:scale-110 transition-transform flex items-center justify-center">
-                    <WhatsAppIcon size={28} />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h4 className="text-lg font-bold text-emerald-950">Chat on WhatsApp</h4>
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-200 text-emerald-800">
-                        Instant Connect
-                      </span>
-                    </div>
-                    <p className="text-emerald-700 text-xs sm:text-sm mt-0.5">
-                      Click to chat directly with our recruitment team
-                    </p>
-                  </div>
-                </div>
-                <div className="w-9 h-9 rounded-full bg-emerald-100 group-hover:bg-[#25D366] text-emerald-800 group-hover:text-white flex items-center justify-center transition-colors">
-                  <ArrowRight size={18} />
-                </div>
-              </a>
-
               <div className="flex items-start p-4 rounded-xl bg-white border border-gray-100 shadow-sm">
                 <div className="bg-blue-50 p-3.5 rounded-xl text-primary mr-5">
                   <Phone className="w-6 h-6" />
