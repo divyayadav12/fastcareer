@@ -13,10 +13,9 @@ export const Footer = () => {
               Since 2008, connecting exceptional professionals with organizations across finance, accounting, compliance, and specialized domains.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-white transition-colors"><Link size={20} /></a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors"><Globe size={20} /></a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors"><MessageCircle size={20} /></a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors"><Camera size={20} /></a>
+              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" title="LinkedIn" className="text-gray-400 hover:text-white transition-colors"><Link size={20} /></a>
+              <a href="https://wa.me/918839250427" target="_blank" rel="noopener noreferrer" title="WhatsApp (+91 88392 50427)" className="text-gray-400 hover:text-emerald-400 transition-colors"><MessageCircle size={20} /></a>
+              <a href="mailto:info@fastcareers.com" title="Email Us" className="text-gray-400 hover:text-white transition-colors"><Globe size={20} /></a>
             </div>
           </div>
 
