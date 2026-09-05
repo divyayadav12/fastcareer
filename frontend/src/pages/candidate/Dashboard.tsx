@@ -201,42 +201,64 @@ export const CandidateDashboard = () => {
       </div>
 
       {/* Top Corporate Recruiters Actively Hiring Marquee Banner */}
-      <div className="bg-gradient-to-r from-[#0F2B48] via-[#163e65] to-[#0F2B48] rounded-2xl p-5 text-white shadow-md mb-8 border border-blue-900/40 relative overflow-hidden">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+      <div className="bg-gradient-to-r from-[#0F2B48] via-[#163e65] to-[#0F2B48] rounded-2xl p-4 sm:p-5 text-white shadow-md mb-8 border border-blue-900/40 relative overflow-hidden">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
-            <span className="font-extrabold text-sm sm:text-base tracking-wide text-blue-100">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+            <span className="font-extrabold text-xs sm:text-sm tracking-wide text-blue-100">
               Top Recruiters Actively Hiring CAs & Finance Talent
             </span>
           </div>
-          <span className="text-xs text-blue-200 bg-white/10 px-2.5 py-1 rounded-full border border-white/10">
-            350+ Live Openings
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="text-[11px] text-blue-200 bg-white/10 px-2.5 py-0.5 rounded-full border border-white/10">
+              350+ Live Openings
+            </span>
+            <Link 
+              to="/candidate/companies" 
+              className="text-[11px] text-cyan-300 hover:text-white font-bold flex items-center gap-1 transition-colors underline-offset-2 hover:underline"
+            >
+              <span>View All ({TOP_RECRUITERS.length})</span>
+              <ChevronRight size={12} />
+            </Link>
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          {TOP_RECRUITERS.slice(0, 6).map((brand) => (
-            <Link
-              key={brand.id}
-              to="/candidate/companies"
-              className="bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/10 p-3 rounded-xl transition-all group flex flex-col justify-between"
-            >
-              <div>
-                <div className="text-xs font-black text-blue-300 group-hover:text-white transition-colors truncate">
-                  {brand.name.split('(')[0].trim()}
-                </div>
-                <div className="text-[10px] text-gray-300 truncate mt-0.5">
-                  {brand.category.split('&')[0].trim()}
-                </div>
-              </div>
-              <div className="mt-2 flex items-center justify-between">
-                <span className="text-[10px] font-bold text-emerald-300 bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-500/30">
-                  {brand.openings} Openings
-                </span>
-                <ChevronRight size={12} className="text-gray-400 group-hover:text-white" />
-              </div>
-            </Link>
-          ))}
+        {/* Continuous Smooth Marquee Ticker with compact cards */}
+        <div className="relative overflow-hidden pt-1 select-none">
+          {/* Edge fade gradients for seamless infinite scroll look */}
+          <div className="absolute left-0 top-0 bottom-0 w-10 sm:w-16 z-20 pointer-events-none bg-gradient-to-r from-[#0F2B48] to-transparent" />
+          <div className="absolute right-0 top-0 bottom-0 w-10 sm:w-16 z-20 pointer-events-none bg-gradient-to-l from-[#0F2B48] to-transparent" />
+
+          <div className="flex overflow-hidden">
+            <div className="animate-marquee flex items-center gap-2.5 py-1">
+              {[...TOP_RECRUITERS, ...TOP_RECRUITERS, ...TOP_RECRUITERS].map((brand, idx) => (
+                <Link
+                  key={`dash-rec-${brand.id}-${idx}`}
+                  to="/candidate/companies"
+                  title={`${brand.name} - ${brand.openings} Openings`}
+                  className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/15 px-3 py-2 rounded-xl transition-all duration-300 group flex items-center gap-2.5 flex-shrink-0 cursor-pointer hover:scale-105 shadow-xs"
+                >
+                  <div className="w-7 h-7 rounded-lg bg-white/20 text-white font-black text-[10px] flex items-center justify-center group-hover:bg-primary transition-colors flex-shrink-0">
+                    {brand.shortName.slice(0, 3)}
+                  </div>
+                  <div className="text-left">
+                    <div className="text-xs font-black text-blue-200 group-hover:text-white transition-colors whitespace-nowrap">
+                      {brand.shortName}
+                    </div>
+                    <div className="text-[10px] text-gray-300 whitespace-nowrap">
+                      {brand.category.split('&')[0].trim()}
+                    </div>
+                  </div>
+                  <div className="ml-1 flex items-center gap-1">
+                    <span className="text-[10px] font-bold text-emerald-300 bg-emerald-950/70 px-1.5 py-0.5 rounded border border-emerald-500/40 whitespace-nowrap">
+                      {brand.openings}
+                    </span>
+                    <ChevronRight size={11} className="text-gray-400 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
