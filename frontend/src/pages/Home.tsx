@@ -2,7 +2,6 @@ import React from 'react';
 import { Hero } from './home/Hero';
 import { TrustStats } from './home/TrustStats';
 import { RecruiterMarquee } from '../components/RecruiterMarquee';
-import { RecruitersSection } from './home/RecruitersSection';
 import { AboutSection } from './home/AboutSection';
 import { ServicesSection } from './home/ServicesSection';
 import { ExpertiseSection } from './home/ExpertiseSection';
@@ -18,7 +17,6 @@ export const Home = () => {
       <Hero />
       <TrustStats />
       <RecruiterMarquee />
-      <RecruitersSection />
       <AboutSection />
       <ServicesSection />
       <ExpertiseSection />
