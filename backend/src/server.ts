@@ -21,9 +21,29 @@ connectDB();
 const app: Application = express();
 const PORT = process.env.PORT || 5000;
 
+// CORS configuration
+const corsOptions = {
+  origin: true, // Dynamically allow request origin (production Vercel, preview URLs, localhost)
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'X-Requested-With', 'Accept'],
+};
+
 // Middleware
 app.use(express.json());
-app.use(cors());
+app.use(cors(corsOptions));
+// Handle preflight across all routes
+app.use((req, res, next) => {
+  if (req.method === 'OPTIONS') {
+    res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Origin, X-Requested-With, Accept');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    return res.sendStatus(200);
+  }
+  next();
+});
+
 // Disable helmet's crossOriginResourcePolicy for now to allow local images/pdfs to load
 app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(morgan('dev'));
@@ -32,6 +52,14 @@ app.use(morgan('dev'));
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 import webhookRoutes from './routes/webhookRoutes';
+
+// Health Check Routes
+app.get('/health', (req: Request, res: Response) => {
+  res.status(200).json({ status: 'ok', time: new Date().toISOString() });
+});
+app.get('/api/health', (req: Request, res: Response) => {
+  res.status(200).json({ status: 'ok', time: new Date().toISOString() });
+});
 
 // Routes
 app.use('/api/jobs', jobRoutes);
