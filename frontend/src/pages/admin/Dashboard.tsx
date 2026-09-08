@@ -9,6 +9,7 @@ import * as XLSX from 'xlsx';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { getResumeUrl } from '../../utils/urlHelper';
+import { fetchCandidateResumeBlob, viewCandidateResume, downloadCandidateResume } from '../../utils/clientPdfGenerator';
 
 interface Candidate {
   _id: string;
@@ -92,19 +93,17 @@ export const AdminDashboard = () => {
       // 4. Fetch all PDFs and add to ZIP
       if (resumesFolder) {
         const fetchPromises = candidates.map(async (candidate) => {
-          if (candidate.resumeUrl) {
-            try {
-              const resumeUrl = getResumeUrl(candidate.resumeUrl);
-              const response = await axios.get(resumeUrl, { responseType: 'arraybuffer' });
-              const fileName = candidate.resumeUrl.split('/').pop() || `${candidate.firstName}_${candidate.lastName}_Resume.pdf`;
-              resumesFolder.file(fileName, response.data);
-            } catch (error) {
-              console.error(`Failed to fetch resume for ${candidate.firstName}:`, error);
-            }
+          try {
+            const blob = await fetchCandidateResumeBlob(candidate);
+            const sanitize = (s: string) => s.replace(/[/\\?%*:|"<>]/g, '').trim().replace(/\s+/g, '_');
+            const base = `${sanitize(candidate.firstName || 'Candidate')}_${sanitize(candidate.lastName || '')}`.replace(/_+$/, '');
+            const fileName = `${base || 'Candidate'}_Resume.pdf`;
+            resumesFolder.file(fileName, blob);
+          } catch (error) {
+            console.error(`Failed to fetch resume for ${candidate.firstName}:`, error);
           }
         });
 
-        // Wait for all PDFs to be fetched and added
         await Promise.all(fetchPromises);
       }
 
@@ -225,14 +224,12 @@ export const AdminDashboard = () => {
                       </td>
                       <td className="px-6 py-4">
                         {candidate.resumeUrl ? (
-                          <a 
-                            href={getResumeUrl(candidate.resumeUrl)} 
-                            target="_blank" 
-                            rel="noreferrer" 
-                            className="inline-flex items-center gap-1 text-primary hover:text-blue-700 text-sm font-medium"
+                          <button 
+                            onClick={() => viewCandidateResume(candidate)} 
+                            className="inline-flex items-center gap-1 text-primary hover:text-blue-700 text-sm font-medium cursor-pointer"
                           >
                             <FileText size={16} /> View / Download
-                          </a>
+                          </button>
                         ) : (
                           <span className="text-sm text-gray-400 italic">Not uploaded</span>
                         )}

@@ -3,6 +3,7 @@ import { User, FileText, CheckCircle2, ChevronRight, Upload, MapPin, GraduationC
 import { useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { getResumeUrl } from '../../utils/urlHelper';
+import { viewCandidateResume } from '../../utils/clientPdfGenerator';
 import type { RootState } from '../../store';
 import axios from 'axios';
 import { Button } from '../../components/Button';
@@ -371,7 +372,15 @@ export const CandidateDashboard = () => {
               <label className="block text-sm font-semibold text-blue-900 mb-2">Resume Upload *</label>
               <div className="flex items-center gap-4">
                 <input type="file" accept=".pdf,.doc,.docx" onChange={handleFileUpload} disabled={uploading} className="text-sm" />
-                {resumeUrl && <a href={getResumeUrl(resumeUrl)} target="_blank" className="text-blue-600 hover:underline font-medium text-sm flex items-center gap-1"><FileText size={16}/> View Current Resume</a>}
+                {resumeUrl && (
+                  <button 
+                    type="button" 
+                    onClick={() => viewCandidateResume({ ...user, resumeUrl, personalDetails: personal, caPortfolio, qualifications })} 
+                    className="text-blue-600 hover:underline font-medium text-sm flex items-center gap-1 cursor-pointer"
+                  >
+                    <FileText size={16}/> View Current Resume
+                  </button>
+                )}
               </div>
             </div>
 

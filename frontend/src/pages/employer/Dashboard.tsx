@@ -11,6 +11,7 @@ import * as XLSX from 'xlsx';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { getResumeUrl } from '../../utils/urlHelper';
+import { fetchCandidateResumeBlob, viewCandidateResume, downloadCandidateResume } from '../../utils/clientPdfGenerator';
 import { EmployerLayout } from '../../layouts/EmployerLayout';
 
 interface Candidate {
@@ -109,15 +110,14 @@ export const EmployerDashboard = () => {
 
       if (resumesFolder) {
         const fetchPromises = candidates.map(async (candidate) => {
-          if (candidate.resumeUrl) {
-            try {
-              const resumeUrl = getResumeUrl(candidate.resumeUrl);
-              const response = await axios.get(resumeUrl, { responseType: 'arraybuffer' });
-              const fileName = candidate.resumeUrl.split('/').pop() || `${candidate.firstName}_${candidate.lastName}_Resume.pdf`;
-              resumesFolder.file(fileName, response.data);
-            } catch (error) {
-              console.error(`Failed to fetch resume for ${candidate.firstName}:`, error);
-            }
+          try {
+            const blob = await fetchCandidateResumeBlob(candidate);
+            const sanitize = (s: string) => s.replace(/[/\\?%*:|"<>]/g, '').trim().replace(/\s+/g, '_');
+            const base = `${sanitize(candidate.firstName || 'Candidate')}_${sanitize(candidate.lastName || '')}`.replace(/_+$/, '');
+            const fileName = `${base || 'Candidate'}_Resume.pdf`;
+            resumesFolder.file(fileName, blob);
+          } catch (error) {
+            console.error(`Failed to fetch resume for ${candidate.firstName}:`, error);
           }
         });
         await Promise.all(fetchPromises);
@@ -237,9 +237,12 @@ export const EmployerDashboard = () => {
                     </td>
                     <td className="px-4 py-4">
                       {candidate.resumeUrl ? (
-                        <a href={getResumeUrl(candidate.resumeUrl)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 bg-green-50 text-green-700 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-green-100 transition-colors">
+                        <button 
+                          onClick={() => viewCandidateResume(candidate)} 
+                          className="inline-flex items-center gap-1 bg-green-50 text-green-700 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-green-100 transition-colors cursor-pointer"
+                        >
                           <Download size={14} /> Download
-                        </a>
+                        </button>
                       ) : (
                         <span className="text-xs text-gray-400">No Resume</span>
                       )}

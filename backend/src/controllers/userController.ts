@@ -126,175 +126,13 @@ export const updateUserProfile = async (req: Request, res: Response) => {
 import path from 'path';
 import fs from 'fs';
 import * as xlsx from 'xlsx';
-import PDFDocument from 'pdfkit';
 import { seed20 } from '../seed20Candidates';
+import { 
+  generateCandidatePdfBuffer, 
+  fetchOrGenerateResumeBuffer, 
+  findCandidateByFilename 
+} from '../utils/resumeGenerator';
 const archiver = require('archiver');
-
-// Helper to generate a clean, professional PDF resume buffer from candidate profile data
-const generateCandidatePdfBuffer = (c: any): Promise<Buffer> => {
-  return new Promise((resolve) => {
-    const doc = new PDFDocument({ margin: 50 });
-    const buffers: Buffer[] = [];
-    doc.on('data', (chunk) => buffers.push(chunk));
-    doc.on('end', () => resolve(Buffer.concat(buffers)));
-
-    const fullName = `${c.firstName || ''} ${c.lastName || ''}`.trim() || 'Candidate';
-
-    // Header / Title
-    doc.fillColor('#0f2b48').fontSize(22).font('Helvetica-Bold').text(fullName, { align: 'left' });
-    if (c.headline) {
-      doc.fillColor('#4b5563').fontSize(11).font('Helvetica').text(c.headline, { align: 'left' });
-    }
-    doc.moveDown(0.3);
-
-    // Contact info bar
-    const location = [c.personalDetails?.currentCity, c.personalDetails?.currentState].filter(Boolean).join(', ');
-    const contactParts = [
-      c.email ? `Email: ${c.email}` : null,
-      c.phone ? `Phone: ${c.phone}` : null,
-      location ? `Location: ${location}` : null,
-    ].filter(Boolean);
-
-    if (contactParts.length > 0) {
-      doc.fontSize(9).fillColor('#6b7280').text(contactParts.join('  |  '));
-    }
-    doc.moveDown(0.6);
-
-    // Divider
-    doc.strokeColor('#e5e7eb').lineWidth(1).moveTo(50, doc.y).lineTo(550, doc.y).stroke();
-    doc.moveDown(0.8);
-
-    // Professional Summary
-    doc.fillColor('#0f2b48').fontSize(12).font('Helvetica-Bold').text('PROFESSIONAL SUMMARY');
-    doc.moveDown(0.3);
-    const caType = c.caPortfolio?.isFresherCA ? 'Fresher Chartered Accountant' : 'Chartered Accountant';
-    doc.fillColor('#374151').fontSize(10).font('Helvetica').text(
-      `${fullName} is a dedicated ${caType} registered on FAST Careers with strong expertise in financial reporting, statutory compliances, and audit engagements.`
-    );
-    doc.moveDown(0.8);
-
-    // Professional Qualifications / CA Portfolio
-    if (c.caPortfolio) {
-      doc.fillColor('#0f2b48').fontSize(12).font('Helvetica-Bold').text('PROFESSIONAL QUALIFICATIONS');
-      doc.moveDown(0.3);
-      doc.fillColor('#1f2937').fontSize(10).font('Helvetica-Bold').text('Institute of Chartered Accountants of India (ICAI)');
-      doc.font('Helvetica').fontSize(9).fillColor('#4b5563');
-
-      if (c.caPortfolio.caFinal) {
-        const f = c.caPortfolio.caFinal;
-        const finalStatus = f.bothGroups1stAttempt
-          ? 'Cleared Both Groups in 1st Attempt'
-          : `Group 1 (${f.group1Month || 'May'} ${f.group1Year || ''}): ${f.group1Attempts || 1} att., Group 2 (${f.group2Month || 'May'} ${f.group2Year || ''}): ${f.group2Attempts || 1} att.`;
-        const session = f.completionSessionMonth && f.completionSessionYear ? ` [Completion: ${f.completionSessionMonth} ${f.completionSessionYear}]` : '';
-        const rank = f.ranker && f.ranker !== 'No' ? ` (Rank: ${f.ranker})` : '';
-        doc.text(`• CA Final: ${finalStatus}${session}${rank}`);
-      }
-
-      if (c.caPortfolio.caInter) {
-        const i = c.caPortfolio.caInter;
-        const interStatus = i.bothGroups1stAttempt
-          ? 'Cleared Both Groups in 1st Attempt'
-          : `Group 1 (${i.group1Month || 'May'} ${i.group1Year || ''}): ${i.group1Attempts || 1} att., Group 2 (${i.group2Month || 'May'} ${i.group2Year || ''}): ${i.group2Attempts || 1} att.`;
-        const session = i.completionSessionMonth && i.completionSessionYear ? ` [Completion: ${i.completionSessionMonth} ${i.completionSessionYear}]` : '';
-        const rank = i.ranker && i.ranker !== 'No' ? ` (Rank: ${i.ranker})` : '';
-        doc.text(`• CA Inter (IPCC): ${interStatus}${session}${rank}`);
-      }
-      doc.moveDown(0.5);
-    }
-
-    // Academic Qualifications
-    if (c.qualifications) {
-      doc.fillColor('#0f2b48').fontSize(12).font('Helvetica-Bold').text('ACADEMIC QUALIFICATIONS');
-      doc.moveDown(0.3);
-      doc.font('Helvetica').fontSize(9).fillColor('#4b5563');
-
-      if (c.qualifications.graduation) {
-        const g = c.qualifications.graduation;
-        doc.text(`• Graduation: ${g.courseName || 'B.Com'} - ${g.college || 'University'} (${g.yearOfCompletion || ''}) ${g.percentage ? `| ${g.percentage}%` : ''}`);
-      }
-      if (c.qualifications.class12) {
-        const c12 = c.qualifications.class12;
-        doc.text(`• Class XII: ${c12.board || 'CBSE'} (${c12.year || ''}) ${c12.percentage ? `| ${c12.percentage}%` : ''}`);
-      }
-      if (c.qualifications.class10) {
-        const c10 = c.qualifications.class10;
-        doc.text(`• Class X: ${c10.board || 'CBSE'} (${c10.year || ''}) ${c10.percentage ? `| ${c10.percentage}%` : ''}`);
-      }
-      doc.moveDown(0.8);
-    }
-
-    // Articleship Experience
-    if (c.caPortfolio?.articleships && c.caPortfolio.articleships.length > 0) {
-      doc.fillColor('#0f2b48').fontSize(12).font('Helvetica-Bold').text('ARTICLESHIP & PRACTICAL TRAINING');
-      doc.moveDown(0.3);
-      for (const art of c.caPortfolio.articleships) {
-        if (art.firmName) {
-          doc.fillColor('#1f2937').fontSize(10).font('Helvetica-Bold').text(`Articleship Trainee — ${art.firmName} (${art.city || 'India'})`);
-          doc.font('Helvetica').fontSize(9).fillColor('#4b5563');
-          doc.text(`Duration: ${art.noOfMonths || 36} Months  |  No. of Partners: ${art.noOfPartners || 2}  |  Big 4 Exposure: ${c.caPortfolio.big4Articleship || 'No'}`);
-          doc.moveDown(0.3);
-        }
-      }
-      doc.moveDown(0.5);
-    }
-
-    // Skills
-    if (c.skills && Array.isArray(c.skills) && c.skills.length > 0) {
-      doc.fillColor('#0f2b48').fontSize(12).font('Helvetica-Bold').text('SKILLS & COMPETENCIES');
-      doc.moveDown(0.3);
-      doc.font('Helvetica').fontSize(9).fillColor('#374151');
-      doc.text(`• Core Skills: ${c.skills.join(', ')}`);
-      doc.moveDown(0.8);
-    }
-
-    // Footer
-    doc.moveDown(1);
-    doc.fontSize(8).fillColor('#9ca3af').text('Generated for FAST Careers Portal Verification', { align: 'center' });
-
-    doc.end();
-  });
-};
-
-// Helper to fetch buffer of resume
-const fetchResumeBuffer = async (url: string): Promise<Buffer | null> => {
-  try {
-    const cloudinaryPattern = 'https://res.cloudinary.com';
-    let cleanUrl = url.trim();
-    if (cleanUrl.includes(cloudinaryPattern)) {
-      cleanUrl = cleanUrl.substring(cleanUrl.indexOf(cloudinaryPattern));
-    }
-
-    if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
-      const response = await fetch(cleanUrl);
-      if (!response.ok) return null;
-      const arrayBuffer = await response.arrayBuffer();
-      return Buffer.from(arrayBuffer);
-    }
-
-    // Local file path - check multiple locations
-    const normalizedPath = cleanUrl.replace(/^\/+/, '');
-    const filename = path.basename(normalizedPath);
-    const possiblePaths = [
-      path.join(__dirname, '../../', normalizedPath),
-      path.join(__dirname, '../', normalizedPath),
-      path.join(process.cwd(), normalizedPath),
-      path.join(process.cwd(), 'uploads', filename),
-      path.join(__dirname, '../../uploads', filename),
-      path.join(__dirname, '../uploads', filename),
-    ];
-
-    for (const p of possiblePaths) {
-      if (fs.existsSync(p)) {
-        return fs.readFileSync(p);
-      }
-    }
-
-    return null;
-  } catch (err) {
-    console.error('Error fetching resume buffer:', err);
-    return null;
-  }
-};
 
 const sanitizeFilename = (name: string): string => {
   return name.replace(/[/\\?%*:|"<>]/g, '').trim().replace(/\s+/g, '_');
@@ -478,9 +316,9 @@ export const downloadCandidateResumesZip = async (req: Request, res: Response) =
     res.setHeader('Content-Type', 'application/zip');
     res.setHeader('Content-Disposition', `attachment; filename="${zipFilename}"`);
 
-    const archive = archiver('zip', {
-      zlib: { level: 6 },
-    });
+    const archive = typeof archiver === 'function' 
+      ? archiver('zip', { zlib: { level: 6 } })
+      : new (archiver.ZipArchive || archiver.Archiver)({ zlib: { level: 6 } });
 
     archive.on('error', (err: any) => {
       console.error('Archiver error:', err);
@@ -513,12 +351,10 @@ export const downloadCandidateResumesZip = async (req: Request, res: Response) =
       }
 
       let buffer: Buffer | null = null;
-      if (candidate.resumeUrl && candidate.resumeUrl.trim().length > 0) {
-        buffer = await fetchResumeBuffer(candidate.resumeUrl);
-      }
-
-      // Fallback: If uploaded resume could not be retrieved, generate PDF resume on the fly
-      if (!buffer) {
+      try {
+        buffer = await fetchOrGenerateResumeBuffer(candidate.resumeUrl, candidate);
+      } catch (bufErr) {
+        console.error(`Error retrieving resume buffer for ${candidate.firstName}:`, bufErr);
         buffer = await generateCandidatePdfBuffer(candidate);
       }
 
@@ -533,5 +369,44 @@ export const downloadCandidateResumesZip = async (req: Request, res: Response) =
     if (!res.headersSent) {
       res.status(500).json({ message: error.message || 'Server error while generating ZIP.' });
     }
+  }
+};
+
+// @desc    Download / view single candidate PDF resume (from disk, remote or generated dynamically)
+// @route   GET /api/users/candidates/:id/resume
+// @access  Public
+export const getCandidateResume = async (req: Request, res: Response) => {
+  try {
+    const rawId = req.params.id;
+    const id = Array.isArray(rawId) ? rawId[0] : (rawId || '');
+    let candidate = null;
+
+    if (id && id.match(/^[0-9a-fA-F]{24}$/)) {
+      candidate = await User.findById(id);
+    } else if (id) {
+      candidate = await findCandidateByFilename(id);
+    }
+
+    if (!candidate) {
+      res.status(404).json({ message: 'Candidate not found' });
+      return;
+    }
+
+    const buffer = await fetchOrGenerateResumeBuffer(candidate.resumeUrl, candidate);
+    if (!buffer) {
+      res.status(404).json({ message: 'Could not generate or retrieve resume for this candidate.' });
+      return;
+    }
+
+    const fName = sanitizeFilename(candidate.firstName || 'Candidate');
+    const lName = sanitizeFilename(candidate.lastName || '');
+    const filename = `${fName}${lName ? '_' + lName : ''}_Resume.pdf`;
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
+    res.end(buffer);
+  } catch (error: any) {
+    console.error('Error serving candidate resume:', error);
+    res.status(500).json({ message: 'Error serving candidate resume' });
   }
 };

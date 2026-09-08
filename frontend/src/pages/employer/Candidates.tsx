@@ -5,6 +5,7 @@ import { Search, Filter, MapPin, GraduationCap, Download, DownloadCloud, FileSpr
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { getResumeUrl } from '../../utils/urlHelper';
+import { fetchCandidateResumeBlob, viewCandidateResume, downloadCandidateResume } from '../../utils/clientPdfGenerator';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { STATES, STATE_CITY_MAP, ALL_CITIES } from '../../utils/constants';
@@ -385,6 +386,13 @@ export const EmployerCandidates = () => {
         }
       );
 
+      // Check if response is actually an error message encoded as blob
+      if (response.data.type === 'application/json') {
+        const text = await response.data.text();
+        const errObj = JSON.parse(text);
+        throw new Error(errObj.message || 'Server returned error for ZIP download');
+      }
+
       const blob = new Blob([response.data], { type: 'application/zip' });
       saveAs(blob, `FAST_Careers_Resumes_${new Date().toISOString().split('T')[0]}.zip`);
       toast.success(`${selectedCandidates.length} resumes downloaded successfully.`);
@@ -399,7 +407,6 @@ export const EmployerCandidates = () => {
         const nameTracker = new Map<string, number>();
 
         const fetchPromises = selectedCandidates.map(async (candidate) => {
-          const url = getResumeUrl(candidate.resumeUrl!);
           const sanitize = (s: string) => s.replace(/[/\\?%*:|"<>]/g, '').trim().replace(/\s+/g, '_');
           let base = `${sanitize(candidate.firstName || 'Candidate')}_${sanitize(candidate.lastName || '')}`.replace(/_+$/, '');
           if (!base) base = `Candidate_${candidate._id.slice(-6)}`;
@@ -415,13 +422,10 @@ export const EmployerCandidates = () => {
           }
 
           try {
-            const response = await fetch(url);
-            if (!response.ok) throw new Error('Network error');
-            const blob = await response.blob();
+            const blob = await fetchCandidateResumeBlob(candidate);
             folder.file(fileName, blob);
           } catch (err) {
             console.error(`Failed to fetch resume for ${candidate.firstName}`, err);
-            folder.file(`${base}_fetch_error.txt`, `Failed to download PDF from: ${url}`);
           }
         });
 
@@ -846,14 +850,12 @@ export const EmployerCandidates = () => {
 
                 <div onClick={e => e.stopPropagation()}>
                   {hasResume ? (
-                    <a 
-                      href={getResumeUrl(candidate.resumeUrl)} 
-                      target="_blank" 
-                      rel="noreferrer"
-                      className="w-full flex items-center justify-center gap-2 py-2 border border-primary text-primary rounded-lg font-medium hover:bg-primary hover:text-white transition-colors"
+                    <button 
+                      onClick={() => viewCandidateResume(candidate)} 
+                      className="w-full flex items-center justify-center gap-2 py-2 border border-primary text-primary rounded-lg font-medium hover:bg-primary hover:text-white transition-colors cursor-pointer"
                     >
-                      <Download size={16} /> View Resume
-                    </a>
+                      <Download size={16} /> View / Download Resume
+                    </button>
                   ) : (
                     <button disabled className="w-full py-2 bg-gray-50 text-gray-400 rounded-lg font-medium cursor-not-allowed">
                       No Resume

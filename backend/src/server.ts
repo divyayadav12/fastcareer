@@ -48,8 +48,32 @@ app.use((req, res, next) => {
 app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(morgan('dev'));
 
+import { fetchOrGenerateResumeBuffer } from './utils/resumeGenerator';
+
 // Static folder for uploads
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
+// Fallback dynamic resume/file handler for /uploads when physical file is missing (e.g. ephemeral Render disk)
+app.get('/uploads/:filename', async (req: Request, res: Response, next) => {
+  try {
+    const rawFilename = req.params.filename;
+    const filename = Array.isArray(rawFilename) ? rawFilename[0] : (rawFilename || '');
+    if (!filename || !filename.toLowerCase().endsWith('.pdf')) {
+      return next();
+    }
+
+    const buffer = await fetchOrGenerateResumeBuffer(filename);
+    if (buffer) {
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
+      return res.end(buffer);
+    }
+    next();
+  } catch (err) {
+    console.error('Error in /uploads fallback handler:', err);
+    next();
+  }
+});
 
 import webhookRoutes from './routes/webhookRoutes';
 
