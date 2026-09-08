@@ -721,7 +721,25 @@ export const CandidateDashboard = () => {
                           </select>
                         </td>
                         <td className="pr-2 pb-2 w-20">
-                          <input required type="number" min="1" max="120" className="w-full border border-gray-300 rounded p-1 text-sm bg-white text-center" value={art.noOfMonths} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].noOfMonths = parseInt(e.target.value) || 0; setCaPortfolio({...caPortfolio, articleships: newArt})}}/>
+                          <input required type="number" min="24" max="36" className="w-full border border-gray-300 rounded p-1 text-sm bg-white text-center" value={art.noOfMonths === 0 ? '' : art.noOfMonths} onChange={(e) => { 
+                            const newArt = [...caPortfolio.articleships]; 
+                            let val = parseInt(e.target.value);
+                            if (isNaN(val)) {
+                              newArt[idx].noOfMonths = '' as any;
+                            } else {
+                              if (val > 36) val = 36;
+                              newArt[idx].noOfMonths = val; 
+                            }
+                            setCaPortfolio({...caPortfolio, articleships: newArt});
+                          }}
+                          onBlur={(e) => {
+                            const newArt = [...caPortfolio.articleships];
+                            let val = parseInt(e.target.value);
+                            if (isNaN(val) || val < 24) {
+                              newArt[idx].noOfMonths = 24;
+                            }
+                            setCaPortfolio({...caPortfolio, articleships: newArt});
+                          }}/>
                         </td>
                         <td className="pb-2">
                           {idx === caPortfolio.articleships.length - 1 && caPortfolio.articleships.reduce((sum, a) => sum + (parseInt(a.noOfMonths as any) || 0), 0) < 36 && (
