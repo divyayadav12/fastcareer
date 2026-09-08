@@ -685,7 +685,15 @@ export const CandidateDashboard = () => {
                       <th className="pb-2 text-center font-normal">Name</th>
                       <th className="pb-2 text-center font-normal">City</th>
                       <th className="pb-2 text-center font-normal">No. of Partners</th>
-                      <th className="pb-2 text-center font-normal">No. of Months</th>
+                      <th className="pb-2 text-center font-normal leading-tight">
+                        No. of Months
+                        <div 
+                          className="text-[10px] text-gray-400 mt-0.5 cursor-help flex items-center justify-center gap-1" 
+                          title="As per ICAI guidelines, Articleship training duration is typically 24 months (New Scheme) or 36 months (Old Scheme)."
+                        >
+                          (24-36) <span className="text-blue-500">ⓘ</span>
+                        </div>
+                      </th>
                       <th className="pb-2"></th>
                     </tr>
                   </thead>
@@ -721,7 +729,7 @@ export const CandidateDashboard = () => {
                           </select>
                         </td>
                         <td className="pr-2 pb-2 w-20">
-                          <input required type="number" min="24" max="36" className="w-full border border-gray-300 rounded p-1 text-sm bg-white text-center" value={art.noOfMonths === 0 ? '' : art.noOfMonths} onChange={(e) => { 
+                          <input required type="number" min="24" max="36" title="As per ICAI guidelines, Articleship training duration is typically 24 months (New Scheme) or 36 months (Old Scheme)." className="w-full border border-gray-300 rounded p-1 text-sm bg-white text-center" value={art.noOfMonths === 0 ? '' : art.noOfMonths} onChange={(e) => { 
                             const newArt = [...caPortfolio.articleships]; 
                             let val = parseInt(e.target.value);
                             if (isNaN(val)) {
