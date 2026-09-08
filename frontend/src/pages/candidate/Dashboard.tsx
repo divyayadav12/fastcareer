@@ -995,8 +995,8 @@ export const CandidateDashboard = () => {
                 {experienceInfo.isExperienced && (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-top-4 duration-300">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Experience (Years/Months)</label>
-                      <input type="text" required placeholder="e.g. 2 Years 5 Months" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20" value={experienceInfo.experienceYears} onChange={(e) => setExperienceInfo({...experienceInfo, experienceYears: e.target.value})} />
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Experience (in Years)</label>
+                      <input type="number" min="0" step="0.1" required placeholder="e.g. 2.5" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20" value={experienceInfo.experienceYears} onChange={(e) => setExperienceInfo({...experienceInfo, experienceYears: e.target.value})} />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Current Company Name</label>
@@ -1004,15 +1004,18 @@ export const CandidateDashboard = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Current Designation</label>
-                      <input type="text" required placeholder="Designation" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20" value={experienceInfo.currentDesignation} onChange={(e) => setExperienceInfo({...experienceInfo, currentDesignation: e.target.value})} />
+                      <select required className="w-full px-3 py-2 pr-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20" value={experienceInfo.currentDesignation} onChange={(e) => setExperienceInfo({...experienceInfo, currentDesignation: e.target.value})}>
+                        <option value="">Select Designation</option>
+                        {['Executive', 'Senior Executive', 'Assistant Manager', 'Manager', 'Senior Manager', 'Associate Director', 'Director', 'Partner', 'Consultant', 'Other'].map(desig => <option key={desig} value={desig}>{desig}</option>)}
+                      </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Current CTC</label>
-                      <input type="text" required placeholder="e.g. 12 LPA" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20" value={experienceInfo.currentCTC} onChange={(e) => setExperienceInfo({...experienceInfo, currentCTC: e.target.value})} />
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Current CTC (LPA)</label>
+                      <input type="number" min="0" step="0.01" required placeholder="e.g. 12.5" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20" value={experienceInfo.currentCTC} onChange={(e) => setExperienceInfo({...experienceInfo, currentCTC: e.target.value})} />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Expected CTC</label>
-                      <input type="text" required placeholder="e.g. 15 LPA" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20" value={experienceInfo.expectedCTC} onChange={(e) => setExperienceInfo({...experienceInfo, expectedCTC: e.target.value})} />
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Expected CTC (LPA)</label>
+                      <input type="number" min="0" step="0.01" required placeholder="e.g. 15.0" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20" value={experienceInfo.expectedCTC} onChange={(e) => setExperienceInfo({...experienceInfo, expectedCTC: e.target.value})} />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Work Profile / Domain</label>
