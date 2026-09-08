@@ -62,6 +62,16 @@ export const CandidateDashboard = () => {
     class10: { percentage: '', year: '2014', board: '' }
   });
 
+  const [experienceInfo, setExperienceInfo] = useState({
+    isExperienced: false,
+    experienceYears: '',
+    currentCompanyName: '',
+    currentCTC: '',
+    expectedCTC: '',
+    currentDesignation: '',
+    workProfile: ''
+  });
+
   const handleBothGroupsToggle = (examKey: 'caInter' | 'caFinal', checked: boolean) => {
     setCaPortfolio(prev => {
       const current = prev[examKey];
@@ -157,6 +167,7 @@ export const CandidateDashboard = () => {
           setCaPortfolio(prev => ({ ...prev, ...fetchedCaPortfolio }));
         }
         if (data.qualifications) setQualifications(prev => ({ ...prev, ...data.qualifications }));
+        if (data.experienceInfo) setExperienceInfo(prev => ({ ...prev, ...data.experienceInfo }));
       } catch (error) {
         console.error('Error fetching profile:', error);
       }
@@ -233,7 +244,8 @@ export const CandidateDashboard = () => {
           ...caPortfolio,
           articleshipCompletionDate: `${caPortfolio.articleshipCompletionDateMonth} ${caPortfolio.articleshipCompletionDateYear}`
         },
-        qualifications
+        qualifications,
+        experienceInfo
       };
       await axios.put(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/users/profile`, payload, {
         headers: { Authorization: `Bearer ${user?.token}` }
@@ -964,9 +976,57 @@ export const CandidateDashboard = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Experience Details */}
+              <div className="bg-blue-50 p-6 rounded-xl border border-blue-100">
+                <h4 className="font-bold text-blue-900 mb-6 border-b border-blue-200 pb-2">Experience Details</h4>
+                <div className="mb-4">
+                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      className="rounded border-gray-300 text-primary focus:ring-primary w-4 h-4"
+                      checked={experienceInfo.isExperienced}
+                      onChange={(e) => setExperienceInfo({ ...experienceInfo, isExperienced: e.target.checked })}
+                    />
+                    Are you an experienced candidate? (Click if Yes)
+                  </label>
+                </div>
+                
+                {experienceInfo.isExperienced && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-top-4 duration-300">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Experience (Years/Months)</label>
+                      <input type="text" required placeholder="e.g. 2 Years 5 Months" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20" value={experienceInfo.experienceYears} onChange={(e) => setExperienceInfo({...experienceInfo, experienceYears: e.target.value})} />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Current Company Name</label>
+                      <input type="text" required placeholder="Company Name" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20" value={experienceInfo.currentCompanyName} onChange={(e) => setExperienceInfo({...experienceInfo, currentCompanyName: e.target.value})} />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Current Designation</label>
+                      <input type="text" required placeholder="Designation" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20" value={experienceInfo.currentDesignation} onChange={(e) => setExperienceInfo({...experienceInfo, currentDesignation: e.target.value})} />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Current CTC</label>
+                      <input type="text" required placeholder="e.g. 12 LPA" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20" value={experienceInfo.currentCTC} onChange={(e) => setExperienceInfo({...experienceInfo, currentCTC: e.target.value})} />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Expected CTC</label>
+                      <input type="text" required placeholder="e.g. 15 LPA" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20" value={experienceInfo.expectedCTC} onChange={(e) => setExperienceInfo({...experienceInfo, expectedCTC: e.target.value})} />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Work Profile / Domain</label>
+                      <select required className="w-full px-3 py-2 pr-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20" value={experienceInfo.workProfile} onChange={(e) => setExperienceInfo({...experienceInfo, workProfile: e.target.value})}>
+                        <option value="">Select Work Profile</option>
+                        {NATURE_OF_WORK.map(work => <option key={work} value={work}>{work}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
             
-            <p className="text-xs text-red-500 font-medium text-center">Note: Please fill details accurately as these shall be printed on your site generated resume. Also for saving data please click on Submit button.</p>
+            <p className="text-xs text-red-500 font-medium text-center mt-6">Note: Please fill details accurately as these shall be printed on your site generated resume. Also for saving data please click on Submit button.</p>
 
             <div className="flex justify-end gap-4 mt-6">
               <Button type="button" variant="outline" onClick={handlePrev}>&lt;&lt; Previous</Button>

@@ -104,6 +104,7 @@ export const updateUserProfile = async (req: Request, res: Response) => {
       if (req.body.personalDetails !== undefined) user.personalDetails = req.body.personalDetails;
       if (req.body.caPortfolio !== undefined) user.caPortfolio = req.body.caPortfolio;
       if (req.body.qualifications !== undefined) user.qualifications = req.body.qualifications;
+      if (req.body.experienceInfo !== undefined) user.experienceInfo = req.body.experienceInfo;
 
       const updatedUser = await user.save();
 

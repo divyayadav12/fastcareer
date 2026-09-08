@@ -94,6 +94,18 @@ export interface IUser extends Document {
       board?: string;
     };
   };
+  
+  // Experience Info
+  experienceInfo?: {
+    isExperienced?: boolean;
+    experienceYears?: string;
+    currentCompanyName?: string;
+    currentCTC?: string;
+    expectedCTC?: string;
+    currentDesignation?: string;
+    workProfile?: string;
+  };
+
   // Employer specific
   companyName?: string;
   companyWebsite?: string;
@@ -194,6 +206,17 @@ const UserSchema: Schema = new Schema(
         year: { type: String },
         board: { type: String },
       }
+    },
+    
+    // Experience Info
+    experienceInfo: {
+      isExperienced: { type: Boolean, default: false },
+      experienceYears: { type: String },
+      currentCompanyName: { type: String },
+      currentCTC: { type: String },
+      expectedCTC: { type: String },
+      currentDesignation: { type: String },
+      workProfile: { type: String },
     },
     
     // --- Employer specific fields ---
