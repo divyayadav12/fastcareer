@@ -653,7 +653,7 @@ export const CandidateDashboard = () => {
                         <td className="p-2 border">
                           <input
                             type="number"
-                            min="0"
+                            min="50"
                             max="100"
                             step="0.01"
                             required
@@ -661,6 +661,12 @@ export const CandidateDashboard = () => {
                             className="w-16 border-gray-200 rounded p-1 text-xs"
                             value={examData.percentage}
                             onChange={(e) => setCaPortfolio(prev => ({ ...prev, [examKey]: { ...prev[examKey], percentage: e.target.value } }))}
+                            onBlur={(e) => {
+                              let val = parseFloat(e.target.value);
+                              if (!isNaN(val) && val < 50) {
+                                setCaPortfolio(prev => ({ ...prev, [examKey]: { ...prev[examKey], percentage: "50" } }));
+                              }
+                            }}
                           />
                         </td>
                       </tr>
@@ -807,16 +813,53 @@ export const CandidateDashboard = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">* Nature of Work Done During Articleship:</label>
-              <select required className="w-full px-4 py-2 pr-2 border border-gray-200 rounded-lg text-sm bg-white mb-2" value={NATURE_OF_WORK.includes(caPortfolio.natureOfWork || '') && caPortfolio.natureOfWork !== 'Other' ? caPortfolio.natureOfWork : (caPortfolio.natureOfWork ? 'Other' : '')} onChange={(e) => setCaPortfolio({...caPortfolio, natureOfWork: e.target.value})}>
-                <option value="">Select Nature of Work</option>
-                {NATURE_OF_WORK.map(work => (
-                  <option key={work} value={work}>{work}</option>
-                ))}
-              </select>
-              {(!NATURE_OF_WORK.includes(caPortfolio.natureOfWork || '') || caPortfolio.natureOfWork === 'Other') && caPortfolio.natureOfWork && (
-                <input required type="text" className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm bg-white" placeholder="Type nature of work" value={caPortfolio.natureOfWork === 'Other' ? '' : caPortfolio.natureOfWork} onChange={(e) => setCaPortfolio({...caPortfolio, natureOfWork: e.target.value})} />
-              )}
+              <label className="block text-sm font-medium text-gray-700 mb-2">* Nature of Work Done During Articleship (Select all that apply):</label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 mb-3 p-4 border border-gray-200 rounded-lg bg-gray-50 max-h-60 overflow-y-auto">
+                {NATURE_OF_WORK.map(work => {
+                  const selectedWorks = (caPortfolio.natureOfWork || '').split(',').map(s => s.trim()).filter(Boolean);
+                  const isChecked = selectedWorks.includes(work);
+                  return (
+                    <label key={work} className="flex items-start gap-2 text-sm text-gray-700 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={isChecked}
+                        onChange={(e) => {
+                          let newWorks = [...selectedWorks];
+                          if (e.target.checked) {
+                            if (!newWorks.includes(work)) newWorks.push(work);
+                          } else {
+                            newWorks = newWorks.filter(w => w !== work);
+                          }
+                          setCaPortfolio({...caPortfolio, natureOfWork: newWorks.join(', ')});
+                        }}
+                        className="rounded border-gray-300 text-primary focus:ring-primary mt-0.5"
+                      />
+                      <span className="leading-tight">{work}</span>
+                    </label>
+                  );
+                })}
+              </div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Other (Specify, separated by commas):</label>
+              <input 
+                type="text" 
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm bg-white" 
+                placeholder="Type any other work..." 
+                value={(() => {
+                  const selectedWorks = (caPortfolio.natureOfWork || '').split(',').map(s => s.trim()).filter(Boolean);
+                  const otherWorks = selectedWorks.filter(w => !NATURE_OF_WORK.includes(w));
+                  return otherWorks.join(', ');
+                })()} 
+                onChange={(e) => {
+                  const selectedWorks = (caPortfolio.natureOfWork || '').split(',').map(s => s.trim()).filter(Boolean);
+                  const standardWorks = selectedWorks.filter(w => NATURE_OF_WORK.includes(w));
+                  const newOtherStr = e.target.value;
+                  if (!newOtherStr.trim()) {
+                    setCaPortfolio({...caPortfolio, natureOfWork: standardWorks.join(', ')});
+                  } else {
+                    setCaPortfolio({...caPortfolio, natureOfWork: [...standardWorks, newOtherStr].join(', ')});
+                  }
+                }} 
+              />
             </div>
 
 
