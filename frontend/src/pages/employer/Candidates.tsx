@@ -213,7 +213,7 @@ export const EmployerCandidates = () => {
     const matchesGradComp = filterGradCompleted ? c.qualifications?.graduation?.completed === filterGradCompleted : true;
     const matchesGradType = filterGradType ? c.qualifications?.graduation?.type === filterGradType : true;
 
-    return matchesSearch && matchesCity && matchesState && matchesCourse && matchesGender && matchesMaritalStatus && matchesFresher && matchesInter1st && matchesInterG1 && matchesInterG2 && matchesInterRanker && matchesFinal1st && matchesFinalG1 && matchesFinalG2 && matchesFinalRanker && matchesBig4 && matchesFirmType && matchesGmcs && matchesInd && matchesListed && matchesGradComp && matchesGradType;
+    return matchesSearch && matchesCity && matchesState && matchesCourse && matchesGender && matchesMaritalStatus && matchesFresher && matchesInter1st && matchesInterG1 && matchesInterG2 && matchesInterRanker && matchesFinal1st && matchesFinalMonth && matchesFinalYear && matchesDate && matchesFinalG1 && matchesFinalG2 && matchesFinalRanker && matchesBig4 && matchesFirmType && matchesGmcs && matchesInd && matchesListed && matchesGradComp && matchesGradType;
   });
 
   const exportToCSV = () => {
@@ -466,6 +466,10 @@ export const EmployerCandidates = () => {
     setFilterListedCompany('');
     setFilterGradCompleted('');
     setFilterGradType('');
+    setFilterFinalPassMonth('');
+    setFilterFinalPassYear('');
+    setFilterResumeFromDate('');
+    setFilterResumeToDate('');
   };
 
   return (
