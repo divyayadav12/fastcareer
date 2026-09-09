@@ -429,7 +429,7 @@ export const EmployerCandidates = () => {
 
         const fetchPromises = selectedCandidates.map(async (candidate) => {
           const sanitize = (s: string) => s.replace(/[/\\?%*:|"<>]/g, '').trim().replace(/\s+/g, '_');
-          let base = sanitize(candidate.email);
+          let base = `${sanitize(candidate.firstName || 'Candidate')}_${sanitize(candidate.lastName || '')}`.replace(/_+$/, '');
           if (!base) base = `Candidate_${candidate._id.slice(-6)}`;
 
           let fileName = '';

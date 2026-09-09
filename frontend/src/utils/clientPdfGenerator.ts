@@ -224,8 +224,8 @@ export const fetchCandidateResumeBlob = async (candidate: any): Promise<Blob> =>
 export const downloadCandidateResume = async (candidate: any) => {
   const blob = await fetchCandidateResumeBlob(candidate);
   const sanitize = (s: string) => s.replace(/[/\\?%*:|"<>]/g, '').trim().replace(/\s+/g, '_');
-  const base = candidate.email ? sanitize(candidate.email) : 'Candidate';
-  saveAs(blob, `${base}.pdf`);
+  const base = `${sanitize(candidate.firstName || 'Candidate')}_${sanitize(candidate.lastName || '')}`.replace(/_+$/, '');
+  saveAs(blob, `${base || 'Candidate'}_Resume.pdf`);
 };
 
 // View candidate resume in a new browser tab
