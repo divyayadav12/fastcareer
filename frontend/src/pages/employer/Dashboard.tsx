@@ -39,6 +39,8 @@ export const EmployerDashboard = () => {
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const candidatesPerPage = 10;
   const [applications, setApplications] = useState<any[]>([]);
   const [loadingApps, setLoadingApps] = useState(true);
 
@@ -202,7 +204,7 @@ export const EmployerDashboard = () => {
               ) : candidates.length === 0 ? (
                 <tr><td colSpan={4} className="py-8 text-center text-gray-500">No candidates available.</td></tr>
               ) : (
-                candidates.map(candidate => (
+                candidates.slice((currentPage - 1) * candidatesPerPage, currentPage * candidatesPerPage).map(candidate => (
                   <tr key={candidate._id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-4 py-4">
                       <div className="font-medium text-text">{candidate.firstName} {candidate.lastName}</div>
@@ -253,6 +255,31 @@ export const EmployerDashboard = () => {
             </tbody>
           </table>
         </div>
+        
+        {/* Pagination Controls */}
+        {!loading && candidates.length > 0 && (
+          <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-100">
+            <span className="text-sm text-gray-500">
+              Showing {(currentPage - 1) * candidatesPerPage + 1} to {Math.min(currentPage * candidatesPerPage, candidates.length)} of {candidates.length} candidates
+            </span>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1.5 text-sm font-medium border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              >
+                Previous
+              </button>
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(candidates.length / candidatesPerPage)))}
+                disabled={currentPage === Math.ceil(candidates.length / candidatesPerPage)}
+                className="px-3 py-1.5 text-sm font-medium border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </div>
           {/* Recent Applications Section */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mt-8">
