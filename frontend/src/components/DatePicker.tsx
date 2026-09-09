@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Calendar, ChevronDown, X, Search } from 'lucide-react';
 
-export interface DateOfBirthPickerProps {
+export interface DatePickerProps {
   value?: Date | null;
   defaultValue?: Date | null;
   onChange?: (date: Date | null) => void;
@@ -30,7 +30,7 @@ const MONTHS = [
   'July', 'August', 'September', 'October', 'November', 'December'
 ];
 
-export const DateOfBirthPicker: React.FC<DateOfBirthPickerProps> = ({
+export const DatePicker: React.FC<DatePickerProps> = ({
   value,
   defaultValue,
   onChange,

@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { STATES, STATE_CITY_MAP, ALL_CITIES, YEARS, MONTHS, BOARDS, ATTEMPTS, CA_EXAM_MONTHS, NATURE_OF_WORK, COLLEGES, PREFERRED_CAMPUS_CITIES, ARTICLESHIP_TYPES } from '../utils/constants';
-import { DateOfBirthPicker } from '../components/DateOfBirthPicker';
+import { DatePicker } from '../components/DatePicker';
 
 export const PlacementDriveForm = () => {
   const navigate = useNavigate();
@@ -311,7 +311,7 @@ export const PlacementDriveForm = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
-                    <DateOfBirthPicker 
+                    <DatePicker 
                       value={formData.dateOfBirth ? new Date(formData.dateOfBirth) : null} 
                       onChange={(date) => {
                         const formattedDate = date ? 

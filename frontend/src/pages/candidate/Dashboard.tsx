@@ -11,7 +11,7 @@ import { CandidateLayout } from '../../layouts/CandidateLayout';
 import { STATES, STATE_CITY_MAP, ALL_CITIES, YEARS, MONTHS, CA_EXAM_MONTHS, NATURE_OF_WORK, COLLEGES, PREFERRED_CAMPUS_CITIES, ARTICLESHIP_TYPES, CA_FIRMS, BOARDS } from '../../utils/constants';
 import { TOP_RECRUITERS } from '../home/RecruitersSection';
 import { COMPANY_TILES } from '../../components/RecruiterMarquee';
-import { DateOfBirthPicker } from '../../components/DateOfBirthPicker';
+import { DatePicker } from '../../components/DatePicker';
 
 
 const ATTEMPT_YEARS = ['Sept\'25', 'Jan\'26', 'May\'25', 'Nov\'24', 'May\'24', 'Nov\'23', 'May\'23', 'Nov\'22', 'May\'22', 'Nov\'21', 'May\'21', 'Nov\'20', 'May\'20'];
@@ -441,7 +441,7 @@ export const CandidateDashboard = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
-                <DateOfBirthPicker 
+                <DatePicker 
                   value={personal.dateOfBirth ? new Date(personal.dateOfBirth) : null} 
                   onChange={(date) => {
                     const formattedDate = date ? 

@@ -9,6 +9,7 @@ import { fetchCandidateResumeBlob, viewCandidateResume, downloadCandidateResume 
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { STATES, STATE_CITY_MAP, ALL_CITIES } from '../../utils/constants';
+import { DatePicker } from '../../components/DatePicker';
 
 interface Candidate {
   _id: string;
@@ -662,11 +663,25 @@ export const EmployerCandidates = () => {
             </div>
             <div>
               <label className="block text-sm text-gray-600 mb-1">Resume Uploaded (From Date)</label>
-              <input type="date" value={filterResumeFromDate} onChange={e => setFilterResumeFromDate(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20" />
+              <DatePicker 
+                placeholder="From Date"
+                value={filterResumeFromDate ? new Date(filterResumeFromDate) : null} 
+                onChange={(date) => {
+                  const formatted = date ? new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString().split('T')[0] : '';
+                  setFilterResumeFromDate(formatted);
+                }} 
+              />
             </div>
             <div>
               <label className="block text-sm text-gray-600 mb-1">Resume Uploaded (To Date)</label>
-              <input type="date" value={filterResumeToDate} onChange={e => setFilterResumeToDate(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20" />
+              <DatePicker 
+                placeholder="To Date"
+                value={filterResumeToDate ? new Date(filterResumeToDate) : null} 
+                onChange={(date) => {
+                  const formatted = date ? new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString().split('T')[0] : '';
+                  setFilterResumeToDate(formatted);
+                }} 
+              />
             </div>
             <div>
               <label className="block text-sm text-gray-600 mb-1">CA Final Both Grps (1st Att)</label>
