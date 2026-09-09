@@ -97,7 +97,7 @@ export const AdminDashboard = () => {
             const blob = await fetchCandidateResumeBlob(candidate);
             const sanitize = (s: string) => s.replace(/[/\\?%*:|"<>]/g, '').trim().replace(/\s+/g, '_');
             const base = `${sanitize(candidate.firstName || 'Candidate')}_${sanitize(candidate.lastName || '')}`.replace(/_+$/, '');
-            const fileName = `${base || 'Candidate'}_Resume.pdf`;
+            const fileName = `${base || 'Candidate'}.pdf`;
             resumesFolder.file(fileName, blob);
           } catch (error) {
             console.error(`Failed to fetch resume for ${candidate.firstName}:`, error);

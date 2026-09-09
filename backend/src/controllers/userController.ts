@@ -401,7 +401,7 @@ export const getCandidateResume = async (req: Request, res: Response) => {
 
     const fName = sanitizeFilename(candidate.firstName || 'Candidate');
     const lName = sanitizeFilename(candidate.lastName || '');
-    const filename = `${fName}${lName ? '_' + lName : ''}_Resume.pdf`;
+    const filename = `${fName}${lName ? '_' + lName : ''}.pdf`;
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
