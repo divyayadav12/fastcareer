@@ -36,6 +36,15 @@ interface Candidate {
       yearOfCompletion?: string;
     };
   };
+  experienceInfo?: {
+    isExperienced?: boolean;
+    experienceYears?: string;
+    currentCompanyName?: string;
+    currentCTC?: string;
+    expectedCTC?: string;
+    currentDesignation?: string;
+    workProfile?: string;
+  };
   caPortfolio?: {
     isFresherCA?: boolean;
     caInter?: {
@@ -81,6 +90,7 @@ export const EmployerCandidates = () => {
 
   // Filtering States
   const [searchTerm, setSearchTerm] = useState('');
+  const [filterEmail, setFilterEmail] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [filterCity, setFilterCity] = useState('');
   const [filterState, setFilterState] = useState('');
@@ -161,6 +171,7 @@ export const EmployerCandidates = () => {
     const course = c.qualifications?.graduation?.courseName?.toLowerCase() || '';
     
     const matchesSearch = fullName.includes(term) || city.includes(term) || course.includes(term) || c.email.toLowerCase().includes(term);
+    const matchesEmail = filterEmail ? c.email.toLowerCase().includes(filterEmail.toLowerCase()) : true;
     const matchesCity = filterCity ? city.includes(filterCity.toLowerCase()) : true;
     const matchesState = filterState ? c.personalDetails?.currentState === filterState : true;
     const matchesCourse = filterCourse ? course.includes(filterCourse.toLowerCase()) : true;
@@ -213,7 +224,7 @@ export const EmployerCandidates = () => {
     const matchesGradComp = filterGradCompleted ? c.qualifications?.graduation?.completed === filterGradCompleted : true;
     const matchesGradType = filterGradType ? c.qualifications?.graduation?.type === filterGradType : true;
 
-    return matchesSearch && matchesCity && matchesState && matchesCourse && matchesGender && matchesMaritalStatus && matchesFresher && matchesInter1st && matchesInterG1 && matchesInterG2 && matchesInterRanker && matchesFinal1st && matchesFinalMonth && matchesFinalYear && matchesDate && matchesFinalG1 && matchesFinalG2 && matchesFinalRanker && matchesBig4 && matchesFirmType && matchesGmcs && matchesInd && matchesListed && matchesGradComp && matchesGradType;
+    return matchesSearch && matchesEmail && matchesCity && matchesState && matchesCourse && matchesGender && matchesMaritalStatus && matchesFresher && matchesInter1st && matchesInterG1 && matchesInterG2 && matchesInterRanker && matchesFinal1st && matchesFinalMonth && matchesFinalYear && matchesDate && matchesFinalG1 && matchesFinalG2 && matchesFinalRanker && matchesBig4 && matchesFirmType && matchesGmcs && matchesInd && matchesListed && matchesGradComp && matchesGradType;
   });
 
   const exportToCSV = () => {
@@ -221,7 +232,7 @@ export const EmployerCandidates = () => {
     setIsExporting(true);
     
     // Create CSV Header
-    const headers = ['First Name', 'Last Name', 'Email', 'Gender', 'Marital Status', 'State', 'City', 'Graduation Completed', 'Graduation Type', 'Graduation Course', 'Fresher CA', 'CA Inter 1st Att. Both', 'CA Inter Grp1', 'CA Inter Grp2', 'CA Inter Ranker', 'CA Final 1st Att. Both', 'CA Final Grp1', 'CA Final Grp2', 'CA Final Ranker', 'Articleship Firm', 'Big4 Articleship', 'GMCS', 'Industrial Trainee', 'Listed Company', 'Resume Link'];
+    const headers = ['First Name', 'Last Name', 'Email', 'Gender', 'Marital Status', 'State', 'City', 'Graduation Completed', 'Graduation Type', 'Graduation Course', 'Experienced', 'Experience Years', 'Current Company', 'Current CTC', 'Expected CTC', 'Current Designation', 'Work Profile', 'Fresher CA', 'CA Inter 1st Att. Both', 'CA Inter Grp1', 'CA Inter Grp2', 'CA Inter Ranker', 'CA Final 1st Att. Both', 'CA Final Grp1', 'CA Final Grp2', 'CA Final Ranker', 'Articleship Firm', 'Big4 Articleship', 'GMCS', 'Industrial Trainee', 'Listed Company', 'Resume Link'];
     
     // Create rows
     const rows = filteredCandidates.map(c => {
@@ -234,6 +245,15 @@ export const EmployerCandidates = () => {
       const gradType = c.qualifications?.graduation?.type || 'N/A';
       const grad = c.qualifications?.graduation?.courseName || 'N/A';
       
+      const expInfo = c.experienceInfo || {};
+      const isExperienced = expInfo.isExperienced ? 'Yes' : 'No';
+      const expYears = expInfo.experienceYears || 'N/A';
+      const currCompany = expInfo.currentCompanyName || 'N/A';
+      const currCTC = expInfo.currentCTC || 'N/A';
+      const expCTC = expInfo.expectedCTC || 'N/A';
+      const currDesig = expInfo.currentDesignation || 'N/A';
+      const workProf = expInfo.workProfile || 'N/A';
+
       const isFresher = c.caPortfolio?.isFresherCA ? 'Yes' : 'No';
       const inter1st = c.caPortfolio?.caInter?.bothGroups1stAttempt ? 'Yes' : 'No';
       const interG1 = c.caPortfolio?.caInter?.group1Attempts || 'N/A';
@@ -253,7 +273,7 @@ export const EmployerCandidates = () => {
 
       const resume = c.resumeUrl ? getResumeUrl(c.resumeUrl) : 'No Resume';
       
-      return [c.firstName, c.lastName, c.email, gender, maritalStatus, state, city, gradComp, gradType, grad, isFresher, inter1st, interG1, interG2, interRanker, final1st, finalG1, finalG2, finalRanker, firm, big4, gmcs, indTrainee, listed, resume]
+      return [c.firstName, c.lastName, c.email, gender, maritalStatus, state, city, gradComp, gradType, grad, isExperienced, expYears, currCompany, currCTC, expCTC, currDesig, workProf, isFresher, inter1st, interG1, interG2, interRanker, final1st, finalG1, finalG2, finalRanker, firm, big4, gmcs, indTrainee, listed, resume]
         .map(field => `"${String(field).replace(/"/g, '""')}"`) // Escape quotes
         .join(',');
     });
@@ -409,7 +429,7 @@ export const EmployerCandidates = () => {
 
         const fetchPromises = selectedCandidates.map(async (candidate) => {
           const sanitize = (s: string) => s.replace(/[/\\?%*:|"<>]/g, '').trim().replace(/\s+/g, '_');
-          let base = `${sanitize(candidate.firstName || 'Candidate')}_${sanitize(candidate.lastName || '')}`.replace(/_+$/, '');
+          let base = sanitize(candidate.email);
           if (!base) base = `Candidate_${candidate._id.slice(-6)}`;
 
           let fileName = '';
@@ -470,6 +490,7 @@ export const EmployerCandidates = () => {
     setFilterFinalPassYear('');
     setFilterResumeFromDate('');
     setFilterResumeToDate('');
+    setFilterEmail('');
   };
 
   return (
@@ -593,6 +614,10 @@ export const EmployerCandidates = () => {
             <button onClick={resetFilters} className="text-sm text-primary hover:underline">Reset All</button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">Email</label>
+              <input type="text" value={filterEmail} onChange={e => setFilterEmail(e.target.value)} placeholder="e.g. name@example.com" className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20" />
+            </div>
             <div>
               <label className="block text-sm text-gray-600 mb-1">State</label>
               <input type="text" list="statesList" value={filterState} onChange={e => {setFilterState(e.target.value); setFilterCity('');}} placeholder="e.g. Maharashtra" className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20" />
@@ -870,10 +895,10 @@ export const EmployerCandidates = () => {
                 <div onClick={e => e.stopPropagation()}>
                   {hasResume ? (
                     <button 
-                      onClick={() => viewCandidateResume(candidate)} 
+                      onClick={() => downloadCandidateResume(candidate)} 
                       className="w-full flex items-center justify-center gap-2 py-2 border border-primary text-primary rounded-lg font-medium hover:bg-primary hover:text-white transition-colors cursor-pointer"
                     >
-                      <Download size={16} /> View / Download Resume
+                      <Download size={16} /> Download Resume
                     </button>
                   ) : (
                     <button disabled className="w-full py-2 bg-gray-50 text-gray-400 rounded-lg font-medium cursor-not-allowed">

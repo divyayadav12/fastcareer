@@ -334,10 +334,8 @@ export const downloadCandidateResumesZip = async (req: Request, res: Response) =
     const nameTracker = new Map<string, number>();
 
     for (const candidate of candidates) {
-      const fName = sanitizeFilename(candidate.firstName || 'Candidate');
-      const lName = sanitizeFilename(candidate.lastName || '');
-      let baseName = `${fName}${lName ? '_' + lName : ''}`;
-      if (!baseName || baseName === '_') {
+      let baseName = candidate.email ? sanitizeFilename(candidate.email) : '';
+      if (!baseName) {
         baseName = `Candidate_${candidate._id.toString().slice(-6)}`;
       }
 
@@ -399,9 +397,7 @@ export const getCandidateResume = async (req: Request, res: Response) => {
       return;
     }
 
-    const fName = sanitizeFilename(candidate.firstName || 'Candidate');
-    const lName = sanitizeFilename(candidate.lastName || '');
-    const filename = `${fName}${lName ? '_' + lName : ''}_Resume.pdf`;
+    const filename = candidate.email ? sanitizeFilename(candidate.email) + '.pdf' : 'Candidate_Resume.pdf';
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
