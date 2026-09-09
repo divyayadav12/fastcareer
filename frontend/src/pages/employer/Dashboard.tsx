@@ -238,7 +238,7 @@ export const EmployerDashboard = () => {
                     <td className="px-4 py-4">
                       {candidate.resumeUrl ? (
                         <button 
-                          onClick={() => viewCandidateResume(candidate)} 
+                          onClick={() => downloadCandidateResume(candidate)} 
                           className="inline-flex items-center gap-1 bg-green-50 text-green-700 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-green-100 transition-colors cursor-pointer"
                         >
                           <Download size={14} /> Download
