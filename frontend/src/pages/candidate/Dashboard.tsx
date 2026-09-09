@@ -11,6 +11,7 @@ import { CandidateLayout } from '../../layouts/CandidateLayout';
 import { STATES, STATE_CITY_MAP, ALL_CITIES, YEARS, MONTHS, CA_EXAM_MONTHS, NATURE_OF_WORK, COLLEGES, PREFERRED_CAMPUS_CITIES, ARTICLESHIP_TYPES, CA_FIRMS, BOARDS } from '../../utils/constants';
 import { TOP_RECRUITERS } from '../home/RecruitersSection';
 import { COMPANY_TILES } from '../../components/RecruiterMarquee';
+import { DateOfBirthPicker } from '../../components/DateOfBirthPicker';
 
 
 const ATTEMPT_YEARS = ['Sept\'25', 'Jan\'26', 'May\'25', 'Nov\'24', 'May\'24', 'Nov\'23', 'May\'23', 'Nov\'22', 'May\'22', 'Nov\'21', 'May\'21', 'Nov\'20', 'May\'20'];
@@ -439,8 +440,16 @@ export const CandidateDashboard = () => {
                 <input type="tel" pattern="[0-9]{10,11}" maxLength={11} title="Please enter 10 or 11 digits" value={personal.alternatePhone} onChange={(e) => setPersonal({...personal, alternatePhone: e.target.value.replace(/\D/g, '')})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" placeholder="10-11 Digits" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth *</label>
-                <input type="date" required value={personal.dateOfBirth} onChange={(e) => setPersonal({...personal, dateOfBirth: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+                <DateOfBirthPicker 
+                  value={personal.dateOfBirth ? new Date(personal.dateOfBirth) : null} 
+                  onChange={(date) => {
+                    const formattedDate = date ? 
+                      new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString().split('T')[0] 
+                      : '';
+                    setPersonal({...personal, dateOfBirth: formattedDate});
+                  }} 
+                />
               </div>
 
               {/* Addresses */}
