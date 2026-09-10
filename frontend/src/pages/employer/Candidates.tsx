@@ -607,91 +607,107 @@ export const EmployerCandidates = () => {
         </button>
       </div>
 
+      {/* Sidebar Filters */}
       {showFilters && (
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="font-bold text-gray-700">Advanced Filters</h3>
-            <button onClick={resetFilters} className="text-sm text-primary hover:underline">Reset All</button>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Email</label>
-              <input type="text" value={filterEmail} onChange={e => setFilterEmail(e.target.value)} placeholder="e.g. name@example.com" className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20" />
+        <div className="fixed inset-0 z-50 flex justify-end">
+          {/* Overlay */}
+          <div 
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity" 
+            onClick={() => setShowFilters(false)}
+          ></div>
+          
+          {/* Sidebar */}
+          <div className="relative w-full max-w-md bg-white h-full shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out">
+            <div className="flex items-center justify-between p-6 border-b border-gray-100">
+              <h3 className="font-bold text-xl text-gray-800">Advanced Filters</h3>
+              <div className="flex items-center gap-4">
+                <button onClick={resetFilters} className="text-sm font-medium text-primary hover:underline">Reset All</button>
+                <button onClick={() => setShowFilters(false)} className="text-gray-400 hover:text-gray-600">
+                  <X size={24} />
+                </button>
+              </div>
             </div>
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">State</label>
-              <input type="text" list="statesList" value={filterState} onChange={e => {setFilterState(e.target.value); setFilterCity('');}} placeholder="e.g. Maharashtra" className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20" />
-              <datalist id="statesList">
-                {STATES.map(s => <option key={s} value={s} />)}
-              </datalist>
-            </div>
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">City</label>
-              <input type="text" list="citiesList" value={filterCity} onChange={e => setFilterCity(e.target.value)} placeholder="e.g. Mumbai" className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20" />
-              <datalist id="citiesList">
-                {(filterState ? STATE_CITY_MAP[filterState] || ALL_CITIES : ALL_CITIES).map(c => <option key={c} value={c} />)}
-              </datalist>
-            </div>
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Gender</label>
-              <select value={filterGender} onChange={e => setFilterGender(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="Male">Male</option><option value="Female">Female</option></select>
-            </div>
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Marital Status</label>
-              <select value={filterMaritalStatus} onChange={e => setFilterMaritalStatus(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="Unmarried">Unmarried</option><option value="Married">Married</option></select>
+            
+            <div className="p-6 overflow-y-auto flex-1 custom-scrollbar">
+              <div className="flex flex-col gap-5">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <input type="text" value={filterEmail} onChange={e => setFilterEmail(e.target.value)} placeholder="e.g. name@example.com" className="w-full px-4 py-2.5 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
+                  <input type="text" list="statesList" value={filterState} onChange={e => {setFilterState(e.target.value); setFilterCity('');}} placeholder="e.g. Maharashtra" className="w-full px-4 py-2.5 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20" />
+                  <datalist id="statesList">
+                    {STATES.map(s => <option key={s} value={s} />)}
+                  </datalist>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                  <input type="text" list="citiesList" value={filterCity} onChange={e => setFilterCity(e.target.value)} placeholder="e.g. Mumbai" className="w-full px-4 py-2.5 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20" />
+                  <datalist id="citiesList">
+                    {(filterState ? STATE_CITY_MAP[filterState] || ALL_CITIES : ALL_CITIES).map(c => <option key={c} value={c} />)}
+                  </datalist>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                  <select value={filterGender} onChange={e => setFilterGender(e.target.value)} className="w-full px-4 py-2.5 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option></select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Marital Status</label>
+              <select value={filterMaritalStatus} onChange={e => setFilterMaritalStatus(e.target.value)} className="w-full px-4 py-2.5 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="Unmarried">Unmarried</option><option value="Married">Married</option></select>
             </div>
             
             {/* Qualification Filters */}
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Graduation Completed</label>
-              <select value={filterGradCompleted} onChange={e => setFilterGradCompleted(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="Yes">Yes</option><option value="No/Pursuing">No/Pursuing</option></select>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Graduation Completed</label>
+              <select value={filterGradCompleted} onChange={e => setFilterGradCompleted(e.target.value)} className="w-full px-4 py-2.5 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="Yes">Yes</option><option value="No/Pursuing">No/Pursuing</option></select>
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Graduation Type</label>
-              <select value={filterGradType} onChange={e => setFilterGradType(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="REGULAR">Regular</option><option value="CORRESPONDENCE">Correspondence</option></select>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Graduation Type</label>
+              <select value={filterGradType} onChange={e => setFilterGradType(e.target.value)} className="w-full px-4 py-2.5 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="REGULAR">Regular</option><option value="CORRESPONDENCE">Correspondence</option></select>
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Education / Course</label>
-              <input type="text" value={filterCourse} onChange={e => setFilterCourse(e.target.value)} placeholder="e.g. B.Com" className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20" />
+              <label className="block text-sm font-medium text-gray-700 mb-1">Education / Course</label>
+              <input type="text" value={filterCourse} onChange={e => setFilterCourse(e.target.value)} placeholder="e.g. B.Com" className="w-full px-4 py-2.5 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20" />
             </div>
 
             {/* CA Inter Filters */}
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Fresher CA</label>
-              <select value={filterFresherCA} onChange={e => setFilterFresherCA(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="Yes">Yes</option><option value="No">No</option></select>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Fresher CA</label>
+              <select value={filterFresherCA} onChange={e => setFilterFresherCA(e.target.value)} className="w-full px-4 py-2.5 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="Yes">Yes</option><option value="No">No</option></select>
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">CA Inter Both Grps (1st Att)</label>
-              <select value={filterInter1stAttempt} onChange={e => setFilterInter1stAttempt(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="Yes">Yes</option><option value="No">No</option></select>
+              <label className="block text-sm font-medium text-gray-700 mb-1">CA Inter Both Grps (1st Att)</label>
+              <select value={filterInter1stAttempt} onChange={e => setFilterInter1stAttempt(e.target.value)} className="w-full px-4 py-2.5 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="Yes">Yes</option><option value="No">No</option></select>
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">CA Inter Grp 1 Attempts</label>
-              <select value={filterInterGroup1Attempts} onChange={e => setFilterInterGroup1Attempts(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option>{['0','1','2','3','4','5','6+'].map(a=><option key={a} value={a}>{a}</option>)}</select>
+              <label className="block text-sm font-medium text-gray-700 mb-1">CA Inter Grp 1 Attempts</label>
+              <select value={filterInterGroup1Attempts} onChange={e => setFilterInterGroup1Attempts(e.target.value)} className="w-full px-4 py-2.5 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option>{['0','1','2','3','4','5','6+'].map(a=><option key={a} value={a}>{a}</option>)}</select>
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">CA Inter Grp 2 Attempts</label>
-              <select value={filterInterGroup2Attempts} onChange={e => setFilterInterGroup2Attempts(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option>{['0','1','2','3','4','5','6+'].map(a=><option key={a} value={a}>{a}</option>)}</select>
+              <label className="block text-sm font-medium text-gray-700 mb-1">CA Inter Grp 2 Attempts</label>
+              <select value={filterInterGroup2Attempts} onChange={e => setFilterInterGroup2Attempts(e.target.value)} className="w-full px-4 py-2.5 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option>{['0','1','2','3','4','5','6+'].map(a=><option key={a} value={a}>{a}</option>)}</select>
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">CA Inter Ranker</label>
-              <select value={filterInterRanker} onChange={e => setFilterInterRanker(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="Yes">Yes</option><option value="No">No</option></select>
+              <label className="block text-sm font-medium text-gray-700 mb-1">CA Inter Ranker</label>
+              <select value={filterInterRanker} onChange={e => setFilterInterRanker(e.target.value)} className="w-full px-4 py-2.5 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="Yes">Yes</option><option value="No">No</option></select>
             </div>
 
             {/* CA Final Filters */}
             <div>
-              <label className="block text-sm text-gray-600 mb-1">CA Final Passing Month (Batch)</label>
-              <select value={filterFinalPassMonth} onChange={e => setFilterFinalPassMonth(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20">
+              <label className="block text-sm font-medium text-gray-700 mb-1">CA Final Passing Month (Batch)</label>
+              <select value={filterFinalPassMonth} onChange={e => setFilterFinalPassMonth(e.target.value)} className="w-full px-4 py-2.5 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20">
                 <option value="">All</option>
                 <option value="May">May</option>
                 <option value="November">November</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">CA Final Passing Year</label>
-              <input type="number" placeholder="e.g. 2024" value={filterFinalPassYear} onChange={e => setFilterFinalPassYear(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20" />
+              <label className="block text-sm font-medium text-gray-700 mb-1">CA Final Passing Year</label>
+              <input type="number" placeholder="e.g. 2024" value={filterFinalPassYear} onChange={e => setFilterFinalPassYear(e.target.value)} className="w-full px-4 py-2.5 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20" />
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Resume Uploaded (From Date)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Resume Uploaded (From Date)</label>
               <DatePicker 
                 placeholder="From Date"
                 value={filterResumeFromDate ? new Date(filterResumeFromDate) : null} 
@@ -702,7 +718,7 @@ export const EmployerCandidates = () => {
               />
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Resume Uploaded (To Date)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Resume Uploaded (To Date)</label>
               <DatePicker 
                 placeholder="To Date"
                 value={filterResumeToDate ? new Date(filterResumeToDate) : null} 
@@ -713,46 +729,48 @@ export const EmployerCandidates = () => {
               />
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">CA Final Both Grps (1st Att)</label>
-              <select value={filterFinal1stAttempt} onChange={e => setFilterFinal1stAttempt(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="Yes">Yes</option><option value="No">No</option></select>
+              <label className="block text-sm font-medium text-gray-700 mb-1">CA Final Both Grps (1st Att)</label>
+              <select value={filterFinal1stAttempt} onChange={e => setFilterFinal1stAttempt(e.target.value)} className="w-full px-4 py-2.5 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="Yes">Yes</option><option value="No">No</option></select>
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">CA Final Grp 1 Attempts</label>
-              <select value={filterFinalGroup1Attempts} onChange={e => setFilterFinalGroup1Attempts(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option>{['0','1','2','3','4','5','6+'].map(a=><option key={a} value={a}>{a}</option>)}</select>
+              <label className="block text-sm font-medium text-gray-700 mb-1">CA Final Grp 1 Attempts</label>
+              <select value={filterFinalGroup1Attempts} onChange={e => setFilterFinalGroup1Attempts(e.target.value)} className="w-full px-4 py-2.5 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option>{['0','1','2','3','4','5','6+'].map(a=><option key={a} value={a}>{a}</option>)}</select>
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">CA Final Grp 2 Attempts</label>
-              <select value={filterFinalGroup2Attempts} onChange={e => setFilterFinalGroup2Attempts(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option>{['0','1','2','3','4','5','6+'].map(a=><option key={a} value={a}>{a}</option>)}</select>
+              <label className="block text-sm font-medium text-gray-700 mb-1">CA Final Grp 2 Attempts</label>
+              <select value={filterFinalGroup2Attempts} onChange={e => setFilterFinalGroup2Attempts(e.target.value)} className="w-full px-4 py-2.5 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option>{['0','1','2','3','4','5','6+'].map(a=><option key={a} value={a}>{a}</option>)}</select>
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">CA Final Ranker</label>
-              <select value={filterFinalRanker} onChange={e => setFilterFinalRanker(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="Yes">Yes</option><option value="No">No</option></select>
+              <label className="block text-sm font-medium text-gray-700 mb-1">CA Final Ranker</label>
+              <select value={filterFinalRanker} onChange={e => setFilterFinalRanker(e.target.value)} className="w-full px-4 py-2.5 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="Yes">Yes</option><option value="No">No</option></select>
             </div>
 
             {/* Articleship & Others */}
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Articleship Firm Type</label>
-              <select value={filterFirmType} onChange={e => setFilterFirmType(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="Big4">Big4</option><option value="Medium">Medium</option><option value="Small">Small</option></select>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Articleship Firm Type</label>
+              <select value={filterFirmType} onChange={e => setFilterFirmType(e.target.value)} className="w-full px-4 py-2.5 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="Big4">Big4</option><option value="Medium">Medium</option><option value="Small">Small</option></select>
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Big 4 Articleship (Anytime)</label>
-              <select value={filterBig4} onChange={e => setFilterBig4(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="Yes">Yes</option><option value="No">No</option></select>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Big 4 Articleship (Anytime)</label>
+              <select value={filterBig4} onChange={e => setFilterBig4(e.target.value)} className="w-full px-4 py-2.5 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="Yes">Yes</option><option value="No">No</option></select>
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">GMCS Completed</label>
-              <select value={filterGmcs} onChange={e => setFilterGmcs(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="Yes">Yes</option><option value="No">No</option></select>
+              <label className="block text-sm font-medium text-gray-700 mb-1">GMCS Completed</label>
+              <select value={filterGmcs} onChange={e => setFilterGmcs(e.target.value)} className="w-full px-4 py-2.5 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="Yes">Yes</option><option value="No">No</option></select>
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Industrial Trainee</label>
-              <select value={filterIndustrialTrainee} onChange={e => setFilterIndustrialTrainee(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="Yes">Yes</option><option value="No">No</option></select>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Industrial Trainee</label>
+              <select value={filterIndustrialTrainee} onChange={e => setFilterIndustrialTrainee(e.target.value)} className="w-full px-4 py-2.5 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="Yes">Yes</option><option value="No">No</option></select>
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Listed Company Work</label>
-              <select value={filterListedCompany} onChange={e => setFilterListedCompany(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="Yes">Yes</option><option value="No">No</option></select>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Listed Company Work</label>
+              <select value={filterListedCompany} onChange={e => setFilterListedCompany(e.target.value)} className="w-full px-4 py-2.5 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20"><option value="">All</option><option value="Yes">Yes</option><option value="No">No</option></select>
             </div>
           </div>
         </div>
-      )}
+      </div>
+    </div>
+  )}
 
       {!loading && filteredCandidates.length > 0 && (
         <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white px-4 py-3 rounded-xl border border-gray-100 shadow-2xs">
