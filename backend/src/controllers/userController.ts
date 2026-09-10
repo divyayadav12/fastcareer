@@ -531,3 +531,28 @@ export const seed50Candidates = async (req: Request, res: Response) => {
     res.status(500).json({ message: error.message || "Error seeding 50 candidates" });
   }
 };
+
+export const cleanupDbAndFixResumes = async (req: Request, res: Response) => {
+  try {
+    // 1. Delete all old "TestCandidate" dummies
+    const deleteResult = await User.deleteMany({ firstName: { $regex: /^TestCandidate/i } });
+
+    // 2. Fix the newly seeded realistic candidates (their resumeUrl is empty, which causes UI to say "No Resume")
+    // We set it to a dummy string "generated_resume.pdf" so the UI shows the "Download Resume" button,
+    // and the backend automatically generates a PDF on the fly when downloaded.
+    const updateResult = await User.updateMany(
+      { email: { $regex: /@example\.com$/i }, resumeUrl: "" },
+      { $set: { resumeUrl: "generated_resume.pdf" } }
+    );
+
+    res.json({
+      success: true,
+      message: "Database cleaned up and resumes fixed successfully!",
+      deletedOldTestCandidates: deleteResult.deletedCount,
+      fixedResumesForNewCandidates: updateResult.modifiedCount
+    });
+  } catch (error: any) {
+    console.error("Error cleaning up DB:", error);
+    res.status(500).json({ message: error.message || "Error cleaning up DB" });
+  }
+};

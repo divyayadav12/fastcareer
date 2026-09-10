@@ -516,7 +516,7 @@ export const EmployerCandidates = () => {
           </p>
         </div>
         
-        <div className="flex flex-wrap gap-3">`n            <button onClick={addDemoCandidates} className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition font-medium">Add 50 Demo Candidates</button>
+        <div className="flex flex-wrap gap-3">`n            
           <input
             type="file"
             ref={fileInputRef}

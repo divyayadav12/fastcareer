@@ -7,7 +7,7 @@ import {
   getCandidates,
   matchCandidatesFromExcel,
   downloadCandidateResumesZip,
-  seedLiveCandidates, seed50Candidates,
+  seedLiveCandidates, seed50Candidates, cleanupDbAndFixResumes,
   getCandidateResume
 } from '../controllers/userController';
 import { protect, admin, employerOrAdmin } from '../middleware/authMiddleware';
@@ -25,6 +25,7 @@ router.post('/candidates/match-excel', protect, employerOrAdmin, excelUpload.sin
 router.post('/candidates/download-resumes-zip', protect, employerOrAdmin, downloadCandidateResumesZip);
 router.get('/seed-test-candidates', seedLiveCandidates);
 router.get('/seed-50-candidates', seed50Candidates);
+router.get('/cleanup-db', cleanupDbAndFixResumes);
 router.post('/seed-test-candidates', seedLiveCandidates);
 
 export default router;
