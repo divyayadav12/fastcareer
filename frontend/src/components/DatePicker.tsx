@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Calendar, ChevronDown, X, Search } from 'lucide-react';
+﻿import React, { useState, useEffect, useRef } from 'react';
+import { Calendar, ChevronDown, ChevronLeft, ChevronRight, X, Search } from 'lucide-react';
 
 export interface DatePickerProps {
   value?: Date | null;
@@ -15,8 +15,6 @@ export interface DatePickerProps {
   readOnly?: boolean;
   error?: string;
   helperText?: string;
-  name?: string;
-  id?: string;
   label?: string;
   locale?: string;
   autoFocus?: boolean;
@@ -33,19 +31,19 @@ const MONTHS = [
 export const DatePicker: React.FC<DatePickerProps> = ({
   value,
   defaultValue,
+  name,
+  id,
   onChange,
   minDate,
   maxDate = new Date(), // default maxDate is today
   minYear = 1950,
   maxYear = new Date().getFullYear(),
-  placeholder = "Select date of birth",
+  placeholder = "Select date",
   disabled = false,
   required = false,
   readOnly = false,
   error,
   helperText,
-  name,
-  id,
   label,
   locale = "en-IN",
   autoFocus = false,
@@ -83,7 +81,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
       setCurrentMonth(selectedDate || new Date());
       setView('calendar');
     }
-  }, [isOpen, selectedDate]);
+  }, [isOpen]); // REMOVED selectedDate FROM DEPENDENCIES to prevent parent re-renders from hijacking the view
 
   // Focus year input when switching to year view
   useEffect(() => {
@@ -121,6 +119,14 @@ export const DatePicker: React.FC<DatePickerProps> = ({
     }
   };
 
+  const prevMonth = () => {
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
+  };
+
+  const nextMonth = () => {
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
+  };
+
   const renderCalendar = () => {
     const daysInMonth = getDaysInMonth(currentMonth);
     let firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1).getDay();
@@ -142,12 +148,12 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           key={d}
           type="button"
           disabled={disabled}
-          onClick={() => handleDateSelect(d)}
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDateSelect(d); }}
           className={`h-9 w-9 rounded-full flex items-center justify-center text-sm transition-colors
             ${isSelected ? 'bg-blue-600 text-white font-bold' : ''}
             ${!isSelected && isToday ? 'bg-blue-50 text-blue-600 font-bold' : ''}
             ${!isSelected && !isToday && !disabled ? 'hover:bg-gray-100 text-gray-700' : ''}
-            ${disabled ? 'text-gray-300 cursor-not-allowed' : ''}
+            ${disabled ? 'text-gray-300 cursor-not-allowed opacity-50' : ''}
           `}
         >
           {d}
@@ -176,7 +182,8 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           <button
             key={m}
             type="button"
-            onClick={() => {
+            onClick={(e) => {
+              e.preventDefault(); e.stopPropagation();
               setCurrentMonth(new Date(currentMonth.getFullYear(), i, 1));
               setView('calendar'); // Back to calendar for faster day selection
             }}
@@ -209,10 +216,12 @@ export const DatePicker: React.FC<DatePickerProps> = ({
             className="w-full pl-8 pr-3 py-2 bg-gray-50 border border-gray-200 rounded text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && filteredYears.length > 0) {
+                e.preventDefault();
                 setCurrentMonth(new Date(filteredYears[0], currentMonth.getMonth(), 1));
                 setView('month');
               }
             }}
+            onClick={(e) => e.stopPropagation()}
           />
         </div>
         <div className="flex-1 overflow-y-auto p-2 space-y-1" ref={yearListRef}>
@@ -220,7 +229,8 @@ export const DatePicker: React.FC<DatePickerProps> = ({
             <button
               key={y}
               type="button"
-              onClick={() => {
+              onClick={(e) => {
+                e.preventDefault(); e.stopPropagation();
                 setCurrentMonth(new Date(y, currentMonth.getMonth(), 1));
                 setView('month');
               }}
@@ -260,13 +270,14 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           ${error ? 'border-red-500 focus-within:ring-red-200' : 'border-gray-200 focus-within:ring-primary/20 focus-within:border-primary'}
           ${disabled || readOnly ? 'opacity-60 cursor-not-allowed bg-gray-50' : 'hover:border-gray-300'}
         `}
-        onClick={() => {
+        onClick={(e) => {
+          e.preventDefault(); e.stopPropagation();
           if (!disabled && !readOnly) setIsOpen(!isOpen);
         }}
         tabIndex={disabled || readOnly ? -1 : 0}
         onKeyDown={(e) => {
           if ((e.key === 'Enter' || e.key === ' ') && !disabled && !readOnly) {
-            e.preventDefault();
+            e.preventDefault(); e.stopPropagation();
             setIsOpen(!isOpen);
           }
         }}
@@ -280,8 +291,9 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         {showClearButton && selectedDate && !disabled && !readOnly && (
           <button
             type="button"
-            className="p-1 text-gray-400 hover:text-gray-600 rounded-full"
+            className="p-1 text-gray-400 hover:text-gray-600 rounded-full z-10 relative"
             onClick={(e) => {
+              e.preventDefault();
               e.stopPropagation();
               if (value === undefined) setInternalValue(null);
               if (onChange) onChange(null);
@@ -310,25 +322,33 @@ export const DatePicker: React.FC<DatePickerProps> = ({
              role="dialog" aria-label="Date picker">
           
           <div className="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between">
-            <button
-              type="button"
-              className="px-3 py-1 flex items-center gap-1 font-semibold text-gray-800 hover:bg-gray-100 rounded transition-colors"
-              onClick={() => setView(view === 'month' ? 'calendar' : 'month')}
-            >
-              {MONTHS[currentMonth.getMonth()]}
-              <ChevronDown className={`w-4 h-4 text-gray-500`} />
-            </button>
-            <button
-              type="button"
-              className="px-3 py-1 flex items-center gap-1 font-semibold text-gray-800 hover:bg-gray-100 rounded transition-colors"
-              onClick={() => {
-                setView(view === 'year' ? 'calendar' : 'year');
-                setYearSearch('');
-              }}
-            >
-              {currentMonth.getFullYear()}
-              <ChevronDown className={`w-4 h-4 text-gray-500`} />
-            </button>
+            <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); prevMonth(); }} className="p-1 hover:bg-gray-100 rounded text-gray-500"><ChevronLeft className="w-5 h-5" /></button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                className="px-2 py-1 flex items-center gap-1 font-semibold text-gray-800 hover:bg-gray-100 rounded transition-colors"
+                onClick={(e) => {
+                  e.preventDefault(); e.stopPropagation();
+                  setView(view === 'month' ? 'calendar' : 'month');
+                }}
+              >
+                {MONTHS[currentMonth.getMonth()]}
+                <ChevronDown className={`w-4 h-4 text-gray-500`} />
+              </button>
+              <button
+                type="button"
+                className="px-2 py-1 flex items-center gap-1 font-semibold text-gray-800 hover:bg-gray-100 rounded transition-colors"
+                onClick={(e) => {
+                  e.preventDefault(); e.stopPropagation();
+                  setView(view === 'year' ? 'calendar' : 'year');
+                  setYearSearch('');
+                }}
+              >
+                {currentMonth.getFullYear()}
+                <ChevronDown className={`w-4 h-4 text-gray-500`} />
+              </button>
+            </div>
+            <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); nextMonth(); }} className="p-1 hover:bg-gray-100 rounded text-gray-500"><ChevronRight className="w-5 h-5" /></button>
           </div>
 
           {view === 'calendar' && renderCalendar()}
