@@ -613,7 +613,7 @@ export const EmployerCandidates = () => {
             <h3 className="font-bold text-gray-700">Advanced Filters</h3>
             <button onClick={resetFilters} className="text-sm text-primary hover:underline">Reset All</button>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             <div>
               <label className="block text-sm text-gray-600 mb-1">Email</label>
               <input type="text" value={filterEmail} onChange={e => setFilterEmail(e.target.value)} placeholder="e.g. name@example.com" className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-primary/20" />
