@@ -227,6 +227,19 @@ export const EmployerCandidates = () => {
     return matchesSearch && matchesEmail && matchesCity && matchesState && matchesCourse && matchesGender && matchesMaritalStatus && matchesFresher && matchesInter1st && matchesInterG1 && matchesInterG2 && matchesInterRanker && matchesFinal1st && matchesFinalMonth && matchesFinalYear && matchesDate && matchesFinalG1 && matchesFinalG2 && matchesFinalRanker && matchesBig4 && matchesFirmType && matchesGmcs && matchesInd && matchesListed && matchesGradComp && matchesGradType;
   });
 
+  const addDemoCandidates = async () => {
+    try {
+      const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+      alert("Adding 50 realistic candidates... This may take a few seconds.");
+      const res = await axios.get(`${baseUrl}/api/users/seed-50-candidates`);
+      alert("Demo candidates added successfully! Refreshing...");
+      window.location.reload();
+    } catch (err) {
+      console.error(err);
+      alert("Failed to add demo candidates. Please check console.");
+    }
+  };
+
   const exportToCSV = () => {
     if (filteredCandidates.length === 0) return;
     setIsExporting(true);
@@ -503,7 +516,7 @@ export const EmployerCandidates = () => {
           </p>
         </div>
         
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-3">`n            <button onClick={addDemoCandidates} className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition font-medium">Add 50 Demo Candidates</button>
           <input
             type="file"
             ref={fileInputRef}
