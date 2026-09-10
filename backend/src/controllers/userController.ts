@@ -163,7 +163,7 @@ export const seedLiveCandidates = async (req: Request, res: Response) => {
 // @access  Private/Admin
 export const getCandidates = async (req: Request, res: Response) => {
   try {
-    const candidates = await User.find({ role: 'candidate' }).select('-password');
+    const candidates = await User.find({ role: 'candidate', resumeUrl: { $ne: "" }, $and: [{ resumeUrl: { $ne: null } }] }).select('-password');
     res.json(candidates);
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
@@ -537,6 +537,7 @@ export const cleanupDbAndFixResumes = async (req: Request, res: Response) => {
     // Delete ALL dummy candidates (both old 'TestCandidate' and new realistic ones)
     // We identify them because their emails end in '@example.com'
     const deleteResult = await User.deleteMany({ email: { $regex: /@example\.com$/i } });
+    const incompleteDeleteResult = await User.deleteMany({ role: 'candidate', $or: [{ resumeUrl: null }, { resumeUrl: "" }] });
 
     res.json({
       success: true,
