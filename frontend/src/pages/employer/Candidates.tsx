@@ -516,7 +516,7 @@ export const EmployerCandidates = () => {
           </p>
         </div>
         
-        <div className="flex flex-wrap gap-3">`n            
+        <div className="flex flex-wrap gap-3">
           <input
             type="file"
             ref={fileInputRef}

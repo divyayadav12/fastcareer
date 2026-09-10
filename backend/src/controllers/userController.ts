@@ -534,22 +534,14 @@ export const seed50Candidates = async (req: Request, res: Response) => {
 
 export const cleanupDbAndFixResumes = async (req: Request, res: Response) => {
   try {
-    // 1. Delete all old "TestCandidate" dummies
-    const deleteResult = await User.deleteMany({ firstName: { $regex: /^TestCandidate/i } });
-
-    // 2. Fix the newly seeded realistic candidates (their resumeUrl is empty, which causes UI to say "No Resume")
-    // We set it to a dummy string "generated_resume.pdf" so the UI shows the "Download Resume" button,
-    // and the backend automatically generates a PDF on the fly when downloaded.
-    const updateResult = await User.updateMany(
-      { email: { $regex: /@example\.com$/i }, resumeUrl: "" },
-      { $set: { resumeUrl: "generated_resume.pdf" } }
-    );
+    // Delete ALL dummy candidates (both old 'TestCandidate' and new realistic ones)
+    // We identify them because their emails end in '@example.com'
+    const deleteResult = await User.deleteMany({ email: { $regex: /@example\.com$/i } });
 
     res.json({
       success: true,
-      message: "Database cleaned up and resumes fixed successfully!",
-      deletedOldTestCandidates: deleteResult.deletedCount,
-      fixedResumesForNewCandidates: updateResult.modifiedCount
+      message: "Saara test data (dummy candidates) successfully delete ho gaya hai!",
+      deletedCount: deleteResult.deletedCount
     });
   } catch (error: any) {
     console.error("Error cleaning up DB:", error);
