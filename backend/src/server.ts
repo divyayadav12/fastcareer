@@ -76,6 +76,7 @@ app.get('/uploads/:filename', async (req: Request, res: Response, next) => {
 });
 
 import webhookRoutes from './routes/webhookRoutes';
+import contactRoutes from './routes/contactRoutes';
 
 // Health Check Routes
 app.get('/health', (req: Request, res: Response) => {
@@ -93,6 +94,7 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/shared-jobs', sharedJobRoutes);
 app.use('/api/candidate', candidateDashboardRoutes);
 app.use('/api/webhooks', webhookRoutes);
+app.use('/api/contact', contactRoutes);
 
 // Basic Route
 app.get('/', (req: Request, res: Response) => {

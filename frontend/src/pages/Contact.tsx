@@ -5,6 +5,8 @@ import { Mail, Phone, MapPin, Send } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { useForm } from 'react-hook-form';
+import axios from 'axios';
+import { useState } from 'react';
 
 type ContactFormData = {
   name?: string;
@@ -36,11 +38,20 @@ const OfficialWhatsAppLogo = ({ size = 26, className = '' }: { size?: number; cl
 
 export const Contact = () => {
   const { register, handleSubmit, reset, formState: { errors } } = useForm<ContactFormData>();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const onSubmit = (data: ContactFormData) => {
-    console.log('Contact form submitted:', data);
-    toast.success('Thank you for contacting us. We will get back to you shortly.');
-    reset();
+  const onSubmit = async (data: ContactFormData) => {
+    setIsSubmitting(true);
+    try {
+      await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/contact`, data);
+      toast.success('Thank you for contacting us. We will get back to you shortly.');
+      reset();
+    } catch (error) {
+      console.error('Error submitting contact form:', error);
+      toast.error('Failed to send message. Please try again later.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const whatsappNumber = '918839250427';
