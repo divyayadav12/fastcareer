@@ -5,8 +5,6 @@ import { Mail, Phone, MapPin, Send } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { useForm } from 'react-hook-form';
-import axios from 'axios';
-import { useState } from 'react';
 
 type ContactFormData = {
   name?: string;
@@ -38,20 +36,22 @@ const OfficialWhatsAppLogo = ({ size = 26, className = '' }: { size?: number; cl
 
 export const Contact = () => {
   const { register, handleSubmit, reset, formState: { errors } } = useForm<ContactFormData>();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const onSubmit = (data: ContactFormData) => {
+    const targetNumber = '918839250427';
+    let text = `*New Contact Inquiry*\n\n`;
+    if (data.name) text += `*Name:* ${data.name}\n`;
+    text += `*Email:* ${data.email}\n`;
+    text += `*Phone:* ${data.phone}\n`;
+    if (data.company) text += `*Company:* ${data.company}\n`;
+    if (data.message) text += `*Message:* ${data.message}\n`;
 
-  const onSubmit = async (data: ContactFormData) => {
-    setIsSubmitting(true);
-    try {
-      await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/contact`, data);
-      toast.success('Thank you for contacting us. We will get back to you shortly.');
-      reset();
-    } catch (error) {
-      console.error('Error submitting contact form:', error);
-      toast.error('Failed to send message. Please try again later.');
-    } finally {
-      setIsSubmitting(false);
-    }
+    const encodedText = encodeURIComponent(text);
+    const url = `https://wa.me/${targetNumber}?text=${encodedText}`;
+    
+    window.open(url, '_blank');
+    toast.success('Opening WhatsApp...');
+    reset();
   };
 
   const whatsappNumber = '918839250427';
