@@ -11,6 +11,8 @@ import { EmployerSection } from './home/EmployerSection';
 import { TestimonialSection } from './home/TestimonialSection';
 import { FAQSection } from './home/FAQSection';
 import { CTASection } from './home/CTASection';
+import { Employers } from './Employers';
+import { JobListings } from './JobListings';
 
 export const Home = () => {
   return (
@@ -23,7 +25,9 @@ export const Home = () => {
       <ExpertiseSection />
       <ProcessSection />
       <CandidateSection />
+      <JobListings />
       <EmployerSection />
+      <Employers />
       <TestimonialSection />
       <FAQSection />
       <CTASection />

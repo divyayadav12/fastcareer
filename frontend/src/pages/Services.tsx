@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Briefcase, Building2, GraduationCap, Users } from 'lucide-react';
+import { Expertise } from './Expertise';
 
 const serviceDetails = [
   {
@@ -125,6 +126,9 @@ export const Services = () => {
         </div>
       </section>
       
+      {/* Appended Expertise Content */}
+      <Expertise />
+
       {/* CTA Section */}
       <section className="py-24 px-4 bg-white border-t border-gray-100">
         <div className="max-w-4xl mx-auto text-center">

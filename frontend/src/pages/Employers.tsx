@@ -8,7 +8,7 @@ export const Employers = () => {
   return (
     <div className="w-full">
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4 bg-gray-50 relative overflow-hidden">
+      <section className="py-20 px-4 bg-gray-50 relative overflow-hidden">
         <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-blue-100 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">

@@ -19,9 +19,9 @@ export const JobListings = () => {
   });
 
   return (
-    <div className="w-full bg-gray-50 min-h-screen">
+    <div className="w-full bg-gray-50 ">
       {/* Search Header */}
-      <section className="bg-secondary pt-32 pb-16 px-4">
+      <section className="bg-secondary py-16 px-4">
         <div className="max-w-5xl mx-auto">
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-8 text-center">Find Your Next Career Move</h1>
           
