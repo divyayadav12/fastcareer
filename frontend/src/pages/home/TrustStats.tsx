@@ -63,8 +63,8 @@ export const TrustStats = () => {
         >
           <StatItem label="Years of Experience" value={18} suffix="+" />
           <StatItem label="Candidate Network" value={100} suffix="K+" />
-          <StatItem label="Industry Domains" value={0} suffix="Multiple" />
-          <StatItem label="Corporate Partners" value={0} suffix="Trusted" />
+          <StatItem label="Industry Domains" value={50} suffix="+" />
+          <StatItem label="Corporate Partners" value={150} suffix="+" />
         </motion.div>
       </div>
     </section>
