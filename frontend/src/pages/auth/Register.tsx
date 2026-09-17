@@ -164,8 +164,8 @@ export const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/25 to-slate-100 flex flex-col justify-between pt-20 pb-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto w-full pt-1 pb-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/25 to-slate-100 flex flex-col justify-between pt-28 pb-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto w-full pt-3 pb-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
           
           {/* ─── LEFT COLUMN: Marketing & Value Proposition ─── */}
