@@ -76,12 +76,12 @@ export const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/25 to-slate-100 flex flex-col justify-between pt-24 pb-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto w-full py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/25 to-slate-100 flex flex-col justify-between pt-20 pb-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto w-full pt-1 pb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
           
           {/* ─── LEFT COLUMN: Marketing & Value Proposition ─── */}
-          <div className="lg:col-span-6 xl:col-span-5 space-y-6 pt-2">
+          <div className="lg:col-span-5 space-y-6 pt-1">
             
             {/* Top Badge */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-100/80 text-blue-900 text-xs font-semibold shadow-2xs">
@@ -199,8 +199,8 @@ export const Login = () => {
           </div>
 
           {/* ─── RIGHT COLUMN: High-Converting Login Card ─── */}
-          <div className="lg:col-span-6 xl:col-span-7 max-w-xl mx-auto w-full">
-            <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-100 p-6 sm:p-9">
+          <div className="lg:col-span-7 w-full">
+            <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-100 p-6 sm:p-8 w-full">
               
               {/* Card Header */}
               <div className="mb-6">
