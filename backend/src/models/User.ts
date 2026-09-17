@@ -11,6 +11,7 @@ export interface IUser extends Document {
   // Candidate specific
   headline?: string;
   resumeUrl?: string;
+  linkedinUrl?: string;
   skills?: string[];
   experience?: number;
   profileCompleted?: boolean;
@@ -126,6 +127,7 @@ const UserSchema: Schema = new Schema(
     // --- Candidate specific fields ---
     headline: { type: String },
     resumeUrl: { type: String },
+    linkedinUrl: { type: String, default: '' },
     skills: [{ type: String }],
     experience: { type: Number },
     profileCompleted: { type: Boolean, default: false },
