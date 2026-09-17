@@ -2,9 +2,24 @@ import toast from 'react-hot-toast';
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { MapPin, Search, ChevronDown, Check, X } from 'lucide-react';
-import { Input } from '../../components/Input';
-import { Button } from '../../components/Button';
+import {
+  MapPin,
+  Search,
+  ChevronDown,
+  Check,
+  X,
+  Building2,
+  Briefcase,
+  Zap,
+  TrendingUp,
+  GraduationCap,
+  FileText,
+  Mail,
+  Eye,
+  EyeOff,
+  ArrowRight,
+  ShieldCheck
+} from 'lucide-react';
 import { register, reset } from '../../store/authSlice';
 import type { AppDispatch, RootState } from '../../store';
 import api from '../../services/api';
@@ -21,13 +36,15 @@ export const Register = () => {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  
-  // New Candidate Fields
+  const [showPassword, setShowPassword] = useState(false);
+
+  // Candidate Specific Fields
   const [phone, setPhone] = useState('');
   const [currentCity, setCurrentCity] = useState('');
   const [workStatus, setWorkStatus] = useState<'fresher' | 'experienced'>('experienced');
   const [resumeFile, setResumeFile] = useState<File | null>(null);
-  
+  const [isDragOver, setIsDragOver] = useState(false);
+
   // Searchable City Dropdown state
   const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
   const [citySearchQuery, setCitySearchQuery] = useState('');
@@ -53,7 +70,7 @@ export const Register = () => {
     }
     return ALL_CITIES.filter(c => c.toLowerCase().includes(query)).slice(0, 100);
   }, [citySearchQuery]);
-  
+
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -63,7 +80,7 @@ export const Register = () => {
   const [role, setRole] = useState<'candidate' | 'employer'>(
     typeParam === 'employer' ? 'employer' : 'candidate'
   );
-  
+
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
 
@@ -87,17 +104,30 @@ export const Register = () => {
     dispatch(reset());
   }, [user, isError, isSuccess, message, navigate, dispatch]);
 
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const file = e.dataTransfer.files[0];
+      if (file.type === 'application/pdf' || file.name.endsWith('.pdf') || file.name.endsWith('.docx') || file.name.endsWith('.doc')) {
+        setResumeFile(file);
+      } else {
+        toast.error('Please upload a PDF or DOCX file.');
+      }
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     let uploadedResumeUrl = '';
 
     if (role === 'candidate') {
       if (!phone || !currentCity) {
-        toast.error("Please fill in all mandatory candidate fields.");
+        toast.error('Please fill in all mandatory candidate fields.');
         return;
       }
-      
+
       if (resumeFile) {
         setIsUploading(true);
         const formData = new FormData();
@@ -108,7 +138,7 @@ export const Register = () => {
           });
           uploadedResumeUrl = res.data.url;
         } catch (error) {
-          toast.error("Failed to upload resume. Please try again.");
+          toast.error('Failed to upload resume. Please try again.');
           setIsUploading(false);
           return;
         }
@@ -126,169 +156,406 @@ export const Register = () => {
         phone,
         currentCity,
         isFresherCA: workStatus === 'fresher',
-        resumeUrl: uploadedResumeUrl
-      })
+        resumeUrl: uploadedResumeUrl,
+      }),
     };
 
     dispatch(register(userData));
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center pt-28 pb-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-xl">
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Create your {role === 'candidate' ? 'Candidate' : 'Employer'} profile
-        </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Search & apply to jobs from India's No.1 CA Job Site
-        </p>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Already have an account?{' '}
-          <Link to="/login" className="font-medium text-primary hover:text-red-700 transition-colors">
-            Sign in
-          </Link>
-        </p>
-      </div>
-
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-xl">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/25 to-slate-100 flex flex-col justify-between pt-24 pb-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto w-full py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
           
-          <div className="flex mb-6 p-1 bg-gray-100 rounded-lg max-w-sm mx-auto">
-            <button 
-              type="button"
-              className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${role === 'candidate' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
-              onClick={() => setRole('candidate')}
-            >
-              Candidate
-            </button>
-            <button 
-              type="button"
-              className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${role === 'employer' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
-              onClick={() => setRole('employer')}
-            >
-              Employer
-            </button>
-          </div>
-
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <div className="grid grid-cols-2 gap-4">
-              <Input label="First Name" required value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="e.g. Divya" />
-              <Input label="Last Name" required value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="e.g. Yadav" />
+          {/* ─── LEFT COLUMN: Marketing & Value Proposition ─── */}
+          <div className="lg:col-span-5 space-y-6 pt-2">
+            
+            {/* Top Badge */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-100/80 text-blue-900 text-xs font-semibold shadow-2xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              India's #1 CA & Finance Career Network
             </div>
 
-            <Input label="Email address" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Tell us your Email ID" />
-            <Input label="Password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="(Minimum 6 characters)" />
+            {/* Main Headline */}
+            <h1 className="text-3xl sm:text-4xl font-black text-slate-900 leading-[1.2] tracking-tight">
+              Land your dream role at{' '}
+              <span className="text-blue-600">Big 4 & Global MNCs</span>
+            </h1>
 
-            {role === 'candidate' && (
-              <>
-                <Input label="Mobile number" type="tel" required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+91 Enter your mobile number" />
-                
+            {/* Subtitle */}
+            <p className="text-slate-600 text-sm leading-relaxed">
+              Direct fast-track interviews for Qualified CAs, Semi-Qualified, and Articleship candidates. Get discovered by top partners.
+            </p>
+
+            {/* 3 Metrics Row */}
+            <div className="bg-white/90 backdrop-blur rounded-2xl border border-slate-200/80 p-4 shadow-sm grid grid-cols-3 divide-x divide-slate-100 text-center">
+              <div>
+                <div className="text-xl sm:text-2xl font-black text-slate-900">25,000+</div>
+                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">CAs Placed</div>
+              </div>
+              <div>
+                <div className="text-xl sm:text-2xl font-black text-slate-900">98%</div>
+                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">Call Rate</div>
+              </div>
+              <div>
+                <div className="text-xl sm:text-2xl font-black text-slate-900">14.5 LPA</div>
+                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">Avg Package</div>
+              </div>
+            </div>
+
+            {/* 3 Value Proposition Features */}
+            <div className="space-y-3.5 pt-2">
+              <div className="flex items-start gap-3.5 bg-white/70 p-3 rounded-xl border border-slate-100/80 shadow-2xs">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                  <Building2 size={20} />
+                </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Work status *</label>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div 
-                      className={`border p-4 rounded-lg cursor-pointer ${workStatus === 'experienced' ? 'border-primary bg-blue-50' : 'border-gray-200'}`}
-                      onClick={() => setWorkStatus('experienced')}
-                    >
-                      <h4 className="font-bold text-gray-800">I'm experienced</h4>
-                      <p className="text-xs text-gray-500 mt-1">I have work experience (excluding internships)</p>
+                  <h4 className="text-sm font-bold text-slate-900">Exclusive Big 4 & MNC Roles</h4>
+                  <p className="text-xs text-slate-500 mt-0.5 leading-snug">
+                    Statutory Audit, Direct Tax, M&A Advisory, and FP&A suites
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3.5 bg-white/70 p-3 rounded-xl border border-slate-100/80 shadow-2xs">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                  <Zap size={20} />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900">3x Faster Shortlisting</h4>
+                  <p className="text-xs text-slate-500 mt-0.5 leading-snug">
+                    Verified ICAI registration badge directly prioritizes your CV
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3.5 bg-white/70 p-3 rounded-xl border border-slate-100/80 shadow-2xs">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                  <TrendingUp size={20} />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900">Salary Benchmark Analytics</h4>
+                  <p className="text-xs text-slate-500 mt-0.5 leading-snug">
+                    Insight on ₹18-35 LPA bands for 1st attempt & rank holders
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Testimonial Quote Card */}
+            <div className="bg-blue-50/70 border border-blue-100/80 rounded-2xl p-3.5 flex items-center gap-3.5 shadow-2xs">
+              <img
+                src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=120&auto=format&fit=crop&q=80"
+                alt="Priya Sharma"
+                className="w-11 h-11 rounded-full object-cover border-2 border-white shadow-xs shrink-0"
+              />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <div className="flex text-amber-400 text-xs">
+                    {'★★★★★'}
+                  </div>
+                  <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">
+                    Rank 14
+                  </span>
+                </div>
+                <p className="text-xs text-slate-800 font-medium leading-snug">
+                  "Placed at EY within 12 days via verified match."
+                </p>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Priya Sharma • Senior Associate, Assurance
+                </p>
+              </div>
+            </div>
+
+            {/* Hiring Partners Strip */}
+            <div className="pt-2">
+              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                500+ Top Hiring Partners Including:
+              </div>
+              <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs font-semibold text-slate-500">
+                <span>Deloitte.</span>
+                <span>PwC</span>
+                <span>EY</span>
+                <span>KPMG</span>
+                <span>Grant Thornton</span>
+                <span>BDO</span>
+                <span className="text-blue-600 font-bold">+500 More</span>
+              </div>
+            </div>
+
+          </div>
+
+          {/* ─── RIGHT COLUMN: High-Converting Registration Card ─── */}
+          <div className="lg:col-span-7">
+            <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-100 p-6 sm:p-8">
+              
+              {/* Role Switcher Tabs */}
+              <div className="grid grid-cols-2 p-1 bg-slate-100/90 rounded-xl mb-4">
+                <button
+                  type="button"
+                  onClick={() => setRole('candidate')}
+                  className={`py-2 text-xs sm:text-sm font-semibold rounded-lg flex items-center justify-center gap-2 transition-all ${
+                    role === 'candidate'
+                      ? 'bg-white text-slate-900 shadow-xs'
+                      : 'text-slate-500 hover:text-slate-700'
+                  }`}
+                >
+                  <GraduationCap size={16} className={role === 'candidate' ? 'text-blue-600' : 'text-slate-400'} />
+                  <span>Candidate (CA / Finance)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRole('employer')}
+                  className={`py-2 text-xs sm:text-sm font-semibold rounded-lg flex items-center justify-center gap-2 transition-all ${
+                    role === 'employer'
+                      ? 'bg-white text-slate-900 shadow-xs'
+                      : 'text-slate-500 hover:text-slate-700'
+                  }`}
+                >
+                  <Building2 size={16} className={role === 'employer' ? 'text-blue-600' : 'text-slate-400'} />
+                  <span>Employer / Recruiter</span>
+                </button>
+              </div>
+
+              {/* Social Logins */}
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <button
+                  type="button"
+                  onClick={() => toast('LinkedIn sign-in is coming soon!', { icon: 'ℹ️' })}
+                  className="flex items-center justify-center gap-2 py-2.5 px-3 border border-blue-100 bg-blue-50/40 hover:bg-blue-50 text-[#0077b5] rounded-xl text-xs font-semibold transition-colors"
+                >
+                  <svg className="w-4 h-4 fill-[#0077b5]" viewBox="0 0 24 24">
+                    <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z" />
+                  </svg>
+                  <span>Quick with LinkedIn</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => toast('Google sign-in is coming soon!', { icon: 'ℹ️' })}
+                  className="flex items-center justify-center gap-2 py-2.5 px-3 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-semibold shadow-2xs transition-colors"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24">
+                    <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.4 9 5 12 5z" />
+                    <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.7-.2-2.3H12v4.6h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.9z" />
+                    <path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.8s.2-2.1.4-2.8L1.9 6.3C.7 8.7 0 10.3 0 12s.7 3.3 1.9 5.7l3.7-2.9z" />
+                    <path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.4-6.4-5.2L1.9 16c1.8 3.7 5.6 7 10.1 7z" />
+                  </svg>
+                  <span>Google</span>
+                </button>
+              </div>
+
+              {/* Divider */}
+              <div className="relative flex py-1 items-center mb-4">
+                <div className="flex-grow border-t border-slate-200"></div>
+                <span className="flex-shrink mx-3 text-[11px] text-slate-400 font-medium">or register in 30 seconds</span>
+                <div className="flex-grow border-t border-slate-200"></div>
+              </div>
+
+              {/* Registration Form */}
+              <form className="space-y-4" onSubmit={handleSubmit}>
+                
+                {/* Name row */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">First Name *</label>
+                    <input
+                      type="text"
+                      required
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      placeholder="e.g. Rahul"
+                      className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">Last Name *</label>
+                    <input
+                      type="text"
+                      required
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      placeholder="e.g. Verma"
+                      className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                    />
+                  </div>
+                </div>
+
+                {/* Email and Mobile row */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">Work / Personal Email *</label>
+                    <div className="relative">
+                      <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <input
+                        type="email"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="rahul@ca.org.in"
+                        className="w-full pl-9 pr-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                      />
                     </div>
-                    <div 
-                      className={`border p-4 rounded-lg cursor-pointer ${workStatus === 'fresher' ? 'border-primary bg-blue-50' : 'border-gray-200'}`}
-                      onClick={() => setWorkStatus('fresher')}
-                    >
-                      <h4 className="font-bold text-gray-800">I'm a fresher</h4>
-                      <p className="text-xs text-gray-500 mt-1">I am a student/Haven't worked after graduation</p>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">Mobile Number *</label>
+                    <div className="flex">
+                      <span className="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-slate-200 bg-slate-50 text-slate-600 text-xs font-semibold">
+                        +91
+                      </span>
+                      <input
+                        type="tel"
+                        required={role === 'candidate'}
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                        placeholder="98765 43210"
+                        maxLength={10}
+                        className="w-full px-3.5 py-2.5 border border-slate-200 rounded-r-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                      />
                     </div>
                   </div>
                 </div>
 
-                
-                <div className="relative" ref={cityDropdownRef}>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Current city <span className="text-red-500">*</span>
-                  </label>
-
-                  {/* Dropdown Trigger Box */}
-                  <div
-                    onClick={() => {
-                      setCityDropdownOpen(prev => !prev);
-                      setTimeout(() => cityInputRef.current?.focus(), 100);
-                    }}
-                    className={`w-full px-4 py-2.5 border rounded-xl flex items-center justify-between cursor-pointer bg-white transition-all shadow-sm ${
-                      cityDropdownOpen ? 'border-primary ring-2 ring-primary/20' : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                      <MapPin size={18} className={currentCity ? 'text-primary shrink-0' : 'text-gray-400 shrink-0'} />
-                      <span className={`block truncate text-sm ${currentCity ? 'font-medium text-gray-900' : 'text-gray-400'}`}>
-                        {currentCity || 'Search or select your city...'}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5 ml-2">
-                      {currentCity && (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setCurrentCity('');
-                            setCitySearchQuery('');
-                          }}
-                          className="p-1 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors"
-                          title="Clear city"
-                        >
-                          <X size={14} />
-                        </button>
-                      )}
-                      <ChevronDown size={18} className={`text-gray-400 transition-transform duration-200 ${cityDropdownOpen ? 'rotate-180 text-primary' : ''}`} />
+                {/* Password and City row */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">Create Password *</label>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Min. 8 characters"
+                        minLength={6}
+                        className="w-full pl-3.5 pr-9 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(p => !p)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                      >
+                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
                     </div>
                   </div>
 
-                  {/* Hidden Input for HTML5 form validation */}
-                  <input
-                    type="text"
-                    tabIndex={-1}
-                    value={currentCity}
-                    required
-                    onChange={() => {}}
-                    className="opacity-0 absolute inset-x-0 bottom-0 h-0 pointer-events-none"
-                  />
+                  {/* Searchable City Location */}
+                  <div className="relative" ref={cityDropdownRef}>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      Current Location *
+                    </label>
 
-                  {/* Dropdown Menu */}
-                  {cityDropdownOpen && (
-                    <div className="absolute z-50 mt-1.5 w-full bg-white border border-gray-200 rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-                      {/* Search Input Bar */}
-                      <div className="p-3 border-b border-gray-100 bg-gray-50/80">
-                        <div className="relative">
-                          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                          <input
-                            ref={cityInputRef}
-                            type="text"
-                            value={citySearchQuery}
-                            onChange={(e) => setCitySearchQuery(e.target.value)}
-                            placeholder="Type city name (e.g. Pune, Jaipur, Indore...)"
-                            className="w-full pl-9 pr-8 py-2 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-inner"
-                          />
-                          {citySearchQuery && (
-                            <button
-                              type="button"
-                              onClick={() => setCitySearchQuery('')}
-                              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-0.5"
-                            >
-                              <X size={14} />
-                            </button>
-                          )}
-                        </div>
+                    {/* Trigger Box */}
+                    <div
+                      onClick={() => {
+                        setCityDropdownOpen(prev => !prev);
+                        setTimeout(() => cityInputRef.current?.focus(), 100);
+                      }}
+                      className={`w-full px-3.5 py-2.5 border rounded-xl flex items-center justify-between cursor-pointer bg-white transition-all shadow-2xs ${
+                        cityDropdownOpen ? 'border-primary ring-2 ring-primary/20' : 'border-slate-200 hover:border-slate-300'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <MapPin size={16} className={currentCity ? 'text-primary shrink-0' : 'text-slate-400 shrink-0'} />
+                        <span className={`block truncate text-sm ${currentCity ? 'font-medium text-slate-900' : 'text-slate-400'}`}>
+                          {currentCity || 'Select Primary City'}
+                        </span>
                       </div>
+                      <div className="flex items-center gap-1 ml-1.5">
+                        {currentCity && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setCurrentCity('');
+                              setCitySearchQuery('');
+                            }}
+                            className="p-1 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors"
+                            title="Clear city"
+                          >
+                            <X size={13} />
+                          </button>
+                        )}
+                        <ChevronDown size={16} className={`text-slate-400 transition-transform duration-200 ${cityDropdownOpen ? 'rotate-180 text-primary' : ''}`} />
+                      </div>
+                    </div>
 
-                      {/* Popular Cities Chips (visible when not searching) */}
-                      {!citySearchQuery.trim() && (
-                        <div className="p-3 border-b border-gray-100 bg-white">
-                          <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">
-                            Popular Cities
+                    {/* Hidden input for HTML5 form validation */}
+                    <input
+                      type="text"
+                      tabIndex={-1}
+                      value={currentCity}
+                      required={role === 'candidate'}
+                      onChange={() => {}}
+                      className="opacity-0 absolute inset-x-0 bottom-0 h-0 pointer-events-none"
+                    />
+
+                    {/* Dropdown Menu */}
+                    {cityDropdownOpen && (
+                      <div className="absolute z-50 mt-1.5 w-full bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                        <div className="p-2.5 border-b border-slate-100 bg-slate-50/80">
+                          <div className="relative">
+                            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                            <input
+                              ref={cityInputRef}
+                              type="text"
+                              value={citySearchQuery}
+                              onChange={(e) => setCitySearchQuery(e.target.value)}
+                              placeholder="Type city (e.g. Pune, Jaipur...)"
+                              className="w-full pl-8 pr-7 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                            />
+                            {citySearchQuery && (
+                              <button
+                                type="button"
+                                onClick={() => setCitySearchQuery('')}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                              >
+                                <X size={13} />
+                              </button>
+                            )}
                           </div>
-                          <div className="flex flex-wrap gap-1.5">
-                            {POPULAR_CITIES.map(city => (
+                        </div>
+
+                        {!citySearchQuery.trim() && (
+                          <div className="p-2.5 border-b border-slate-100 bg-white">
+                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                              Popular Cities
+                            </div>
+                            <div className="flex flex-wrap gap-1">
+                              {POPULAR_CITIES.slice(0, 10).map(city => (
+                                <button
+                                  key={city}
+                                  type="button"
+                                  onClick={() => {
+                                    setCurrentCity(city);
+                                    setCityDropdownOpen(false);
+                                    setCitySearchQuery('');
+                                  }}
+                                  className={`px-2 py-0.5 text-[11px] rounded-md font-medium transition-all ${
+                                    currentCity === city
+                                      ? 'bg-primary text-white font-semibold'
+                                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                                  }`}
+                                >
+                                  {city}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="max-h-52 overflow-y-auto divide-y divide-slate-50">
+                          <div className="px-3 py-1 bg-slate-50 text-[10px] font-bold text-slate-400 uppercase tracking-wider sticky top-0 z-10 flex justify-between items-center">
+                            <span>{citySearchQuery.trim() ? `Search Results` : 'All Indian Cities (A-Z)'}</span>
+                            <span className="text-[10px] text-slate-400 font-normal">
+                              {filteredCities.length} cities
+                            </span>
+                          </div>
+
+                          {filteredCities.length > 0 ? (
+                            filteredCities.map(city => (
                               <button
                                 key={city}
                                 type="button"
@@ -297,108 +564,230 @@ export const Register = () => {
                                   setCityDropdownOpen(false);
                                   setCitySearchQuery('');
                                 }}
-                                className={`px-2.5 py-1 text-xs rounded-lg font-medium transition-all ${
-                                  currentCity === city
-                                    ? 'bg-primary text-white shadow-sm font-semibold'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-gray-900'
+                                className={`w-full px-3.5 py-2 text-left text-xs flex items-center justify-between hover:bg-blue-50/70 transition-colors ${
+                                  currentCity === city ? 'bg-blue-50 font-semibold text-primary' : 'text-slate-700'
                                 }`}
                               >
-                                {city}
+                                <div className="flex items-center gap-2">
+                                  <MapPin size={13} className={currentCity === city ? 'text-primary' : 'text-slate-400'} />
+                                  <span>{city}</span>
+                                </div>
+                                {currentCity === city && <Check size={14} className="text-primary" />}
                               </button>
-                            ))}
-                          </div>
+                            ))
+                          ) : (
+                            <div className="p-3 text-center">
+                              <p className="text-xs text-slate-500 mb-2">No cities found for "{citySearchQuery}"</p>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setCurrentCity(citySearchQuery.trim());
+                                  setCityDropdownOpen(false);
+                                  setCitySearchQuery('');
+                                }}
+                                className="px-3 py-1 text-xs font-semibold bg-blue-50 text-primary border border-primary/20 rounded-lg hover:bg-blue-100 transition-colors"
+                              >
+                                Use "{citySearchQuery.trim()}" as city
+                              </button>
+                            </div>
+                          )}
                         </div>
-                      )}
-
-                      {/* City Options List */}
-                      <div className="max-h-60 overflow-y-auto divide-y divide-gray-50">
-                        <div className="px-3 py-1.5 bg-gray-50 text-[11px] font-bold text-gray-400 uppercase tracking-wider sticky top-0 z-10 flex justify-between items-center">
-                          <span>{citySearchQuery.trim() ? `Search Results` : 'All Indian Cities (A-Z)'}</span>
-                          <span className="text-[10px] text-gray-400 font-normal">
-                            {filteredCities.length} {filteredCities.length === 1 ? 'city' : 'cities'}
-                          </span>
-                        </div>
-
-                        {filteredCities.length > 0 ? (
-                          filteredCities.map(city => (
-                            <button
-                              key={city}
-                              type="button"
-                              onClick={() => {
-                                setCurrentCity(city);
-                                setCityDropdownOpen(false);
-                                setCitySearchQuery('');
-                              }}
-                              className={`w-full px-4 py-2.5 text-left text-sm flex items-center justify-between hover:bg-blue-50/70 transition-colors ${
-                                currentCity === city ? 'bg-blue-50 font-semibold text-primary' : 'text-gray-700'
-                              }`}
-                            >
-                              <div className="flex items-center gap-2">
-                                <MapPin size={14} className={currentCity === city ? 'text-primary' : 'text-gray-400'} />
-                                <span>{city}</span>
-                              </div>
-                              {currentCity === city && <Check size={16} className="text-primary" />}
-                            </button>
-                          ))
-                        ) : (
-                          <div className="p-4 text-center">
-                            <p className="text-sm text-gray-500 mb-2">No cities found matching "{citySearchQuery}"</p>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setCurrentCity(citySearchQuery.trim());
-                                setCityDropdownOpen(false);
-                                setCitySearchQuery('');
-                              }}
-                              className="px-3 py-1.5 text-xs font-semibold bg-blue-50 text-primary border border-primary/20 rounded-lg hover:bg-blue-100 transition-colors"
-                            >
-                              Use "{citySearchQuery.trim()}" as my city
-                            </button>
-                          </div>
-                        )}
                       </div>
-
-                      {/* Footer notice */}
-                      <div className="px-3 py-2 bg-gray-50 border-t border-gray-100 text-center text-[11px] text-gray-400">
-                        Search from 4,000+ Indian cities across all states
-                      </div>
-                    </div>
-                  )}
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Resume Upload (PDF) <span className="text-gray-400 font-normal ml-1">Optional, but recommended</span></label>
-                  <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md bg-gray-50">
-                    <div className="space-y-1 text-center">
-                      <div className="flex text-sm text-gray-600 justify-center">
-                        <label className="relative cursor-pointer bg-white rounded-md font-medium text-primary hover:text-primary-dark focus-within:outline-none">
-                          <span className="px-3 py-2 border border-gray-300 rounded-md shadow-sm">Choose File</span>
-                          <input 
-                            type="file" 
-                            className="sr-only" 
-                            accept=".pdf" 
-                            ref={fileInputRef}
-                            onChange={(e) => setResumeFile(e.target.files ? e.target.files[0] : null)}
-                          />
-                        </label>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-3">
-                        {resumeFile ? resumeFile.name : 'No file chosen'}
-                      </p>
-                    </div>
+                    )}
                   </div>
                 </div>
-              </>
-            )}
 
-            <div className="pt-4">
-              <Button type="submit" className="w-full justify-center py-3 text-lg" disabled={isLoading || isUploading}>
-                {isUploading ? 'Uploading Resume...' : isLoading ? 'Registering...' : `Register Now`}
-              </Button>
+                {/* Candidate Career Stage & Resume Upload */}
+                {role === 'candidate' && (
+                  <>
+                    {/* Qualification & Career Stage */}
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-2">
+                        Current Qualification & Career Stage *
+                      </label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {/* Experienced Card */}
+                        <div
+                          onClick={() => setWorkStatus('experienced')}
+                          className={`border rounded-2xl p-3.5 cursor-pointer flex items-center justify-between transition-all ${
+                            workStatus === 'experienced'
+                              ? 'border-blue-600 bg-blue-50/40 ring-1 ring-blue-600/30 shadow-xs'
+                              : 'border-slate-200 hover:border-slate-300 bg-white'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                              workStatus === 'experienced' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500'
+                            }`}>
+                              <Briefcase size={18} />
+                            </div>
+                            <div>
+                              <div className="text-xs font-bold text-slate-900">Experienced CA</div>
+                              <div className="text-[11px] text-slate-500">Post-qualification exp.</div>
+                            </div>
+                          </div>
+                          <div className={`w-5 h-5 rounded-full flex items-center justify-center border transition-colors ${
+                            workStatus === 'experienced'
+                              ? 'border-blue-600 bg-blue-600 text-white'
+                              : 'border-slate-300'
+                          }`}>
+                            {workStatus === 'experienced' && <Check size={12} strokeWidth={3} />}
+                          </div>
+                        </div>
+
+                        {/* Fresher Card */}
+                        <div
+                          onClick={() => setWorkStatus('fresher')}
+                          className={`border rounded-2xl p-3.5 cursor-pointer flex items-center justify-between transition-all ${
+                            workStatus === 'fresher'
+                              ? 'border-blue-600 bg-blue-50/40 ring-1 ring-blue-600/30 shadow-xs'
+                              : 'border-slate-200 hover:border-slate-300 bg-white'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                              workStatus === 'fresher' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500'
+                            }`}>
+                              <GraduationCap size={18} />
+                            </div>
+                            <div>
+                              <div className="text-xs font-bold text-slate-900">Fresher / Semi-CA</div>
+                              <div className="text-[11px] text-slate-500">Recent pass / Articleship</div>
+                            </div>
+                          </div>
+                          <div className={`w-5 h-5 rounded-full flex items-center justify-center border transition-colors ${
+                            workStatus === 'fresher'
+                              ? 'border-blue-600 bg-blue-600 text-white'
+                              : 'border-slate-300'
+                          }`}>
+                            {workStatus === 'fresher' && <Check size={12} strokeWidth={3} />}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Resume Upload Dropzone */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className="text-xs font-semibold text-slate-700">
+                          Upload Resume / CV (PDF or DOCX)
+                        </label>
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full">
+                          <Zap size={11} className="text-emerald-600 fill-emerald-600" />
+                          Boost shortlists 80%
+                        </span>
+                      </div>
+
+                      <div
+                        onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+                        onDragLeave={() => setIsDragOver(false)}
+                        onDrop={handleDrop}
+                        onClick={() => fileInputRef.current?.click()}
+                        className={`border-2 border-dashed rounded-2xl p-3.5 cursor-pointer flex items-center justify-between transition-all ${
+                          isDragOver
+                            ? 'border-blue-500 bg-blue-50/70'
+                            : resumeFile
+                            ? 'border-emerald-300 bg-emerald-50/30'
+                            : 'border-slate-200 hover:border-slate-300 bg-slate-50/50'
+                        }`}
+                      >
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          className="hidden"
+                          accept=".pdf,.doc,.docx"
+                          onChange={(e) => {
+                            if (e.target.files && e.target.files[0]) {
+                              setResumeFile(e.target.files[0]);
+                            }
+                          }}
+                        />
+
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                            resumeFile ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-50 text-blue-600'
+                          }`}>
+                            <FileText size={20} />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="text-xs font-bold text-slate-900 truncate">
+                              {resumeFile ? resumeFile.name : 'Drag CV here or select file'}
+                            </div>
+                            <div className="text-[11px] text-slate-500">
+                              {resumeFile
+                                ? `${(resumeFile.size / (1024 * 1024)).toFixed(2)} MB • Ready to verify`
+                                : 'Max 5MB (Direct CA verification engine)'}
+                            </div>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            fileInputRef.current?.click();
+                          }}
+                          className="px-3.5 py-1.5 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 rounded-lg text-xs font-semibold shadow-2xs transition-colors shrink-0 ml-2"
+                        >
+                          {resumeFile ? 'Change' : 'Browse'}
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* Primary Action Button */}
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    disabled={isLoading || isUploading}
+                    className="w-full bg-[#0b1c33] hover:bg-[#081424] text-white py-3.5 px-6 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-slate-900/15 hover:shadow-xl transition-all duration-200 cursor-pointer disabled:opacity-70"
+                  >
+                    {isUploading ? (
+                      <span>Uploading Resume...</span>
+                    ) : isLoading ? (
+                      <span>Registering Profile...</span>
+                    ) : (
+                      <>
+                        <span>{role === 'candidate' ? 'Create Free Candidate Profile' : 'Create Employer Account'}</span>
+                        <ArrowRight size={16} />
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Terms Disclaimer */}
+                <div className="pt-2 text-center space-y-1">
+                  <p className="text-[11px] text-slate-500">
+                    By clicking Create Profile, you agree to our{' '}
+                    <Link to="/terms" className="text-blue-600 font-semibold hover:underline">Terms</Link> &{' '}
+                    <Link to="/privacy" className="text-blue-600 font-semibold hover:underline">Privacy Policy</Link>.
+                  </p>
+                  <p className="text-xs text-slate-600 font-medium pt-1">
+                    Already registered on Fast Careers?{' '}
+                    <Link to="/login" className="text-blue-600 font-bold hover:underline">
+                      Sign In here
+                    </Link>
+                  </p>
+                </div>
+
+              </form>
             </div>
-          </form>
+          </div>
+
         </div>
       </div>
+
+      {/* ─── Page Footer ─── */}
+      <footer className="max-w-7xl mx-auto w-full pt-8 pb-4 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+        <div className="flex items-center gap-2 font-bold text-slate-800 tracking-wider">
+          <ShieldCheck size={18} className="text-blue-600" />
+          <span>FAST CAREERS</span>
+        </div>
+        <p className="text-center sm:text-right text-[11px] text-slate-400">
+          © {new Date().getFullYear()} Fast Careers Inc. Premier Chartered Accountant & Financial Leadership Network. All rights reserved.
+        </p>
+      </footer>
     </div>
   );
 };
