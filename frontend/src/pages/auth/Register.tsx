@@ -1,12 +1,20 @@
-﻿import toast from 'react-hot-toast';
-import React, { useState, useEffect, useRef } from 'react';
+import toast from 'react-hot-toast';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import { MapPin, Search, ChevronDown, Check, X } from 'lucide-react';
 import { Input } from '../../components/Input';
 import { Button } from '../../components/Button';
 import { register, reset } from '../../store/authSlice';
 import type { AppDispatch, RootState } from '../../store';
 import api from '../../services/api';
+import { ALL_CITIES } from '../../utils/constants';
+
+const POPULAR_CITIES = [
+  'Mumbai', 'Delhi', 'Bengaluru', 'Hyderabad', 'Pune', 'Kolkata',
+  'Ahmedabad', 'Chennai', 'Jaipur', 'Indore', 'Chandigarh', 'Lucknow',
+  'Surat', 'Noida', 'Gurgaon', 'Bhopal', 'Vadodara', 'Kanpur'
+];
 
 export const Register = () => {
   const [firstName, setFirstName] = useState('');
@@ -19,6 +27,32 @@ export const Register = () => {
   const [currentCity, setCurrentCity] = useState('');
   const [workStatus, setWorkStatus] = useState<'fresher' | 'experienced'>('experienced');
   const [resumeFile, setResumeFile] = useState<File | null>(null);
+  
+  // Searchable City Dropdown state
+  const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
+  const [citySearchQuery, setCitySearchQuery] = useState('');
+  const cityDropdownRef = useRef<HTMLDivElement>(null);
+  const cityInputRef = useRef<HTMLInputElement>(null);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (cityDropdownRef.current && !cityDropdownRef.current.contains(event.target as Node)) {
+        setCityDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Filter cities based on search input
+  const filteredCities = useMemo(() => {
+    const query = citySearchQuery.trim().toLowerCase();
+    if (!query) {
+      return ALL_CITIES.slice(0, 100);
+    }
+    return ALL_CITIES.filter(c => c.toLowerCase().includes(query)).slice(0, 100);
+  }, [citySearchQuery]);
   
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -170,36 +204,166 @@ export const Register = () => {
                 </div>
 
                 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Current city <span className="text-red-500">*</span></label>
-                  <select 
-                    required 
-                    value={currentCity} 
-                    onChange={(e) => setCurrentCity(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                <div className="relative" ref={cityDropdownRef}>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Current city <span className="text-red-500">*</span>
+                  </label>
+
+                  {/* Dropdown Trigger Box */}
+                  <div
+                    onClick={() => {
+                      setCityDropdownOpen(prev => !prev);
+                      setTimeout(() => cityInputRef.current?.focus(), 100);
+                    }}
+                    className={`w-full px-4 py-2.5 border rounded-xl flex items-center justify-between cursor-pointer bg-white transition-all shadow-sm ${
+                      cityDropdownOpen ? 'border-primary ring-2 ring-primary/20' : 'border-gray-200 hover:border-gray-300'
+                    }`}
                   >
-                    <option value="" disabled>Select your city</option>
-                    <option value="Mumbai">Mumbai</option>
-                    <option value="Delhi">Delhi</option>
-                    <option value="Bangalore">Bangalore</option>
-                    <option value="Hyderabad">Hyderabad</option>
-                    <option value="Ahmedabad">Ahmedabad</option>
-                    <option value="Chennai">Chennai</option>
-                    <option value="Kolkata">Kolkata</option>
-                    <option value="Surat">Surat</option>
-                    <option value="Pune">Pune</option>
-                    <option value="Jaipur">Jaipur</option>
-                    <option value="Lucknow">Lucknow</option>
-                    <option value="Kanpur">Kanpur</option>
-                    <option value="Nagpur">Nagpur</option>
-                    <option value="Indore">Indore</option>
-                    <option value="Thane">Thane</option>
-                    <option value="Bhopal">Bhopal</option>
-                    <option value="Visakhapatnam">Visakhapatnam</option>
-                    <option value="Patna">Patna</option>
-                    <option value="Vadodara">Vadodara</option>
-                    <option value="Ghaziabad">Ghaziabad</option>
-                  </select>
+                    <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                      <MapPin size={18} className={currentCity ? 'text-primary shrink-0' : 'text-gray-400 shrink-0'} />
+                      <span className={`block truncate text-sm ${currentCity ? 'font-medium text-gray-900' : 'text-gray-400'}`}>
+                        {currentCity || 'Search or select your city...'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 ml-2">
+                      {currentCity && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setCurrentCity('');
+                            setCitySearchQuery('');
+                          }}
+                          className="p-1 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors"
+                          title="Clear city"
+                        >
+                          <X size={14} />
+                        </button>
+                      )}
+                      <ChevronDown size={18} className={`text-gray-400 transition-transform duration-200 ${cityDropdownOpen ? 'rotate-180 text-primary' : ''}`} />
+                    </div>
+                  </div>
+
+                  {/* Hidden Input for HTML5 form validation */}
+                  <input
+                    type="text"
+                    tabIndex={-1}
+                    value={currentCity}
+                    required
+                    onChange={() => {}}
+                    className="opacity-0 absolute inset-x-0 bottom-0 h-0 pointer-events-none"
+                  />
+
+                  {/* Dropdown Menu */}
+                  {cityDropdownOpen && (
+                    <div className="absolute z-50 mt-1.5 w-full bg-white border border-gray-200 rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                      {/* Search Input Bar */}
+                      <div className="p-3 border-b border-gray-100 bg-gray-50/80">
+                        <div className="relative">
+                          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                          <input
+                            ref={cityInputRef}
+                            type="text"
+                            value={citySearchQuery}
+                            onChange={(e) => setCitySearchQuery(e.target.value)}
+                            placeholder="Type city name (e.g. Pune, Jaipur, Indore...)"
+                            className="w-full pl-9 pr-8 py-2 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-inner"
+                          />
+                          {citySearchQuery && (
+                            <button
+                              type="button"
+                              onClick={() => setCitySearchQuery('')}
+                              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-0.5"
+                            >
+                              <X size={14} />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Popular Cities Chips (visible when not searching) */}
+                      {!citySearchQuery.trim() && (
+                        <div className="p-3 border-b border-gray-100 bg-white">
+                          <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">
+                            Popular Cities
+                          </div>
+                          <div className="flex flex-wrap gap-1.5">
+                            {POPULAR_CITIES.map(city => (
+                              <button
+                                key={city}
+                                type="button"
+                                onClick={() => {
+                                  setCurrentCity(city);
+                                  setCityDropdownOpen(false);
+                                  setCitySearchQuery('');
+                                }}
+                                className={`px-2.5 py-1 text-xs rounded-lg font-medium transition-all ${
+                                  currentCity === city
+                                    ? 'bg-primary text-white shadow-sm font-semibold'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-gray-900'
+                                }`}
+                              >
+                                {city}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* City Options List */}
+                      <div className="max-h-60 overflow-y-auto divide-y divide-gray-50">
+                        <div className="px-3 py-1.5 bg-gray-50 text-[11px] font-bold text-gray-400 uppercase tracking-wider sticky top-0 z-10 flex justify-between items-center">
+                          <span>{citySearchQuery.trim() ? `Search Results` : 'All Indian Cities (A-Z)'}</span>
+                          <span className="text-[10px] text-gray-400 font-normal">
+                            {filteredCities.length} {filteredCities.length === 1 ? 'city' : 'cities'}
+                          </span>
+                        </div>
+
+                        {filteredCities.length > 0 ? (
+                          filteredCities.map(city => (
+                            <button
+                              key={city}
+                              type="button"
+                              onClick={() => {
+                                setCurrentCity(city);
+                                setCityDropdownOpen(false);
+                                setCitySearchQuery('');
+                              }}
+                              className={`w-full px-4 py-2.5 text-left text-sm flex items-center justify-between hover:bg-blue-50/70 transition-colors ${
+                                currentCity === city ? 'bg-blue-50 font-semibold text-primary' : 'text-gray-700'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2">
+                                <MapPin size={14} className={currentCity === city ? 'text-primary' : 'text-gray-400'} />
+                                <span>{city}</span>
+                              </div>
+                              {currentCity === city && <Check size={16} className="text-primary" />}
+                            </button>
+                          ))
+                        ) : (
+                          <div className="p-4 text-center">
+                            <p className="text-sm text-gray-500 mb-2">No cities found matching "{citySearchQuery}"</p>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setCurrentCity(citySearchQuery.trim());
+                                setCityDropdownOpen(false);
+                                setCitySearchQuery('');
+                              }}
+                              className="px-3 py-1.5 text-xs font-semibold bg-blue-50 text-primary border border-primary/20 rounded-lg hover:bg-blue-100 transition-colors"
+                            >
+                              Use "{citySearchQuery.trim()}" as my city
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Footer notice */}
+                      <div className="px-3 py-2 bg-gray-50 border-t border-gray-100 text-center text-[11px] text-gray-400">
+                        Search from 4,000+ Indian cities across all states
+                      </div>
+                    </div>
+                  )}
                 </div>
                 
                 <div>
