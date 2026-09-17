@@ -18,6 +18,7 @@ import { Step3Articleship } from '../../components/candidate-profile/Step3Articl
 import { Step4Education } from '../../components/candidate-profile/Step4Education';
 import { Step5Experience } from '../../components/candidate-profile/Step5Experience';
 import { Step6Review } from '../../components/candidate-profile/Step6Review';
+import { parseResumeFile, parseResumeFromUrl, type ParsedResumeData } from '../../utils/resumeParser';
 
 export const CandidateDashboard = () => {
   const { user } = useSelector((state: RootState) => state.auth);
@@ -28,6 +29,7 @@ export const CandidateDashboard = () => {
   const [savingProfile, setSavingProfile] = useState(false);
   const [resumeUrl, setResumeUrl] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [scanningResume, setScanningResume] = useState(false);
   const [popup, setPopup] = useState<{show: boolean, type: 'success'|'error', title: string, message: string, action?: string}>({ show: false, type: 'success', title: '', message: '' });
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
@@ -95,6 +97,135 @@ export const CandidateDashboard = () => {
 
   }, [user, navigate]);
 
+  const applyParsedDataToProfile = (parsed: ParsedResumeData) => {
+    const updatedSections: string[] = [];
+
+    // 1. Personal Details
+    setPersonal(prev => {
+      let next = { ...prev };
+      if (parsed.phone && !prev.phone) {
+        next.phone = parsed.phone;
+        updatedSections.push('Phone');
+      }
+      if (parsed.alternatePhone && !prev.alternatePhone) {
+        next.alternatePhone = parsed.alternatePhone;
+        updatedSections.push('Alternate Phone');
+      }
+      if (parsed.city && !prev.currentCity) {
+        next.currentCity = parsed.city;
+        if (parsed.state) next.currentState = parsed.state;
+        updatedSections.push('Current City');
+      }
+      if (parsed.currentAddress && !prev.currentAddress) {
+        next.currentAddress = parsed.currentAddress;
+        updatedSections.push('Address');
+      }
+      if (parsed.dateOfBirth && !prev.dateOfBirth) {
+        next.dateOfBirth = parsed.dateOfBirth;
+        updatedSections.push('Date of Birth');
+      }
+      if (parsed.gender && !prev.gender) {
+        next.gender = parsed.gender;
+        updatedSections.push('Gender');
+      }
+      if (parsed.maritalStatus && !prev.maritalStatus) {
+        next.maritalStatus = parsed.maritalStatus;
+        updatedSections.push('Marital Status');
+      }
+      return next;
+    });
+
+    // 2. CA Portfolio
+    setCaPortfolio(prev => {
+      let next = { ...prev };
+      if (parsed.isFresherCA !== undefined) {
+        next.isFresherCA = parsed.isFresherCA;
+      }
+      if (parsed.big4Articleship) {
+        next.big4Articleship = parsed.big4Articleship;
+        updatedSections.push('Big 4 Articleship');
+      }
+      if (parsed.articleshipFirm) {
+        next.articleships = [{
+          type: 'Articleship',
+          firmName: parsed.articleshipFirm,
+          city: parsed.articleshipCity || parsed.city || '',
+          noOfPartners: '2',
+          noOfMonths: '36'
+        }];
+        updatedSections.push('Articleship Firm');
+      }
+      if (parsed.natureOfWork && !prev.natureOfWork) {
+        next.natureOfWork = parsed.natureOfWork;
+        updatedSections.push('Nature of Work');
+      }
+      if (parsed.industrialTrainee) {
+        next.industrialTrainee = parsed.industrialTrainee;
+      }
+      if (parsed.gmcsCompleted) {
+        next.gmcsCompleted = parsed.gmcsCompleted;
+      }
+      return next;
+    });
+
+    // 3. Qualifications
+    setQualifications(prev => {
+      let next = { ...prev };
+      if (parsed.graduationCollege && !prev.graduation.college) {
+        next.graduation.college = parsed.graduationCollege;
+        updatedSections.push('Graduation College');
+      }
+      if (parsed.graduationYear && !prev.graduation.yearOfCompletion) {
+        next.graduation.yearOfCompletion = parsed.graduationYear;
+      }
+      if (parsed.graduationPercentage && !prev.graduation.percentage) {
+        next.graduation.percentage = parsed.graduationPercentage;
+        updatedSections.push('Graduation %');
+      }
+      if (parsed.class12Percentage && !prev.class12.percentage) {
+        next.class12.percentage = parsed.class12Percentage;
+        updatedSections.push('Class 12 %');
+      }
+      if (parsed.class12Board && !prev.class12.board) {
+        next.class12.board = parsed.class12Board;
+      }
+      if (parsed.class10Percentage && !prev.class10.percentage) {
+        next.class10.percentage = parsed.class10Percentage;
+        updatedSections.push('Class 10 %');
+      }
+      if (parsed.class10Board && !prev.class10.board) {
+        next.class10.board = parsed.class10Board;
+      }
+      return next;
+    });
+
+    // 4. Experience Info
+    setExperienceInfo(prev => {
+      let next = { ...prev };
+      if (parsed.isExperienced !== undefined) {
+        next.isExperienced = parsed.isExperienced;
+      }
+      if (parsed.experienceYears && !prev.experienceYears) {
+        next.experienceYears = parsed.experienceYears;
+        updatedSections.push('Experience Years');
+      }
+      if (parsed.currentCompanyName && !prev.currentCompanyName) {
+        next.currentCompanyName = parsed.currentCompanyName;
+        updatedSections.push('Company');
+      }
+      if (parsed.currentDesignation && !prev.currentDesignation) {
+        next.currentDesignation = parsed.currentDesignation;
+        updatedSections.push('Designation');
+      }
+      if (parsed.workProfile && !prev.workProfile) {
+        next.workProfile = parsed.workProfile;
+      }
+      return next;
+    });
+
+    return updatedSections;
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -108,6 +239,7 @@ export const CandidateDashboard = () => {
     formData.append('resume', file);
 
     setUploading(true);
+    setScanningResume(true);
     try {
       const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/upload`, formData, {
         headers: {
@@ -116,12 +248,73 @@ export const CandidateDashboard = () => {
         }
       });
       setResumeUrl(response.data.url);
-      // Updated local state without dispatch
-      setPopup({ show: true, type: 'success', title: 'Upload Successful', message: 'Your resume has been uploaded.' });
+
+      let updated: string[] = [];
+      try {
+        const parsed = await parseResumeFile(file);
+        updated = applyParsedDataToProfile(parsed);
+      } catch (parseErr) {
+        console.error('Resume scanning error:', parseErr);
+      }
+
+      if (updated.length > 0) {
+        setPopup({
+          show: true,
+          type: 'success',
+          title: 'Resume Uploaded & Profile Auto-Filled! ⚡',
+          message: `Resume scanned! Auto-filled fields: ${updated.join(', ')}. Please review each section.`
+        });
+      } else {
+        setPopup({ show: true, type: 'success', title: 'Upload Successful', message: 'Your resume has been uploaded.' });
+      }
     } catch (error) {
       setPopup({ show: true, type: 'error', title: 'Upload Failed', message: 'Could not upload resume.' });
     } finally {
       setUploading(false);
+      setScanningResume(false);
+    }
+  };
+
+  const handleAutoFillFromResume = async () => {
+    if (!resumeUrl) {
+      setPopup({
+        show: true,
+        type: 'error',
+        title: 'No Resume Found',
+        message: 'Please upload a resume first to scan and auto-fill.'
+      });
+      return;
+    }
+
+    setScanningResume(true);
+    try {
+      const parsed = await parseResumeFromUrl(resumeUrl);
+      const updated = applyParsedDataToProfile(parsed);
+      if (updated.length > 0) {
+        setPopup({
+          show: true,
+          type: 'success',
+          title: 'Profile Auto-Filled from Resume! ✨',
+          message: `Extracted ${updated.length} fields: ${updated.join(', ')}. Please review each step.`
+        });
+      } else {
+        setPopup({
+          show: true,
+          type: 'success',
+          title: 'Resume Analyzed',
+          message: 'Resume text was analyzed. Your existing profile fields are already populated.'
+        });
+      }
+    } catch (err) {
+      console.error('Error auto-filling from resume URL:', err);
+      setPopup({
+        show: true,
+        type: 'error',
+        title: 'Auto-Fill Notice',
+        message: 'Could not scan the remote file directly. Please select your resume file above to auto-fill.'
+      });
+    } finally {
+      setScanningResume(false);
     }
   };
 
@@ -209,7 +402,19 @@ export const CandidateDashboard = () => {
           <Stepper currentStep={step} totalSteps={5} steps={steps} onStepClick={setStep} />
 
         <div className="relative">
-          {step === 1 && <Step1Personal personal={personal} setPersonal={setPersonal} user={user} resumeUrl={resumeUrl} handleFileUpload={handleFileUpload} uploading={uploading} viewCandidateResume={() => viewCandidateResume({ ...user, resumeUrl, personalDetails: personal, caPortfolio, qualifications })} />}
+          {step === 1 && (
+            <Step1Personal
+              personal={personal}
+              setPersonal={setPersonal}
+              user={user}
+              resumeUrl={resumeUrl}
+              handleFileUpload={handleFileUpload}
+              uploading={uploading}
+              viewCandidateResume={() => viewCandidateResume({ ...user, resumeUrl, personalDetails: personal, caPortfolio, qualifications })}
+              handleAutoFillFromResume={handleAutoFillFromResume}
+              scanningResume={scanningResume}
+            />
+          )}
           {step === 2 && <Step2CA caPortfolio={caPortfolio} setCaPortfolio={setCaPortfolio} />}
           {step === 3 && <Step3Articleship caPortfolio={caPortfolio} setCaPortfolio={setCaPortfolio} />}
           {step === 4 && (

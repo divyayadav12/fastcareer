@@ -1,15 +1,14 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { DatePicker } from '../DatePicker';
 import { STATES, STATE_CITY_MAP } from '../../utils/constants';
 
-export const Step1Personal = ({ personal, setPersonal, user, resumeUrl, handleFileUpload, uploading, viewCandidateResume }) => {
-  const handleSameAsCurrent = (e) => {
+export const Step1Personal = ({ personal, setPersonal, user, resumeUrl, handleFileUpload, uploading, viewCandidateResume, handleAutoFillFromResume, scanningResume }: any) => {
+  const handleSameAsCurrent = (e: any) => {
     const isChecked = e.target.checked;
-    setPersonal(prev => {
+    setPersonal((prev: any) => {
       const newState = { ...prev, permanentAddressSameAsCurrent: isChecked };
       if (isChecked) {
         newState.permanentAddress = prev.currentAddress;
-        
       }
       return newState;
     });
@@ -26,15 +25,58 @@ export const Step1Personal = ({ personal, setPersonal, user, resumeUrl, handleFi
         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-100 pb-4">Basic Information</h3>
         
         <div className="p-4 border border-blue-100 bg-blue-50/50 rounded-xl mb-6">
-          <label className="block text-sm font-semibold text-blue-900 mb-3">Resume Upload <span className="text-red-500">*</span></label>
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-            <input type="file" accept=".pdf,.doc,.docx" onChange={handleFileUpload} disabled={uploading} className="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer" />
-            {resumeUrl && (
-              <button type="button" onClick={() => viewCandidateResume()} className="text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center gap-1 cursor-pointer bg-white px-3 py-1.5 rounded-full shadow-sm border border-blue-200">
-                View Uploaded Resume
-              </button>
-            )}
+          <div className="flex items-center justify-between mb-3">
+            <label className="block text-sm font-semibold text-blue-900">
+              Resume Upload <span className="text-red-500">*</span>
+            </label>
+            <span className="text-xs font-semibold text-blue-700 bg-blue-100/90 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+              ⚡ Auto-Fill Enabled
+            </span>
           </div>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <input
+              type="file"
+              accept=".pdf,.doc,.docx"
+              onChange={handleFileUpload}
+              disabled={uploading || scanningResume}
+              className="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer"
+            />
+            <div className="flex flex-wrap items-center gap-2">
+              {resumeUrl && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => viewCandidateResume()}
+                    className="text-blue-600 hover:text-blue-800 font-medium text-xs flex items-center gap-1 cursor-pointer bg-white px-3 py-1.5 rounded-full shadow-xs border border-blue-200 hover:bg-blue-50/50 transition-colors"
+                  >
+                    View Uploaded Resume
+                  </button>
+                  {handleAutoFillFromResume && (
+                    <button
+                      type="button"
+                      onClick={() => handleAutoFillFromResume()}
+                      disabled={scanningResume}
+                      className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs flex items-center gap-1.5 cursor-pointer px-3.5 py-1.5 rounded-full shadow-xs transition-all disabled:opacity-50"
+                    >
+                      {scanningResume ? (
+                        <>
+                          <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          <span>Auto-Filling...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>⚡ Auto-Fill from Resume</span>
+                        </>
+                      )}
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+          <p className="text-xs text-blue-700/80 mt-2.5">
+            💡 Uploading your resume automatically scans and fills your Personal Details, Education, Articleship & Experience across all steps.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
