@@ -27,6 +27,7 @@ import { WantToChangeJob } from './pages/candidate/WantToChangeJob';
 import { PlacementHistory } from './pages/candidate/PlacementHistory';
 import { ShareJob } from './pages/candidate/ShareJob';
 import { EmployerDashboard } from './pages/employer/Dashboard';
+import { EmployerApplications } from './pages/employer/Applications';
 import { ManageJobs } from './pages/employer/ManageJobs';
 import { EmployerCandidates } from './pages/employer/Candidates';
 import { EmployerBilling } from './pages/employer/Billing';
@@ -70,6 +71,7 @@ function App() {
             
             {/* Employer Routes */}
             <Route path="/employer/dashboard" element={<EmployerDashboard />} />
+            <Route path="/employer/applications" element={<EmployerApplications />} />
             <Route path="/employer/jobs" element={<ManageJobs />} />
             <Route path="/employer/candidates" element={<EmployerCandidates />} />
             <Route path="/employer/billing" element={<EmployerBilling />} />

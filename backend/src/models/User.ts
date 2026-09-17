@@ -13,8 +13,10 @@ export interface IUser extends Document {
   resumeUrl?: string;
   skills?: string[];
   experience?: number;
+  profileCompleted?: boolean;
   // Step 1: Personal Details
   personalDetails?: {
+    phone?: string;
     alternatePhone?: string;
     currentAddress?: string;
     currentState?: string;
@@ -126,9 +128,11 @@ const UserSchema: Schema = new Schema(
     resumeUrl: { type: String },
     skills: [{ type: String }],
     experience: { type: Number },
+    profileCompleted: { type: Boolean, default: false },
     
     // Step 1: Personal Details
     personalDetails: {
+      phone: { type: String },
       alternatePhone: { type: String },
       currentAddress: { type: String },
       currentState: { type: String },

@@ -6,3 +6,17 @@ build/
 .DS_Store
 *.log
 backend/uploads/
+
+# Temporary & patch scripts
+patch_*.js
+fix_*.js
+prep_*.js
+remove_*.js
+update_*.js
+backend/check_*.js
+backend/patch.js
+backend/populate_mock.js
+*.py
+plan.md
+task.md
+implementation_plan.md

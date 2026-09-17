@@ -2,6 +2,10 @@ import api from './api';
 
 // Types
 export interface RegisterData {
+  phone?: string;
+  currentCity?: string;
+  isFresherCA?: boolean | string;
+  resumeUrl?: string;
   firstName: string;
   lastName: string;
   email: string;

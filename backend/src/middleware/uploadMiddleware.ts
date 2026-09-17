@@ -44,14 +44,14 @@ const isCloudinaryConfigured = process.env.CLOUDINARY_CLOUD_NAME && process.env.
 const storage = isCloudinaryConfigured ? cloudinaryStorage : diskStorage;
 
 function checkFileType(file: Express.Multer.File, cb: multer.FileFilterCallback) {
-  const filetypes = /pdf|doc|docx/;
-  const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = filetypes.test(file.mimetype);
+  const ext = path.extname(file.originalname || '').toLowerCase();
+  const isExtValid = /\.(pdf|doc|docx)$/i.test(ext);
+  const isMimeValid = !file.mimetype || /(pdf|msword|word|document|octet-stream)/i.test(file.mimetype);
 
-  if (extname && mimetype) {
+  if (isExtValid || isMimeValid) {
     return cb(null, true);
   } else {
-    cb(new Error('Images and PDFs only!'));
+    cb(new Error('Only PDF, DOC, and DOCX files are allowed!'));
   }
 }
 

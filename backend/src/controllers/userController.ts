@@ -33,7 +33,7 @@ export const authUser = async (req: Request, res: Response) => {
 // @route   POST /api/users
 // @access  Public
 export const registerUser = async (req: Request, res: Response) => {
-  const { firstName, lastName, email, password, role } = req.body;
+  const { firstName, lastName, email, password, role, phone, currentCity, isFresherCA, resumeUrl } = req.body;
 
   try {
     const userExists = await User.findOne({ email });
@@ -49,6 +49,16 @@ export const registerUser = async (req: Request, res: Response) => {
       email,
       password,
       role: role || 'candidate',
+      phone: phone || '',
+      resumeUrl: resumeUrl || '',
+      profileCompleted: false,
+      personalDetails: {
+        phone: phone || '',
+        currentCity: currentCity || ''
+      },
+      caPortfolio: {
+        isFresherCA: isFresherCA === true || isFresherCA === 'true'
+      }
     });
 
     if (user) {
@@ -58,6 +68,11 @@ export const registerUser = async (req: Request, res: Response) => {
         lastName: user.lastName,
         email: user.email,
         role: user.role,
+        phone: user.phone,
+        resumeUrl: user.resumeUrl,
+        profileCompleted: user.profileCompleted,
+        personalDetails: user.personalDetails,
+        caPortfolio: user.caPortfolio,
         token: generateToken(user._id.toString()),
       });
     } else {
@@ -99,13 +114,29 @@ export const updateUserProfile = async (req: Request, res: Response) => {
       if (req.body.resumeUrl !== undefined) user.resumeUrl = req.body.resumeUrl;
       if (req.body.headline !== undefined) user.headline = req.body.headline;
       if (req.body.skills !== undefined) user.skills = req.body.skills;
-      if (req.body.phone !== undefined) user.phone = req.body.phone;
+      if (req.body.phone !== undefined) {
+        user.phone = req.body.phone;
+      }
       if (req.body.password) user.password = req.body.password;
       
-      if (req.body.personalDetails !== undefined) user.personalDetails = req.body.personalDetails;
+      if (req.body.personalDetails !== undefined) {
+        user.personalDetails = {
+          ...(user.personalDetails || {}),
+          ...req.body.personalDetails,
+          phone: req.body.personalDetails?.phone || req.body.phone || user.phone || ''
+        };
+        if (user.personalDetails?.phone && !user.phone) {
+          user.phone = user.personalDetails.phone;
+        }
+      }
       if (req.body.caPortfolio !== undefined) user.caPortfolio = req.body.caPortfolio;
       if (req.body.qualifications !== undefined) user.qualifications = req.body.qualifications;
       if (req.body.experienceInfo !== undefined) user.experienceInfo = req.body.experienceInfo;
+      if (req.body.profileCompleted !== undefined) {
+        user.profileCompleted = req.body.profileCompleted;
+      } else if (req.body.qualifications && (req.body.qualifications.graduation?.completed || req.body.qualifications.graduation?.courseName)) {
+        user.profileCompleted = true;
+      }
 
       const updatedUser = await user.save();
 
@@ -547,5 +578,14 @@ export const cleanupDbAndFixResumes = async (req: Request, res: Response) => {
   } catch (error: any) {
     console.error("Error cleaning up DB:", error);
     res.status(500).json({ message: error.message || "Error cleaning up DB" });
+  }
+};
+
+export const getEmployers = async (req: Request, res: Response) => {
+  try {
+    const employers = await User.find({ role: 'employer' }).select('-password');
+    res.json(employers);
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error' });
   }
 };

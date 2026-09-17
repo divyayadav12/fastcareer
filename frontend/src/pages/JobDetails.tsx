@@ -8,6 +8,19 @@ import { MapPin, Briefcase, IndianRupee, Clock, ArrowLeft, Share2, Bookmark, Che
 import { Button } from '../components/Button';
 import { mockJobs } from '../data/mockJobs';
 
+export 
+  const getFileNameFromUrl = (url) => {
+    if (!url) return '';
+    const parts = url.split('/');
+    const fullName = parts[parts.length - 1];
+    // Optional: remove timestamp prefix if exists (e.g. 163234234-resume.pdf)
+    const nameParts = fullName.split('-');
+    if (nameParts.length > 1 && !isNaN(nameParts[0])) {
+      return nameParts.slice(1).join('-');
+    }
+    return fullName;
+  };
+
 export const JobDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -100,7 +113,7 @@ export const JobDetails = () => {
       toast.success('Application submitted successfully!');
       setShowApplyModal(false);
       setResumeFile(null);
-      setCoverLetter('');
+      setCoverLetter(''); setTimeout(() => { navigate('/candidate/openings'); }, 1500);
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to submit application. Please try again.');
     } finally {
@@ -199,7 +212,7 @@ export const JobDetails = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Resume / CV *</label>
                   <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-primary transition-colors cursor-pointer bg-gray-50" onClick={() => fileInputRef.current?.click()}>
                     <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                    {resumeFile ? <p className="text-sm font-medium text-primary">{resumeFile.name}</p> : profileData?.resumeUrl ? <p className="text-sm font-medium text-primary">Using profile resume (Click to upload new)</p> : <p className="text-sm font-medium text-gray-700">Click to upload or drag and drop</p>}
+                    {resumeFile ? <p className="text-sm font-medium text-primary">{resumeFile.name}</p> : profileData?.resumeUrl ? <p className="text-sm font-medium text-primary">Using: {getFileNameFromUrl(profileData.resumeUrl)} (Click to change)</p> : <p className="text-sm font-medium text-gray-700">Click to upload or drag and drop</p>}
                     <p className="text-xs text-gray-500 mt-1">PDF, DOCX up to 5MB</p>
                     <input type="file" className="hidden" accept=".pdf,.doc,.docx" ref={fileInputRef} onChange={(e) => setResumeFile(e.target.files ? e.target.files[0] : null)} />
                   </div>

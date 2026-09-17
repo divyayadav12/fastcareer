@@ -8,7 +8,7 @@ router.post('/', upload.single('resume'), (req, res) => {
     const url = req.file.path.startsWith('http') 
       ? req.file.path 
       : `/${req.file.path.replace(/\\/g, '/')}`;
-    res.json({ url });
+    res.json({ url, resumeUrl: url });
   } else {
     res.status(400).json({ message: 'No file uploaded' });
   }

@@ -7,6 +7,7 @@ import { Button } from '../../components/Button';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 import axios from 'axios';
+import api from '../../services/api';
 import * as XLSX from 'xlsx';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
@@ -48,9 +49,7 @@ export const EmployerDashboard = () => {
     const fetchApplications = async () => {
       try {
         const token = localStorage.getItem('token') || (user as any)?.token;
-        const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/applications/employer`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const res = await api.get('/applications/employer');
         setApplications(res.data);
       } catch (err) {
         console.error('Error fetching applications:', err);
@@ -63,9 +62,7 @@ export const EmployerDashboard = () => {
 
     const fetchCandidates = async () => {
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/users/candidates`, {
-          headers: { Authorization: `Bearer ${user?.token}` }
-        });
+        const res = await api.get('/users/candidates');
         setCandidates(res.data);
       } catch (error) {
         console.error('Error fetching candidates:', error);

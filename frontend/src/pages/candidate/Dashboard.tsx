@@ -1,40 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import { User, FileText, CheckCircle2, ChevronRight, Upload, MapPin, GraduationCap, Briefcase, Eye, EyeOff, Building2 } from 'lucide-react';
-import { useSelector } from 'react-redux';
-import { useNavigate, Link } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { getResumeUrl } from '../../utils/urlHelper';
+import { STATE_CITY_MAP } from '../../utils/constants';
 import { viewCandidateResume } from '../../utils/clientPdfGenerator';
-import type { RootState } from '../../store';
+import type { RootState, AppDispatch } from '../../store';
+
 import axios from 'axios';
-import { Button } from '../../components/Button';
 import { CandidateLayout } from '../../layouts/CandidateLayout';
-import { STATES, STATE_CITY_MAP, ALL_CITIES, YEARS, MONTHS, CA_EXAM_MONTHS, NATURE_OF_WORK, COLLEGES, PREFERRED_CAMPUS_CITIES, ARTICLESHIP_TYPES, CA_FIRMS, BOARDS } from '../../utils/constants';
-import { TOP_RECRUITERS } from '../home/RecruitersSection';
-import { COMPANY_TILES } from '../../components/RecruiterMarquee';
-import { DatePicker } from '../../components/DatePicker';
+import { Button } from '../../components/Button';
+import { ArrowLeft, ArrowRight, Save, Check } from 'lucide-react';
 
-
-const ATTEMPT_YEARS = ['Sept\'25', 'Jan\'26', 'May\'25', 'Nov\'24', 'May\'24', 'Nov\'23', 'May\'23', 'Nov\'22', 'May\'22', 'Nov\'21', 'May\'21', 'Nov\'20', 'May\'20'];
-const ATTEMPT_MONTHS = ['May', 'Nov'];
-const AUDIT_EXPERIENCE_OPTIONS = ['Audit of Listed Companies', 'Statutory Audit', 'Internal Audit', 'Internal Financial Control (IFC Clause 49 work)', 'Standard Operating Procedures SOP Drafting', 'Statutory Bank Audits', 'Tax Audit assignments of companies', 'Concurrent audit of banks', 'Revenue Audits', 'Stock Audits', 'Other', 'None'];
-
-
-
-const ATTEMPTS = ['0', '1', '2', '3', '4', '5', '6+'];
+import { Stepper } from '../../components/candidate-profile/Stepper';
+import { Step1Personal } from '../../components/candidate-profile/Step1Personal';
+import { Step2CA } from '../../components/candidate-profile/Step2CA';
+import { Step3Articleship } from '../../components/candidate-profile/Step3Articleship';
+import { Step4Education } from '../../components/candidate-profile/Step4Education';
+import { Step5Experience } from '../../components/candidate-profile/Step5Experience';
+import { Step6Review } from '../../components/candidate-profile/Step6Review';
 
 export const CandidateDashboard = () => {
   const { user } = useSelector((state: RootState) => state.auth);
-  
   const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
+
   const [step, setStep] = useState(1);
   const [savingProfile, setSavingProfile] = useState(false);
   const [resumeUrl, setResumeUrl] = useState('');
   const [uploading, setUploading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [popup, setPopup] = useState<{show: boolean, type: 'success'|'error', title: string, message: string, action?: string}>({ show: false, type: 'success', title: '', message: '' });
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
-  // Form State
   const [personal, setPersonal] = useState({
     phone: '', password: '', confirmPassword: '',
     alternatePhone: '', currentAddress: '', currentState: '', currentCity: '',
@@ -73,171 +69,75 @@ export const CandidateDashboard = () => {
     workProfile: ''
   });
 
-  const handleBothGroupsToggle = (examKey: 'caInter' | 'caFinal', checked: boolean) => {
-    setCaPortfolio(prev => {
-      const current = prev[examKey];
-      if (checked) {
-        // RULE 1: Synchronize Group II and Completion Session to Group I
-        return {
-          ...prev,
-          [examKey]: {
-            ...current,
-            bothGroups1stAttempt: true,
-            group2Month: current.group1Month,
-            group2Year: current.group1Year,
-            completionSessionMonth: current.group1Month,
-            completionSessionYear: current.group1Year
-          }
-        };
-      } else {
-        // RULE 2: Group II becomes editable again; Completion Session syncs to Group II
-        return {
-          ...prev,
-          [examKey]: {
-            ...current,
-            bothGroups1stAttempt: false,
-            completionSessionMonth: current.group2Month,
-            completionSessionYear: current.group2Year
-          }
-        };
-      }
-    });
-  };
-
-  const handleGroup1Change = (examKey: 'caInter' | 'caFinal', field: 'group1Month' | 'group1Year', value: string) => {
-    setCaPortfolio(prev => {
-      const current = prev[examKey];
-      const updated = { ...current, [field]: value };
-      if (current.bothGroups1stAttempt) {
-        if (field === 'group1Month') {
-          updated.group2Month = value;
-          updated.completionSessionMonth = value;
-        } else if (field === 'group1Year') {
-          updated.group2Year = value;
-          updated.completionSessionYear = value;
-        }
-      }
-      return { ...prev, [examKey]: updated };
-    });
-  };
-
-  const handleGroup2Change = (examKey: 'caInter' | 'caFinal', field: 'group2Month' | 'group2Year', value: string) => {
-    setCaPortfolio(prev => {
-      const current = prev[examKey];
-      const updated = { ...current, [field]: value };
-      if (!current.bothGroups1stAttempt) {
-        if (field === 'group2Month') {
-          updated.completionSessionMonth = value;
-        } else if (field === 'group2Year') {
-          updated.completionSessionYear = value;
-        }
-      }
-      return { ...prev, [examKey]: updated };
-    });
-  };
-
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/users/profile`, {
-          headers: { Authorization: `Bearer ${user?.token}` }
-        });
-        const data = res.data;
-        if (data.resumeUrl) setResumeUrl(data.resumeUrl);
-        if (data.phone) setPersonal(prev => ({ ...prev, phone: data.phone }));
-        if (data.personalDetails) setPersonal(prev => ({ ...prev, ...data.personalDetails }));
-        if (data.caPortfolio) {
-          const fetchedCaPortfolio = data.caPortfolio;
-          if (!fetchedCaPortfolio.articleships || fetchedCaPortfolio.articleships.length === 0) {
-            fetchedCaPortfolio.articleships = [{ type: 'Articleship', firmName: '', city: '', noOfPartners: '2', noOfMonths: '36' }];
-          }
-          (['caInter', 'caFinal'] as const).forEach(key => {
-            if (fetchedCaPortfolio[key]) {
-              const ex = fetchedCaPortfolio[key];
-              if (ex.bothGroups1stAttempt) {
-                ex.group2Month = ex.group1Month || ex.group2Month;
-                ex.group2Year = ex.group1Year || ex.group2Year;
-                ex.completionSessionMonth = ex.group1Month || ex.completionSessionMonth;
-                ex.completionSessionYear = ex.group1Year || ex.completionSessionYear;
-              } else {
-                ex.completionSessionMonth = ex.group2Month || ex.completionSessionMonth;
-                ex.completionSessionYear = ex.group2Year || ex.completionSessionYear;
-              }
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    
+    if (user.resumeUrl) setResumeUrl(user.resumeUrl);
+    if (user.personalDetails) {
+        let pd = { ...user.personalDetails };
+        if (pd.currentCity && !pd.currentState) {
+          for (const [state, cities] of Object.entries(STATE_CITY_MAP)) {
+            if (cities.includes(pd.currentCity)) {
+              pd.currentState = state;
+              break;
             }
-          });
-          setCaPortfolio(prev => ({ ...prev, ...fetchedCaPortfolio }));
+          }
         }
-        if (data.qualifications) setQualifications(prev => ({ ...prev, ...data.qualifications }));
-        if (data.experienceInfo) setExperienceInfo(prev => ({ ...prev, ...data.experienceInfo }));
-      } catch (error) {
-        console.error('Error fetching profile:', error);
+        setPersonal(prev => ({ ...prev, ...pd }));
       }
-    };
-    if (user?.token) fetchProfile();
-  }, [user]);
+      if (user.phone) setPersonal(prev => ({ ...prev, phone: user.phone }));
+    if (user.caPortfolio) setCaPortfolio(prev => ({ ...prev, ...user.caPortfolio }));
+    if (user.qualifications) setQualifications(prev => ({ ...prev, ...user.qualifications }));
+    if (user.experienceInfo) setExperienceInfo(prev => ({ ...prev, ...user.experienceInfo }));
+
+  }, [user, navigate]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      setPopup({ show: true, type: 'error', title: 'File Too Large', message: 'Resume size must be less than 5MB.' });
+      return;
+    }
+
     const formData = new FormData();
     formData.append('resume', file);
+
     setUploading(true);
     try {
-      const uploadRes = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/upload`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/upload`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${user?.token}`
+        }
       });
-      const url = uploadRes.data.url;
-      await axios.put(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/users/profile`, { resumeUrl: url }, {
-        headers: { Authorization: `Bearer ${user?.token}` }
-      });
-      setResumeUrl(url);
-      setPopup({ show: true, type: 'success', title: 'Upload Successful', message: 'Resume uploaded successfully!' });
+      setResumeUrl(response.data.url);
+      // Updated local state without dispatch
+      setPopup({ show: true, type: 'success', title: 'Upload Successful', message: 'Your resume has been uploaded.' });
     } catch (error) {
-      setPopup({ show: true, type: 'error', title: 'Upload Failed', message: 'Failed to upload resume.' });
+      setPopup({ show: true, type: 'error', title: 'Upload Failed', message: 'Could not upload resume.' });
     } finally {
       setUploading(false);
     }
   };
 
-  const handleNext = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (step === 1 && !resumeUrl) {
-      alert('Resume is required. Please upload your resume to proceed.');
+  const handleSaveProgress = async (goToNext = true, isFinal = false) => {
+    if (step === 1 && personal.password && personal.password !== personal.confirmPassword) {
+      setPopup({ show: true, type: 'error', title: 'Password Mismatch', message: 'Your passwords do not match. Please correct them before proceeding.' });
       return;
     }
+    if (step === 1 && !resumeUrl) {
+      setPopup({ show: true, type: 'error', title: 'Missing Resume', message: 'Resume is required to proceed.' });
+      return;
+    }
+    
     setSavingProfile(true);
     try {
       const payload: any = {
-        phone: personal.phone,
-        password: personal.password || undefined,
-        personalDetails: personal
-      };
-      
-      // Save CA Portfolio on step 2
-      if (step === 2) {
-        payload.caPortfolio = {
-          ...caPortfolio,
-          articleshipCompletionDate: `${caPortfolio.articleshipCompletionDateMonth} ${caPortfolio.articleshipCompletionDateYear}`
-        };
-      }
-
-      await axios.put(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/users/profile`, payload, {
-        headers: { Authorization: `Bearer ${user?.token}` }
-      });
-      setStep(step + 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch (error) {
-      alert('Failed to save data. Please try again.');
-    } finally {
-      setSavingProfile(false);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSavingProfile(true);
-    try {
-      const payload = {
         phone: personal.phone,
         password: personal.password || undefined,
         personalDetails: personal,
@@ -248,831 +148,134 @@ export const CandidateDashboard = () => {
         qualifications,
         experienceInfo
       };
+
       await axios.put(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/users/profile`, payload, {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
-      setPopup({ show: true, type: 'success', title: 'Success!', message: 'Your profile has been successfully saved and updated.', action: 'navigate_profile' });
+      
+      setLastSaved(new Date());
+
+      if (isFinal) {
+        setPopup({ show: true, type: 'success', title: 'Profile Submitted!', message: 'Your profile has been saved successfully.', action: 'jobs' });
+        return;
+      }
+
+      if (goToNext && step < 5) {
+        setStep(step + 1);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     } catch (error) {
-      console.error('Error saving profile:', error);
-      setPopup({ show: true, type: 'error', title: 'Save Failed', message: 'Failed to save profile.' });
+      setPopup({ show: true, type: 'error', title: 'Error', message: 'Failed to save data. Please try again.' });
     } finally {
       setSavingProfile(false);
     }
   };
 
-  // Helper for Same as Current Address
-  const handleSameAddress = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const checked = e.target.checked;
-    setPersonal(prev => ({
-      ...prev,
-      permanentAddressSameAsCurrent: checked,
-      permanentAddress: checked ? prev.currentAddress : prev.permanentAddress,
-    }));
-  };
+  const steps = ['Personal Details', 'CA Qualification', 'Articleship', 'Education & Experience', 'Review'];
 
-  const handlePrev = () => {
-    setStep(step - 1);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  
+  const calculateProfileCompletion = () => {
+    let score = 0;
+    let total = 6;
+    if (user?.firstName && user?.lastName) score += 1;
+    if (personal.phone) score += 1;
+    if (personal.currentCity) score += 1;
+    if (resumeUrl) score += 1;
+    if (caPortfolio.caFinal?.group1Attempts || caPortfolio.caInter?.group1Attempts) score += 1;
+    if (caPortfolio.articleshipFirmName) score += 1;
+    
+    return Math.round((score / total) * 100);
   };
+  
+  const completionPercentage = calculateProfileCompletion();
 
   return (
     <CandidateLayout>
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-text">Candidate Dashboard</h1>
-          <p className="text-gray-500 text-sm">Keep your CA profile up to date to get shortlisted by India's top recruiting brands.</p>
+      <div className="max-w-5xl mx-auto w-full pb-32">
+        
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8 mt-4">
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="text-lg font-bold text-gray-900">Profile Completion</h3>
+            <span className="text-sm font-semibold text-primary">{completionPercentage}%</span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2.5">
+            <div className="bg-green-600 h-2.5 rounded-full transition-all duration-500 ease-in-out" style={{ width: `${completionPercentage}%` }}></div>
+          </div>
+          <p className="text-sm text-gray-500 mt-2">
+            {completionPercentage === 100 ? "Your profile is fully complete! You are ready to apply for jobs." : "Complete your profile to stand out to employers."}
+          </p>
         </div>
-        <Link 
-          to="/candidate/companies"
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-50 text-primary hover:bg-blue-100 font-bold text-xs transition-colors self-start md:self-auto border border-blue-200 shadow-xs"
-        >
-          <Building2 size={15} />
-          <span>View All Registered Recruiters ({TOP_RECRUITERS.length})</span>
-          <ChevronRight size={14} />
-        </Link>
+
+          <Stepper currentStep={step} totalSteps={5} steps={steps} onStepClick={setStep} />
+
+        <div className="relative">
+          {step === 1 && <Step1Personal personal={personal} setPersonal={setPersonal} user={user} resumeUrl={resumeUrl} handleFileUpload={handleFileUpload} uploading={uploading} viewCandidateResume={() => viewCandidateResume({ ...user, resumeUrl, personalDetails: personal, caPortfolio, qualifications })} />}
+          {step === 2 && <Step2CA caPortfolio={caPortfolio} setCaPortfolio={setCaPortfolio} />}
+          {step === 3 && <Step3Articleship caPortfolio={caPortfolio} setCaPortfolio={setCaPortfolio} />}
+          {step === 4 && (
+            <div className="space-y-12">
+              <Step4Education qualifications={qualifications} setQualifications={setQualifications} />
+              <div className="border-t border-gray-200"></div>
+              <Step5Experience experienceInfo={experienceInfo} setExperienceInfo={setExperienceInfo} personal={personal} setPersonal={setPersonal} />
+            </div>
+          )}
+          {step === 5 && <Step6Review personal={personal} caPortfolio={caPortfolio} qualifications={qualifications} experienceInfo={experienceInfo} setStep={setStep} user={user} />}
+        </div>
       </div>
 
-      {/* Top Corporate Recruiters Actively Hiring - Single Row Compact Marquee */}
-      <div className="bg-[#1E293B] rounded-2xl p-4 sm:p-4.5 text-white shadow-lg mb-6 border border-slate-700/80 relative overflow-hidden">
-        {/* Soft Background Glow */}
-        <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-[500px] h-[180px] bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
-
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-3.5 relative z-10">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-              <h2 className="font-extrabold text-sm sm:text-base tracking-tight text-white">
-                Top Recruiters Actively Hiring CAs & Finance Talent
-              </h2>
-            </div>
-            <p className="text-gray-400 text-xs mt-0.5">
-              150+ leading corporate enterprises & multinationals rely on FAST Careers for recruitment
-            </p>
+      {/* Sticky Action Bar */}
+      <div className="fixed bottom-0 left-0 right-0 md:left-64 bg-white/80 backdrop-blur-md border-t border-gray-200 p-4 z-40 shadow-[0_-10px_40px_rgba(0,0,0,0.04)]">
+        <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <Button variant="outline" onClick={() => { setStep(step - 1); window.scrollTo(0,0); }} disabled={step === 1 || savingProfile} className="gap-2">
+              <ArrowLeft size={18} /> <span className="hidden sm:inline">Previous</span>
+            </Button>
+            
+            {lastSaved && (
+              <span className="hidden md:inline text-xs font-medium text-gray-400">
+                Draft saved ✓
+              </span>
+            )}
           </div>
-
-          <div className="flex items-center gap-2.5 self-start sm:self-auto">
-            <span className="text-[11px] font-bold text-blue-200 bg-white/10 px-2.5 py-0.5 rounded-full border border-white/10">
-              350+ Live Openings
-            </span>
-            <Link 
-              to="/candidate/companies" 
-              className="text-xs text-gray-900 bg-white hover:bg-gray-100 px-3 py-1.5 rounded-xl font-extrabold flex items-center gap-1.5 transition-all shadow-md hover:scale-105"
-            >
-              <span>Explore All ({TOP_RECRUITERS.length})</span>
-              <ChevronRight size={13} />
-            </Link>
-          </div>
-        </div>
-
-        {/* Single Row Continuous Infinite Scrolling White Logo Cards */}
-        <div className="relative overflow-hidden pt-1 select-none">
-          {/* Edge fade gradients for seamless infinite look */}
-          <div className="absolute left-0 top-0 bottom-0 w-10 sm:w-20 z-20 pointer-events-none bg-gradient-to-r from-[#1E293B] to-transparent" />
-          <div className="absolute right-0 top-0 bottom-0 w-10 sm:w-20 z-20 pointer-events-none bg-gradient-to-l from-[#1E293B] to-transparent" />
-
-          {/* Single Continuous Smooth Marquee Row */}
-          <div className="flex overflow-hidden">
-            <div className="animate-marquee flex items-center gap-3 sm:gap-4 py-1">
-              {[...COMPANY_TILES, ...COMPANY_TILES, ...COMPANY_TILES].map((item, idx) => (
-                <Link
-                  key={`dash-tile-r1-${item.id}-${idx}`}
-                  to="/candidate/companies"
-                  title={`${item.name} (${item.category})`}
-                  className="bg-white rounded-xl sm:rounded-2xl w-28 sm:w-36 md:w-40 h-12 sm:h-14 md:h-15 flex items-center justify-center px-3 py-2 shadow-md hover:shadow-xl hover:scale-105 transition-all duration-300 flex-shrink-0 border border-white/90 group cursor-pointer"
-                >
-                  <div className="group-hover:scale-105 transition-transform duration-300 flex items-center justify-center">
-                    {item.logo}
-                  </div>
-                </Link>
-              ))}
-            </div>
+          
+          <div className="flex items-center gap-3">
+            <Button variant="outline" onClick={() => handleSaveProgress(false)} disabled={savingProfile} className="hidden sm:flex gap-2">
+              <Save size={18} /> Save Draft
+            </Button>
+            
+            {step < 5 ? (
+              <Button onClick={() => handleSaveProgress(true)} disabled={savingProfile || uploading} className="gap-2 min-w-[140px] justify-center bg-primary hover:bg-blue-700 text-white shadow-lg shadow-primary/30">
+                {savingProfile ? 'Saving...' : 'Save & Continue'} <ArrowRight size={18} />
+              </Button>
+            ) : (
+              <Button onClick={() => handleSaveProgress(true, true)} disabled={savingProfile} className="gap-2 min-w-[160px] justify-center bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-500/30">
+                {savingProfile ? 'Submitting...' : 'Confirm & Submit'} <Check size={18} />
+              </Button>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Stepper Progress */}
-      <div className="flex items-center justify-between mb-8 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-        <div className={`flex flex-col items-center ${step >= 1 ? 'text-primary' : 'text-gray-400'}`}>
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold mb-2 ${step >= 1 ? 'bg-primary text-white' : 'bg-gray-100'}`}>1</div>
-          <span className="text-sm font-medium">Personal Details</span>
-        </div>
-        <div className={`flex-1 h-1 mx-4 rounded-full ${step >= 2 ? 'bg-primary' : 'bg-gray-100'}`}></div>
-        <div className={`flex flex-col items-center ${step >= 2 ? 'text-primary' : 'text-gray-400'}`}>
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold mb-2 ${step >= 2 ? 'bg-primary text-white' : 'bg-gray-100'}`}>2</div>
-          <span className="text-sm font-medium">CA Portfolio</span>
-        </div>
-        <div className={`flex-1 h-1 mx-4 rounded-full ${step >= 3 ? 'bg-primary' : 'bg-gray-100'}`}></div>
-        <div className={`flex flex-col items-center ${step >= 3 ? 'text-primary' : 'text-gray-400'}`}>
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold mb-2 ${step >= 3 ? 'bg-primary text-white' : 'bg-gray-100'}`}>3</div>
-          <span className="text-sm font-medium">Qualifications</span>
-        </div>
-      </div>
-
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-8">
-        {step === 1 && (
-          <form onSubmit={(e) => {
-            e.preventDefault();
-            if (step === 1 && personal.password !== personal.confirmPassword) {
-              setPopup({ show: true, type: 'error', title: 'Error', message: 'Passwords do not match' });
-              return;
-            }
-            handleNext(e);
-          }} className="space-y-6">
-            <h3 className="text-lg font-bold border-b pb-2 mb-4 text-primary">Personal Details</h3>
-            
-            {/* Resume Upload - Only visible in Step 1 */}
-            <div className="p-4 border border-blue-100 bg-blue-50 rounded-lg mb-6">
-              <label className="block text-sm font-semibold text-blue-900 mb-2">Resume Upload *</label>
-              <div className="flex items-center gap-4">
-                <input type="file" accept=".pdf,.doc,.docx" onChange={handleFileUpload} disabled={uploading} className="text-sm" />
-                {resumeUrl && (
-                  <button 
-                    type="button" 
-                    onClick={() => viewCandidateResume({ ...user, resumeUrl, personalDetails: personal, caPortfolio, qualifications })} 
-                    className="text-blue-600 hover:underline font-medium text-sm flex items-center gap-1 cursor-pointer"
-                  >
-                    <FileText size={16}/> View Current Resume
-                  </button>
-                )}
-              </div>
-            </div>
-
-            <div className="grid grid-grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
-                <input type="text" value={user?.firstName || ''} disabled className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-500" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-                <input type="text" value={user?.lastName || ''} disabled className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-500" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email Id *</label>
-                <input type="email" value={user?.email || ''} disabled className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-500" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Mobile No. *</label>
-                <input type="tel" required pattern="[0-9]{10}" maxLength={10} title="Please enter a valid 10-digit mobile number" value={personal.phone} onChange={(e) => setPersonal({...personal, phone: e.target.value.replace(/\D/g, '')})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Set Login Password</label>
-                <div className="relative">
-                  <input type={showPassword ? "text" : "password"} minLength={6} value={personal.password} onChange={(e) => setPersonal({...personal, password: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 pr-10" placeholder="Leave blank to keep unchanged" />
-                  <button type="button" className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700" onClick={() => setShowPassword(!showPassword)}>
-                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button>
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Re-type Password</label>
-                <div className="relative">
-                  <input type={showConfirmPassword ? "text" : "password"} value={personal.confirmPassword} onChange={(e) => setPersonal({...personal, confirmPassword: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 pr-10" placeholder="Re-type new password" />
-                  <button type="button" className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
-                    {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button>
-                </div>
-              </div>
-
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Land Line / Alternate No.</label>
-                <input type="tel" pattern="[0-9]{10,11}" maxLength={11} title="Please enter 10 or 11 digits" value={personal.alternatePhone} onChange={(e) => setPersonal({...personal, alternatePhone: e.target.value.replace(/\D/g, '')})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" placeholder="10-11 Digits" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
-                <DatePicker 
-                  value={personal.dateOfBirth ? new Date(personal.dateOfBirth) : null} 
-                  onChange={(date) => {
-                    const formattedDate = date ? 
-                      new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString().split('T')[0] 
-                      : '';
-                    setPersonal({...personal, dateOfBirth: formattedDate});
-                  }} 
-                />
-              </div>
-
-              {/* Addresses */}
-              <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Current Address *</label>
-                    <textarea required rows={2} value={personal.currentAddress} onChange={(e) => setPersonal({...personal, currentAddress: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">State *</label>
-                      <select required value={personal.currentState} onChange={(e) => setPersonal({...personal, currentState: e.target.value, currentCity: ''})} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
-                        <option value="">Select</option>
-                        {Object.keys(STATE_CITY_MAP).map(s => <option key={s} value={s}>{s}</option>)}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">City *</label>
-                      <select required className="w-full px-4 py-2 pr-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors" value={(personal.currentCity === 'Other' || (personal.currentCity && personal.currentState && STATE_CITY_MAP[personal.currentState] && !STATE_CITY_MAP[personal.currentState].includes(personal.currentCity))) ? 'Other' : personal.currentCity} onChange={(e) => setPersonal({...personal, currentCity: e.target.value})} disabled={!personal.currentState}>
-                        <option value="">Select City...</option>
-                        {(personal.currentState ? STATE_CITY_MAP[personal.currentState] || ALL_CITIES : ALL_CITIES).map(c => <option key={c} value={c}>{c}</option>)}
-                      </select>
-                      {(personal.currentCity === 'Other' || (personal.currentCity && personal.currentState && STATE_CITY_MAP[personal.currentState] && !STATE_CITY_MAP[personal.currentState].includes(personal.currentCity))) && (
-                        <input type="text" required placeholder="Enter your city" className="mt-2 w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors" value={personal.currentCity === 'Other' ? '' : personal.currentCity} onChange={(e) => setPersonal({...personal, currentCity: e.target.value})} />
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <label className="block text-sm font-medium text-gray-700">Permanent Address *</label>
-                      <label className="flex items-center gap-1 text-xs text-primary cursor-pointer">
-                        <input type="checkbox" checked={personal.permanentAddressSameAsCurrent} onChange={handleSameAddress} /> Same as above
-                      </label>
-                    </div>
-                    <textarea required rows={2} value={personal.permanentAddress} onChange={(e) => setPersonal({...personal, permanentAddress: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20" disabled={personal.permanentAddressSameAsCurrent}/>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">State *</label>
-                      <select required value={personal.permanentState} onChange={(e) => setPersonal({...personal, permanentState: e.target.value, permanentCity: ''})} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20">
-                        <option value="">Select</option>
-                        {Object.keys(STATE_CITY_MAP).map(s => <option key={s} value={s}>{s}</option>)}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">City *</label>
-                      <select required className="w-full px-4 py-2 pr-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors" value={(personal.permanentCity === 'Other' || (personal.permanentCity && personal.permanentState && STATE_CITY_MAP[personal.permanentState] && !STATE_CITY_MAP[personal.permanentState].includes(personal.permanentCity))) ? 'Other' : personal.permanentCity} onChange={(e) => setPersonal({...personal, permanentCity: e.target.value})} disabled={!personal.permanentState}>
-                        <option value="">Select City...</option>
-                        {(personal.permanentState ? STATE_CITY_MAP[personal.permanentState] || ALL_CITIES : ALL_CITIES).map(c => <option key={c} value={c}>{c}</option>)}
-                      </select>
-                      {(personal.permanentCity === 'Other' || (personal.permanentCity && personal.permanentState && STATE_CITY_MAP[personal.permanentState] && !STATE_CITY_MAP[personal.permanentState].includes(personal.permanentCity))) && (
-                        <input type="text" required placeholder="Enter your city" className="mt-2 w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors" value={personal.permanentCity === 'Other' ? '' : personal.permanentCity} onChange={(e) => setPersonal({...personal, permanentCity: e.target.value})} />
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Gender *</label>
-                <select required value={personal.gender} onChange={(e) => setPersonal({...personal, gender: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20">
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Marital Status *</label>
-                <select required value={personal.maritalStatus} onChange={(e) => setPersonal({...personal, maritalStatus: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20">
-                  <option value="Unmarried">Unmarried</option>
-                  <option value="Married">Married</option>
-                </select>
-              </div>
-
-            </div>
-            <div className="flex justify-end mt-6">
-              <Button type="submit">{savingProfile ? 'Saving...' : 'Save & Next >>'}</Button>
-            </div>
-          </form>
-        )}
-
-        {step === 2 && (
-          <form onSubmit={handleNext} className="space-y-8">
-            <div className="flex justify-between items-center border-b pb-2 mb-4">
-              <h3 className="text-lg font-bold text-primary">Candidate Portfolio - CA</h3>
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 bg-gray-50 px-3 py-1 rounded-md border border-gray-200">
-                <input type="checkbox" checked={caPortfolio.isFresherCA} onChange={(e) => setCaPortfolio({...caPortfolio, isFresherCA: e.target.checked})} />
-                Tick if fresher CA
-              </label>
-            </div>
-            
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left border border-gray-200 min-w-[900px]">
-                <thead className="bg-gray-100 text-gray-700">
-                  <tr>
-                    <th className="p-3 border">Exam</th>
-                    <th className="p-3 border text-center">Both Groups 1st Attempt</th>
-                    <th className="p-3 border" colSpan={3}>Group I (Attempts, Month & Year)</th>
-                    <th className="p-3 border" colSpan={3}>Group II (Attempts, Month & Year)</th>
-                    <th className="p-3 border">Ranker</th>
-                    <th className="p-3 border" colSpan={2}>Completion Session</th>
-                    <th className="p-3 border">%</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(['caInter', 'caFinal'] as const).map((examKey, idx) => {
-                    const examData = caPortfolio[examKey];
-                    return (
-                      <tr key={examKey}>
-                        <td className="p-3 border font-medium">{idx === 0 ? 'CA Inter (IPCC)' : 'CA Final'}</td>
-                        <td className="p-3 border text-center">
-                          <input
-                            type="checkbox"
-                            checked={examData.bothGroups1stAttempt}
-                            onChange={(e) => handleBothGroupsToggle(examKey, e.target.checked)}
-                          />
-                        </td>
-                        <td className="p-2 border">
-                          <input
-                            type="text"
-                            list="attemptsList"
-                            className="w-full border-gray-200 rounded p-1 text-xs text-center min-w-[50px]"
-                            value={examData.group1Attempts}
-                            onChange={(e) => setCaPortfolio(prev => ({ ...prev, [examKey]: { ...prev[examKey], group1Attempts: e.target.value } }))}
-                            placeholder="0"
-                          />
-                        </td>
-                        <td className="p-2 border">
-                          <select
-                            className="w-full border border-gray-200 rounded p-1 pr-8 text-xs text-center bg-white min-w-[110px]"
-                            value={examData.group1Month}
-                            onChange={(e) => handleGroup1Change(examKey, 'group1Month', e.target.value)}
-                          >
-                            <option value="">Month</option>
-                            {CA_EXAM_MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
-                          </select>
-                        </td>
-                        <td className="p-2 border">
-                          <input
-                            type="text"
-                            list="yearsList"
-                            className="w-full border-gray-200 rounded p-1 text-xs text-center min-w-[60px]"
-                            value={examData.group1Year}
-                            onChange={(e) => handleGroup1Change(examKey, 'group1Year', e.target.value)}
-                            placeholder="Year"
-                          />
-                        </td>
-                        <td className="p-2 border">
-                          <input
-                            type="text"
-                            list="attemptsList"
-                            className="w-full border-gray-200 rounded p-1 text-xs text-center min-w-[50px]"
-                            value={examData.group2Attempts}
-                            onChange={(e) => setCaPortfolio(prev => ({ ...prev, [examKey]: { ...prev[examKey], group2Attempts: e.target.value } }))}
-                            placeholder="0"
-                          />
-                        </td>
-                        <td className="p-2 border">
-                          <select
-                            disabled={examData.bothGroups1stAttempt}
-                            className={`w-full border border-gray-200 rounded p-1 pr-8 text-xs text-center min-w-[110px] ${examData.bothGroups1stAttempt ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-white'}`}
-                            value={examData.group2Month}
-                            onChange={(e) => handleGroup2Change(examKey, 'group2Month', e.target.value)}
-                          >
-                            <option value="">Month</option>
-                            {CA_EXAM_MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
-                          </select>
-                        </td>
-                        <td className="p-2 border">
-                          <input
-                            type="text"
-                            list="yearsList"
-                            disabled={examData.bothGroups1stAttempt}
-                            className={`w-full border-gray-200 rounded p-1 text-xs text-center min-w-[60px] ${examData.bothGroups1stAttempt ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-white'}`}
-                            value={examData.group2Year}
-                            onChange={(e) => handleGroup2Change(examKey, 'group2Year', e.target.value)}
-                            placeholder="Year"
-                          />
-                        </td>
-                        <td className="p-2 border">
-                          <input
-                            type="text"
-                            list="rankerList"
-                            className="w-full border-gray-200 rounded p-1 text-xs text-center"
-                            value={examData.ranker}
-                            onChange={(e) => setCaPortfolio(prev => ({ ...prev, [examKey]: { ...prev[examKey], ranker: e.target.value } }))}
-                            placeholder="No"
-                          />
-                        </td>
-                        <td className="p-2 border" colSpan={2}>
-                          <div className="flex gap-1">
-                            <select
-                              disabled
-                              className="w-1/2 border border-gray-200 rounded p-1 pr-8 text-xs bg-gray-100 text-gray-500 cursor-not-allowed min-w-[110px]"
-                              value={examData.completionSessionMonth}
-                              aria-readonly="true"
-                            >
-                              <option value="">Month</option>
-                              {CA_EXAM_MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
-                              {examData.completionSessionMonth && !CA_EXAM_MONTHS.includes(examData.completionSessionMonth) && (
-                                <option value={examData.completionSessionMonth}>{examData.completionSessionMonth}</option>
-                              )}
-                            </select>
-                            <select
-                              disabled
-                              className="w-1/2 border border-gray-200 rounded p-1 pr-8 text-xs bg-gray-100 text-gray-500 cursor-not-allowed min-w-[110px]"
-                              value={examData.completionSessionYear}
-                              aria-readonly="true"
-                            >
-                              <option value="">Year</option>
-                              {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
-                              {examData.completionSessionYear && !YEARS.includes(examData.completionSessionYear) && (
-                                <option value={examData.completionSessionYear}>{examData.completionSessionYear}</option>
-                              )}
-                            </select>
-                          </div>
-                        </td>
-                        <td className="p-2 border">
-                          <input
-                            type="number"
-                            min="50"
-                            max="100"
-                            step="0.01"
-                            required
-                            placeholder="%"
-                            className="w-16 border-gray-200 rounded p-1 text-xs"
-                            value={examData.percentage}
-                            onChange={(e) => setCaPortfolio(prev => ({ ...prev, [examKey]: { ...prev[examKey], percentage: e.target.value } }))}
-                            onBlur={(e) => {
-                              let val = parseFloat(e.target.value);
-                              if (!isNaN(val) && val < 50) {
-                                setCaPortfolio(prev => ({ ...prev, [examKey]: { ...prev[examKey], percentage: "50" } }));
-                              }
-                            }}
-                          />
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-              <datalist id="attemptsList">{ATTEMPTS.map(a => <option key={a} value={a}>{a}</option>)}</datalist>
-              <datalist id="monthsList">{MONTHS.map(a => <option key={a} value={a}>{a}</option>)}</datalist>
-              <datalist id="yearsList">{YEARS.map(a => <option key={a} value={a}>{a}</option>)}</datalist>
-              <datalist id="rankerList"><option value="No">No</option><option value="Yes">Yes</option></datalist>
-            </div>
-
-            <div className="space-y-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
-              <h4 className="text-sm text-gray-800">Articleship (You can add multiple firms here starting with latest)</h4>
-              
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left min-w-[900px]">
-                  <thead>
-                    <tr className="text-gray-600 font-medium">
-                      <th className="pb-2 text-center font-normal">Type</th>
-                      <th className="pb-2 text-center font-normal">Name</th>
-                      <th className="pb-2 text-center font-normal">City</th>
-                      <th className="pb-2 text-center font-normal">No. of Partners</th>
-                      <th className="pb-2 text-center font-normal leading-tight">
-                        No. of Months
-                        <div 
-                          className="text-[10px] text-gray-400 mt-0.5 cursor-help flex items-center justify-center gap-1" 
-                          title="As per ICAI guidelines, Articleship training duration is typically 24 months (New Scheme) or 36 months (Old Scheme)."
-                        >
-                          (24-36) <span className="text-blue-500">ⓘ</span>
-                        </div>
-                      </th>
-                      <th className="pb-2"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(caPortfolio.articleships || []).map((art, idx) => (
-                      <tr key={idx}>
-                        <td className="pr-2 pb-2">
-                          <select required className="w-full border border-gray-300 rounded p-1 pr-8 text-sm bg-white min-w-[120px]" value={art.type || 'Articleship'} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].type = e.target.value; setCaPortfolio({...caPortfolio, articleships: newArt})}}>
-                            {ARTICLESHIP_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                          </select>
-                        </td>
-                        <td className="pr-2 pb-2 min-w-[200px]">
-                          <select required className="w-full border border-gray-300 rounded p-1 pr-8 text-sm bg-white mb-1 min-w-[180px]" value={CA_FIRMS.includes(art.firmName || '') && art.firmName !== 'Other' ? art.firmName : (art.firmName ? 'Other' : '')} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].firmName = e.target.value; setCaPortfolio({...caPortfolio, articleships: newArt})}}>
-                            <option value="">Select firm name</option>
-                            {CA_FIRMS.map(firm => <option key={firm} value={firm}>{firm}</option>)}
-                          </select>
-                          {(!CA_FIRMS.includes(art.firmName || '') || art.firmName === 'Other') && art.firmName && (
-                            <input required type="text" pattern="[A-Za-z0-9\s\.\,\&\/\-]+" title="Only alphanumeric characters, spaces, and . , & / - are allowed" className="w-full border border-gray-300 rounded p-1 text-sm bg-white" placeholder="Type firm name" value={art.firmName === 'Other' ? '' : art.firmName} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].firmName = e.target.value; setCaPortfolio({...caPortfolio, articleships: newArt})}}/>
-                          )}
-                        </td>
-                        <td className="pr-2 pb-2">
-                          <select required className="w-full border border-gray-300 rounded p-1 pr-8 text-sm bg-white min-w-[120px]" value={art.city} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].city = e.target.value; setCaPortfolio({...caPortfolio, articleships: newArt})}}>
-                            <option value="">Select</option>
-                            {ALL_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
-                          </select>
-                        </td>
-                        <td className="pr-2 pb-2 min-w-[100px]">
-                          <select required className="w-full border border-gray-300 rounded p-1 pr-8 text-sm bg-white min-w-[90px]" value={art.noOfPartners} onChange={(e) => { const newArt = [...caPortfolio.articleships]; newArt[idx].noOfPartners = e.target.value; setCaPortfolio({...caPortfolio, articleships: newArt})}}>
-                            <option value="">Select</option>
-                            {Array.from({length: 10}, (_, i) => String(i+1)).map(n => <option key={n} value={n}>{n}</option>)}
-                            <option value="11-20">11-20</option>
-                            <option value="20+">20+</option>
-                          </select>
-                        </td>
-                        <td className="pr-2 pb-2 w-20">
-                          <input required type="number" min="24" max="36" title="As per ICAI guidelines, Articleship training duration is typically 24 months (New Scheme) or 36 months (Old Scheme)." className="w-full border border-gray-300 rounded p-1 text-sm bg-white text-center" value={art.noOfMonths === 0 ? '' : art.noOfMonths} onChange={(e) => { 
-                            const newArt = [...caPortfolio.articleships]; 
-                            let val = parseInt(e.target.value);
-                            if (isNaN(val)) {
-                              newArt[idx].noOfMonths = '' as any;
-                            } else {
-                              if (val > 36) val = 36;
-                              newArt[idx].noOfMonths = val; 
-                            }
-                            setCaPortfolio({...caPortfolio, articleships: newArt});
-                          }}
-                          onBlur={(e) => {
-                            const newArt = [...caPortfolio.articleships];
-                            let val = parseInt(e.target.value);
-                            if (isNaN(val) || val < 24) {
-                              newArt[idx].noOfMonths = 24;
-                            }
-                            setCaPortfolio({...caPortfolio, articleships: newArt});
-                          }}/>
-                        </td>
-                        <td className="pb-2">
-                          {idx === caPortfolio.articleships.length - 1 && caPortfolio.articleships.reduce((sum, a) => sum + (parseInt(a.noOfMonths as any) || 0), 0) < 36 && (
-                            <button type="button" onClick={() => setCaPortfolio({...caPortfolio, articleships: [...caPortfolio.articleships, { type: 'Articleship', firmName: '', city: '', noOfPartners: '2', noOfMonths: 0 }]})} className="bg-[#1a446c] text-white px-3 py-1 text-xs font-medium rounded hover:bg-[#123150] transition-colors whitespace-nowrap">
-                              Click Here To Confirm
-                            </button>
-                          )}
-                          {idx > 0 && (
-                            <button type="button" onClick={() => { const newArt = [...caPortfolio.articleships]; newArt.splice(idx, 1); setCaPortfolio({...caPortfolio, articleships: newArt})}} className="bg-red-500 text-white px-2 py-1 text-xs font-medium rounded hover:bg-red-600 transition-colors ml-2" title="Remove">
-                              ✕
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                    {(!caPortfolio.articleships || caPortfolio.articleships.length === 0) && (
-                      <tr>
-                        <td colSpan={6} className="text-center p-4">
-                          <button type="button" onClick={() => setCaPortfolio({...caPortfolio, articleships: [{ type: 'Articleship', firmName: '', city: '', noOfPartners: '2', noOfMonths: 0 }]})} className="bg-[#1a446c] text-white px-3 py-1 text-xs font-medium rounded hover:bg-[#123150] transition-colors whitespace-nowrap">
-                            Add Firm
-                          </button>
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 text-sm text-gray-700">
-              <div className="flex justify-between items-center">
-                <span>Articleship Completion Date / Due Date:</span>
-                <div className="flex gap-2">
-                  <select className="border-gray-200 rounded p-1 pr-2 text-xs" value={caPortfolio.articleshipCompletionDateMonth} onChange={(e) => setCaPortfolio({...caPortfolio, articleshipCompletionDateMonth: e.target.value})}>{MONTHS.map(a=><option key={a}>{a}</option>)}</select>
-                  <select className="border-gray-200 rounded p-1 pr-2 text-xs" value={caPortfolio.articleshipCompletionDateYear} onChange={(e) => setCaPortfolio({...caPortfolio, articleshipCompletionDateYear: e.target.value})}>{YEARS.map(a=><option key={a}>{a}</option>)}</select>
-                </div>
-              </div>
-              <div className="flex justify-between items-center">
-                <span>Total Articleship Months:</span>
-                <span className="font-bold text-gray-900 bg-gray-100 px-3 py-1 rounded">{(caPortfolio.articleships || []).reduce((acc, curr) => acc + (curr.noOfMonths || 0), 0)}</span>
-              </div>
-
-              {[
-                { label: 'GMCS Program Completed', key: 'gmcsCompleted' },
-                { label: 'Whether Articleship from BIG4 (anytime in 3 years)', key: 'big4Articleship' },
-                { label: 'Whether Industrial Trainee (in last 12 Months)', key: 'industrialTrainee' },
-                { label: 'Whether Done Listed Company Work', key: 'listedCompanyWork' }
-              ].map((item, idx) => (
-                <div key={idx} className="flex justify-between items-center">
-                  <span>* {item.label}:</span>
-                  <div className="flex gap-4">
-                    <label className="flex items-center gap-1"><input type="radio" name={item.key} value="Yes" checked={(caPortfolio as any)[item.key] === 'Yes'} onChange={(e) => setCaPortfolio({...caPortfolio, [item.key]: e.target.value})} /> Yes</label>
-                    <label className="flex items-center gap-1"><input type="radio" name={item.key} value="No" checked={(caPortfolio as any)[item.key] === 'No'} onChange={(e) => setCaPortfolio({...caPortfolio, [item.key]: e.target.value})} /> No</label>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">* Nature of Work Done During Articleship (Select all that apply):</label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 mb-3 p-4 border border-gray-200 rounded-lg bg-gray-50 max-h-60 overflow-y-auto">
-                {NATURE_OF_WORK.map(work => {
-                  const selectedWorks = (caPortfolio.natureOfWork || '').split(',').map(s => s.trim()).filter(Boolean);
-                  const isChecked = selectedWorks.includes(work);
-                  return (
-                    <label key={work} className="flex items-start gap-2 text-sm text-gray-700 cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        checked={isChecked}
-                        onChange={(e) => {
-                          let newWorks = [...selectedWorks];
-                          if (e.target.checked) {
-                            if (!newWorks.includes(work)) newWorks.push(work);
-                          } else {
-                            newWorks = newWorks.filter(w => w !== work);
-                          }
-                          setCaPortfolio({...caPortfolio, natureOfWork: newWorks.join(', ')});
-                        }}
-                        className="rounded border-gray-300 text-primary focus:ring-primary mt-0.5"
-                      />
-                      <span className="leading-tight">{work}</span>
-                    </label>
-                  );
-                })}
-              </div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Other (Specify, separated by commas):</label>
-              <input 
-                type="text" 
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm bg-white" 
-                placeholder="Type any other work..." 
-                value={(() => {
-                  const selectedWorks = (caPortfolio.natureOfWork || '').split(',').map(s => s.trim()).filter(Boolean);
-                  const otherWorks = selectedWorks.filter(w => !NATURE_OF_WORK.includes(w));
-                  return otherWorks.join(', ');
-                })()} 
-                onChange={(e) => {
-                  const selectedWorks = (caPortfolio.natureOfWork || '').split(',').map(s => s.trim()).filter(Boolean);
-                  const standardWorks = selectedWorks.filter(w => NATURE_OF_WORK.includes(w));
-                  const newOtherStr = e.target.value;
-                  if (!newOtherStr.trim()) {
-                    setCaPortfolio({...caPortfolio, natureOfWork: standardWorks.join(', ')});
-                  } else {
-                    setCaPortfolio({...caPortfolio, natureOfWork: [...standardWorks, newOtherStr].join(', ')});
-                  }
-                }} 
-              />
-            </div>
-
-
-
-            <div className="flex justify-end gap-4 mt-6">
-              <Button type="button" variant="outline" onClick={handlePrev}>&lt;&lt; Previous</Button>
-              <Button type="submit">{savingProfile ? 'Saving...' : 'Save & Next >>'}</Button>
-            </div>
-          </form>
-        )}
-
-        {step === 3 && (
-          <form onSubmit={handleSubmit} className="space-y-8">
-            <h3 className="text-lg font-bold border-b pb-2 mb-4 text-primary">Graduation & Other Qualification</h3>
-            
-            <div className="space-y-6">
-              {/* Graduation */}
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                <h4 className="font-bold text-gray-800 mb-4 pb-2 border-b">Graduation & Other Qualification</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <div className="flex flex-col justify-center">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Whether Completed</label>
-                    <div className="flex gap-4">
-                      <label className="flex items-center gap-1 text-sm"><input type="radio" name="gradCompleted" value="Yes" checked={qualifications.graduation.completed === 'Yes'} onChange={(e) => setQualifications({...qualifications, graduation: {...qualifications.graduation, completed: e.target.value}})} /> Yes</label>
-                      <label className="flex items-center gap-1 text-sm"><input type="radio" name="gradCompleted" value="No/Pursuing" checked={qualifications.graduation.completed === 'No/Pursuing'} onChange={(e) => setQualifications({...qualifications, graduation: {...qualifications.graduation, completed: e.target.value}})} /> No/Pursuing</label>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Year of Completion</label>
-                    <select className="w-full px-3 py-2 pr-2 border border-gray-200 rounded-lg text-sm bg-white" value={qualifications.graduation.yearOfCompletion} onChange={(e) => setQualifications({...qualifications, graduation: {...qualifications.graduation, yearOfCompletion: e.target.value}})}>
-                      {YEARS.map(a => <option key={a}>{a}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">% (Avg of 3 years)</label>
-                    <input type="number" min="0" max="100" step="0.01" required placeholder="Graduation %" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white" value={qualifications.graduation.percentage} onChange={(e) => setQualifications({...qualifications, graduation: {...qualifications.graduation, percentage: e.target.value}})} />
-                  </div>
-                  <div className="lg:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Correspondence / College Name</label>
-                    <select required className="w-full px-3 py-2 pr-2 border border-gray-200 rounded-lg text-sm bg-white" value={qualifications.graduation.college} onChange={(e) => setQualifications({...qualifications, graduation: {...qualifications.graduation, college: e.target.value}})}>
-                      <option value="">Select College</option>
-                      {COLLEGES.map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
-                  </div>
-                  <div className="flex flex-col justify-center">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
-                    <div className="flex flex-col gap-2">
-                      <label className="flex items-center gap-1 text-sm uppercase"><input type="radio" name="gradType" value="REGULAR" checked={qualifications.graduation.type === 'REGULAR'} onChange={(e) => setQualifications({...qualifications, graduation: {...qualifications.graduation, type: e.target.value}})} /> Regular</label>
-                      <label className="flex items-center gap-1 text-sm uppercase"><input type="radio" name="gradType" value="CORRESPONDENCE" checked={qualifications.graduation.type === 'CORRESPONDENCE'} onChange={(e) => setQualifications({...qualifications, graduation: {...qualifications.graduation, type: e.target.value}})} /> Correspondence</label>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Class 12 & 10 Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Class 12 */}
-                <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                  <h4 className="font-bold text-blue-900 mb-4">Class XII</h4>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">XII Percentage (%)</label>
-                      <input type="number" min="0" max="100" step="0.01" required placeholder="e.g. 85" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20" value={qualifications.class12.percentage} onChange={(e) => setQualifications({...qualifications, class12: {...qualifications.class12, percentage: e.target.value}})} />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">XII Year</label>
-                      <select className="w-full px-3 py-2 pr-2 border border-gray-200 rounded-lg text-sm bg-white" value={qualifications.class12.year} onChange={(e) => setQualifications({...qualifications, class12: {...qualifications.class12, year: e.target.value}})}>
-                        {YEARS.map(a => <option key={a}>{a}</option>)}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">XII Board Name</label>
-                      <select required className="w-full px-3 py-2 pr-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20" value={qualifications.class12.board} onChange={(e) => setQualifications({...qualifications, class12: {...qualifications.class12, board: e.target.value}})}>
-                        <option value="">Select Board</option>
-                        {BOARDS.map(b => <option key={b} value={b}>{b}</option>)}
-                      </select>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Class 10 */}
-                <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                  <h4 className="font-bold text-blue-900 mb-4">Class X</h4>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">X Percentage (%)</label>
-                      <input type="number" min="0" max="100" step="0.01" required placeholder="e.g. 90" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20" value={qualifications.class10.percentage} onChange={(e) => setQualifications({...qualifications, class10: {...qualifications.class10, percentage: e.target.value}})} />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">X Year</label>
-                      <select className="w-full px-3 py-2 pr-2 border border-gray-200 rounded-lg text-sm bg-white" value={qualifications.class10.year} onChange={(e) => setQualifications({...qualifications, class10: {...qualifications.class10, year: e.target.value}})}>
-                        {YEARS.map(a => <option key={a}>{a}</option>)}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">X Board Name</label>
-                      <select required className="w-full px-3 py-2 pr-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20" value={qualifications.class10.board} onChange={(e) => setQualifications({...qualifications, class10: {...qualifications.class10, board: e.target.value}})}>
-                        <option value="">Select Board</option>
-                        {BOARDS.map(b => <option key={b} value={b}>{b}</option>)}
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Experience Details */}
-              <div className="bg-blue-50 p-6 rounded-xl border border-blue-100">
-                <h4 className="font-bold text-blue-900 mb-6 border-b border-blue-200 pb-2">Experience Details</h4>
-                <div className="mb-4">
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer">
-                    <input 
-                      type="checkbox" 
-                      className="rounded border-gray-300 text-primary focus:ring-primary w-4 h-4"
-                      checked={experienceInfo.isExperienced}
-                      onChange={(e) => setExperienceInfo({ ...experienceInfo, isExperienced: e.target.checked })}
-                    />
-                    Are you an experienced candidate? (Click if Yes)
-                  </label>
-                </div>
-                
-                {experienceInfo.isExperienced && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-top-4 duration-300">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Experience (in Years)</label>
-                      <input type="number" min="0" step="0.1" required placeholder="e.g. 2.5" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20" value={experienceInfo.experienceYears} onChange={(e) => setExperienceInfo({...experienceInfo, experienceYears: e.target.value})} />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Current Company Name</label>
-                      <input type="text" required placeholder="Company Name" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20" value={experienceInfo.currentCompanyName} onChange={(e) => setExperienceInfo({...experienceInfo, currentCompanyName: e.target.value})} />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Current Designation</label>
-                      <select required className="w-full px-3 py-2 pr-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20" value={experienceInfo.currentDesignation} onChange={(e) => setExperienceInfo({...experienceInfo, currentDesignation: e.target.value})}>
-                        <option value="">Select Designation</option>
-                        {['Executive', 'Senior Executive', 'Assistant Manager', 'Manager', 'Senior Manager', 'Associate Director', 'Director', 'Partner', 'Consultant', 'Other'].map(desig => <option key={desig} value={desig}>{desig}</option>)}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Current CTC (LPA)</label>
-                      <input type="number" min="0" step="0.01" required placeholder="e.g. 12.5" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20" value={experienceInfo.currentCTC} onChange={(e) => setExperienceInfo({...experienceInfo, currentCTC: e.target.value})} />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Expected CTC (LPA)</label>
-                      <input type="number" min="0" step="0.01" required placeholder="e.g. 15.0" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20" value={experienceInfo.expectedCTC} onChange={(e) => setExperienceInfo({...experienceInfo, expectedCTC: e.target.value})} />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Work Profile / Domain</label>
-                      <select required className="w-full px-3 py-2 pr-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20" value={experienceInfo.workProfile} onChange={(e) => setExperienceInfo({...experienceInfo, workProfile: e.target.value})}>
-                        <option value="">Select Work Profile</option>
-                        {NATURE_OF_WORK.map(work => <option key={work} value={work}>{work}</option>)}
-                      </select>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-            
-            <p className="text-xs text-red-500 font-medium text-center mt-6">Note: Please fill details accurately as these shall be printed on your site generated resume. Also for saving data please click on Submit button.</p>
-
-            <div className="flex justify-end gap-4 mt-6">
-              <Button type="button" variant="outline" onClick={handlePrev}>&lt;&lt; Previous</Button>
-              <Button type="submit" isLoading={savingProfile}>Submit All Details</Button>
-            </div>
-          </form>
-        )}
-      </div>
-
-      {/* Unified Popup */}
+      {/* Popup Modal */}
       {popup.show && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-8 max-w-sm w-full text-center shadow-2xl animate-in fade-in zoom-in duration-300">
-            <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 ${popup.type === 'success' ? 'bg-green-100 text-green-500' : 'bg-red-100 text-red-500'}`}>
-              <CheckCircle2 size={40} className={popup.type === 'success' ? 'block' : 'hidden'} />
-              <div className={popup.type === 'error' ? 'text-4xl font-bold block' : 'hidden'}>!</div>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl text-center transform animate-in zoom-in-95 duration-200">
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 ${popup.type === 'success' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+              <Check size={24} strokeWidth={3} />
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">{popup.title}</h3>
-            <p className="text-gray-500 mb-8">{popup.message}</p>
-            <Button 
-              className="w-full py-3 text-lg" 
-              onClick={() => {
-                setPopup(p => ({ ...p, show: false }));
-                if (popup.action === 'navigate_profile') {
-                  navigate('/candidate/resume-print');
+            <h3 className="text-xl font-bold text-gray-900 mb-2">{popup.title}</h3>
+            <p className="text-gray-600 mb-6">{popup.message}</p>
+            <Button onClick={() => {
+                setPopup({ ...popup, show: false });
+                if (popup.action === 'jobs') {
+                  navigate('/candidate/openings');
                 }
-              }}
-            >
-              {popup.action === 'navigate_profile' ? 'View My Profile' : 'OK'}
+              }} className="w-full justify-center">
+              Okay
             </Button>
           </div>
         </div>
       )}
-
     </CandidateLayout>
   );
 };

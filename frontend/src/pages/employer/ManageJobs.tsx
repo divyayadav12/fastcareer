@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { EmployerLayout } from '../../layouts/EmployerLayout';
 import { PlusCircle, Briefcase, X, MapPin, Building, DollarSign } from 'lucide-react';
 import { Button } from '../../components/Button';
-import axios from 'axios';
+import api from '../../services/api';
 import { useSelector } from 'react-redux';
 import { ALL_CITIES } from '../../utils/constants';
 
@@ -26,9 +26,7 @@ export const ManageJobs = () => {
 
   const fetchJobs = async () => {
     try {
-      const { data } = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/jobs/employer`, {
-        headers: { Authorization: `Bearer ${user?.token}` }
-      });
+      const { data } = await api.get('/jobs/employer');
       setJobs(data);
     } catch (error) {
       console.error('Error fetching jobs:', error);
@@ -52,9 +50,7 @@ export const ManageJobs = () => {
         responsibilities: formData.responsibilities.split('\n').filter(r => r.trim())
       };
       
-      await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/jobs`, payload, {
-        headers: { Authorization: `Bearer ${user?.token}` }
-      });
+      await api.post('/jobs', payload);
       
       setShowModal(false);
       setFormData({

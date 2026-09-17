@@ -9,7 +9,7 @@ export const getResumeUrl = (url?: string) => {
 
   const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-  // If URL contains an uploads path (e.g. /uploads/resume_123.pdf or https://fastcareer.onrender.com/uploads/...)
+  // If URL contains an uploads path (e.g. /uploads/resume_123.pdf or http://localhost:5000/uploads/...)
   if (url.includes('/uploads/')) {
     const filename = url.split('/uploads/')[1];
     return `${baseUrl}/uploads/${filename}`;
