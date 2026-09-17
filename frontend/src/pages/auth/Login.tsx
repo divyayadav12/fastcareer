@@ -12,7 +12,8 @@ import {
   EyeOff,
   ArrowRight,
   ShieldCheck,
-  GraduationCap
+  GraduationCap,
+  AlertCircle
 } from 'lucide-react';
 import { login, reset } from '../../store/authSlice';
 import type { AppDispatch, RootState } from '../../store';
@@ -23,6 +24,7 @@ export const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [activeRole, setActiveRole] = useState<'candidate' | 'employer'>('candidate');
+  const [formError, setFormError] = useState<string>('');
 
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
@@ -32,8 +34,9 @@ export const Login = () => {
   );
 
   useEffect(() => {
-    if (isError) {
-      toast.error(message);
+    if (isError && message) {
+      setFormError(message);
+      toast.error(message, { duration: 6000 });
     }
 
     if (isSuccess || user) {
@@ -51,17 +54,25 @@ export const Login = () => {
     dispatch(reset());
   }, [user, isError, isSuccess, message, navigate, dispatch]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError('');
     if (!email.trim() || !password) {
-      toast.error('Please enter both email and password.');
+      const err = 'Please enter both email and password.';
+      setFormError(err);
+      toast.error(err);
       return;
     }
     const userData = {
       email: email.trim(),
       password,
     };
-    dispatch(login(userData));
+    const resultAction = await dispatch(login(userData));
+    if (login.rejected.match(resultAction)) {
+      const err = (resultAction.payload as string) || 'Invalid email or password';
+      setFormError(err);
+      toast.error(err, { duration: 6000 });
+    }
   };
 
   const handleForgotPassword = (e: React.MouseEvent) => {
@@ -245,6 +256,16 @@ export const Login = () => {
 
               {/* Form */}
               <form className="space-y-4" onSubmit={handleSubmit}>
+                
+                {formError && (
+                  <div className="p-3.5 bg-rose-50 border border-rose-200/90 rounded-2xl flex items-start gap-3 text-rose-800 text-sm shadow-2xs animate-in fade-in slide-in-from-top-2 duration-200">
+                    <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <div className="font-bold text-rose-900 text-xs uppercase tracking-wider">Login Issue</div>
+                      <div className="text-xs sm:text-sm text-rose-700 mt-0.5 font-medium">{formError}</div>
+                    </div>
+                  </div>
+                )}
                 
                 {/* Email input */}
                 <div>

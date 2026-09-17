@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import { Navbar } from './layouts/Navbar';
 import { Footer } from './layouts/Footer';
 import { Home } from './pages/Home';
@@ -39,6 +40,34 @@ import { ScrollToTop } from './components/ScrollToTop';
 function App() {
   return (
     <Router>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 5000,
+          style: {
+            background: '#0f172a',
+            color: '#fff',
+            fontWeight: 500,
+            fontSize: '13.5px',
+            borderRadius: '12px',
+            padding: '12px 16px',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.25), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+            maxWidth: '420px',
+          },
+          success: {
+            iconTheme: {
+              primary: '#10b981',
+              secondary: '#ffffff',
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#ffffff',
+            },
+          },
+        }}
+      />
       <ScrollToTop />
       <div className="flex flex-col min-h-screen">
         <Navbar />
@@ -49,6 +78,9 @@ function App() {
             <Route path="/team" element={<OurTeam />} />
             <Route path="/our-team" element={<OurTeam />} />
             <Route path="/services" element={<Services />} />
+            <Route path="/expertise" element={<Expertise />} />
+            <Route path="/employers" element={<Employers />} />
+            <Route path="/jobs" element={<JobListings />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/jobs/:id" element={<JobDetails />} />
             <Route path="/login" element={<Login />} />
@@ -80,7 +112,6 @@ function App() {
             
             {/* Admin Routes */}
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
-            {/* Add more routes as we build out the pages */}
           </Routes>
         </main>
         <Footer />

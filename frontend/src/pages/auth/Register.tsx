@@ -21,7 +21,8 @@ import {
   ShieldCheck,
   Sparkles,
   UploadCloud,
-  CheckCircle2
+  CheckCircle2,
+  AlertCircle
 } from 'lucide-react';
 import { register, reset } from '../../store/authSlice';
 import type { AppDispatch, RootState } from '../../store';
@@ -78,6 +79,7 @@ export const Register = () => {
     return ALL_CITIES.filter(c => c.toLowerCase().includes(query)).slice(0, 100);
   }, [citySearchQuery]);
 
+  const [formError, setFormError] = useState<string>('');
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -96,8 +98,9 @@ export const Register = () => {
   );
 
   useEffect(() => {
-    if (isError) {
-      toast.error(message);
+    if (isError && message) {
+      setFormError(message);
+      toast.error(message, { duration: 6000 });
     }
     if (isSuccess || user) {
       if (user?.role === 'candidate') {
@@ -185,10 +188,12 @@ export const Register = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    setFormError('');
     let uploadedResumeUrl = '';
 
     if (role === 'candidate') {
       if (!phone || !currentCity) {
+        setFormError('Please fill in all mandatory candidate fields (Phone, City).');
         toast.error('Please fill in all mandatory candidate fields.');
         return;
       }
@@ -203,6 +208,7 @@ export const Register = () => {
           });
           uploadedResumeUrl = res.data.url;
         } catch (error) {
+          setFormError('Failed to upload resume. Please try again.');
           toast.error('Failed to upload resume. Please try again.');
           setIsUploading(false);
           return;
@@ -226,7 +232,12 @@ export const Register = () => {
       }),
     };
 
-    dispatch(register(userData));
+    const resultAction = await dispatch(register(userData));
+    if (register.rejected.match(resultAction)) {
+      const err = (resultAction.payload as string) || 'Registration failed. Please check your details.';
+      setFormError(err);
+      toast.error(err, { duration: 6000 });
+    }
   };
 
   return (
@@ -479,6 +490,16 @@ export const Register = () => {
 
               {/* Registration Form */}
               <form className="space-y-4" onSubmit={handleSubmit}>
+                
+                {formError && (
+                  <div className="p-3.5 bg-rose-50 border border-rose-200/90 rounded-2xl flex items-start gap-3 text-rose-800 text-sm shadow-2xs animate-in fade-in slide-in-from-top-2 duration-200">
+                    <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <div className="font-bold text-rose-900 text-xs uppercase tracking-wider">Registration Issue</div>
+                      <div className="text-xs sm:text-sm text-rose-700 mt-0.5 font-medium">{formError}</div>
+                    </div>
+                  </div>
+                )}
                 
                 {/* Name row */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
