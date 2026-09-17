@@ -18,12 +18,16 @@ import {
   Eye,
   EyeOff,
   ArrowRight,
-  ShieldCheck
+  ShieldCheck,
+  Sparkles,
+  UploadCloud,
+  CheckCircle2
 } from 'lucide-react';
 import { register, reset } from '../../store/authSlice';
 import type { AppDispatch, RootState } from '../../store';
 import api from '../../services/api';
 import { ALL_CITIES } from '../../utils/constants';
+import { parseResumeFile } from '../../utils/resumeParser';
 
 const POPULAR_CITIES = [
   'Mumbai', 'Delhi', 'Bengaluru', 'Hyderabad', 'Pune', 'Kolkata',
@@ -45,6 +49,8 @@ export const Register = () => {
   const [linkedinUrl, setLinkedinUrl] = useState('');
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [isScanningResume, setIsScanningResume] = useState(false);
+  const [scannedFields, setScannedFields] = useState<string[]>([]);
 
   // Searchable City Dropdown state
   const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
@@ -105,16 +111,74 @@ export const Register = () => {
     dispatch(reset());
   }, [user, isError, isSuccess, message, navigate, dispatch]);
 
+  const processResumeFile = async (file: File) => {
+    if (!file) return;
+    const ext = file.name.toLowerCase();
+    if (!ext.endsWith('.pdf') && !ext.endsWith('.docx') && !ext.endsWith('.doc')) {
+      toast.error('Please upload a valid PDF or DOCX resume.');
+      return;
+    }
+
+    setResumeFile(file);
+    setIsScanningResume(true);
+    setScannedFields([]);
+
+    try {
+      const parsed = await parseResumeFile(file);
+      const extracted: string[] = [];
+
+      if (parsed.firstName) {
+        setFirstName(parsed.firstName);
+        extracted.push('First Name');
+      }
+      if (parsed.lastName) {
+        setLastName(parsed.lastName);
+        extracted.push('Last Name');
+      }
+      if (parsed.email) {
+        setEmail(parsed.email);
+        extracted.push('Email');
+      }
+      if (parsed.phone) {
+        setPhone(parsed.phone);
+        extracted.push('Phone');
+      }
+      if (parsed.city) {
+        setCurrentCity(parsed.city);
+        extracted.push('City');
+      }
+      if (parsed.linkedinUrl) {
+        setLinkedinUrl(parsed.linkedinUrl);
+        extracted.push('LinkedIn');
+      }
+      if (parsed.workStatus) {
+        setWorkStatus(parsed.workStatus);
+        extracted.push('Experience Stage');
+      }
+
+      setScannedFields(extracted);
+
+      if (extracted.length > 0) {
+        toast.success(
+          `Resume scanned! Auto-filled: ${extracted.join(', ')}. Please set a password to register.`,
+          { duration: 6000, icon: '⚡' }
+        );
+      } else {
+        toast.success('Resume attached successfully! Please fill in the details below.', { icon: '📄' });
+      }
+    } catch (error) {
+      console.error('Failed to parse resume:', error);
+      toast.success('Resume attached! Please complete your details below.', { icon: '📄' });
+    } finally {
+      setIsScanningResume(false);
+    }
+  };
+
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const file = e.dataTransfer.files[0];
-      if (file.type === 'application/pdf' || file.name.endsWith('.pdf') || file.name.endsWith('.docx') || file.name.endsWith('.doc')) {
-        setResumeFile(file);
-      } else {
-        toast.error('Please upload a PDF or DOCX file.');
-      }
+      processResumeFile(e.dataTransfer.files[0]);
     }
   };
 
@@ -320,39 +384,98 @@ export const Register = () => {
                 </button>
               </div>
 
-              {/* Social Logins */}
-              <div className="grid grid-cols-2 gap-3 mb-4">
-                <button
-                  type="button"
-                  onClick={() => toast('LinkedIn sign-in is coming soon!', { icon: 'ℹ️' })}
-                  className="flex items-center justify-center gap-2 py-2.5 px-3 border border-blue-100 bg-blue-50/40 hover:bg-blue-50 text-[#0077b5] rounded-xl text-xs font-semibold transition-colors"
-                >
-                  <svg className="w-4 h-4 fill-[#0077b5]" viewBox="0 0 24 24">
-                    <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z" />
-                  </svg>
-                  <span>Quick with LinkedIn</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => toast('Google sign-in is coming soon!', { icon: 'ℹ️' })}
-                  className="flex items-center justify-center gap-2 py-2.5 px-3 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-semibold shadow-2xs transition-colors"
-                >
-                  <svg className="w-4 h-4" viewBox="0 0 24 24">
-                    <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.4 9 5 12 5z" />
-                    <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.7-.2-2.3H12v4.6h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.9z" />
-                    <path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.8s.2-2.1.4-2.8L1.9 6.3C.7 8.7 0 10.3 0 12s.7 3.3 1.9 5.7l3.7-2.9z" />
-                    <path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.4-6.4-5.2L1.9 16c1.8 3.7 5.6 7 10.1 7z" />
-                  </svg>
-                  <span>Google</span>
-                </button>
-              </div>
+              {/* Resume 1-Click Auto-Fill Scanner Box (Candidate Mode) */}
+              {role === 'candidate' && (
+                <div className="mb-5">
+                  <div
+                    onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+                    onDragLeave={() => setIsDragOver(false)}
+                    onDrop={handleDrop}
+                    onClick={() => fileInputRef.current?.click()}
+                    className={`relative border-2 border-dashed rounded-2xl p-4 text-center cursor-pointer transition-all ${
+                      isScanningResume
+                        ? 'border-blue-500 bg-blue-50/60 ring-2 ring-blue-500/20'
+                        : isDragOver
+                        ? 'border-blue-500 bg-blue-50/80 shadow-md scale-[1.01]'
+                        : resumeFile
+                        ? 'border-emerald-400 bg-emerald-50/40'
+                        : 'border-blue-200 hover:border-blue-400 bg-gradient-to-r from-blue-50/50 via-indigo-50/30 to-blue-50/50 hover:bg-blue-50/70 shadow-2xs'
+                    }`}
+                  >
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".pdf,.docx,.doc"
+                      className="hidden"
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          processResumeFile(e.target.files[0]);
+                        }
+                      }}
+                    />
 
-              {/* Divider */}
-              <div className="relative flex py-1 items-center mb-4">
-                <div className="flex-grow border-t border-slate-200"></div>
-                <span className="flex-shrink mx-3 text-[11px] text-slate-400 font-medium">or register in 30 seconds</span>
-                <div className="flex-grow border-t border-slate-200"></div>
-              </div>
+                    {isScanningResume ? (
+                      <div className="flex flex-col items-center justify-center py-2 space-y-2">
+                        <div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                        <div className="text-xs font-bold text-blue-900">
+                          Scanning resume & auto-filling form details...
+                        </div>
+                        <div className="text-[11px] text-blue-600">
+                          Extracting Name, Email, Phone, City, LinkedIn & Experience
+                        </div>
+                      </div>
+                    ) : resumeFile ? (
+                      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-left">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                            <CheckCircle2 size={22} />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="text-xs font-bold text-slate-900 flex items-center gap-1.5 truncate">
+                              <span>Resume Auto-Filled:</span>
+                              <span className="text-emerald-700 font-semibold truncate">{resumeFile.name}</span>
+                            </div>
+                            <div className="text-[11px] text-slate-500 mt-0.5">
+                              {scannedFields.length > 0
+                                ? `✓ Extracted: ${scannedFields.join(', ')}`
+                                : `${(resumeFile.size / (1024 * 1024)).toFixed(2)} MB • Ready to verify`}
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            fileInputRef.current?.click();
+                          }}
+                          className="px-3 py-1.5 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 rounded-lg text-xs font-semibold shadow-2xs transition-colors shrink-0 cursor-pointer"
+                        >
+                          Change CV
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center space-y-1.5 py-1">
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-100/80 text-blue-800 text-[10.5px] font-bold">
+                          <Sparkles size={12} className="text-blue-600" />
+                          <span>Auto-Fill Form in 1-Click</span>
+                        </div>
+                        <div className="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                          <UploadCloud size={18} className="text-blue-600" />
+                          <span>Upload Resume to Auto-Fill Registration</span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 max-w-md">
+                          Drop your PDF or DOCX file here. We'll automatically scan and fill your Name, Contact, City & LinkedIn details.
+                        </p>
+                        <div className="pt-0.5">
+                          <span className="inline-block px-3 py-1 bg-white border border-blue-200 hover:border-blue-400 text-blue-700 font-semibold text-xs rounded-lg shadow-2xs transition-all">
+                            Browse CV
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Registration Form */}
               <form className="space-y-4" onSubmit={handleSubmit}>
@@ -724,7 +847,7 @@ export const Register = () => {
                           accept=".pdf,.doc,.docx"
                           onChange={(e) => {
                             if (e.target.files && e.target.files[0]) {
-                              setResumeFile(e.target.files[0]);
+                              processResumeFile(e.target.files[0]);
                             }
                           }}
                         />
