@@ -1,5 +1,6 @@
 import toast from 'react-hot-toast';
 import React, { useEffect, useState } from 'react';
+import { EmployerLayout } from '../../layouts/EmployerLayout';
 import { Shield, Users, Building, Briefcase, FileText, Settings, Activity, Download, MapPin, GraduationCap, ClipboardList, Award } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -119,50 +120,9 @@ export const AdminDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row pt-20">
-      {/* Sidebar */}
-      <aside className="w-full md:w-64 bg-gray-900 text-white shrink-0 h-auto md:min-h-[calc(100vh-64px)]">
-        <div className="p-6">
-          <div className="flex items-center gap-4 mb-8">
-            <div className="w-12 h-12 bg-red-600 rounded-xl flex items-center justify-center">
-              <Shield size={24} className="text-white" />
-            </div>
-            <div>
-              <h3 className="font-bold">FAST Admin</h3>
-              <p className="text-xs text-gray-400">Superuser</p>
-            </div>
-          </div>
-
-          <nav className="space-y-1">
-            <Link to="/admin/dashboard" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg bg-gray-800 text-white">
-              <Activity size={18} /> Overview
-            </Link>
-            <Link to="/admin/test-results" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-colors">
-              <Award size={18} className="text-amber-400" /> Candidate Test Results
-            </Link>
-            <Link to="/admin/applications" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-colors">
-              <ClipboardList size={18} /> Applications
-            </Link>
-            <Link to="/admin/users" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-colors">
-              <Users size={18} /> Candidates
-            </Link>
-            <Link to="/admin/employers" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-colors">
-              <Building size={18} /> Employers
-            </Link>
-            <Link to="/admin/jobs" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-colors">
-              <Briefcase size={18} /> Jobs
-            </Link>
-            <Link to="/admin/settings" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-colors">
-              <Settings size={18} /> System Settings
-            </Link>
-          </nav>
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <main className="flex-1 p-6 md:p-8">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold text-text">Candidates Management</h1>
+    <EmployerLayout>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-2xl font-bold text-text">Candidates Management</h1>
           <button 
             onClick={handleBulkDownload}
             disabled={downloading}
@@ -246,7 +206,6 @@ export const AdminDashboard = () => {
             </table>
           </div>
         </div>
-      </main>
-    </div>
+    </EmployerLayout>
   );
 };

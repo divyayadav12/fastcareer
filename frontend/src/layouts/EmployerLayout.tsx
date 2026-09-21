@@ -34,8 +34,12 @@ export const EmployerLayout = ({ children }: EmployerLayoutProps) => {
               <Building size={24} />
             </div>
             <div>
-              <h3 className="font-bold text-text truncate max-w-[150px]">{user?.firstName || 'Employer'}</h3>
-              <p className="text-xs text-gray-500">Employer Account</p>
+              <h3 className="font-bold text-text truncate max-w-[150px]">
+                {user?.role === 'admin' ? (user?.firstName ? `${user.firstName} (Admin)` : 'FAST Admin') : (user?.companyName || user?.firstName || 'Employer')}
+              </h3>
+              <p className="text-xs text-gray-500">
+                {user?.role === 'admin' ? 'Administrator' : 'Employer Account'}
+              </p>
             </div>
           </div>
 
@@ -43,14 +47,14 @@ export const EmployerLayout = ({ children }: EmployerLayoutProps) => {
             <Link to="/employer/dashboard" className={getLinkClass('/employer/dashboard')}>
               <BarChart2 size={18} /> Dashboard
             </Link>
-            <Link to="/employer/jobs" className={getLinkClass('/employer/jobs')}>
-              <Briefcase size={18} /> Manage Jobs
+            <Link to="/admin/test-results" className={getLinkClass('/admin/test-results')}>
+              <Award size={18} className="text-amber-500" /> Candidate Test Results
             </Link>
             <Link to="/employer/applications" className={getLinkClass('/employer/applications')}>
               <ClipboardList size={18} /> Applications
             </Link>
-            <Link to="/admin/test-results" className={getLinkClass('/admin/test-results')}>
-              <Award size={18} className="text-amber-500" /> Candidate Test Results
+            <Link to="/employer/jobs" className={getLinkClass('/employer/jobs')}>
+              <Briefcase size={18} /> Manage Jobs
             </Link>
             <Link to="/employer/candidates" className={getLinkClass('/employer/candidates')}>
               <Users size={18} /> Candidates

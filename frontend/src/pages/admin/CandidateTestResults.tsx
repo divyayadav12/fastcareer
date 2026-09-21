@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { EmployerLayout } from '../../layouts/EmployerLayout';
 import { Shield, Activity, Users, Building, Briefcase, Settings, ClipboardList, Award, Search, RefreshCw, Eye, CheckCircle2, XCircle, Clock, Volume2, Star, MessageSquare, X, Send } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -134,62 +135,27 @@ export const CandidateTestResults = () => {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row pt-20">
-      {/* Admin Sidebar */}
-      <aside className="w-full md:w-64 bg-gray-900 text-white shrink-0 h-auto md:min-h-[calc(100vh-64px)]">
-        <div className="p-6">
-          <div className="flex items-center gap-4 mb-8">
-            <div className="w-12 h-12 bg-red-600 rounded-xl flex items-center justify-center">
-              <Shield size={24} className="text-white" />
-            </div>
-            <div>
-              <h3 className="font-bold">FAST Admin</h3>
-              <p className="text-xs text-gray-400">Superuser</p>
-            </div>
+    <EmployerLayout>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-xs font-semibold uppercase tracking-wider mb-2">
+            <Award size={13} className="text-amber-600" />
+            Fast Selection Assessments
           </div>
-
-          <nav className="space-y-1">
-            <Link to="/admin/dashboard" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-colors">
-              <Activity size={18} /> Overview
-            </Link>
-            <Link to="/admin/test-results" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg bg-gray-800 text-white">
-              <Award size={18} className="text-amber-400" /> Candidate Test Results
-            </Link>
-            <Link to="/admin/applications" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-colors">
-              <ClipboardList size={18} /> Applications
-            </Link>
-            <Link to="/employer/candidates" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-colors">
-              <Users size={18} /> Candidates
-            </Link>
-            <Link to="/employer/jobs" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-colors">
-              <Briefcase size={18} /> Jobs
-            </Link>
-          </nav>
+          <h1 className="text-2xl font-bold text-gray-900">Candidate Test Results</h1>
+          <p className="text-gray-500 text-sm mt-0.5">
+            Review 6-question candidate assessments, listen to voice recordings, and fast-track top talent.
+          </p>
         </div>
-      </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 p-6 md:p-8 overflow-y-auto">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-          <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-xs font-semibold uppercase tracking-wider mb-2">
-              <Award size={13} className="text-amber-600" />
-              Fast Selection Assessments
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900">Candidate Test Results</h1>
-            <p className="text-gray-500 text-sm mt-0.5">
-              Review 6-question candidate assessments, listen to voice recordings, and fast-track top talent.
-            </p>
-          </div>
-
-          <button
-            onClick={fetchAssessments}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors shadow-2xs self-start md:self-auto cursor-pointer"
-          >
-            <RefreshCw size={15} className={loading ? 'animate-spin text-primary' : ''} />
-            Refresh
-          </button>
-        </div>
+        <button
+          onClick={fetchAssessments}
+          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors shadow-2xs self-start md:self-auto cursor-pointer"
+        >
+          <RefreshCw size={15} className={loading ? 'animate-spin text-primary' : ''} />
+          Refresh
+        </button>
+      </div>
 
         {/* Metrics Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
@@ -534,7 +500,6 @@ export const CandidateTestResults = () => {
             </div>
           </div>
         )}
-      </main>
-    </div>
+    </EmployerLayout>
   );
 };
