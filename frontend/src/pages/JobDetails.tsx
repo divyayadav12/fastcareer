@@ -62,7 +62,7 @@ export const JobDetails = () => {
         if (Array.isArray(res.data)) {
           const hasApplied = res.data.some((app: any) => {
             const jobId = typeof app.job === 'object' && app.job ? app.job._id : app.job;
-            return jobId === id;
+            return jobId?.toString() === id?.toString();
           });
           setIsAlreadyApplied(hasApplied);
         }

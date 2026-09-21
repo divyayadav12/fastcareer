@@ -44,7 +44,10 @@ export const CurrentOpenings = () => {
             });
             if (Array.isArray(appRes.data)) {
               const ids = appRes.data
-                .map((app: any) => (typeof app.job === 'object' && app.job ? app.job._id : app.job))
+                .map((app: any) => {
+                  const jId = typeof app.job === 'object' && app.job ? app.job._id : app.job;
+                  return jId ? jId.toString() : '';
+                })
                 .filter(Boolean);
               setAppliedJobIds(ids);
             }
@@ -114,7 +117,7 @@ export const CurrentOpenings = () => {
           </div>
         ) : (
           filteredJobs.map((job) => {
-            const isApplied = appliedJobIds.includes(job._id);
+            const isApplied = appliedJobIds.includes(job._id?.toString());
 
             return (
               <Link 
@@ -127,9 +130,9 @@ export const CurrentOpenings = () => {
                 {/* Top Badge if already applied */}
                 {isApplied && (
                   <div className="absolute top-4 right-4">
-                    <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 shadow-sm">
+                    <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-xs">
                       <CheckCircle2 size={13} className="text-emerald-600" />
-                      Applied
+                      Already Applied
                     </span>
                   </div>
                 )}
