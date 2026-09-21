@@ -33,7 +33,7 @@ export const authUser = async (req: Request, res: Response) => {
 // @route   POST /api/users
 // @access  Public
 export const registerUser = async (req: Request, res: Response) => {
-  const { firstName, lastName, email, password, role, phone, currentCity, isFresherCA, resumeUrl, linkedinUrl } = req.body;
+  const { firstName, lastName, email, password, role, phone, currentCity, isFresherCA, resumeUrl, linkedinUrl, caFinal } = req.body;
 
   try {
     const userExists = await User.findOne({ email });
@@ -58,7 +58,8 @@ export const registerUser = async (req: Request, res: Response) => {
         currentCity: currentCity || ''
       },
       caPortfolio: {
-        isFresherCA: isFresherCA === true || isFresherCA === 'true'
+        isFresherCA: isFresherCA === true || isFresherCA === 'true',
+        ...(caFinal ? { caFinal } : {})
       }
     });
 

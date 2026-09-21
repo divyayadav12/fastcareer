@@ -6,6 +6,20 @@ export interface RegisterData {
   currentCity?: string;
   isFresherCA?: boolean | string;
   resumeUrl?: string;
+  linkedinUrl?: string;
+  caFinal?: {
+    bothGroups1stAttempt?: boolean;
+    group1Attempts?: string;
+    group1Month?: string;
+    group1Year?: string;
+    group2Attempts?: string;
+    group2Month?: string;
+    group2Year?: string;
+    ranker?: string;
+    completionSessionMonth?: string;
+    completionSessionYear?: string;
+    percentage?: string;
+  };
   firstName: string;
   lastName: string;
   email: string;

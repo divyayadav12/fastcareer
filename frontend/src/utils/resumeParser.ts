@@ -1,4 +1,4 @@
-﻿import * as pdfjsLib from 'pdfjs-dist';
+import * as pdfjsLib from 'pdfjs-dist';
 import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import JSZip from 'jszip';
 import { ALL_CITIES, STATE_CITY_MAP } from './constants';
@@ -33,6 +33,18 @@ export interface ParsedResumeData {
   gmcsCompleted?: 'Yes' | 'No';
   caInterYear?: string;
   caFinalYear?: string;
+
+  // CA Final Details
+  caFinalBothGroups1stAttempt?: boolean;
+  caFinalGroup1Attempts?: string;
+  caFinalGroup1Month?: string;
+  caFinalGroup1Year?: string;
+  caFinalGroup2Attempts?: string;
+  caFinalGroup2Month?: string;
+  caFinalGroup2Year?: string;
+  caFinalRanker?: string;
+  caFinalCompletionMonth?: string;
+  caFinalCompletionYear?: string;
 
   // Education
   graduationCollege?: string;
@@ -282,6 +294,78 @@ export function parseResumeText(rawText: string): ParsedResumeData {
   }
   if (lower.includes('gmcs')) {
     result.gmcsCompleted = 'Yes';
+  }
+
+  // CA Final Examination Parsing
+  const caFinalBothGroups = /\b(?:both\s+groups?|both\s+grp)[\s\w,-]{0,30}\b(?:1st|first)\s+attempt\b/i.test(cleanText) ||
+    /\b(?:1st|first)\s+attempt[\s\w,-]{0,30}\b(?:both\s+groups?|both\s+grp)\b/i.test(cleanText) ||
+    /\bcleared\s+both\s+groups?\s+in\s+(?:1st|first)\s+attempt\b/i.test(cleanText);
+
+  if (caFinalBothGroups) {
+    result.caFinalBothGroups1stAttempt = true;
+    result.caFinalGroup1Attempts = '1';
+    result.caFinalGroup2Attempts = '1';
+  }
+
+  const normalizeExamMonth = (mStr: string) => {
+    const m = mStr.toLowerCase().slice(0, 3);
+    if (m === 'jan') return 'Jan';
+    if (m === 'may') return 'May';
+    if (m === 'sep') return 'Sep';
+    if (m === 'nov') return 'Nov';
+    return m.charAt(0).toUpperCase() + m.slice(1, 3);
+  };
+
+  // CA Final exam session match (e.g. "CA Final: May 2023" or "Chartered Accountant (Nov 2022)")
+  const finalExamMatch = cleanText.match(/\b(?:CA\s+Final|Chartered\s+Accountan(?:cy|t)\s+Final|ICAI\s+Final|Chartered\s+Accountant)[\s:-]+(?:cleared|passed|completed)?[\s:-]*\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)[\s,/-]+(20[12]\d)\b/i) ||
+    cleanText.match(/\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)[\s,/-]+(20[12]\d)[^\n]{0,60}\b(?:CA\s+Final|Chartered\s+Accountan(?:cy|t))\b/i);
+
+  if (finalExamMatch) {
+    const m = normalizeExamMonth(finalExamMatch[1]);
+    const y = finalExamMatch[2];
+    result.caFinalYear = y;
+    result.caFinalCompletionMonth = m;
+    result.caFinalCompletionYear = y;
+    result.caFinalGroup1Month = m;
+    result.caFinalGroup1Year = y;
+    if (caFinalBothGroups) {
+      result.caFinalGroup2Month = m;
+      result.caFinalGroup2Year = y;
+    }
+  } else {
+    const finalYearOnly = cleanText.match(/\b(?:CA\s+Final|ICAI\s+Final)[\s:-]+(?:cleared|passed|completed)?[\s:-]*(20[12]\d)\b/i);
+    if (finalYearOnly) {
+      result.caFinalYear = finalYearOnly[1];
+      result.caFinalCompletionYear = finalYearOnly[1];
+      result.caFinalGroup1Year = finalYearOnly[1];
+      if (caFinalBothGroups) result.caFinalGroup2Year = finalYearOnly[1];
+    }
+  }
+
+  // Check group 1 & group 2 specific attempts
+  const g1AttemptMatch = cleanText.match(/\b(?:Group\s*(?:1|I)|Grp\s*(?:1|I))[^\n]{0,40}\b(\d+)(?:st|nd|rd|th)?\s+attempt\b/i);
+  if (g1AttemptMatch) {
+    result.caFinalGroup1Attempts = g1AttemptMatch[1];
+  }
+  const g2AttemptMatch = cleanText.match(/\b(?:Group\s*(?:2|II)|Grp\s*(?:2|II))[^\n]{0,40}\b(\d+)(?:st|nd|rd|th)?\s+attempt\b/i);
+  if (g2AttemptMatch) {
+    result.caFinalGroup2Attempts = g2AttemptMatch[1];
+  }
+
+  if (!result.caFinalGroup1Attempts) {
+    const generalAttemptMatch = cleanText.match(/\b(?:CA\s+Final|Final)[^\n]{0,40}\b(\d+)(?:st|nd|rd|th)?\s+attempt\b/i);
+    if (generalAttemptMatch) {
+      result.caFinalGroup1Attempts = generalAttemptMatch[1];
+      if (!result.caFinalGroup2Attempts) result.caFinalGroup2Attempts = generalAttemptMatch[1];
+    }
+  }
+
+  // CA Final Ranker check
+  const rankMatch = cleanText.match(/\b(?:AIR|All\s+India\s+Rank|Rank)[\s:-]*(\d{1,3})\b/i);
+  if (rankMatch && !cleanText.toLowerCase().includes('graduation rank')) {
+    result.caFinalRanker = 'Yes';
+  } else {
+    result.caFinalRanker = 'No';
   }
 
   // 10. Education Details

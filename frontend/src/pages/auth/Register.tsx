@@ -27,7 +27,7 @@ import {
 import { register, reset } from '../../store/authSlice';
 import type { AppDispatch, RootState } from '../../store';
 import api from '../../services/api';
-import { ALL_CITIES } from '../../utils/constants';
+import { ALL_CITIES, ATTEMPTS, CA_EXAM_MONTHS, YEARS } from '../../utils/constants';
 import { parseResumeFile } from '../../utils/resumeParser';
 
 const POPULAR_CITIES = [
@@ -52,6 +52,45 @@ export const Register = () => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [isScanningResume, setIsScanningResume] = useState(false);
   const [scannedFields, setScannedFields] = useState<string[]>([]);
+
+  // CA Final Examination State
+  const [caFinal, setCaFinal] = useState({
+    bothGroups1stAttempt: false,
+    group1Attempts: '1',
+    group1Month: 'May',
+    group1Year: '2023',
+    group2Attempts: '1',
+    group2Month: 'May',
+    group2Year: '2023',
+    ranker: 'No',
+    completionSessionMonth: 'May',
+    completionSessionYear: '2023',
+  });
+
+  const handleCaFinalChange = (field: string, value: any) => {
+    setCaFinal(prev => {
+      const next = { ...prev, [field]: value };
+      if (field === 'bothGroups1stAttempt' && value === true) {
+        next.group1Attempts = '1';
+        next.group2Attempts = '1';
+        if (next.group1Month) next.group2Month = next.group1Month;
+        if (next.group1Year) next.group2Year = next.group1Year;
+        if (next.group1Month) next.completionSessionMonth = next.group1Month;
+        if (next.group1Year) next.completionSessionYear = next.group1Year;
+      }
+      if (next.bothGroups1stAttempt) {
+        if (field === 'group1Month') {
+          next.group2Month = value;
+          next.completionSessionMonth = value;
+        }
+        if (field === 'group1Year') {
+          next.group2Year = value;
+          next.completionSessionYear = value;
+        }
+      }
+      return next;
+    });
+  };
 
   // Searchable City Dropdown state
   const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
@@ -158,6 +197,25 @@ export const Register = () => {
         setWorkStatus(parsed.workStatus);
         extracted.push('Experience Stage');
       }
+      if (parsed.caFinalBothGroups1stAttempt !== undefined || parsed.caFinalGroup1Year || parsed.caFinalYear) {
+        setCaFinal(prev => {
+          const next = { ...prev };
+          if (parsed.caFinalBothGroups1stAttempt !== undefined) {
+            next.bothGroups1stAttempt = parsed.caFinalBothGroups1stAttempt;
+          }
+          if (parsed.caFinalGroup1Attempts) next.group1Attempts = parsed.caFinalGroup1Attempts;
+          if (parsed.caFinalGroup1Month) next.group1Month = parsed.caFinalGroup1Month;
+          if (parsed.caFinalGroup1Year) next.group1Year = parsed.caFinalGroup1Year;
+          if (parsed.caFinalGroup2Attempts) next.group2Attempts = parsed.caFinalGroup2Attempts;
+          if (parsed.caFinalGroup2Month) next.group2Month = parsed.caFinalGroup2Month;
+          if (parsed.caFinalGroup2Year) next.group2Year = parsed.caFinalGroup2Year;
+          if (parsed.caFinalRanker) next.ranker = parsed.caFinalRanker;
+          if (parsed.caFinalCompletionMonth) next.completionSessionMonth = parsed.caFinalCompletionMonth;
+          if (parsed.caFinalCompletionYear) next.completionSessionYear = parsed.caFinalCompletionYear;
+          return next;
+        });
+        extracted.push('CA Final Details');
+      }
 
       setScannedFields(extracted);
 
@@ -198,6 +256,12 @@ export const Register = () => {
         return;
       }
 
+      if (!caFinal.group1Month || !caFinal.group1Year || !caFinal.group2Month || !caFinal.group2Year || !caFinal.completionSessionMonth || !caFinal.completionSessionYear) {
+        setFormError('Please complete all mandatory CA Final examination details.');
+        toast.error('Please complete all mandatory CA Final examination details.');
+        return;
+      }
+
       if (resumeFile) {
         setIsUploading(true);
         const formData = new FormData();
@@ -229,6 +293,18 @@ export const Register = () => {
         currentCity,
         isFresherCA: workStatus === 'fresher',
         resumeUrl: uploadedResumeUrl,
+        caFinal: {
+          bothGroups1stAttempt: caFinal.bothGroups1stAttempt,
+          group1Attempts: caFinal.group1Attempts || '1',
+          group1Month: caFinal.group1Month || 'May',
+          group1Year: caFinal.group1Year || '2023',
+          group2Attempts: caFinal.group2Attempts || '1',
+          group2Month: caFinal.group2Month || 'May',
+          group2Year: caFinal.group2Year || '2023',
+          ranker: caFinal.ranker || 'No',
+          completionSessionMonth: caFinal.completionSessionMonth || 'May',
+          completionSessionYear: caFinal.completionSessionYear || '2023',
+        },
       }),
     };
 
@@ -241,134 +317,24 @@ export const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/25 to-slate-100 flex flex-col justify-between pt-28 pb-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto w-full pt-3 pb-6">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/25 to-slate-100 flex flex-col justify-between pt-24 pb-10 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-3xl mx-auto w-full pt-2 pb-6">
+        <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-100 p-6 sm:p-9">
           
-          {/* ─── LEFT COLUMN: Marketing & Value Proposition ─── */}
-          <div className="lg:col-span-5 space-y-6 pt-1">
-            
-            {/* Top Badge */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-100/80 text-blue-900 text-xs font-semibold shadow-2xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              India's #1 CA & Finance Career Network
-            </div>
-
-            {/* Main Headline */}
-            <h1 className="text-3xl sm:text-4xl font-black text-slate-900 leading-[1.2] tracking-tight">
-              Land your dream role at{' '}
-              <span className="text-blue-600">Big 4 & Global MNCs</span>
+          {/* Header */}
+          <div className="text-center mb-6">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+              {role === 'candidate' ? 'Create Candidate Account' : 'Create Employer Account'}
             </h1>
-
-            {/* Subtitle */}
-            <p className="text-slate-600 text-sm leading-relaxed">
-              Direct fast-track interviews for Qualified CAs, Semi-Qualified, and Articleship candidates. Get discovered by top partners.
+            <p className="mt-1.5 text-xs sm:text-sm text-slate-500">
+              {role === 'candidate'
+                ? 'Join Fast Careers - Direct interviews for Qualified CAs & Finance professionals'
+                : 'Hire top-tier Chartered Accountants & Finance leadership talent'}
             </p>
-
-            {/* 3 Metrics Row */}
-            <div className="bg-white/90 backdrop-blur rounded-2xl border border-slate-200/80 p-4 shadow-sm grid grid-cols-3 divide-x divide-slate-100 text-center">
-              <div>
-                <div className="text-xl sm:text-2xl font-black text-slate-900">25,000+</div>
-                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">CAs Placed</div>
-              </div>
-              <div>
-                <div className="text-xl sm:text-2xl font-black text-slate-900">98%</div>
-                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">Call Rate</div>
-              </div>
-              <div>
-                <div className="text-xl sm:text-2xl font-black text-slate-900">14.5 LPA</div>
-                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">Avg Package</div>
-              </div>
-            </div>
-
-            {/* 3 Value Proposition Features */}
-            <div className="space-y-3.5 pt-2">
-              <div className="flex items-start gap-3.5 bg-white/70 p-3 rounded-xl border border-slate-100/80 shadow-2xs">
-                <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-                  <Building2 size={20} />
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-slate-900">Exclusive Big 4 & MNC Roles</h4>
-                  <p className="text-xs text-slate-500 mt-0.5 leading-snug">
-                    Statutory Audit, Direct Tax, M&A Advisory, and FP&A suites
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3.5 bg-white/70 p-3 rounded-xl border border-slate-100/80 shadow-2xs">
-                <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-                  <Zap size={20} />
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-slate-900">3x Faster Shortlisting</h4>
-                  <p className="text-xs text-slate-500 mt-0.5 leading-snug">
-                    Verified ICAI registration badge directly prioritizes your CV
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3.5 bg-white/70 p-3 rounded-xl border border-slate-100/80 shadow-2xs">
-                <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-                  <TrendingUp size={20} />
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-slate-900">Salary Benchmark Analytics</h4>
-                  <p className="text-xs text-slate-500 mt-0.5 leading-snug">
-                    Insight on ₹18-35 LPA bands for 1st attempt & rank holders
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Testimonial Quote Card */}
-            <div className="bg-blue-50/70 border border-blue-100/80 rounded-2xl p-3.5 flex items-center gap-3.5 shadow-2xs">
-              <img
-                src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=120&auto=format&fit=crop&q=80"
-                alt="Priya Sharma"
-                className="w-11 h-11 rounded-full object-cover border-2 border-white shadow-xs shrink-0"
-              />
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5 mb-0.5">
-                  <div className="flex text-amber-400 text-xs">
-                    {'★★★★★'}
-                  </div>
-                  <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">
-                    Rank 14
-                  </span>
-                </div>
-                <p className="text-xs text-slate-800 font-medium leading-snug">
-                  "Placed at EY within 12 days via verified match."
-                </p>
-                <p className="text-[11px] text-slate-500 mt-0.5">
-                  Priya Sharma • Senior Associate, Assurance
-                </p>
-              </div>
-            </div>
-
-            {/* Hiring Partners Strip */}
-            <div className="pt-2">
-              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
-                500+ Top Hiring Partners Including:
-              </div>
-              <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs font-semibold text-slate-500">
-                <span>Deloitte.</span>
-                <span>PwC</span>
-                <span>EY</span>
-                <span>KPMG</span>
-                <span>Grant Thornton</span>
-                <span>BDO</span>
-                <span className="text-blue-600 font-bold">+500 More</span>
-              </div>
-            </div>
-
           </div>
 
-          {/* ─── RIGHT COLUMN: High-Converting Registration Card ─── */}
-          <div className="lg:col-span-7">
-            <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-100 p-6 sm:p-8">
-              
-              {/* Role Switcher Tabs */}
-              <div className="grid grid-cols-2 p-1 bg-slate-100/90 rounded-xl mb-4">
+          {/* Role Switcher Tabs */}
+          <div className="grid grid-cols-2 p-1 bg-slate-100/90 rounded-xl mb-5">
                 <button
                   type="button"
                   onClick={() => setRole('candidate')}
@@ -836,6 +802,161 @@ export const Register = () => {
                       </div>
                     </div>
 
+                    {/* CA Final Qualification Card (Image 3) */}
+                    <div className="bg-slate-50/80 border border-slate-200/90 rounded-2xl p-4 sm:p-5 space-y-4">
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200/80 pb-3 gap-2">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <GraduationCap className="w-5 h-5 text-blue-600" />
+                            <h3 className="text-sm sm:text-base font-bold text-slate-900">
+                              CA Final Qualification Details <span className="text-red-500">*</span>
+                            </h3>
+                          </div>
+                          <p className="text-[11px] text-slate-500 mt-0.5">
+                            Auto-filled from resume if mentioned, or select manually (Mandatory)
+                          </p>
+                        </div>
+                        <label className="flex items-center gap-2 cursor-pointer bg-blue-50/90 px-3.5 py-1.5 rounded-xl border border-blue-200/80 hover:bg-blue-100/70 transition-colors shrink-0">
+                          <input 
+                            type="checkbox" 
+                            checked={caFinal.bothGroups1stAttempt} 
+                            onChange={(e) => handleCaFinalChange('bothGroups1stAttempt', e.target.checked)} 
+                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer" 
+                          />
+                          <span className="text-xs text-blue-950 font-bold">Both Groups - 1st Attempt</span>
+                        </label>
+                      </div>
+
+                      {/* Group I & Group II Grids */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Group I */}
+                        <div className="bg-white p-3.5 rounded-xl border border-slate-200/80 space-y-2.5 shadow-2xs">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">Group I</span>
+                            <span className="text-[10px] text-blue-600 font-semibold bg-blue-50 px-2 py-0.5 rounded">Required</span>
+                          </div>
+                          <div className="grid grid-cols-3 gap-2">
+                            <div>
+                              <label className="block text-[10.5px] font-semibold text-slate-500 mb-1">Attempts *</label>
+                              <select 
+                                disabled={caFinal.bothGroups1stAttempt} 
+                                value={caFinal.group1Attempts} 
+                                onChange={(e) => handleCaFinalChange('group1Attempts', e.target.value)} 
+                                className="w-full px-2 py-2 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 disabled:bg-slate-100 disabled:text-slate-400 font-medium bg-white cursor-pointer"
+                              >
+                                {ATTEMPTS.map(a => <option key={a} value={a}>{a}</option>)}
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-[10.5px] font-semibold text-slate-500 mb-1">Month *</label>
+                              <select 
+                                value={caFinal.group1Month} 
+                                onChange={(e) => handleCaFinalChange('group1Month', e.target.value)} 
+                                className="w-full px-2 py-2 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 font-medium bg-white cursor-pointer"
+                              >
+                                <option value="">Month</option>
+                                {CA_EXAM_MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-[10.5px] font-semibold text-slate-500 mb-1">Year *</label>
+                              <select 
+                                value={caFinal.group1Year} 
+                                onChange={(e) => handleCaFinalChange('group1Year', e.target.value)} 
+                                className="w-full px-2 py-2 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 font-medium bg-white cursor-pointer"
+                              >
+                                <option value="">Year</option>
+                                {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Group II */}
+                        <div className="bg-white p-3.5 rounded-xl border border-slate-200/80 space-y-2.5 shadow-2xs">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">Group II</span>
+                            <span className="text-[10px] text-blue-600 font-semibold bg-blue-50 px-2 py-0.5 rounded">Required</span>
+                          </div>
+                          <div className="grid grid-cols-3 gap-2">
+                            <div>
+                              <label className="block text-[10.5px] font-semibold text-slate-500 mb-1">Attempts *</label>
+                              <select 
+                                disabled={caFinal.bothGroups1stAttempt} 
+                                value={caFinal.group2Attempts} 
+                                onChange={(e) => handleCaFinalChange('group2Attempts', e.target.value)} 
+                                className="w-full px-2 py-2 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 disabled:bg-slate-100 disabled:text-slate-400 font-medium bg-white cursor-pointer"
+                              >
+                                {ATTEMPTS.map(a => <option key={a} value={a}>{a}</option>)}
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-[10.5px] font-semibold text-slate-500 mb-1">Month *</label>
+                              <select 
+                                disabled={caFinal.bothGroups1stAttempt} 
+                                value={caFinal.group2Month} 
+                                onChange={(e) => handleCaFinalChange('group2Month', e.target.value)} 
+                                className="w-full px-2 py-2 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 disabled:bg-slate-100 disabled:text-slate-400 font-medium bg-white cursor-pointer"
+                              >
+                                <option value="">Month</option>
+                                {CA_EXAM_MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-[10.5px] font-semibold text-slate-500 mb-1">Year *</label>
+                              <select 
+                                disabled={caFinal.bothGroups1stAttempt} 
+                                value={caFinal.group2Year} 
+                                onChange={(e) => handleCaFinalChange('group2Year', e.target.value)} 
+                                className="w-full px-2 py-2 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 disabled:bg-slate-100 disabled:text-slate-400 font-medium bg-white cursor-pointer"
+                              >
+                                <option value="">Year</option>
+                                {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Ranker & Completion Session */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-white p-3.5 rounded-xl border border-slate-200/80 shadow-2xs">
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-700 mb-1">Ranker *</label>
+                          <select 
+                            value={caFinal.ranker} 
+                            onChange={(e) => handleCaFinalChange('ranker', e.target.value)} 
+                            className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 font-medium bg-white cursor-pointer"
+                          >
+                            <option value="No">No</option>
+                            <option value="Yes">Yes (Ranker)</option>
+                          </select>
+                        </div>
+                        <div className="sm:col-span-2">
+                          <label className="block text-xs font-semibold text-slate-700 mb-1">Completion Session *</label>
+                          <div className="grid grid-cols-2 gap-2">
+                            <select 
+                              disabled={caFinal.bothGroups1stAttempt} 
+                              value={caFinal.completionSessionMonth} 
+                              onChange={(e) => handleCaFinalChange('completionSessionMonth', e.target.value)} 
+                              className="w-full px-2.5 py-2 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 disabled:bg-slate-100 disabled:text-slate-400 font-medium bg-white cursor-pointer"
+                            >
+                              <option value="">Month</option>
+                              {CA_EXAM_MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
+                            </select>
+                            <select 
+                              disabled={caFinal.bothGroups1stAttempt} 
+                              value={caFinal.completionSessionYear} 
+                              onChange={(e) => handleCaFinalChange('completionSessionYear', e.target.value)} 
+                              className="w-full px-2.5 py-2 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 disabled:bg-slate-100 disabled:text-slate-400 font-medium bg-white cursor-pointer"
+                            >
+                              <option value="">Year</option>
+                              {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
                     {/* Resume Upload Dropzone */}
                     <div>
                       <div className="flex items-center justify-between mb-1.5">
@@ -944,9 +1065,6 @@ export const Register = () => {
               </form>
             </div>
           </div>
-
-        </div>
-      </div>
 
       {/* ─── Page Footer ─── */}
       <footer className="max-w-7xl mx-auto w-full pt-8 pb-4 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">

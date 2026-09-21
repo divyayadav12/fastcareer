@@ -155,8 +155,10 @@ const UserSchema: Schema = new Schema(
       caInter: {
         bothGroups1stAttempt: { type: Boolean, default: false },
         group1Attempts: { type: String },
+        group1Month: { type: String },
         group1Year: { type: String },
         group2Attempts: { type: String },
+        group2Month: { type: String },
         group2Year: { type: String },
         ranker: { type: String },
         completionSessionMonth: { type: String },
@@ -166,8 +168,10 @@ const UserSchema: Schema = new Schema(
       caFinal: {
         bothGroups1stAttempt: { type: Boolean, default: false },
         group1Attempts: { type: String },
+        group1Month: { type: String },
         group1Year: { type: String },
         group2Attempts: { type: String },
+        group2Month: { type: String },
         group2Year: { type: String },
         ranker: { type: String },
         completionSessionMonth: { type: String },
