@@ -112,6 +112,7 @@ function App() {
             
             {/* Admin Routes */}
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/applications" element={<EmployerApplications />} />
           </Routes>
         </main>
         <Footer />

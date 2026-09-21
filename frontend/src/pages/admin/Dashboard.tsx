@@ -1,6 +1,6 @@
 import toast from 'react-hot-toast';
 import React, { useEffect, useState } from 'react';
-import { Shield, Users, Building, Briefcase, FileText, Settings, Activity, Download, MapPin, GraduationCap } from 'lucide-react';
+import { Shield, Users, Building, Briefcase, FileText, Settings, Activity, Download, MapPin, GraduationCap, ClipboardList } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
@@ -136,6 +136,9 @@ export const AdminDashboard = () => {
           <nav className="space-y-1">
             <Link to="/admin/dashboard" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg bg-gray-800 text-white">
               <Activity size={18} /> Overview
+            </Link>
+            <Link to="/admin/applications" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-colors">
+              <ClipboardList size={18} /> Applications
             </Link>
             <Link to="/admin/users" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-colors">
               <Users size={18} /> Candidates

@@ -21,6 +21,10 @@ api.interceptors.request.use(
         console.error('Error parsing user from local storage:', error);
       }
     }
+    const directToken = localStorage.getItem('token');
+    if (directToken && !config.headers.Authorization) {
+      config.headers.Authorization = `Bearer ${directToken}`;
+    }
     return config;
   },
   (error) => {

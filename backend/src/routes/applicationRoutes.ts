@@ -13,7 +13,7 @@ router.get('/candidate/:id', protect, getCandidateApplications);
 router.post('/:jobId', protect, upload.single('resume'), applyForJob);
 router.get('/job/:jobId', protect, employerOrAdmin, getJobApplications);
 router.get('/employer', protect, employerOrAdmin, getEmployerApplications);
-router.get('/', protect, admin, getAllApplications);
+router.get('/', protect, employerOrAdmin, getAllApplications);
 router.put('/:id/status', protect, employerOrAdmin, updateApplicationStatus);
 
 export default router;

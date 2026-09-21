@@ -93,22 +93,47 @@ export const updateApplicationStatus = async (req: Request, res: Response) => {
   }
 };
 
-// @desc    Get all applications for employer's jobs
+// @desc    Get all applications for employer's jobs or admin overview
 // @route   GET /api/applications/employer
-// @access  Private (Employer)
+// @access  Private (Employer or Admin)
 export const getEmployerApplications = async (req: Request, res: Response) => {
   try {
-    const jobs = await Job.find({ postedBy: (req as any).user._id });
-    const jobIds = jobs.map(j => j._id);
+    const user = (req as any).user;
+    let query: any = {};
+
+    if (user?.role === 'admin') {
+      // Admin has full platform visibility
+      query = {};
+    } else {
+      // Employer: Check if employer posted specific jobs
+      const myJobs = await Job.find({ postedBy: user?._id });
+      const myJobIds = myJobs.map(j => j._id);
+
+      if (myJobIds.length > 0) {
+        // Also include platform unassigned jobs so employer doesn't miss applicants
+        const platformJobs = await Job.find({
+          $or: [
+            { postedBy: { $exists: false } },
+            { postedBy: null }
+          ]
+        });
+        const allAccessibleJobIds = [...myJobIds, ...platformJobs.map(j => j._id)];
+        query = { job: { $in: allAccessibleJobIds } };
+      } else {
+        // If employer hasn't created separate jobs yet, show all candidate applications
+        query = {};
+      }
+    }
     
-    const applications = await Application.find({ job: { $in: jobIds } })
-      .populate('candidate', 'firstName lastName email personalDetails qualifications caPortfolio experience skills')
-      .populate('job', 'title company')
+    const applications = await Application.find(query)
+      .populate('candidate', 'firstName lastName email phone resumeUrl personalDetails qualifications caPortfolio experience skills')
+      .populate('job', 'title company location type salaryRange salary')
       .sort({ createdAt: -1 });
       
     res.json(applications);
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    console.error('Error fetching employer applications:', error);
+    res.status(500).json({ message: 'Server error', error });
   }
 };
 
