@@ -10,6 +10,7 @@ import applicationRoutes from './routes/applicationRoutes';
 import uploadRoutes from './routes/uploadRoutes';
 import sharedJobRoutes from './routes/sharedJobRoutes';
 import candidateDashboardRoutes from './routes/candidateDashboardRoutes';
+import assessmentRoutes from './routes/assessmentRoutes';
 import connectDB from './config/db';
 
 dotenv.config();
@@ -95,6 +96,7 @@ app.use('/api/shared-jobs', sharedJobRoutes);
 app.use('/api/candidate', candidateDashboardRoutes);
 app.use('/api/webhooks', webhookRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/api/assessments', assessmentRoutes);
 
 // Basic Route
 app.get('/', (req: Request, res: Response) => {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, FileText, Bookmark, Settings, Bell, Briefcase, Download, Printer, MessageSquare, Share2, Building, RefreshCw, Clock } from 'lucide-react';
+import { User, FileText, Bookmark, Settings, Bell, Briefcase, Download, Printer, MessageSquare, Share2, Building, RefreshCw, Clock, Zap } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../store';
@@ -43,6 +43,9 @@ export const CandidateLayout = ({ children }: CandidateLayoutProps) => {
             <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 mt-4 px-4">Profile & Jobs</div>
             <Link to="/candidate/dashboard" className={getLinkClass('/candidate/dashboard')}>
               <User size={18} /> Update Profile
+            </Link>
+            <Link to="/candidate/fast-selection" className={getLinkClass('/candidate/fast-selection')}>
+              <Zap size={18} className="text-amber-500 fill-amber-400" /> Fast Selection Test
             </Link>
             <Link to="/candidate/job-fair" className={getLinkClass('/candidate/job-fair')}>
               <Building size={18} /> Job Fair Available

@@ -35,6 +35,8 @@ import { EmployerBilling } from './pages/employer/Billing';
 import { CompanyProfile } from './pages/employer/CompanyProfile';
 import { PlatformData } from './pages/employer/PlatformData';
 import { AdminDashboard } from './pages/admin/Dashboard';
+import { FastSelectionTest } from './pages/candidate/FastSelectionTest';
+import { CandidateTestResults } from './pages/admin/CandidateTestResults';
 import { ScrollToTop } from './components/ScrollToTop';
 
 function App() {
@@ -89,6 +91,7 @@ function App() {
             
             {/* Candidate Routes */}
             <Route path="/candidate/dashboard" element={<CandidateDashboard />} />
+            <Route path="/candidate/fast-selection" element={<FastSelectionTest />} />
             <Route path="/candidate/job-fair" element={<JobFair />} />
             <Route path="/candidate/openings" element={<CurrentOpenings />} />
             <Route path="/candidate/resume-downloads" element={<ResumeDownloads />} />
@@ -113,6 +116,7 @@ function App() {
             {/* Admin Routes */}
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/applications" element={<EmployerApplications />} />
+            <Route path="/admin/test-results" element={<CandidateTestResults />} />
           </Routes>
         </main>
         <Footer />

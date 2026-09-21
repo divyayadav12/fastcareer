@@ -1,5 +1,5 @@
 import React from 'react';
-import { Building, Users, FileText, Settings, Briefcase, BarChart2, Database, ClipboardList } from 'lucide-react';
+import { Building, Users, FileText, Settings, Briefcase, BarChart2, Database, ClipboardList, Award } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../store';
@@ -48,6 +48,9 @@ export const EmployerLayout = ({ children }: EmployerLayoutProps) => {
             </Link>
             <Link to="/employer/applications" className={getLinkClass('/employer/applications')}>
               <ClipboardList size={18} /> Applications
+            </Link>
+            <Link to="/admin/test-results" className={getLinkClass('/admin/test-results')}>
+              <Award size={18} className="text-amber-500" /> Candidate Test Results
             </Link>
             <Link to="/employer/candidates" className={getLinkClass('/employer/candidates')}>
               <Users size={18} /> Candidates
