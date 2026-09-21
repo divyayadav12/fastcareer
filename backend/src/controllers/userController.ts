@@ -197,9 +197,12 @@ export const seedLiveCandidates = async (req: Request, res: Response) => {
 // @access  Private/Admin
 export const getCandidates = async (req: Request, res: Response) => {
   try {
-    const candidates = await User.find({ role: 'candidate', resumeUrl: { $ne: "" }, $and: [{ resumeUrl: { $ne: null } }] }).select('-password');
+    const candidates = await User.find({ role: 'candidate' })
+      .sort({ createdAt: -1 })
+      .select('-password');
     res.json(candidates);
   } catch (error) {
+    console.error('Error fetching candidates:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
