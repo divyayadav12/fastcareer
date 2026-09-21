@@ -1,7 +1,7 @@
 import toast from 'react-hot-toast';
 import React, { useState, useEffect } from 'react';
 import { EmployerLayout } from '../../layouts/EmployerLayout';
-import { PlusCircle, Briefcase, X, MapPin, Building, DollarSign } from 'lucide-react';
+import { PlusCircle, Briefcase, X, MapPin, Building, DollarSign, Trash2 } from 'lucide-react';
 import { Button } from '../../components/Button';
 import api from '../../services/api';
 import { useSelector } from 'react-redux';
@@ -9,8 +9,9 @@ import { ALL_CITIES } from '../../utils/constants';
 
 export const ManageJobs = () => {
   const { user } = useSelector((state: any) => state.auth);
-  const [jobs, setJobs] = useState([]);
+  const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
@@ -40,6 +41,24 @@ export const ManageJobs = () => {
       fetchJobs();
     }
   }, [user]);
+
+  const handleDeleteJob = async (jobId: string, jobTitle: string) => {
+    if (!window.confirm(`Are you sure you want to delete "${jobTitle}"? All associated applications will also be removed.`)) {
+      return;
+    }
+
+    setDeletingId(jobId);
+    try {
+      await api.delete(`/jobs/${jobId}`);
+      toast.success(`Job "${jobTitle}" deleted successfully!`);
+      setJobs(prev => prev.filter((j: any) => j._id !== jobId));
+    } catch (error) {
+      console.error('Error deleting job:', error);
+      toast.error('Failed to delete job. Please try again.');
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,23 +113,34 @@ export const ManageJobs = () => {
       ) : (
         <div className="grid gap-4">
           {jobs.map((job: any) => (
-            <div key={job._id} className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex justify-between items-center">
+            <div key={job._id} className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col sm:flex-row justify-between sm:items-center gap-4 hover:border-gray-300 transition-all">
               <div>
                 <h3 className="text-lg font-bold text-text mb-2">{job.title}</h3>
-                <div className="flex items-center gap-4 text-sm text-gray-500">
+                <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500">
                   <span className="flex items-center gap-1"><Building size={14}/> {job.company}</span>
                   <span className="flex items-center gap-1"><MapPin size={14}/> {job.location}</span>
-                  <span className="flex items-center gap-1"><DollarSign size={14}/> {job.salaryRange}</span>
+                  <span className="flex items-center gap-1"><DollarSign size={14}/> {job.salaryRange || 'Not Disclosed'}</span>
                 </div>
               </div>
-              <div className="flex flex-col items-end gap-2">
-                <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-medium">{job.type}</span>
-                <span className="text-xs text-gray-400">Posted on {new Date(job.createdAt).toLocaleDateString()}</span>
+              <div className="flex items-center gap-3 self-end sm:self-center">
+                <div className="flex flex-col items-end gap-1">
+                  <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-medium">{job.type}</span>
+                  <span className="text-xs text-gray-400">Posted {new Date(job.createdAt).toLocaleDateString()}</span>
+                </div>
+                <button
+                  onClick={() => handleDeleteJob(job._id, job.title)}
+                  disabled={deletingId === job._id}
+                  className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer border border-transparent hover:border-red-100 disabled:opacity-50"
+                  title="Delete Job"
+                >
+                  <Trash2 size={18} className={deletingId === job._id ? 'animate-pulse text-red-500' : ''} />
+                </button>
               </div>
             </div>
           ))}
         </div>
       )}
+
 
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">

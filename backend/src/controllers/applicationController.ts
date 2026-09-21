@@ -93,11 +93,45 @@ export const updateApplicationStatus = async (req: Request, res: Response) => {
   }
 };
 
+// @desc    Delete an application
+// @route   DELETE /api/applications/:id
+// @access  Private (Employer or Admin)
+export const deleteApplication = async (req: Request, res: Response) => {
+  try {
+    const application = await Application.findByIdAndDelete(req.params.id);
+    if (!application) {
+      res.status(404).json({ message: 'Application not found' });
+      return;
+    }
+    res.json({ message: 'Application deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error });
+  }
+};
+
 // @desc    Get all applications for employer's jobs or admin overview
 // @route   GET /api/applications/employer
 // @access  Private (Employer or Admin)
 export const getEmployerApplications = async (req: Request, res: Response) => {
   try {
+    // 1. Automatically cleanup any junk test jobs (fdg, new, nj, test)
+    try {
+      const junkRegex = /^(fdg|new|nj|test|demo|asdf|xyz)$/i;
+      const junkJobs = await Job.find({
+        $or: [
+          { title: { $regex: junkRegex } },
+          { company: { $regex: junkRegex } }
+        ]
+      });
+      if (junkJobs.length > 0) {
+        const junkIds = junkJobs.map(j => j._id);
+        await Application.deleteMany({ job: { $in: junkIds } });
+        await Job.deleteMany({ _id: { $in: junkIds } });
+      }
+    } catch (cleanErr) {
+      console.error('Error auto-cleaning junk jobs:', cleanErr);
+    }
+
     const user = (req as any).user;
     let query: any = {};
 
@@ -129,8 +163,18 @@ export const getEmployerApplications = async (req: Request, res: Response) => {
       .populate('candidate', 'firstName lastName email phone resumeUrl personalDetails qualifications caPortfolio experience skills')
       .populate('job', 'title company location type salaryRange salary')
       .sort({ createdAt: -1 });
+
+    // Filter out orphan applications and delete them in the background
+    const validApplications: any[] = [];
+    for (const app of applications) {
+      if (!app.candidate || !app.job) {
+        Application.findByIdAndDelete(app._id).catch(() => {});
+      } else {
+        validApplications.push(app);
+      }
+    }
       
-    res.json(applications);
+    res.json(validApplications);
   } catch (error) {
     console.error('Error fetching employer applications:', error);
     res.status(500).json({ message: 'Server error', error });

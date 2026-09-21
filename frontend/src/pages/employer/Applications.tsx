@@ -17,7 +17,8 @@ import {
   MessageSquare, 
   X, 
   RefreshCw,
-  Eye
+  Eye,
+  Trash2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getResumeUrl } from '../../utils/urlHelper';
@@ -31,6 +32,7 @@ export const EmployerApplications = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedCoverLetter, setSelectedCoverLetter] = useState<{ applicant: string; text: string } | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const fetchApplications = async () => {
     setLoading(true);
@@ -54,7 +56,7 @@ export const EmployerApplications = () => {
     try {
       await api.put(`/applications/${appId}/status`, { status: newStatus });
       setApplications(prev => prev.map(app => app._id === appId ? { ...app, status: newStatus } : app));
-      toast.success(`Application status updated to ${newStatus}!`);
+      toast.success(`Application status updated to "${newStatus}"!`);
     } catch (err) {
       console.error('Failed to update status:', err);
       toast.error('Failed to update application status.');
@@ -63,21 +65,31 @@ export const EmployerApplications = () => {
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    const s = (status || 'applied').toLowerCase();
-    switch(s) {
-      case 'reviewing':
-        return <span className="px-2.5 py-1 bg-blue-50 text-blue-700 border border-blue-200 rounded-full text-xs font-semibold flex items-center gap-1 w-fit"><Clock size={12}/> Reviewing</span>;
-      case 'shortlisted':
-        return <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-xs font-semibold flex items-center gap-1 w-fit"><CheckCircle2 size={12}/> Shortlisted</span>;
-      case 'interviewed':
-        return <span className="px-2.5 py-1 bg-purple-50 text-purple-700 border border-purple-200 rounded-full text-xs font-semibold flex items-center gap-1 w-fit"><Briefcase size={12}/> Interviewed</span>;
-      case 'hired':
-        return <span className="px-2.5 py-1 bg-green-100 text-green-800 border border-green-300 rounded-full text-xs font-semibold flex items-center gap-1 w-fit"><CheckCircle2 size={12}/> Hired</span>;
-      case 'rejected':
-        return <span className="px-2.5 py-1 bg-rose-50 text-rose-700 border border-rose-200 rounded-full text-xs font-semibold flex items-center gap-1 w-fit"><XCircle size={12}/> Rejected</span>;
-      default:
-        return <span className="px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-full text-xs font-semibold flex items-center gap-1 w-fit"><Clock size={12}/> Applied</span>;
+  const handleDeleteApplication = async (appId: string, applicantName: string) => {
+    if (!window.confirm(`Are you sure you want to delete the application from ${applicantName}?`)) {
+      return;
+    }
+    setDeletingId(appId);
+    try {
+      await api.delete(`/applications/${appId}`);
+      toast.success('Application removed successfully!');
+      setApplications(prev => prev.filter(app => app._id !== appId));
+    } catch (err) {
+      console.error('Failed to delete application:', err);
+      toast.error('Failed to delete application.');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const handleCleanupTestJobs = async () => {
+    try {
+      const res = await api.post('/jobs/cleanup-test-jobs');
+      toast.success(res.data?.message || 'Cleaned up test jobs successfully!');
+      fetchApplications();
+    } catch (err) {
+      console.error('Cleanup error:', err);
+      toast.error('Failed to clean up test jobs.');
     }
   };
 
@@ -98,7 +110,19 @@ export const EmployerApplications = () => {
     return '';
   };
 
+  const isJunkJob = (job?: any) => {
+    if (!job) return true;
+    const title = (job.title || '').trim().toLowerCase();
+    const company = (job.company || '').trim().toLowerCase();
+    return ['fdg', 'new', 'nj', 'test', 'demo', 'asdf', 'xyz'].includes(title) ||
+           ['fdg', 'new', 'nj', 'test', 'demo', 'asdf', 'xyz'].includes(company);
+  };
+
   const filteredApplications = applications.filter(app => {
+    // 1. Omit junk test jobs and orphan applicants with no candidate details
+    if (!app.candidate) return false;
+    if (isJunkJob(app.job)) return false;
+
     const candidateName = `${app.candidate?.firstName || ''} ${app.candidate?.lastName || ''}`.toLowerCase();
     const candidateEmail = (app.candidate?.email || '').toLowerCase();
     const candidatePhone = getCandidatePhone(app.candidate);
@@ -122,39 +146,49 @@ export const EmployerApplications = () => {
       <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Job Applications</h1>
-          <p className="text-gray-500 mt-1">Review and manage applications received from candidates across all job postings.</p>
+          <p className="text-gray-500 mt-1">Review and manage candidate applications received across all job postings.</p>
         </div>
-        <button
-          onClick={fetchApplications}
-          className="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors shadow-2xs self-start md:self-auto cursor-pointer"
-        >
-          <RefreshCw size={15} className={loading ? 'animate-spin text-primary' : ''} />
-          Refresh
-        </button>
+        <div className="flex items-center gap-2 self-start md:self-auto">
+          <button
+            onClick={handleCleanupTestJobs}
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-rose-700 bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100 transition-colors shadow-2xs cursor-pointer"
+            title="Clean test jobs and orphan applications"
+          >
+            <Trash2 size={14} />
+            Clean Test Jobs
+          </button>
+          <button
+            onClick={fetchApplications}
+            className="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors shadow-2xs cursor-pointer"
+          >
+            <RefreshCw size={15} className={loading ? 'animate-spin text-primary' : ''} />
+            Refresh
+          </button>
+        </div>
       </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
         <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-xs">
           <div className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Received</div>
-          <div className="text-2xl font-black text-gray-900 mt-1">{applications.length}</div>
+          <div className="text-2xl font-black text-gray-900 mt-1">{filteredApplications.length}</div>
         </div>
         <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-xs">
-          <div className="text-xs font-bold text-amber-500 uppercase tracking-wider">Pending / Applied</div>
+          <div className="text-xs font-bold text-amber-500 uppercase tracking-wider">Applied / Pending</div>
           <div className="text-2xl font-black text-amber-600 mt-1">
-            {applications.filter(a => !a.status || a.status === 'applied').length}
+            {filteredApplications.filter(a => !a.status || a.status === 'applied').length}
           </div>
         </div>
         <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-xs">
           <div className="text-xs font-bold text-emerald-600 uppercase tracking-wider">Shortlisted</div>
           <div className="text-2xl font-black text-emerald-600 mt-1">
-            {applications.filter(a => a.status === 'shortlisted' || a.status === 'interviewed').length}
+            {filteredApplications.filter(a => a.status === 'shortlisted' || a.status === 'interviewed').length}
           </div>
         </div>
         <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-xs">
           <div className="text-xs font-bold text-green-600 uppercase tracking-wider">Hired</div>
           <div className="text-2xl font-black text-green-600 mt-1">
-            {applications.filter(a => a.status === 'hired').length}
+            {filteredApplications.filter(a => a.status === 'hired').length}
           </div>
         </div>
       </div>
@@ -179,9 +213,9 @@ export const EmployerApplications = () => {
             onChange={(e) => setStatusFilter(e.target.value)}
             className="border border-gray-200 rounded-xl px-3 py-2 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
           >
-            <option value="all">All Statuses ({applications.length})</option>
+            <option value="all">All Statuses ({filteredApplications.length})</option>
             <option value="applied">Applied / Pending</option>
-            <option value="reviewing">Reviewing</option>
+            <option value="reviewing">Under Review</option>
             <option value="shortlisted">Shortlisted</option>
             <option value="interviewed">Interviewed</option>
             <option value="hired">Hired</option>
@@ -196,28 +230,27 @@ export const EmployerApplications = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-gray-100 text-xs font-bold text-gray-500 uppercase tracking-wider bg-gray-50/80">
-                <th className="px-5 py-4">Applicant Details</th>
+                <th className="px-5 py-4">Applicant</th>
                 <th className="px-5 py-4">Applied Job Role</th>
                 <th className="px-5 py-4">Applied Date</th>
-                <th className="px-5 py-4">Current Status</th>
-                <th className="px-5 py-4 text-center">Change Status</th>
+                <th className="px-5 py-4">Status & Update</th>
                 <th className="px-5 py-4 text-right">Actions & Resume</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="py-16 text-center text-gray-500">
+                  <td colSpan={5} className="py-16 text-center text-gray-500">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3"></div>
                     Loading candidate applications...
                   </td>
                 </tr>
               ) : filteredApplications.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-16 text-center">
+                  <td colSpan={5} className="py-16 text-center">
                     <FileText className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                     <h3 className="text-base font-bold text-gray-800 mb-1">
-                      {applications.length === 0 ? 'No applications received yet' : 'No matching applications'}
+                      {applications.length === 0 ? 'No applications received yet' : 'No matching applications found'}
                     </h3>
                     <p className="text-xs text-gray-500">
                       {applications.length === 0
@@ -233,13 +266,15 @@ export const EmployerApplications = () => {
                   const phone = getCandidatePhone(candidate);
                   const qualification = getCandidateQualification(candidate);
                   const resumeUrl = app.resumeUrl || candidate.resumeUrl;
+                  const applicantFullName = `${candidate.firstName || 'Candidate'} ${candidate.lastName || ''}`.trim();
+                  const currentStatus = (app.status || 'applied').toLowerCase();
 
                   return (
                     <tr key={app._id} className="hover:bg-gray-50/80 transition-colors">
                       {/* 1. Applicant Details */}
                       <td className="px-5 py-4">
                         <div className="font-bold text-gray-900 text-sm">
-                          {candidate.firstName ? `${candidate.firstName} ${candidate.lastName || ''}` : 'Candidate'}
+                          {applicantFullName}
                         </div>
                         <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-0.5">
                           <Mail size={13} className="text-gray-400" />
@@ -285,35 +320,42 @@ export const EmployerApplications = () => {
                         }) : 'Recent'}
                       </td>
 
-                      {/* 4. Current Status Badge */}
+                      {/* 4. Status Update Dropdown */}
                       <td className="px-5 py-4">
-                        {getStatusBadge(app.status)}
+                        <div className="flex items-center gap-2">
+                          <select
+                            value={app.status || 'applied'}
+                            disabled={updatingId === app._id}
+                            onChange={(e) => handleStatusChange(app._id, e.target.value)}
+                            className={`font-semibold text-xs px-3 py-1.5 rounded-full border cursor-pointer focus:outline-none transition-all shadow-2xs ${
+                              currentStatus === 'hired' ? 'bg-green-50 text-green-700 border-green-300 hover:bg-green-100' :
+                              currentStatus === 'shortlisted' ? 'bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100' :
+                              currentStatus === 'interviewed' ? 'bg-purple-50 text-purple-700 border-purple-300 hover:bg-purple-100' :
+                              currentStatus === 'reviewing' ? 'bg-blue-50 text-blue-700 border-blue-300 hover:bg-blue-100' :
+                              currentStatus === 'rejected' ? 'bg-rose-50 text-rose-700 border-rose-300 hover:bg-rose-100' :
+                              'bg-amber-50 text-amber-700 border-amber-300 hover:bg-amber-100'
+                            }`}
+                          >
+                            <option value="applied">⏰ Applied / Pending</option>
+                            <option value="reviewing">🔍 Under Review</option>
+                            <option value="shortlisted">⭐ Shortlisted</option>
+                            <option value="interviewed">🎙️ Interviewed</option>
+                            <option value="hired">🎉 Hired</option>
+                            <option value="rejected">❌ Rejected</option>
+                          </select>
+                          {updatingId === app._id && (
+                            <RefreshCw size={12} className="animate-spin text-primary" />
+                          )}
+                        </div>
                       </td>
 
-                      {/* 5. Update Status Dropdown */}
-                      <td className="px-5 py-4 text-center">
-                        <select
-                          value={app.status || 'applied'}
-                          disabled={updatingId === app._id}
-                          onChange={(e) => handleStatusChange(app._id, e.target.value)}
-                          className="border border-gray-200 rounded-lg px-2.5 py-1 text-xs font-semibold bg-white text-gray-700 hover:border-primary focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer disabled:opacity-50"
-                        >
-                          <option value="applied">Applied</option>
-                          <option value="reviewing">Reviewing</option>
-                          <option value="shortlisted">Shortlisted</option>
-                          <option value="interviewed">Interviewed</option>
-                          <option value="hired">Hired</option>
-                          <option value="rejected">Rejected</option>
-                        </select>
-                      </td>
-
-                      {/* 6. Actions & Resume */}
+                      {/* 5. Actions & Resume */}
                       <td className="px-5 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
                           {app.coverLetter && (
                             <button
                               onClick={() => setSelectedCoverLetter({
-                                applicant: `${candidate.firstName || 'Candidate'} ${candidate.lastName || ''}`,
+                                applicant: applicantFullName,
                                 text: app.coverLetter
                               })}
                               className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors cursor-pointer"
@@ -342,6 +384,16 @@ export const EmployerApplications = () => {
                           ) : (
                             <span className="text-xs text-gray-400 italic">No Resume</span>
                           )}
+
+                          {/* Delete Application Button */}
+                          <button
+                            onClick={() => handleDeleteApplication(app._id, applicantFullName)}
+                            disabled={deletingId === app._id}
+                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer border border-transparent hover:border-red-100 disabled:opacity-50"
+                            title="Delete Application"
+                          >
+                            <Trash2 size={15} className={deletingId === app._id ? 'animate-pulse text-red-500' : ''} />
+                          </button>
                         </div>
                       </td>
                     </tr>
