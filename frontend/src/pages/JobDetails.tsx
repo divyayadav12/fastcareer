@@ -33,6 +33,7 @@ export const JobDetails = () => {
   
   const [job, setJob] = useState<any>(null);
   const [profileData, setProfileData] = useState<any>(null);
+  const [isAlreadyApplied, setIsAlreadyApplied] = useState(false);
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
@@ -49,6 +50,28 @@ export const JobDetails = () => {
     };
     if (user) fetchProfile();
   }, [user]);
+
+  useEffect(() => {
+    const checkAppliedStatus = async () => {
+      const token = localStorage.getItem('token') || (user as any)?.token;
+      if (!token || !id) return;
+      try {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/applications/my`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (Array.isArray(res.data)) {
+          const hasApplied = res.data.some((app: any) => {
+            const jobId = typeof app.job === 'object' && app.job ? app.job._id : app.job;
+            return jobId === id;
+          });
+          setIsAlreadyApplied(hasApplied);
+        }
+      } catch (err) {
+        console.error('Failed to verify application status', err);
+      }
+    };
+    if (user && id) checkAppliedStatus();
+  }, [user, id]);
 
   useEffect(() => {
     const fetchJob = async () => {
@@ -111,9 +134,11 @@ export const JobDetails = () => {
       });
       
       toast.success('Application submitted successfully!');
+      setIsAlreadyApplied(true);
       setShowApplyModal(false);
       setResumeFile(null);
-      setCoverLetter(''); setTimeout(() => { navigate('/candidate/openings'); }, 1500);
+      setCoverLetter(''); 
+      setTimeout(() => { navigate('/candidate/openings'); }, 1500);
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to submit application. Please try again.');
     } finally {
@@ -130,14 +155,24 @@ export const JobDetails = () => {
             <ArrowLeft size={16} className="mr-2" /> Back to jobs
           </Link>
           
-          <h1 className="text-3xl md:text-4xl font-bold mb-4">{job.title}</h1>
+          <div className="flex flex-wrap items-center gap-3 mb-2">
+            <h1 className="text-3xl md:text-4xl font-bold">{job.title}</h1>
+            {isAlreadyApplied && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-xs font-semibold">
+                <CheckCircle2 size={14} className="text-emerald-400" /> Already Applied
+              </span>
+            )}
+          </div>
           <p className="text-xl text-primary font-medium mb-6">{job.company}</p>
           
           <div className="flex flex-wrap gap-4 text-sm text-gray-300">
-            <span className="flex items-center gap-1.5"><MapPin size={18} /> {job.location}</span>
-            <span className="flex items-center gap-1.5"><Briefcase size={18} /> {job.type}</span>
-            <span className="flex items-center gap-1.5"><IndianRupee size={18} /> {job.salaryMin ? `₹${(job.salaryMin / 100000).toFixed(1)}L - ₹${(job.salaryMax / 100000).toFixed(1)}L` : 'Not disclosed'}</span>
-            <span className="flex items-center gap-1.5"><Clock size={18} /> Posted {new Date(job.createdAt).toLocaleDateString()}</span>
+            <span className="flex items-center gap-1.5"><MapPin size={18} /> {job.location || 'Pan India'}</span>
+            <span className="flex items-center gap-1.5"><Briefcase size={18} /> {job.type || 'Full-time'}</span>
+            <span className="flex items-center gap-1.5">
+              <IndianRupee size={18} /> 
+              {job.salaryRange || (job.salaryMin ? `₹${(job.salaryMin / 100000).toFixed(1)}L - ₹${(job.salaryMax / 100000).toFixed(1)}L` : 'Best in Industry')}
+            </span>
+            <span className="flex items-center gap-1.5"><Clock size={18} /> Posted {job.createdAt ? new Date(job.createdAt).toLocaleDateString() : 'Recently'}</span>
           </div>
         </div>
       </div>
@@ -147,8 +182,15 @@ export const JobDetails = () => {
         <div className="bg-white rounded-3xl p-8 md:p-10 shadow-sm border border-gray-100">
           
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-8 mb-8">
-            <div className="flex gap-4">
-              <Button onClick={() => setShowApplyModal(true)}>Apply Now</Button>
+            <div className="flex flex-wrap items-center gap-4">
+              {isAlreadyApplied ? (
+                <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200 rounded-xl shadow-sm">
+                  <CheckCircle2 size={18} className="text-emerald-600" />
+                  Already Applied
+                </div>
+              ) : (
+                <Button onClick={() => setShowApplyModal(true)}>Apply Now</Button>
+              )}
               <Button variant="outline" className="px-4"><Bookmark size={20} /></Button>
               <Button variant="outline" className="px-4"><Share2 size={20} /></Button>
             </div>
@@ -166,7 +208,7 @@ export const JobDetails = () => {
             <section>
               <h3 className="text-xl font-bold text-text mb-4">Key Responsibilities</h3>
               <ul className="space-y-3">
-                {job.responsibilities.map((item, idx) => (
+                {job.responsibilities?.map((item: string, idx: number) => (
                   <li key={idx} className="flex items-start">
                     <CheckCircle2 className="w-5 h-5 text-primary mt-0.5 mr-3 flex-shrink-0" />
                     <span className="text-gray-600 leading-relaxed">{item}</span>
@@ -178,7 +220,7 @@ export const JobDetails = () => {
             <section>
               <h3 className="text-xl font-bold text-text mb-4">Requirements & Qualifications</h3>
               <ul className="space-y-3">
-                {job.requirements.map((item, idx) => (
+                {job.requirements?.map((item: string, idx: number) => (
                   <li key={idx} className="flex items-start">
                     <span className="w-2 h-2 rounded-full bg-gray-400 mt-2 mr-3 flex-shrink-0"></span>
                     <span className="text-gray-600 leading-relaxed">{item}</span>
@@ -189,8 +231,17 @@ export const JobDetails = () => {
           </div>
           
           <div className="mt-12 pt-8 border-t border-gray-100 text-center">
-            <h3 className="text-lg font-bold text-text mb-4">Ready to advance your career?</h3>
-            <Button size="lg" onClick={() => setShowApplyModal(true)}>Apply for this position</Button>
+            {isAlreadyApplied ? (
+              <div className="inline-flex items-center gap-2.5 px-6 py-3.5 bg-emerald-50 text-emerald-800 font-bold border border-emerald-200 rounded-2xl text-base shadow-sm">
+                <CheckCircle2 size={22} className="text-emerald-600" />
+                You have already submitted an application for this position
+              </div>
+            ) : (
+              <>
+                <h3 className="text-lg font-bold text-text mb-4">Ready to advance your career?</h3>
+                <Button size="lg" onClick={() => setShowApplyModal(true)}>Apply for this position</Button>
+              </>
+            )}
           </div>
         </div>
       </div>

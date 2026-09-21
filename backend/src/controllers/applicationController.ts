@@ -126,12 +126,20 @@ export const getAllApplications = async (req: Request, res: Response) => {
 
 export const getCandidateApplications = async (req: Request, res: Response) => {
   try {
-    const candidateId = req.params.id || (req as any).user?._id;
+    let candidateId = typeof req.params.id === 'string' ? req.params.id : '';
+    if (!candidateId || candidateId === 'undefined' || candidateId === 'null' || !mongoose.Types.ObjectId.isValid(candidateId)) {
+      candidateId = (req as any).user?._id?.toString() || (req as any).user?._id;
+    }
+    if (!candidateId) {
+      res.status(400).json({ message: 'Candidate ID required' });
+      return;
+    }
     const applications = await Application.find({ candidate: candidateId })
       .populate('job', 'title company location salary status salaryRange type')
       .sort({ createdAt: -1 });
     res.json(applications);
   } catch (error) {
+    console.error('Error in getCandidateApplications:', error);
     res.status(500).json({ message: 'Server Error' });
   }
 };

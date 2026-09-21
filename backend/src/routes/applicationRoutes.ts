@@ -7,10 +7,12 @@ import { protect, admin, employerOrAdmin } from '../middleware/authMiddleware';
 
 const router = express.Router();
 
+router.get('/my', protect, getCandidateApplications);
+router.get('/candidate', protect, getCandidateApplications);
+router.get('/candidate/:id', protect, getCandidateApplications);
 router.post('/:jobId', protect, upload.single('resume'), applyForJob);
 router.get('/job/:jobId', protect, employerOrAdmin, getJobApplications);
 router.get('/employer', protect, employerOrAdmin, getEmployerApplications);
-router.get('/candidate/:id', protect, getCandidateApplications);
 router.get('/', protect, admin, getAllApplications);
 router.put('/:id/status', protect, employerOrAdmin, updateApplicationStatus);
 
