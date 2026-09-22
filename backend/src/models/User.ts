@@ -144,7 +144,7 @@ const UserSchema: Schema = new Schema(
       permanentState: { type: String },
       permanentCity: { type: String },
       dateOfBirth: { type: String }, // e.g., 'YYYY-MM-DD'
-      gender: { type: String, enum: ['Male', 'Female', 'Other'] },
+      gender: { type: String },
       maritalStatus: { type: String },
       preferredCampusCity: { type: String },
     },
@@ -200,11 +200,11 @@ const UserSchema: Schema = new Schema(
     // Step 3: Qualifications
     qualifications: {
       graduation: {
-        completed: { type: String, enum: ['Yes', 'No/Pursuing', 'No'] },
+        completed: { type: String },
         yearOfCompletion: { type: String },
         percentage: { type: String },
         college: { type: String },
-        type: { type: String, enum: ['REGULAR', 'CORRESPONDENCE'] },
+        type: { type: String },
       },
       class12: {
         percentage: { type: String },

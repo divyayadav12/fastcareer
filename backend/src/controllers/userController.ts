@@ -132,7 +132,13 @@ export const getUserProfile = async (req: Request, res: Response) => {
 // @access  Private
 export const updateUserProfile = async (req: Request, res: Response) => {
   try {
-    const user = await User.findById(req.user.id);
+    const userId = req.user?._id || req.user?.id;
+    if (!userId) {
+      res.status(401).json({ message: 'Authentication required. Please log in again.' });
+      return;
+    }
+
+    const user = await User.findById(userId);
 
     if (user) {
       user.firstName = req.body.firstName || user.firstName;
@@ -177,10 +183,11 @@ export const updateUserProfile = async (req: Request, res: Response) => {
         token: generateToken(updatedUser._id.toString()),
       });
     } else {
-      res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ message: 'User not found. Please log in again.' });
     }
-  } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+  } catch (error: any) {
+    console.error('Error updating user profile:', error);
+    res.status(400).json({ message: error.message || 'Server error while saving profile' });
   }
 };
 

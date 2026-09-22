@@ -6,7 +6,7 @@ import { STATE_CITY_MAP } from '../../utils/constants';
 import { viewCandidateResume } from '../../utils/clientPdfGenerator';
 import type { RootState, AppDispatch } from '../../store';
 
-import axios from 'axios';
+import api from '../../services/api';
 import { CandidateLayout } from '../../layouts/CandidateLayout';
 import { Button } from '../../components/Button';
 import { ArrowLeft, ArrowRight, Save, Check } from 'lucide-react';
@@ -241,11 +241,8 @@ export const CandidateDashboard = () => {
     setUploading(true);
     setScanningResume(true);
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/upload`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${user?.token}`
-        }
+      const response = await api.post('/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
       setResumeUrl(response.data.url);
 
@@ -342,10 +339,23 @@ export const CandidateDashboard = () => {
         experienceInfo
       };
 
-      await axios.put(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/users/profile`, payload, {
-        headers: { Authorization: `Bearer ${user?.token}` }
-      });
+      const res = await api.put('/users/profile', payload);
       
+      // Keep local user and token up-to-date
+      if (res.data) {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          try {
+            const parsed = JSON.parse(storedUser);
+            const merged = { ...parsed, ...res.data };
+            localStorage.setItem('user', JSON.stringify(merged));
+          } catch (_) {}
+        }
+        if (res.data.token) {
+          localStorage.setItem('token', res.data.token);
+        }
+      }
+
       setLastSaved(new Date());
 
       if (isFinal) {
@@ -357,8 +367,10 @@ export const CandidateDashboard = () => {
         setStep(step + 1);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
-    } catch (error) {
-      setPopup({ show: true, type: 'error', title: 'Error', message: 'Failed to save data. Please try again.' });
+    } catch (error: any) {
+      console.error('Profile save error:', error);
+      const msg = error.response?.data?.message || error.message || 'Failed to save data. Please try again.';
+      setPopup({ show: true, type: 'error', title: 'Error', message: msg });
     } finally {
       setSavingProfile(false);
     }
