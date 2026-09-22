@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { EmployerLayout } from '../../layouts/EmployerLayout';
-import { Shield, Activity, Users, Building, Briefcase, Settings, ClipboardList, Award, Search, RefreshCw, Eye, CheckCircle2, XCircle, Clock, Volume2, Video, Camera, Star, MessageSquare, X, Send } from 'lucide-react';
+import { Shield, Activity, Users, Building, Briefcase, Settings, ClipboardList, Award, Search, RefreshCw, Eye, CheckCircle2, XCircle, Clock, Volume2, Video, Camera, Star, MessageSquare, X, Send, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
-import { getResumeUrl } from '../../utils/urlHelper';
+import { getResumeUrl, getMediaUrl } from '../../utils/urlHelper';
 
 interface AssessmentSubmission {
   _id: string;
@@ -410,9 +410,20 @@ export const CandidateTestResults = () => {
                                 <video 
                                   controls 
                                   playsInline
-                                  src={ans.candidateAnswer} 
-                                  className="w-full h-64 sm:h-72 object-cover"
+                                  preload="metadata"
+                                  src={getMediaUrl(ans.candidateAnswer)} 
+                                  className="w-full h-64 sm:h-72 object-contain bg-black"
                                 />
+                              </div>
+                              <div className="flex items-center gap-3 text-xs pt-1">
+                                <a
+                                  href={getMediaUrl(ans.candidateAnswer)}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 text-purple-700 font-medium hover:text-purple-900 hover:underline"
+                                >
+                                  <ExternalLink size={13} /> Open / Play in new tab
+                                </a>
                               </div>
                             </div>
                           )}

@@ -24,3 +24,6 @@ export const getResumeUrl = (url?: string) => {
   const separator = url.startsWith('/') ? '' : '/';
   return `${baseUrl}${separator}${url}`;
 };
+
+export const getMediaUrl = getResumeUrl;
+

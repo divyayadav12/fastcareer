@@ -23,6 +23,23 @@ const MCQ_ANSWER_KEYS: Record<number, string> = {
   2: '20th of the succeeding month'
 };
 
+const getBaseUrl = (req: Request) => {
+  const host = req.get('host') || 'fastcareer.onrender.com';
+  const protocol = req.protocol === 'http' && !host.includes('localhost') ? 'https' : req.protocol;
+  return `${protocol}://${host}`;
+};
+
+const normalizeAnswers = (answers: any[], baseUrl: string) => {
+  if (!Array.isArray(answers)) return answers;
+  return answers.map(ans => {
+    const a = ans && typeof ans.toObject === 'function' ? ans.toObject() : { ...ans };
+    if (a.candidateAnswer && typeof a.candidateAnswer === 'string' && a.candidateAnswer.startsWith('/uploads/')) {
+      a.candidateAnswer = `${baseUrl}${a.candidateAnswer}`;
+    }
+    return a;
+  });
+};
+
 // @desc    Upload recorded audio file for assessment
 // @route   POST /api/assessments/upload-audio
 // @access  Private (Candidate)
@@ -33,15 +50,16 @@ export const uploadAudio = async (req: Request, res: Response) => {
       return;
     }
 
-    const localRelative = `/uploads/${req.file.filename}`;
-    let finalUrl = localRelative;
+    const baseUrl = getBaseUrl(req);
+    const localUrl = `${baseUrl}/uploads/${req.file.filename}`;
+    let finalUrl = localUrl;
 
     if (isCloudinaryConfigured) {
       try {
         const cloudResult = await cloudinary.uploader.upload(req.file.path, {
           folder: 'fastweb_audio_assessments',
-          resource_type: 'raw',
-          public_id: `audio-${Date.now()}-${Math.round(Math.random() * 1e4)}${path.extname(req.file.filename) || '.webm'}`
+          resource_type: 'auto',
+          public_id: `audio-${Date.now()}-${Math.round(Math.random() * 1e4)}`
         });
         if (cloudResult && cloudResult.secure_url) {
           finalUrl = cloudResult.secure_url;
@@ -72,21 +90,22 @@ export const uploadVideo = async (req: Request, res: Response) => {
       return;
     }
 
-    const localRelative = `/uploads/${req.file.filename}`;
-    let finalUrl = localRelative;
+    const baseUrl = getBaseUrl(req);
+    const localUrl = `${baseUrl}/uploads/${req.file.filename}`;
+    let finalUrl = localUrl;
 
     if (isCloudinaryConfigured) {
       try {
         const cloudResult = await cloudinary.uploader.upload(req.file.path, {
           folder: 'fastweb_video_assessments',
-          resource_type: 'raw',
-          public_id: `video-${Date.now()}-${Math.round(Math.random() * 1e4)}${path.extname(req.file.filename) || '.webm'}`
+          resource_type: 'auto',
+          public_id: `video-${Date.now()}-${Math.round(Math.random() * 1e4)}`
         });
         if (cloudResult && cloudResult.secure_url) {
           finalUrl = cloudResult.secure_url;
         }
       } catch (cloudErr) {
-        console.warn('Cloudinary raw video upload fallback to local disk:', cloudErr);
+        console.warn('Cloudinary video upload fallback to local disk:', cloudErr);
       }
     }
 
@@ -176,7 +195,14 @@ export const getMyAssessment = async (req: Request, res: Response) => {
   try {
     const candidateId = (req as any).user?._id;
     const assessment = await Assessment.findOne({ candidate: candidateId });
-    res.json(assessment || null);
+    if (!assessment) {
+      res.json(null);
+      return;
+    }
+    const baseUrl = getBaseUrl(req);
+    const a = assessment.toObject();
+    a.answers = normalizeAnswers(a.answers, baseUrl);
+    res.json(a);
   } catch (error) {
     console.error('Error fetching candidate assessment:', error);
     res.status(500).json({ message: 'Server error', error });
@@ -195,8 +221,14 @@ export const getAllAssessments = async (req: Request, res: Response) => {
 
     // Filter out submissions where candidate account was deleted
     const validAssessments = assessments.filter(a => a.candidate);
+    const baseUrl = getBaseUrl(req);
+    const formattedAssessments = validAssessments.map(doc => {
+      const a = doc.toObject();
+      a.answers = normalizeAnswers(a.answers, baseUrl);
+      return a;
+    });
 
-    res.json(validAssessments);
+    res.json(formattedAssessments);
   } catch (error) {
     console.error('Error fetching assessments for admin:', error);
     res.status(500).json({ message: 'Server error', error });
