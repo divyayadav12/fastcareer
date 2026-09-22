@@ -19,16 +19,39 @@ export const uploadAudio = async (req: Request, res: Response) => {
       return;
     }
 
-    // If Cloudinary is used, file.path contains the full secure Cloudinary URL
-    // If local disk is used, file.path is 'uploads/audio-xxx.webm'
     const audioUrl = req.file.path.replace(/\\/g, '/');
+    const formattedUrl = audioUrl.startsWith('http') ? audioUrl : `/${audioUrl}`;
     res.json({
       message: 'Audio uploaded successfully',
-      audioUrl: audioUrl.startsWith('http') ? audioUrl : `/${audioUrl}`
+      audioUrl: formattedUrl,
+      mediaUrl: formattedUrl
     });
   } catch (error) {
     console.error('Error uploading assessment audio:', error);
     res.status(500).json({ message: 'Server error during audio upload', error });
+  }
+};
+
+// @desc    Upload recorded video file for assessment
+// @route   POST /api/assessments/upload-video
+// @access  Private (Candidate)
+export const uploadVideo = async (req: Request, res: Response) => {
+  try {
+    if (!req.file) {
+      res.status(400).json({ message: 'No video file provided' });
+      return;
+    }
+
+    const videoUrl = req.file.path.replace(/\\/g, '/');
+    const formattedUrl = videoUrl.startsWith('http') ? videoUrl : `/${videoUrl}`;
+    res.json({
+      message: 'Video uploaded successfully',
+      videoUrl: formattedUrl,
+      mediaUrl: formattedUrl
+    });
+  } catch (error) {
+    console.error('Error uploading assessment video:', error);
+    res.status(500).json({ message: 'Server error during video upload', error });
   }
 };
 
@@ -42,7 +65,7 @@ export const submitAssessment = async (req: Request, res: Response) => {
 
     if (!answers || !Array.isArray(answers) || answers.length !== 6) {
       res.status(400).json({ 
-        message: 'All 6 assessment questions must be answered before submission (2 MCQs, 2 Written, 2 Voice Recordings).' 
+        message: 'All 6 assessment questions must be answered before submission (2 MCQs, 2 Written, 2 Video/Voice Recordings).' 
       });
       return;
     }
@@ -63,9 +86,10 @@ export const submitAssessment = async (req: Request, res: Response) => {
       return {
         questionId: ans.questionId,
         questionText: ans.questionText || `Question ${ans.questionId}`,
-        type: ans.type,
+        type: ans.type || 'video',
         candidateAnswer: ans.candidateAnswer || '',
-        audioDurationSeconds: ans.audioDurationSeconds || 0,
+        audioDurationSeconds: ans.audioDurationSeconds || ans.videoDurationSeconds || 0,
+        videoDurationSeconds: ans.videoDurationSeconds || ans.audioDurationSeconds || 0,
         isCorrect
       };
     });

@@ -7,26 +7,22 @@ import toast from 'react-hot-toast';
 import { 
   Zap, 
   CheckCircle2, 
-  Mic, 
+  Camera, 
+  Video, 
   Square, 
   RotateCcw, 
-  Play, 
-  Pause, 
   Clock, 
   FileText, 
   HelpCircle, 
   Sparkles, 
   Award, 
-  AlertCircle,
-  Volume2,
-  ChevronRight,
   ShieldCheck,
   Send
 } from 'lucide-react';
 
 interface QuestionDef {
   id: number;
-  type: 'mcq' | 'typing' | 'audio';
+  type: 'mcq' | 'typing' | 'video';
   category: string;
   title: string;
   subtitle?: string;
@@ -75,17 +71,17 @@ const QUESTIONS: QuestionDef[] = [
   },
   {
     id: 5,
-    type: 'audio',
-    category: 'Personal Introduction & Pitch (Voice Recording - Max 3 Mins)',
-    title: 'Please record your spoken voice answer introducing yourself, summarizing your CA journey/attempts, key strengths in Finance & Audit, and why you are the best fit for top tier roles.',
-    subtitle: 'Press Start Recording to begin. You have up to 3 minutes. You can stop early or it will automatically stop at 3:00.'
+    type: 'video',
+    category: 'Personal Introduction & Pitch (Live Video Recording - Max 3 Mins)',
+    title: 'Please record your video answer introducing yourself, summarizing your CA journey/attempts, key strengths in Finance & Audit, and why you are the best fit for top tier roles.',
+    subtitle: 'Camera will turn on. Speak directly to the camera. You have up to 3 minutes. You can stop early or it will automatically stop at 3:00.'
   },
   {
     id: 6,
-    type: 'audio',
-    category: 'Technical Articulation (Voice Recording - Max 3 Mins)',
+    type: 'video',
+    category: 'Technical Articulation (Live Video Recording - Max 3 Mins)',
     title: 'Explain in your own words the concept and impact of Deferred Tax Asset (DTA) vs Deferred Tax Liability (DTL) on financial statements, OR explain any recent significant amendment in the Income Tax Act / GST that you find important.',
-    subtitle: 'Press Start Recording to articulate your technical explanation clearly. Max duration: 3 minutes.'
+    subtitle: 'Present your technical explanation on camera clearly. Max duration: 3 minutes.'
   }
 ];
 
@@ -104,19 +100,31 @@ export const FastSelectionTest = () => {
     6: ''
   });
 
-  // Audio recording state for Q5 and Q6
+  // Video recording state for Q5 and Q6
   const [recordingForQ, setRecordingForQ] = useState<number | null>(null);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
-  const [audioBlobs, setAudioBlobs] = useState<Record<number, Blob | null>>({ 5: null, 6: null });
-  const [audioUrls, setAudioUrls] = useState<Record<number, string>>({ 5: '', 6: '' });
-  const [audioDurations, setAudioDurations] = useState<Record<number, number>>({ 5: 0, 6: 0 });
-  const [uploadingAudio, setUploadingAudio] = useState(false);
+  const [videoBlobs, setVideoBlobs] = useState<Record<number, Blob | null>>({ 5: null, 6: null });
+  const [videoUrls, setVideoUrls] = useState<Record<number, string>>({ 5: '', 6: '' });
+  const [videoDurations, setVideoDurations] = useState<Record<number, number>>({ 5: 0, 6: 0 });
+  const [uploadingVideo, setUploadingVideo] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   // Refs for media recording
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const activeStreamRef = useRef<MediaStream | null>(null);
   const timerIntervalRef = useRef<any>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
+  const videoChunksRef = useRef<Blob[]>([]);
+  const recordingSecondsRef = useRef(0);
+  const liveVideoRef = useRef<HTMLVideoElement | null>(null);
+
+  // Callback ref for attaching stream to live video element
+  const setLiveVideoRef = (node: HTMLVideoElement | null) => {
+    liveVideoRef.current = node;
+    if (node && activeStreamRef.current) {
+      node.srcObject = activeStreamRef.current;
+      node.play().catch(() => {});
+    }
+  };
 
   // Fetch candidate's previous submission if any
   useEffect(() => {
@@ -138,12 +146,15 @@ export const FastSelectionTest = () => {
     }
   }, [user]);
 
-  // Clean up recording timer on unmount
+  // Clean up recording timer and stream on unmount
   useEffect(() => {
     return () => {
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
       if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
         mediaRecorderRef.current.stop();
+      }
+      if (activeStreamRef.current) {
+        activeStreamRef.current.getTracks().forEach(track => track.stop());
       }
     };
   }, []);
@@ -155,24 +166,37 @@ export const FastSelectionTest = () => {
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
-  // Start audio recording for a question
+  // Start live video recording for a question
   const startRecording = async (qId: number) => {
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        toast.error('Microphone access is not supported by your browser.');
+        toast.error('Camera/Microphone access is not supported by your browser.');
         return;
       }
 
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      audioChunksRef.current = [];
+      toast.loading('Activating camera & microphone...', { id: 'cam-toast' });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          width: { ideal: 1280, max: 1920 },
+          height: { ideal: 720, max: 1080 },
+          facingMode: 'user'
+        },
+        audio: true
+      });
+      toast.dismiss('cam-toast');
 
-      let mimeType = 'audio/webm';
-      if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
-        mimeType = 'audio/webm;codecs=opus';
-      } else if (MediaRecorder.isTypeSupported('audio/ogg;codecs=opus')) {
-        mimeType = 'audio/ogg;codecs=opus';
-      } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
-        mimeType = 'audio/mp4';
+      activeStreamRef.current = stream;
+      videoChunksRef.current = [];
+
+      let mimeType = 'video/webm;codecs=vp8,opus';
+      if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')) {
+        mimeType = 'video/webm;codecs=vp9,opus';
+      } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')) {
+        mimeType = 'video/webm;codecs=vp8,opus';
+      } else if (MediaRecorder.isTypeSupported('video/webm')) {
+        mimeType = 'video/webm';
+      } else if (MediaRecorder.isTypeSupported('video/mp4')) {
+        mimeType = 'video/mp4';
       }
 
       const mediaRecorder = new MediaRecorder(stream, { mimeType });
@@ -180,20 +204,23 @@ export const FastSelectionTest = () => {
 
       mediaRecorder.ondataavailable = (event) => {
         if (event.data && event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
+          videoChunksRef.current.push(event.data);
         }
       };
 
       mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
-        const localPreviewUrl = URL.createObjectURL(audioBlob);
+        const videoBlob = new Blob(videoChunksRef.current, { type: mimeType });
+        const localPreviewUrl = URL.createObjectURL(videoBlob);
 
-        setAudioBlobs(prev => ({ ...prev, [qId]: audioBlob }));
-        setAudioUrls(prev => ({ ...prev, [qId]: localPreviewUrl }));
-        setAudioDurations(prev => ({ ...prev, [qId]: recordingSecondsRef.current }));
+        setVideoBlobs(prev => ({ ...prev, [qId]: videoBlob }));
+        setVideoUrls(prev => ({ ...prev, [qId]: localPreviewUrl }));
+        setVideoDurations(prev => ({ ...prev, [qId]: recordingSecondsRef.current }));
 
-        // Stop all audio tracks to release microphone
-        stream.getTracks().forEach(track => track.stop());
+        // Stop all tracks to turn off camera and mic lights
+        if (activeStreamRef.current) {
+          activeStreamRef.current.getTracks().forEach(track => track.stop());
+          activeStreamRef.current = null;
+        }
       };
 
       setRecordingForQ(qId);
@@ -211,22 +238,21 @@ export const FastSelectionTest = () => {
           if (next >= 180) {
             // Auto-stop at 3 minutes (180s)
             stopRecording(qId);
-            toast('3-minute time limit reached. Recording finished!', { icon: '⏰' });
+            toast('3-minute time limit reached. Video recording finished!', { icon: '⏰' });
           }
           return next;
         });
       }, 1000);
 
-      toast.success(`Recording started for Question ${qId}. Speak clearly!`);
+      toast.success(`Camera active! Recording started for Question ${qId}.`);
     } catch (err: any) {
-      console.error('Microphone permission denied or error:', err);
-      toast.error('Could not access microphone. Please allow microphone permission in your browser.');
+      console.error('Camera/Microphone permission error:', err);
+      toast.dismiss('cam-toast');
+      toast.error('Could not access camera/microphone. Please enable camera permissions in your browser.');
     }
   };
 
-  const recordingSecondsRef = useRef(0);
-
-  // Stop audio recording
+  // Stop video recording
   const stopRecording = (qId: number) => {
     if (timerIntervalRef.current) {
       clearInterval(timerIntervalRef.current);
@@ -238,30 +264,30 @@ export const FastSelectionTest = () => {
     }
 
     setRecordingForQ(null);
-    toast.success(`Recording stopped for Question ${qId}. You can listen back below.`);
+    toast.success(`Video recording stopped for Question ${qId}. You can review it below.`);
   };
 
-  // Re-record audio
+  // Re-record video
   const handleRerecord = (qId: number) => {
-    if (window.confirm('Do you want to discard this recording and record again?')) {
-      setAudioBlobs(prev => ({ ...prev, [qId]: null }));
-      setAudioUrls(prev => ({ ...prev, [qId]: '' }));
-      setAudioDurations(prev => ({ ...prev, [qId]: 0 }));
+    if (window.confirm('Do you want to discard this video recording and record again?')) {
+      setVideoBlobs(prev => ({ ...prev, [qId]: null }));
+      setVideoUrls(prev => ({ ...prev, [qId]: '' }));
+      setVideoDurations(prev => ({ ...prev, [qId]: 0 }));
       setAnswers(prev => ({ ...prev, [qId]: '' }));
       setRecordingSeconds(0);
     }
   };
 
-  // Upload an audio blob to server
-  const uploadAudioBlob = async (blob: Blob, qId: number): Promise<string> => {
+  // Upload a video blob to server
+  const uploadVideoBlob = async (blob: Blob, qId: number): Promise<string> => {
     const formData = new FormData();
-    const ext = blob.type.includes('mp4') ? 'mp4' : blob.type.includes('ogg') ? 'ogg' : 'webm';
-    formData.append('audio', blob, `question_${qId}_audio.${ext}`);
+    const ext = blob.type.includes('mp4') ? 'mp4' : 'webm';
+    formData.append('video', blob, `question_${qId}_video.${ext}`);
 
-    const res = await api.post('/assessments/upload-audio', formData, {
+    const res = await api.post('/assessments/upload-video', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
-    return res.data.audioUrl;
+    return res.data.videoUrl || res.data.mediaUrl;
   };
 
   // Submit the full assessment
@@ -288,13 +314,13 @@ export const FastSelectionTest = () => {
       return;
     }
 
-    // 3. Validation for Audio Questions
-    if (!audioBlobs[5] && !answers[5]) {
-      toast.error('Please record your voice answer for Question 5 (Max 3 Mins).');
+    // 3. Validation for Video Questions
+    if (!videoBlobs[5] && !answers[5]) {
+      toast.error('Please record your video answer for Question 5 (Max 3 Mins).');
       return;
     }
-    if (!audioBlobs[6] && !answers[6]) {
-      toast.error('Please record your voice answer for Question 6 (Max 3 Mins).');
+    if (!videoBlobs[6] && !answers[6]) {
+      toast.error('Please record your video answer for Question 6 (Max 3 Mins).');
       return;
     }
 
@@ -305,22 +331,21 @@ export const FastSelectionTest = () => {
 
     setSubmitting(true);
     try {
-      // Step A: Upload voice recordings to server / Cloudinary
-      setUploadingAudio(true);
-      let q5AudioUrl = answers[5];
-      let q6AudioUrl = answers[6];
+      // Step A: Upload video recordings to server / Cloudinary
+      setUploadingVideo(true);
+      let q5VideoUrl = answers[5];
+      let q6VideoUrl = answers[6];
 
-      if (audioBlobs[5]) {
-        toast.loading('Uploading voice answer 1 of 2...', { id: 'upload-audio-toast' });
-        q5AudioUrl = await uploadAudioBlob(audioBlobs[5], 5);
+      if (videoBlobs[5]) {
+        toast.loading('Uploading video answer 1 of 2 (may take a moment)...', { id: 'upload-video-toast' });
+        q5VideoUrl = await uploadVideoBlob(videoBlobs[5], 5);
       }
 
-      if (audioBlobs[6]) {
-        toast.loading('Uploading voice answer 2 of 2...', { id: 'upload-audio-toast' });
-        q6AudioUrl = await uploadAudioBlob(audioBlobs[6], 6);
+      if (videoBlobs[6]) {
+        toast.loading('Uploading video answer 2 of 2 (may take a moment)...', { id: 'upload-video-toast' });
+        q6VideoUrl = await uploadVideoBlob(videoBlobs[6], 6);
       }
-      toast.dismiss('upload-audio-toast');
-      setUploadingAudio(false);
+      toast.dismiss('upload-video-toast');
 
       // Step B: Submit all 6 answers
       const payloadAnswers = [
@@ -351,16 +376,16 @@ export const FastSelectionTest = () => {
         {
           questionId: 5,
           questionText: QUESTIONS[4].title,
-          type: 'audio',
-          candidateAnswer: q5AudioUrl,
-          audioDurationSeconds: audioDurations[5] || 0
+          type: 'video',
+          candidateAnswer: q5VideoUrl,
+          videoDurationSeconds: videoDurations[5] || 0
         },
         {
           questionId: 6,
           questionText: QUESTIONS[5].title,
-          type: 'audio',
-          candidateAnswer: q6AudioUrl,
-          audioDurationSeconds: audioDurations[6] || 0
+          type: 'video',
+          candidateAnswer: q6VideoUrl,
+          videoDurationSeconds: videoDurations[6] || 0
         }
       ];
 
@@ -373,7 +398,7 @@ export const FastSelectionTest = () => {
       toast.error(err.response?.data?.message || 'Failed to submit assessment. Please try again.');
     } finally {
       setSubmitting(false);
-      setUploadingAudio(false);
+      setUploadingVideo(false);
     }
   };
 
@@ -393,14 +418,14 @@ export const FastSelectionTest = () => {
                 Candidate Fast Selection Assessment
               </h1>
               <p className="text-blue-100/80 text-sm mt-2 max-w-xl leading-relaxed">
-                Demonstrate your technical expertise and communication proficiency. 
-                Complete 6 quick questions (2 MCQs, 2 Typing, 2 Voice Recordings) to get shortlisted ahead of others.
+                Demonstrate your technical expertise and spoken articulation directly on camera. 
+                Complete 6 quick questions (2 MCQs, 2 Typing, 2 Live Video Recordings) to get shortlisted ahead of others.
               </p>
             </div>
             <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/15 text-center shrink-0 min-w-[150px]">
               <div className="text-xs font-semibold text-blue-200 uppercase">Assessment Structure</div>
               <div className="text-2xl font-black text-white mt-1">6 Questions</div>
-              <div className="text-xs text-blue-200 mt-1">2 MCQ • 2 Text • 2 Audio</div>
+              <div className="text-xs text-blue-200 mt-1">2 MCQ • 2 Text • 2 Video</div>
             </div>
           </div>
         </div>
@@ -542,12 +567,12 @@ export const FastSelectionTest = () => {
               </div>
             </div>
 
-            {/* Section 3: Audio Recording Questions (Q5 & Q6) */}
+            {/* Section 3: Live Video Recording Questions (Q5 & Q6) */}
             <div className="bg-white rounded-2xl border border-gray-200 shadow-xs p-6">
               <div className="flex items-center justify-between pb-3 border-b border-gray-100 mb-4">
                 <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-wider">
-                  <Mic size={18} />
-                  Part 3: Spoken Voice Recording Questions (2 Questions)
+                  <Video size={18} />
+                  Part 3: Live Video Recording Questions (2 Questions)
                 </div>
                 <span className="text-xs font-semibold px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-full flex items-center gap-1">
                   <Clock size={12} /> Max 3 Mins Each
@@ -557,7 +582,7 @@ export const FastSelectionTest = () => {
               <div className="space-y-8">
                 {QUESTIONS.slice(4, 6).map((q) => {
                   const isRecordingThis = recordingForQ === q.id;
-                  const hasRecorded = !!audioUrls[q.id];
+                  const hasRecorded = !!videoUrls[q.id];
 
                   return (
                     <div key={q.id} className="space-y-3">
@@ -572,57 +597,80 @@ export const FastSelectionTest = () => {
                         </div>
                       </div>
 
-                      {/* Audio Controller Card */}
+                      {/* Video Controller & Viewfinder Card */}
                       <div className="pl-8">
                         <div className="bg-gray-50/80 border border-gray-200 rounded-2xl p-5 space-y-4">
                           
-                          {/* Live Recording State */}
+                          {/* Live Recording State with Camera Viewfinder */}
                           {isRecordingThis ? (
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-red-50 border border-red-200 rounded-xl animate-pulse">
-                              <div className="flex items-center gap-3">
-                                <span className="w-3.5 h-3.5 bg-red-600 rounded-full animate-ping"></span>
-                                <div>
-                                  <div className="text-sm font-bold text-red-900">Recording Spoken Voice...</div>
-                                  <div className="text-xs text-red-600">Auto-stops at 03:00 (or press stop when done)</div>
+                            <div className="space-y-3">
+                              <div className="relative w-full max-w-lg mx-auto bg-black rounded-2xl overflow-hidden shadow-xl border-2 border-red-500">
+                                <video
+                                  ref={setLiveVideoRef}
+                                  autoPlay
+                                  playsInline
+                                  muted
+                                  className="w-full h-72 sm:h-80 object-cover scale-x-[-1]"
+                                />
+                                
+                                {/* Top Overlay: Pulsing REC badge */}
+                                <div className="absolute top-3 left-3 flex items-center gap-2 px-3 py-1.5 bg-black/60 backdrop-blur-md rounded-full border border-white/20">
+                                  <span className="w-3 h-3 bg-red-600 rounded-full animate-ping"></span>
+                                  <span className="text-xs font-bold text-white tracking-wider">REC</span>
                                 </div>
-                              </div>
-                              <div className="flex items-center gap-4">
-                                <div className="text-lg font-mono font-black text-red-700">
+
+                                {/* Top Right Overlay: Live 3-Min Countdown Timer */}
+                                <div className="absolute top-3 right-3 px-3 py-1.5 bg-black/60 backdrop-blur-md rounded-full border border-white/20 font-mono text-xs font-bold text-white">
                                   {formatTime(recordingSeconds)} / 03:00
                                 </div>
-                                <button
-                                  type="button"
-                                  onClick={() => stopRecording(q.id)}
-                                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-red-600 text-white rounded-xl text-xs font-bold hover:bg-red-700 transition-colors shadow-sm cursor-pointer"
-                                >
-                                  <Square size={14} /> Stop Recording
-                                </button>
+
+                                {/* Bottom Overlay: Stop Recording Button */}
+                                <div className="absolute bottom-4 inset-x-0 flex justify-center">
+                                  <button
+                                    type="button"
+                                    onClick={() => stopRecording(q.id)}
+                                    className="inline-flex items-center gap-2 px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold shadow-lg transition-transform hover:scale-105 cursor-pointer"
+                                  >
+                                    <Square size={14} /> Stop Video Recording
+                                  </button>
+                                </div>
                               </div>
+                              <p className="text-center text-xs text-gray-500">
+                                Look into your camera and speak clearly. Auto-stops automatically at 03:00.
+                              </p>
                             </div>
                           ) : hasRecorded ? (
-                            /* Recorded State with Playback */
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
-                              <div className="flex items-center gap-3">
-                                <div className="w-9 h-9 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0">
-                                  <CheckCircle2 size={20} />
-                                </div>
-                                <div>
-                                  <div className="text-sm font-bold text-emerald-900">Voice Recording Saved!</div>
-                                  <div className="text-xs text-emerald-700">
-                                    Duration: {formatTime(audioDurations[q.id] || 0)}
+                            /* Recorded State with Video Player Playback */
+                            <div className="space-y-3">
+                              <div className="relative w-full max-w-lg mx-auto bg-black rounded-2xl overflow-hidden shadow-md border border-gray-200">
+                                <video
+                                  src={videoUrls[q.id]}
+                                  controls
+                                  playsInline
+                                  className="w-full h-72 sm:h-80 object-cover"
+                                />
+                              </div>
+
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl max-w-lg mx-auto">
+                                <div className="flex items-center gap-2.5">
+                                  <div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0">
+                                    <CheckCircle2 size={18} />
+                                  </div>
+                                  <div>
+                                    <div className="text-xs font-bold text-emerald-900">Video Recording Saved!</div>
+                                    <div className="text-[11px] text-emerald-700">
+                                      Duration: {formatTime(videoDurations[q.id] || 0)}
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                              
-                              <div className="flex items-center gap-3">
-                                <audio controls src={audioUrls[q.id]} className="h-9 max-w-[220px] sm:max-w-[260px]" />
+                                
                                 <button
                                   type="button"
                                   onClick={() => handleRerecord(q.id)}
-                                  className="inline-flex items-center gap-1 px-3 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-300 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer"
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-700 bg-white border border-gray-300 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer"
                                   title="Record Again"
                                 >
-                                  <RotateCcw size={13} /> Re-record
+                                  <RotateCcw size={13} /> Re-record Video
                                 </button>
                               </div>
                             </div>
@@ -630,21 +678,21 @@ export const FastSelectionTest = () => {
                             /* Initial Ready to Record State */
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                               <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-blue-50 text-primary flex items-center justify-center shrink-0">
-                                  <Volume2 size={20} />
+                                <div className="w-11 h-11 rounded-xl bg-blue-50 text-primary flex items-center justify-center shrink-0">
+                                  <Camera size={22} />
                                 </div>
                                 <div>
-                                  <div className="text-sm font-bold text-gray-800">Ready to Record Voice Answer</div>
-                                  <div className="text-xs text-gray-500">Ensure microphone permission is granted. Max 3 minutes.</div>
+                                  <div className="text-sm font-bold text-gray-800">Ready to Record Video Answer</div>
+                                  <div className="text-xs text-gray-500">Camera and microphone will turn on. Max 3 minutes duration.</div>
                                 </div>
                               </div>
 
                               <button
                                 type="button"
                                 onClick={() => startRecording(q.id)}
-                                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl text-xs font-bold hover:bg-primary/90 transition-all shadow-sm cursor-pointer"
+                                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary/90 text-white rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer"
                               >
-                                <Mic size={16} /> Start Recording
+                                <Camera size={16} /> Start Video Recording
                               </button>
                             </div>
                           )}
@@ -660,18 +708,18 @@ export const FastSelectionTest = () => {
             <div className="bg-white rounded-2xl border border-gray-200 shadow-xs p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-2 text-xs text-gray-500">
                 <ShieldCheck size={16} className="text-emerald-600" />
-                <span>All answers and voice recordings will be securely evaluated by the recruitment team.</span>
+                <span>All answers and video recordings will be securely evaluated by the recruitment team.</span>
               </div>
 
               <button
                 type="submit"
-                disabled={submitting || uploadingAudio || recordingForQ !== null}
+                disabled={submitting || uploadingVideo || recordingForQ !== null}
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-sm transition-all shadow-md disabled:opacity-50 cursor-pointer"
               >
                 {submitting ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                    {uploadingAudio ? 'Uploading Voice Recordings...' : 'Submitting Assessment...'}
+                    {uploadingVideo ? 'Uploading Video Recordings...' : 'Submitting Assessment...'}
                   </>
                 ) : (
                   <>

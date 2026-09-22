@@ -3,9 +3,10 @@ import mongoose, { Document, Schema } from 'mongoose';
 export interface IAssessmentAnswer {
   questionId: number;
   questionText: string;
-  type: 'mcq' | 'typing' | 'audio';
-  candidateAnswer: string; // selected option, typed text, or audio file URL
+  type: 'mcq' | 'typing' | 'audio' | 'video';
+  candidateAnswer: string; // selected option, typed text, or audio/video file URL
   audioDurationSeconds?: number;
+  videoDurationSeconds?: number;
   isCorrect?: boolean; // for auto-graded MCQs
 }
 
@@ -35,9 +36,10 @@ const AssessmentSchema = new Schema<IAssessment>(
       {
         questionId: { type: Number, required: true },
         questionText: { type: String, required: true },
-        type: { type: String, enum: ['mcq', 'typing', 'audio'], required: true },
+        type: { type: String, enum: ['mcq', 'typing', 'audio', 'video'], required: true },
         candidateAnswer: { type: String, required: true },
         audioDurationSeconds: { type: Number },
+        videoDurationSeconds: { type: Number },
         isCorrect: { type: Boolean }
       }
     ],

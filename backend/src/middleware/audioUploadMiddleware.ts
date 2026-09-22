@@ -19,21 +19,22 @@ const isCloudinaryConfigured = !!(
   process.env.CLOUDINARY_API_SECRET
 );
 
-// Cloudinary storage for audio
-const cloudinaryAudioStorage = new CloudinaryStorage({
+// Cloudinary storage for audio and video assessments
+const cloudinaryMediaStorage = new CloudinaryStorage({
   cloudinary,
   params: async (req, file) => {
+    const isVideo = file.mimetype.startsWith('video/') || file.fieldname === 'video';
     return {
-      folder: 'fastweb_audio_assessments',
-      resource_type: 'video', // Cloudinary classifies audio as 'video'
+      folder: isVideo ? 'fastweb_video_assessments' : 'fastweb_audio_assessments',
+      resource_type: 'video', // Cloudinary classifies both audio and video as 'video'
       format: 'webm',
-      public_id: `assessment-audio-${Date.now()}-${Math.round(Math.random() * 1e4)}`
+      public_id: `assessment-${isVideo ? 'video' : 'media'}-${Date.now()}-${Math.round(Math.random() * 1e4)}`
     };
   }
 });
 
 // Fallback disk storage
-const diskAudioStorage = multer.diskStorage({
+const diskMediaStorage = multer.diskStorage({
   destination(req, file, cb) {
     const dir = 'uploads/';
     if (!fs.existsSync(dir)) {
@@ -42,23 +43,29 @@ const diskAudioStorage = multer.diskStorage({
     cb(null, dir);
   },
   filename(req, file, cb) {
+    const isVideo = file.mimetype.startsWith('video/') || file.fieldname === 'video';
     const ext = path.extname(file.originalname) || '.webm';
-    cb(null, `audio-${Date.now()}-${Math.round(Math.random() * 1e4)}${ext}`);
+    cb(null, `${isVideo ? 'video' : 'media'}-${Date.now()}-${Math.round(Math.random() * 1e4)}${ext}`);
   }
 });
 
-const storage = isCloudinaryConfigured ? cloudinaryAudioStorage : diskAudioStorage;
+const storage = isCloudinaryConfigured ? cloudinaryMediaStorage : diskMediaStorage;
 
-export const audioUpload = multer({
+export const videoUpload = multer({
   storage,
-  limits: { fileSize: 25 * 1024 * 1024 }, // 25MB for up to 3 mins audio
+  limits: { fileSize: 75 * 1024 * 1024 }, // 75MB for up to 3 mins HD video
   fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('audio/') || file.mimetype === 'video/webm' || file.mimetype === 'application/octet-stream') {
+    if (
+      file.mimetype.startsWith('video/') || 
+      file.mimetype.startsWith('audio/') || 
+      file.mimetype === 'application/octet-stream'
+    ) {
       cb(null, true);
     } else {
-      cb(new Error('Only audio files are permitted for recording upload.'));
+      cb(new Error('Only video and audio files are permitted for recording upload.'));
     }
   }
 });
 
-export default audioUpload;
+export const audioUpload = videoUpload;
+export default videoUpload;

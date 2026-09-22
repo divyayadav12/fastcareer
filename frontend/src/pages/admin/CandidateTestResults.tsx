@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { EmployerLayout } from '../../layouts/EmployerLayout';
-import { Shield, Activity, Users, Building, Briefcase, Settings, ClipboardList, Award, Search, RefreshCw, Eye, CheckCircle2, XCircle, Clock, Volume2, Star, MessageSquare, X, Send } from 'lucide-react';
+import { Shield, Activity, Users, Building, Briefcase, Settings, ClipboardList, Award, Search, RefreshCw, Eye, CheckCircle2, XCircle, Clock, Volume2, Video, Camera, Star, MessageSquare, X, Send } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
@@ -14,9 +14,10 @@ interface AssessmentSubmission {
   answers: Array<{
     questionId: number;
     questionText: string;
-    type: 'mcq' | 'typing' | 'audio';
+    type: 'mcq' | 'typing' | 'audio' | 'video';
     candidateAnswer: string;
     audioDurationSeconds?: number;
+    videoDurationSeconds?: number;
     isCorrect?: boolean;
   }>;
   mcqScore: number;
@@ -224,7 +225,7 @@ export const CandidateTestResults = () => {
                   <th className="px-6 py-4">Candidate</th>
                   <th className="px-6 py-4">Qualification</th>
                   <th className="px-6 py-4">MCQ Score</th>
-                  <th className="px-6 py-4">Voice Recordings</th>
+                  <th className="px-6 py-4">Video Recordings</th>
                   <th className="px-6 py-4">Status</th>
                   <th className="px-6 py-4 text-right">Action</th>
                 </tr>
@@ -244,7 +245,7 @@ export const CandidateTestResults = () => {
                       <h3 className="text-base font-bold text-gray-800 mb-1">No Assessment Submissions Found</h3>
                       <p className="text-xs text-gray-400">
                         {assessments.length === 0 
-                          ? 'When candidates take the Fast Selection Test, their answers and voice recordings will appear here.'
+                          ? 'When candidates take the Fast Selection Test, their answers and video recordings will appear here.'
                           : 'Try changing your search term or status filter.'
                         }
                       </p>
@@ -255,7 +256,7 @@ export const CandidateTestResults = () => {
                     const candidate = item.candidate || {};
                     const phone = getCandidatePhone(candidate);
                     const qual = getCandidateQualification(candidate);
-                    const audioAnswers = item.answers?.filter(a => a.type === 'audio') || [];
+                    const mediaAnswers = item.answers?.filter(a => a.type === 'video' || a.type === 'audio') || [];
 
                     return (
                       <tr key={item._id} className="hover:bg-gray-50/80 transition-colors">
@@ -288,11 +289,11 @@ export const CandidateTestResults = () => {
                           </span>
                         </td>
 
-                        {/* Voice Recordings */}
+                        {/* Video Recordings */}
                         <td className="px-6 py-4">
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200">
-                            <Volume2 size={14} className="text-purple-600" />
-                            {audioAnswers.length} Voice Answers
+                            <Video size={14} className="text-purple-600" />
+                            {mediaAnswers.length} Video Recordings
                           </span>
                         </td>
 
@@ -390,17 +391,29 @@ export const CandidateTestResults = () => {
                               {ans.candidateAnswer}
                             </div>
                           ) : (
-                            /* Voice Audio Player */
-                            <div className="p-4 bg-purple-50/60 border border-purple-200 rounded-xl space-y-2">
-                              <div className="flex items-center gap-2 text-xs font-bold text-purple-900 uppercase">
-                                <Volume2 size={16} className="text-purple-600" />
-                                Spoken Voice Recording
+                            /* Video / Audio Recording Player */
+                            <div className="p-4 bg-purple-50/60 border border-purple-200 rounded-2xl space-y-3">
+                              <div className="flex items-center justify-between text-xs font-bold text-purple-900 uppercase">
+                                <span className="flex items-center gap-2">
+                                  <Video size={16} className="text-purple-600" />
+                                  Candidate Video Recording
+                                </span>
+                                {(ans.videoDurationSeconds || ans.audioDurationSeconds) ? (
+                                  <span className="text-purple-700 font-semibold px-2 py-0.5 bg-purple-100/80 rounded-md">
+                                    Duration: {Math.floor(((ans.videoDurationSeconds || ans.audioDurationSeconds) || 0) / 60).toString().padStart(2, '0')}:
+                                    {(((ans.videoDurationSeconds || ans.audioDurationSeconds) || 0) % 60).toString().padStart(2, '0')}
+                                  </span>
+                                ) : null}
                               </div>
-                              <audio 
-                                controls 
-                                src={ans.candidateAnswer} 
-                                className="w-full h-10 mt-1"
-                              />
+
+                              <div className="relative w-full max-w-lg rounded-xl overflow-hidden shadow-md bg-black">
+                                <video 
+                                  controls 
+                                  playsInline
+                                  src={ans.candidateAnswer} 
+                                  className="w-full h-64 sm:h-72 object-cover"
+                                />
+                              </div>
                             </div>
                           )}
                         </div>
