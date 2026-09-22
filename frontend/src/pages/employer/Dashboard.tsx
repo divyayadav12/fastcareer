@@ -48,9 +48,8 @@ export const EmployerDashboard = () => {
   useEffect(() => {
     const fetchApplications = async () => {
       try {
-        const token = localStorage.getItem('token') || (user as any)?.token;
         const res = await api.get('/applications/employer');
-        setApplications(res.data);
+        setApplications(res.data || []);
       } catch (err) {
         console.error('Error fetching applications:', err);
       } finally {
@@ -58,21 +57,19 @@ export const EmployerDashboard = () => {
       }
     };
     
-    fetchApplications();
-
     const fetchCandidates = async () => {
       try {
         const res = await api.get('/users/candidates');
-        setCandidates(res.data);
+        setCandidates(res.data || []);
       } catch (error) {
         console.error('Error fetching candidates:', error);
       } finally {
         setLoading(false);
       }
     };
-    if (user?.token) {
-      fetchCandidates();
-    }
+
+    fetchApplications();
+    fetchCandidates();
   }, [user]);
 
   const handleBulkDownload = async () => {

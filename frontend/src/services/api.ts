@@ -10,20 +10,24 @@ const api = axios.create({
 // Request interceptor to attach JWT token if it exists
 api.interceptors.request.use(
   (config) => {
+    let token: string | null = null;
     const userString = localStorage.getItem('user');
     if (userString) {
       try {
         const user = JSON.parse(userString);
-        if (user && user.token) {
-          config.headers.Authorization = `Bearer ${user.token}`;
+        if (user && user.token && user.token !== 'undefined' && user.token !== 'null') {
+          token = user.token;
         }
       } catch (error) {
         console.error('Error parsing user from local storage:', error);
       }
     }
     const directToken = localStorage.getItem('token');
-    if (directToken && !config.headers.Authorization) {
-      config.headers.Authorization = `Bearer ${directToken}`;
+    if (!token && directToken && directToken !== 'undefined' && directToken !== 'null') {
+      token = directToken;
+    }
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
