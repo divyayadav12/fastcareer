@@ -199,7 +199,10 @@ export const FastSelectionTest = () => {
         mimeType = 'video/mp4';
       }
 
-      const mediaRecorder = new MediaRecorder(stream, { mimeType });
+      const mediaRecorder = new MediaRecorder(stream, { 
+        mimeType,
+        videoBitsPerSecond: 1200000 // 1.2 Mbps optimal HD quality & fast upload
+      });
       mediaRecorderRef.current = mediaRecorder;
 
       mediaRecorder.ondataavailable = (event) => {

@@ -58,14 +58,29 @@ export const uploadAudio = async (req: Request, res: Response) => {
       try {
         const cloudResult = await cloudinary.uploader.upload(req.file.path, {
           folder: 'fastweb_audio_assessments',
-          resource_type: 'auto',
+          resource_type: 'video',
+          timeout: 120000,
           public_id: `audio-${Date.now()}-${Math.round(Math.random() * 1e4)}`
         });
         if (cloudResult && cloudResult.secure_url) {
           finalUrl = cloudResult.secure_url;
         }
-      } catch (cloudErr) {
-        console.warn('Cloudinary audio upload fallback to local disk:', cloudErr);
+      } catch (audioErr) {
+        console.warn('Cloudinary audio upload video type failed, falling back to raw:', audioErr);
+        try {
+          const ext = path.extname(req.file.filename) || '.webm';
+          const rawResult = await cloudinary.uploader.upload(req.file.path, {
+            folder: 'fastweb_audio_assessments',
+            resource_type: 'raw',
+            timeout: 120000,
+            public_id: `audio-${Date.now()}-${Math.round(Math.random() * 1e4)}${ext}`
+          });
+          if (rawResult && rawResult.secure_url) {
+            finalUrl = rawResult.secure_url;
+          }
+        } catch (rawErr) {
+          console.error('Cloudinary audio raw fallback failed:', rawErr);
+        }
       }
     }
 
@@ -96,16 +111,33 @@ export const uploadVideo = async (req: Request, res: Response) => {
 
     if (isCloudinaryConfigured) {
       try {
+        // 1. Upload as 'video' which supports up to 100MB on free accounts
         const cloudResult = await cloudinary.uploader.upload(req.file.path, {
           folder: 'fastweb_video_assessments',
-          resource_type: 'auto',
+          resource_type: 'video',
+          timeout: 120000,
           public_id: `video-${Date.now()}-${Math.round(Math.random() * 1e4)}`
         });
         if (cloudResult && cloudResult.secure_url) {
           finalUrl = cloudResult.secure_url;
         }
-      } catch (cloudErr) {
-        console.warn('Cloudinary video upload fallback to local disk:', cloudErr);
+      } catch (videoErr) {
+        console.warn('Cloudinary video upload failed, attempting raw upload fallback:', videoErr);
+        // 2. Fallback to 'raw' if transcode had any issues
+        try {
+          const ext = path.extname(req.file.filename) || '.webm';
+          const rawResult = await cloudinary.uploader.upload(req.file.path, {
+            folder: 'fastweb_video_assessments',
+            resource_type: 'raw',
+            timeout: 120000,
+            public_id: `video-${Date.now()}-${Math.round(Math.random() * 1e4)}${ext}`
+          });
+          if (rawResult && rawResult.secure_url) {
+            finalUrl = rawResult.secure_url;
+          }
+        } catch (rawErr) {
+          console.error('Cloudinary raw upload fallback also failed:', rawErr);
+        }
       }
     }
 

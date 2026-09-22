@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { EmployerLayout } from '../../layouts/EmployerLayout';
-import { Shield, Activity, Users, Building, Briefcase, Settings, ClipboardList, Award, Search, RefreshCw, Eye, CheckCircle2, XCircle, Clock, Volume2, Video, Camera, Star, MessageSquare, X, Send, ExternalLink } from 'lucide-react';
+import { Shield, Activity, Users, Building, Briefcase, Settings, ClipboardList, Award, Search, RefreshCw, Eye, CheckCircle2, XCircle, Clock, Volume2, Video, Camera, Star, MessageSquare, X, Send, ExternalLink, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
@@ -42,6 +42,7 @@ export const CandidateTestResults = () => {
   const [reviewNotes, setReviewNotes] = useState<string>('');
   const [reviewRating, setReviewRating] = useState<number>(0);
   const [savingReview, setSavingReview] = useState(false);
+  const [videoErrors, setVideoErrors] = useState<Record<number, boolean>>({});
 
   const fetchAssessments = async () => {
     setLoading(true);
@@ -62,6 +63,7 @@ export const CandidateTestResults = () => {
 
   const openReviewModal = (assessment: AssessmentSubmission) => {
     setSelectedAssessment(assessment);
+    setVideoErrors({});
     setReviewStatus(assessment.status || 'submitted');
     setReviewNotes(assessment.adminNotes || '');
     setReviewRating(assessment.adminRating || 0);
@@ -406,25 +408,40 @@ export const CandidateTestResults = () => {
                                 ) : null}
                               </div>
 
-                              <div className="relative w-full max-w-lg rounded-xl overflow-hidden shadow-md bg-black">
-                                <video 
-                                  controls 
-                                  playsInline
-                                  preload="metadata"
-                                  src={getMediaUrl(ans.candidateAnswer)} 
-                                  className="w-full h-64 sm:h-72 object-contain bg-black"
-                                />
-                              </div>
-                              <div className="flex items-center gap-3 text-xs pt-1">
-                                <a
-                                  href={getMediaUrl(ans.candidateAnswer)}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1.5 text-purple-700 font-medium hover:text-purple-900 hover:underline"
-                                >
-                                  <ExternalLink size={13} /> Open / Play in new tab
-                                </a>
-                              </div>
+                              {videoErrors[ans.questionId] ? (
+                                <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 flex items-start gap-3">
+                                  <AlertTriangle size={18} className="text-amber-600 shrink-0 mt-0.5" />
+                                  <div className="space-y-1">
+                                    <p className="font-bold text-amber-950">Recording file expired on server</p>
+                                    <p className="text-amber-800 leading-relaxed">
+                                      This recording was submitted on previous temporary storage before persistent cloud video was connected. Please ask the candidate to retake the test.
+                                    </p>
+                                  </div>
+                                </div>
+                              ) : (
+                                <>
+                                  <div className="relative w-full max-w-lg rounded-xl overflow-hidden shadow-md bg-black">
+                                    <video 
+                                      controls 
+                                      playsInline
+                                      preload="metadata"
+                                      src={getMediaUrl(ans.candidateAnswer)} 
+                                      onError={() => setVideoErrors(prev => ({ ...prev, [ans.questionId]: true }))}
+                                      className="w-full h-64 sm:h-72 object-contain bg-black"
+                                    />
+                                  </div>
+                                  <div className="flex items-center gap-3 text-xs pt-1">
+                                    <a
+                                      href={getMediaUrl(ans.candidateAnswer)}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="inline-flex items-center gap-1.5 text-purple-700 font-medium hover:text-purple-900 hover:underline"
+                                    >
+                                      <ExternalLink size={13} /> Open / Play in new tab
+                                    </a>
+                                  </div>
+                                </>
+                              )}
                             </div>
                           )}
                         </div>
