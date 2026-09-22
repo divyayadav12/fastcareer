@@ -2,6 +2,20 @@ import { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import Assessment from '../models/Assessment';
 import User from '../models/User';
+import path from 'path';
+import { v2 as cloudinary } from 'cloudinary';
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+const isCloudinaryConfigured = !!(
+  process.env.CLOUDINARY_CLOUD_NAME &&
+  process.env.CLOUDINARY_API_KEY &&
+  process.env.CLOUDINARY_API_SECRET
+);
 
 // Answer key for auto-grading MCQs
 const MCQ_ANSWER_KEYS: Record<number, string> = {
@@ -19,12 +33,28 @@ export const uploadAudio = async (req: Request, res: Response) => {
       return;
     }
 
-    const audioUrl = req.file.path.replace(/\\/g, '/');
-    const formattedUrl = audioUrl.startsWith('http') ? audioUrl : `/${audioUrl}`;
+    const localRelative = `/uploads/${req.file.filename}`;
+    let finalUrl = localRelative;
+
+    if (isCloudinaryConfigured) {
+      try {
+        const cloudResult = await cloudinary.uploader.upload(req.file.path, {
+          folder: 'fastweb_audio_assessments',
+          resource_type: 'raw',
+          public_id: `audio-${Date.now()}-${Math.round(Math.random() * 1e4)}${path.extname(req.file.filename) || '.webm'}`
+        });
+        if (cloudResult && cloudResult.secure_url) {
+          finalUrl = cloudResult.secure_url;
+        }
+      } catch (cloudErr) {
+        console.warn('Cloudinary audio upload fallback to local disk:', cloudErr);
+      }
+    }
+
     res.json({
       message: 'Audio uploaded successfully',
-      audioUrl: formattedUrl,
-      mediaUrl: formattedUrl
+      audioUrl: finalUrl,
+      mediaUrl: finalUrl
     });
   } catch (error) {
     console.error('Error uploading assessment audio:', error);
@@ -42,12 +72,28 @@ export const uploadVideo = async (req: Request, res: Response) => {
       return;
     }
 
-    const videoUrl = req.file.path.replace(/\\/g, '/');
-    const formattedUrl = videoUrl.startsWith('http') ? videoUrl : `/${videoUrl}`;
+    const localRelative = `/uploads/${req.file.filename}`;
+    let finalUrl = localRelative;
+
+    if (isCloudinaryConfigured) {
+      try {
+        const cloudResult = await cloudinary.uploader.upload(req.file.path, {
+          folder: 'fastweb_video_assessments',
+          resource_type: 'raw',
+          public_id: `video-${Date.now()}-${Math.round(Math.random() * 1e4)}${path.extname(req.file.filename) || '.webm'}`
+        });
+        if (cloudResult && cloudResult.secure_url) {
+          finalUrl = cloudResult.secure_url;
+        }
+      } catch (cloudErr) {
+        console.warn('Cloudinary raw video upload fallback to local disk:', cloudErr);
+      }
+    }
+
     res.json({
       message: 'Video uploaded successfully',
-      videoUrl: formattedUrl,
-      mediaUrl: formattedUrl
+      videoUrl: finalUrl,
+      mediaUrl: finalUrl
     });
   } catch (error) {
     console.error('Error uploading assessment video:', error);

@@ -395,6 +395,7 @@ export const FastSelectionTest = () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err: any) {
       console.error('Error submitting assessment:', err);
+      toast.dismiss('upload-video-toast');
       toast.error(err.response?.data?.message || 'Failed to submit assessment. Please try again.');
     } finally {
       setSubmitting(false);
