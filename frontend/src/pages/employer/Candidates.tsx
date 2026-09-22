@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { EmployerLayout } from '../../layouts/EmployerLayout';
 import { Search, Filter, MapPin, GraduationCap, Download, DownloadCloud, FileSpreadsheet, CheckSquare, Square, UploadCloud, X, CheckCircle2, AlertCircle } from 'lucide-react';
 import axios from 'axios';
+import api from '../../services/api';
 import { useSelector } from 'react-redux';
 import { getResumeUrl } from '../../utils/urlHelper';
 import { fetchCandidateResumeBlob, viewCandidateResume, downloadCandidateResume } from '../../utils/clientPdfGenerator';
@@ -127,9 +128,7 @@ export const EmployerCandidates = () => {
   useEffect(() => {
     const fetchCandidates = async () => {
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/users/candidates`, {
-          headers: { Authorization: `Bearer ${user?.token}` }
-        });
+        const res = await api.get('/users/candidates');
         setCandidates(res.data);
       } catch (error) {
         console.error('Error fetching candidates:', error);
@@ -137,9 +136,7 @@ export const EmployerCandidates = () => {
         setLoading(false);
       }
     };
-    if (user?.token) {
-      fetchCandidates();
-    }
+    fetchCandidates();
   }, [user]);
 
   const candidateHasResume = (c: Candidate): boolean => {
@@ -331,13 +328,12 @@ export const EmployerCandidates = () => {
       const formData = new FormData();
       formData.append('file', file);
 
-      const res = await axios.post(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/users/candidates/match-excel`,
+      const res = await api.post(
+        '/users/candidates/match-excel',
         formData,
         {
           headers: {
             'Content-Type': 'multipart/form-data',
-            Authorization: `Bearer ${user?.token}`,
           },
         }
       );
@@ -411,11 +407,10 @@ export const EmployerCandidates = () => {
     try {
       // 1. First attempt backend API call
       setZipStep('Downloading...');
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/users/candidates/download-resumes-zip`,
+      const response = await api.post(
+        '/users/candidates/download-resumes-zip',
         { candidateIds: Array.from(selectedIds) },
         {
-          headers: { Authorization: `Bearer ${user?.token}` },
           responseType: 'blob',
         }
       );
