@@ -1,7 +1,6 @@
 import toast from 'react-hot-toast';
 import React, { useState, useEffect } from 'react';
-import { Eye } from 'lucide-react';
-import { Building, Users, FileText, Settings, Bell, PlusCircle, Briefcase, BarChart2, MapPin, GraduationCap, Download } from 'lucide-react';
+import { Building, Users, FileText, Settings, Bell, PlusCircle, Briefcase, BarChart2, MapPin, GraduationCap, Download, RefreshCw, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '../../components/Button';
 import { useSelector } from 'react-redux';
@@ -59,7 +58,12 @@ export const EmployerDashboard = () => {
     
     const fetchCandidates = async () => {
       try {
-        const res = await api.get('/users/candidates');
+        let res = await api.get('/users/candidates');
+        if (!res.data || res.data.length === 0) {
+          // If empty, auto-seed baseline realistic candidate records
+          await api.get('/users/seed-test-candidates');
+          res = await api.get('/users/candidates');
+        }
         setCandidates(res.data || []);
       } catch (error) {
         console.error('Error fetching candidates:', error);
@@ -196,7 +200,31 @@ export const EmployerDashboard = () => {
               {loading ? (
                 <tr><td colSpan={4} className="py-8 text-center text-gray-500">Loading candidates...</td></tr>
               ) : candidates.length === 0 ? (
-                <tr><td colSpan={4} className="py-8 text-center text-gray-500">No candidates available.</td></tr>
+                <tr>
+                  <td colSpan={4} className="py-12 text-center">
+                    <div className="flex flex-col items-center justify-center space-y-3">
+                      <Users className="text-gray-300 w-12 h-12" />
+                      <p className="text-sm font-semibold text-gray-700">No candidates currently listed</p>
+                      <p className="text-xs text-gray-500 max-w-sm">Click below to load realistic candidate profiles into your dashboard.</p>
+                      <button
+                        onClick={async () => {
+                          const t = toast.loading('Loading candidate profiles...');
+                          try {
+                            await api.get('/users/seed-test-candidates');
+                            const res = await api.get('/users/candidates');
+                            setCandidates(res.data || []);
+                            toast.success('Candidate profiles loaded successfully!', { id: t });
+                          } catch (err) {
+                            toast.error('Failed to load candidates.', { id: t });
+                          }
+                        }}
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white text-xs font-bold rounded-xl shadow-xs hover:bg-primary/90 transition-all cursor-pointer"
+                      >
+                        <RefreshCw size={14} /> Load Candidates
+                      </button>
+                    </div>
+                  </td>
+                </tr>
               ) : (
                 candidates.slice((currentPage - 1) * candidatesPerPage, currentPage * candidatesPerPage).map(candidate => (
                   <tr key={candidate._id} className="hover:bg-gray-50 transition-colors">
