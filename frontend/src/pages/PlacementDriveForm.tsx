@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { STATES, STATE_CITY_MAP, ALL_CITIES, YEARS, MONTHS, BOARDS, ATTEMPTS, CA_EXAM_MONTHS, NATURE_OF_WORK, COLLEGES, PREFERRED_CAMPUS_CITIES, ARTICLESHIP_TYPES } from '../utils/constants';
 import { DatePicker } from '../components/DatePicker';
 
@@ -105,7 +106,7 @@ export const PlacementDriveForm = () => {
     if (!file) return;
 
     if (file.size > 5 * 1024 * 1024) {
-      alert("File size must be less than 5MB");
+      toast.error("File size must be less than 5MB");
       return;
     }
 
@@ -119,9 +120,10 @@ export const PlacementDriveForm = () => {
       });
       
       setFormData(prev => ({ ...prev, resumeUrl: res.data.url }));
+      toast.success("Resume uploaded successfully!");
     } catch (error) {
       console.error("Resume upload failed:", error);
-      alert("Failed to upload resume. Please try again.");
+      toast.error("Failed to upload resume. Please try again.");
     } finally {
       setUploading(false);
     }

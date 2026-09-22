@@ -225,15 +225,15 @@ export const EmployerCandidates = () => {
   });
 
   const addDemoCandidates = async () => {
+    const toastId = toast.loading("Adding 50 realistic candidates... This may take a few seconds.");
     try {
       const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
-      alert("Adding 50 realistic candidates... This may take a few seconds.");
-      const res = await axios.get(`${baseUrl}/api/users/seed-50-candidates`);
-      alert("Demo candidates added successfully! Refreshing...");
-      window.location.reload();
+      await axios.get(`${baseUrl}/api/users/seed-50-candidates`);
+      toast.success("Demo candidates added successfully! Refreshing...", { id: toastId });
+      setTimeout(() => window.location.reload(), 1200);
     } catch (err) {
       console.error(err);
-      alert("Failed to add demo candidates. Please check console.");
+      toast.error("Failed to add demo candidates. Please check console.", { id: toastId });
     }
   };
 

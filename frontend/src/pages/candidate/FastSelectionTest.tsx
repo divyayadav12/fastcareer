@@ -17,7 +17,10 @@ import {
   Sparkles, 
   Award, 
   ShieldCheck,
-  Send
+  Send,
+  AlertTriangle,
+  AlertCircle,
+  X
 } from 'lucide-react';
 
 interface QuestionDef {
@@ -108,6 +111,25 @@ export const FastSelectionTest = () => {
   const [videoDurations, setVideoDurations] = useState<Record<number, number>>({ 5: 0, 6: 0 });
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  // Custom in-app confirmation modal state (replacing native window.confirm)
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    confirmText?: string;
+    cancelText?: string;
+    variant?: 'danger' | 'primary';
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    confirmText: 'Confirm',
+    cancelText: 'Cancel',
+    variant: 'primary',
+    onConfirm: () => {}
+  });
 
   // Refs for media recording
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -272,13 +294,38 @@ export const FastSelectionTest = () => {
 
   // Re-record video
   const handleRerecord = (qId: number) => {
-    if (window.confirm('Do you want to discard this video recording and record again?')) {
-      setVideoBlobs(prev => ({ ...prev, [qId]: null }));
-      setVideoUrls(prev => ({ ...prev, [qId]: '' }));
-      setVideoDurations(prev => ({ ...prev, [qId]: 0 }));
-      setAnswers(prev => ({ ...prev, [qId]: '' }));
-      setRecordingSeconds(0);
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: `Discard Recording for Question ${qId}?`,
+      message: 'Are you sure you want to discard this video recording and record a new one from camera? Your previous recording for this question will be cleared.',
+      confirmText: 'Discard & Re-record',
+      cancelText: 'Keep Video',
+      variant: 'danger',
+      onConfirm: () => {
+        setVideoBlobs(prev => ({ ...prev, [qId]: null }));
+        setVideoUrls(prev => ({ ...prev, [qId]: '' }));
+        setVideoDurations(prev => ({ ...prev, [qId]: 0 }));
+        setAnswers(prev => ({ ...prev, [qId]: '' }));
+        setRecordingSeconds(0);
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+      }
+    });
+  };
+
+  // Re-take assessment confirmation
+  const handleRequestRetake = () => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Re-take Fast Selection Assessment?',
+      message: 'Your previous answers and recordings will be reset so you can record fresh video answers and submit again. Are you sure you want to proceed?',
+      confirmText: 'Yes, Re-take Test',
+      cancelText: 'Keep Previous',
+      variant: 'primary',
+      onConfirm: () => {
+        setExistingAssessment(null);
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+      }
+    });
   };
 
   // Upload a video blob to server
@@ -466,11 +513,7 @@ export const FastSelectionTest = () => {
               </div>
             </div>
             <button
-              onClick={() => {
-                if (window.confirm('Do you want to re-take the assessment? Your previous answers will be updated.')) {
-                  setExistingAssessment(null);
-                }
-              }}
+              onClick={handleRequestRetake}
               className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold transition-colors shrink-0 shadow-xs cursor-pointer"
             >
               Re-take Assessment
@@ -733,6 +776,64 @@ export const FastSelectionTest = () => {
               </button>
             </div>
           </form>
+        )}
+
+        {/* Custom Confirmation Popup Modal */}
+        {confirmModal.isOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+            <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-md w-full shadow-2xl border border-gray-100 transform transition-all space-y-5 animate-in zoom-in-95 duration-150 relative">
+              <button
+                type="button"
+                onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                className="absolute top-5 right-5 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+              >
+                <X size={20} />
+              </button>
+
+              <div className="flex items-start gap-4">
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${
+                  confirmModal.variant === 'danger'
+                    ? 'bg-rose-100 text-rose-600'
+                    : 'bg-primary/10 text-primary'
+                }`}>
+                  {confirmModal.variant === 'danger' ? (
+                    <RotateCcw size={24} />
+                  ) : (
+                    <Sparkles size={24} />
+                  )}
+                </div>
+                <div className="space-y-1.5 pr-4">
+                  <h3 className="text-lg font-bold text-gray-900 leading-tight">
+                    {confirmModal.title}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+                    {confirmModal.message}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                  className="px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-100 text-xs font-semibold transition-colors cursor-pointer"
+                >
+                  {confirmModal.cancelText || 'Cancel'}
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmModal.onConfirm}
+                  className={`px-5 py-2.5 rounded-xl text-white text-xs font-bold transition-all shadow-sm cursor-pointer ${
+                    confirmModal.variant === 'danger'
+                      ? 'bg-rose-600 hover:bg-rose-700'
+                      : 'bg-primary hover:bg-primary/90'
+                  }`}
+                >
+                  {confirmModal.confirmText || 'Confirm'}
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </CandidateLayout>
