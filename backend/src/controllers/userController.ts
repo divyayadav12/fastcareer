@@ -596,14 +596,12 @@ export const seed50Candidates = async (req: Request, res: Response) => {
 
 export const cleanupDbAndFixResumes = async (req: Request, res: Response) => {
   try {
-    // Delete ALL dummy candidates (both old 'TestCandidate' and new realistic ones)
-    // We identify them because their emails end in '@example.com'
+    // Only delete dummy test candidates specifically with @example.com
     const deleteResult = await User.deleteMany({ email: { $regex: /@example\.com$/i } });
-    const incompleteDeleteResult = await User.deleteMany({ role: 'candidate', $or: [{ resumeUrl: null }, { resumeUrl: "" }] });
 
     res.json({
       success: true,
-      message: "Saara test data (dummy candidates) successfully delete ho gaya hai!",
+      message: "Test candidates cleanup complete. Real candidates are safe.",
       deletedCount: deleteResult.deletedCount
     });
   } catch (error: any) {

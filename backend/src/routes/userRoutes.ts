@@ -38,8 +38,7 @@ router.post('/candidates/match-excel', protect, employerOrAdmin, excelUpload.sin
 router.post('/candidates/download-resumes-zip', protect, employerOrAdmin, downloadCandidateResumesZip);
 router.get('/seed-test-candidates', seedLiveCandidates);
 router.get('/seed-50-candidates', seed50Candidates);
-router.get('/cleanup-db', cleanupDbAndFixResumes);
+router.post('/cleanup-db', protect, admin, cleanupDbAndFixResumes);
 router.post('/seed-test-candidates', seedLiveCandidates);
 
 export default router;
-
