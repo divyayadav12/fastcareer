@@ -39,19 +39,31 @@ api.interceptors.request.use(
   }
 );
 
-/**
- * Converts any local URI (content://, file://, blob:) into a Base64 string
- * using standard React Native XMLHttpRequest + FileReader.
- * Works 100% reliably on Android 10-15 and iOS without MalformedURLException or scoped storage issues.
- */
-const convertUriToBase64 = (uri: string): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    try {
-      if (!uri) return resolve('');
-      if (uri.startsWith('data:')) {
-        return resolve(uri);
-      }
+import * as FileSystem from 'expo-file-system';
 
+/**
+ * Converts any local URI (content://, file://, blob:) into a Base64 string.
+ * Uses expo-file-system as primary (fast & native) with XHR + FileReader fallback.
+ */
+export const convertUriToBase64 = async (uri: string): Promise<string> => {
+  if (!uri) return '';
+  if (uri.startsWith('data:')) return uri;
+
+  // 1. Try Expo FileSystem readAsStringAsync
+  try {
+    const base64 = await FileSystem.readAsStringAsync(uri, {
+      encoding: FileSystem.EncodingType ? FileSystem.EncodingType.Base64 : ('base64' as any),
+    });
+    if (base64) {
+      return base64.startsWith('data:') ? base64 : `data:application/pdf;base64,${base64}`;
+    }
+  } catch (fsErr) {
+    console.warn('FileSystem.readAsStringAsync fallback to XHR:', fsErr);
+  }
+
+  // 2. Fallback to XHR + FileReader
+  return new Promise((resolve) => {
+    try {
       const xhr = new XMLHttpRequest();
       xhr.onload = function () {
         try {
@@ -59,25 +71,22 @@ const convertUriToBase64 = (uri: string): Promise<string> => {
           reader.onloadend = function () {
             resolve((reader.result as string) || '');
           };
-          reader.onerror = function (e) {
-            console.warn('FileReader conversion error:', e);
-            reject(e);
+          reader.onerror = function () {
+            resolve('');
           };
           reader.readAsDataURL(xhr.response);
-        } catch (rErr) {
-          reject(rErr);
+        } catch {
+          resolve('');
         }
       };
-      xhr.onerror = function (e) {
-        console.warn('XHR read error on uri:', e);
-        reject(e);
+      xhr.onerror = function () {
+        resolve('');
       };
       xhr.open('GET', uri);
       xhr.responseType = 'blob';
       xhr.send();
-    } catch (e) {
-      console.warn('convertUriToBase64 exception:', e);
-      reject(e);
+    } catch {
+      resolve('');
     }
   });
 };

@@ -49,35 +49,40 @@ const PDF_KEYWORDS_IGNORE = new Set([
   'px', 'cm', 'inch', 'mm', 'rgb', 'cmyk', 'gray', 'scale', 'view', 'rect', 'box'
 ]);
 
-/**
- * Fetch raw ArrayBuffer from local content:// or file:// URI via XMLHttpRequest
- */
-export const readUriAsArrayBuffer = (uri: string): Promise<ArrayBuffer | null> => {
-  return new Promise((resolve) => {
-    try {
-      if (!uri) return resolve(null);
-      const xhr = new XMLHttpRequest();
-      xhr.onload = function () {
-        resolve(xhr.response as ArrayBuffer);
-      };
-      xhr.onerror = function () {
-        resolve(null);
-      };
-      xhr.open('GET', uri);
-      xhr.responseType = 'arraybuffer';
-      xhr.send();
-    } catch {
-      resolve(null);
-    }
-  });
-};
+import { convertUriToBase64 } from '../services/api';
+
+const B64_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+
+export function base64ToUint8Array(base64: string): Uint8Array {
+  const clean = base64.replace(/^data:[^;]+;base64,/, '').replace(/[\r\n\s]/g, '');
+  let bufferLength = clean.length * 0.75;
+  if (clean.endsWith('==')) bufferLength -= 2;
+  else if (clean.endsWith('=')) bufferLength -= 1;
+
+  const bytes = new Uint8Array(Math.max(0, Math.floor(bufferLength)));
+  let p = 0;
+  for (let i = 0; i < clean.length; i += 4) {
+    const enc1 = B64_CHARS.indexOf(clean[i]);
+    const enc2 = B64_CHARS.indexOf(clean[i + 1]);
+    const enc3 = B64_CHARS.indexOf(clean[i + 2]);
+    const enc4 = B64_CHARS.indexOf(clean[i + 3]);
+
+    const chr1 = (enc1 << 2) | (enc2 >> 4);
+    const chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
+    const chr3 = ((enc3 & 3) << 6) | enc4;
+
+    bytes[p++] = chr1;
+    if (enc3 !== 64 && enc3 !== -1 && p < bufferLength) bytes[p++] = chr2;
+    if (enc4 !== 64 && enc4 !== -1 && p < bufferLength) bytes[p++] = chr3;
+  }
+  return bytes;
+}
 
 /**
- * Extracts clean text from PDF ArrayBuffer
+ * Extracts clean text from PDF Uint8Array bytes
  */
-export function extractTextFromPdfArrayBuffer(arrayBuffer: ArrayBuffer): string {
+export function extractTextFromPdfBytes(uint8: Uint8Array): string {
   let fullText = '';
-  const uint8 = new Uint8Array(arrayBuffer);
   
   let rawStr = '';
   const chunkSize = 8192;
@@ -144,12 +149,15 @@ export async function parseResumeDocument(file: { uri: string; name?: string }):
 
   if (file.uri) {
     try {
-      const arrayBuffer = await readUriAsArrayBuffer(file.uri);
-      if (arrayBuffer) {
-        extractedPdfText = extractTextFromPdfArrayBuffer(arrayBuffer);
+      const base64 = await convertUriToBase64(file.uri);
+      if (base64) {
+        const uint8 = base64ToUint8Array(base64);
+        if (uint8 && uint8.length > 0) {
+          extractedPdfText = extractTextFromPdfBytes(uint8);
+        }
       }
     } catch (e) {
-      console.warn('PDF ArrayBuffer decompression warning:', e);
+      console.warn('PDF Base64 byte decompression warning:', e);
     }
   }
 
