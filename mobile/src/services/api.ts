@@ -39,26 +39,44 @@ api.interceptors.request.use(
   }
 );
 
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
+import { File as ExpoFile } from 'expo-file-system';
 
 /**
  * Converts any local URI (content://, file://, blob:) into a Base64 string.
- * Uses expo-file-system as primary (fast & native) with XHR + FileReader fallback.
+ * Supports both Expo 57 new File API and expo-file-system/legacy API.
  */
 export const convertUriToBase64 = async (uri: string): Promise<string> => {
   if (!uri) return '';
   if (uri.startsWith('data:')) return uri;
 
-  // 1. Try Expo FileSystem readAsStringAsync
+  // 1. Try Expo 57 new File API
   try {
-    const base64 = await FileSystem.readAsStringAsync(uri, {
-      encoding: FileSystem.EncodingType ? FileSystem.EncodingType.Base64 : ('base64' as any),
-    });
-    if (base64) {
-      return base64.startsWith('data:') ? base64 : `data:application/pdf;base64,${base64}`;
+    if (typeof ExpoFile !== 'undefined') {
+      const fileObj = new ExpoFile(uri);
+      if (fileObj && typeof fileObj.base64 === 'function') {
+        const b64 = await fileObj.base64();
+        if (b64) {
+          return b64.startsWith('data:') ? b64 : `data:application/pdf;base64,${b64}`;
+        }
+      }
+    }
+  } catch (newApiErr) {
+    // try legacy below
+  }
+
+  // 2. Try expo-file-system/legacy readAsStringAsync
+  try {
+    if (FileSystem && typeof FileSystem.readAsStringAsync === 'function') {
+      const base64 = await FileSystem.readAsStringAsync(uri, {
+        encoding: FileSystem.EncodingType ? FileSystem.EncodingType.Base64 : ('base64' as any),
+      });
+      if (base64) {
+        return base64.startsWith('data:') ? base64 : `data:application/pdf;base64,${base64}`;
+      }
     }
   } catch (fsErr) {
-    console.warn('FileSystem.readAsStringAsync fallback to XHR:', fsErr);
+    console.warn('Legacy FileSystem read error:', fsErr);
   }
 
   // 2. Fallback to XHR + FileReader
