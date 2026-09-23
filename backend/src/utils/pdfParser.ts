@@ -1,4 +1,5 @@
 import zlib from 'zlib';
+const pdfParse = require('pdf-parse');
 
 export const POPULAR_CITIES = [
   'Mumbai', 'Delhi', 'Bangalore', 'Bengaluru', 'Hyderabad', 'Ahmedabad', 'Chennai',
@@ -42,7 +43,7 @@ const PDF_KEYWORDS_IGNORE = new Set([
 ]);
 
 /**
- * Decompresses and extracts readable text from raw PDF buffer
+ * Decompresses and extracts readable text from raw PDF buffer using zlib
  */
 export function extractTextFromPdfBuffer(buffer: Buffer): string {
   let fullText = '';
@@ -94,10 +95,27 @@ export function extractTextFromPdfBuffer(buffer: Buffer): string {
   return `${fullText} \n ${extractedLiterals}`;
 }
 
-export function parseResumeBuffer(buffer: Buffer, originalFilename: string = ''): ParsedResumeResult {
+export async function parseResumeBuffer(buffer: Buffer, originalFilename: string = ''): Promise<ParsedResumeResult> {
   const result: ParsedResumeResult = {};
-  const extractedPdfText = extractTextFromPdfBuffer(buffer);
-  
+  let extractedPdfText = '';
+
+  // 1. Primary: Mozilla PDF.js engine
+  try {
+    const fn = typeof pdfParse === 'function' ? pdfParse : (pdfParse && pdfParse.default ? pdfParse.default : pdfParse);
+    const pdfData = await fn(buffer);
+    if (pdfData && pdfData.text) {
+      extractedPdfText += pdfData.text + ' ';
+    }
+  } catch (pdfErr) {
+    console.warn('pdfParse fallback:', pdfErr);
+  }
+
+  // 2. Secondary: Raw Stream Decompressor
+  try {
+    const streamText = extractTextFromPdfBuffer(buffer);
+    extractedPdfText += streamText + ' ';
+  } catch (streamErr) {}
+
   const searchPool = `${originalFilename} \n ${extractedPdfText}`;
   const lowerText = searchPool.toLowerCase();
 
@@ -130,12 +148,20 @@ export function parseResumeBuffer(buffer: Buffer, originalFilename: string = '')
   }
 
   // 2. Extract Phone Number (10 digits starting with 6,7,8,9)
-  const phoneRegex = /(?:(?:\+?91|0091|0)[\s.-]?)?([6-9]\d{4}[\s.-]?\d{5})\b/g;
-  let phoneMatch = phoneRegex.exec(searchPool);
-  if (phoneMatch && phoneMatch[1]) {
-    const cleanDigits = phoneMatch[1].replace(/\D/g, '');
-    if (cleanDigits.length === 10) {
-      result.phone = cleanDigits;
+  const phoneCandidates = searchPool.match(/(?:(?:\+?91|0091|0)[\s.-]?)?(?:\(?\+?91\)?)?[\s.-]?([6-9][0-9\s.-]{8,14}[0-9])/g) || [];
+  for (const cand of phoneCandidates) {
+    const digits = cand.replace(/\D/g, '');
+    let clean = '';
+    if (digits.length === 12 && digits.startsWith('91') && /^[6-9]/.test(digits.slice(2))) {
+      clean = digits.slice(2);
+    } else if (digits.length === 11 && digits.startsWith('0') && /^[6-9]/.test(digits.slice(1))) {
+      clean = digits.slice(1);
+    } else if (digits.length === 10 && /^[6-9]/.test(digits)) {
+      clean = digits;
+    }
+    if (clean) {
+      result.phone = clean;
+      break;
     }
   }
 

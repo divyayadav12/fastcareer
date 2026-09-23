@@ -15,6 +15,7 @@
   "description": "",
   "dependencies": {
     "@types/archiver": "^8.0.0",
+    "@types/pdf-parse": "^1.1.5",
     "archiver": "^8.0.0",
     "bcrypt": "^6.0.0",
     "cloudinary": "^2.10.1",
@@ -29,6 +30,7 @@
     "multer": "^2.2.0",
     "multer-storage-cloudinary": "^4.0.0",
     "nodemailer": "^9.0.5",
+    "pdf-parse": "^2.4.5",
     "pdfkit": "^0.20.1",
     "xlsx": "^0.18.5"
   },

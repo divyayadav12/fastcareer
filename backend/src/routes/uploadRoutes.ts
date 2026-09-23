@@ -73,7 +73,7 @@ async function handleBase64Upload(base64: string, filename?: string, mimeType?: 
 
   let parsedData: any = {};
   try {
-    parsedData = parseResumeBuffer(buffer, originalName);
+    parsedData = await parseResumeBuffer(buffer, originalName);
   } catch (parseErr) {
     console.warn('Base64 resume parsing warning:', parseErr);
   }
@@ -146,7 +146,7 @@ router.post('/', async (req: any, res: any, next: any) => {
     let parsedData: any = {};
 
     try {
-      parsedData = parseResumeBuffer(req.file.buffer, originalName);
+      parsedData = await parseResumeBuffer(req.file.buffer, originalName);
     } catch (parseErr) {
       console.warn('Server resume parsing non-critical warning:', parseErr);
     }
@@ -194,7 +194,7 @@ router.post('/parse', upload.single('resume'), async (req: any, res: any) => {
   let parsedData: any = {};
 
   try {
-    parsedData = parseResumeBuffer(req.file.buffer, originalName);
+    parsedData = await parseResumeBuffer(req.file.buffer, originalName);
   } catch (err) {
     console.warn('Server parse error:', err);
   }

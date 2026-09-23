@@ -185,12 +185,20 @@ export async function parseResumeDocument(file: { uri: string; name?: string }):
   }
 
   // 2. Extract Mobile Number (10 digits starting with 6,7,8,9)
-  const phoneRegex = /(?:(?:\+?91|0091|0)[\s.-]?)?([6-9]\d{4}[\s.-]?\d{5})\b/g;
-  let phoneMatch = phoneRegex.exec(combinedSearchText);
-  if (phoneMatch && phoneMatch[1]) {
-    const cleanDigits = phoneMatch[1].replace(/\D/g, '');
-    if (cleanDigits.length === 10) {
-      result.phone = cleanDigits;
+  const phoneCandidates = combinedSearchText.match(/(?:(?:\+?91|0091|0)[\s.-]?)?(?:\(?\+?91\)?)?[\s.-]?([6-9][0-9\s.-]{8,14}[0-9])/g) || [];
+  for (const cand of phoneCandidates) {
+    const digits = cand.replace(/\D/g, '');
+    let clean = '';
+    if (digits.length === 12 && digits.startsWith('91') && /^[6-9]/.test(digits.slice(2))) {
+      clean = digits.slice(2);
+    } else if (digits.length === 11 && digits.startsWith('0') && /^[6-9]/.test(digits.slice(1))) {
+      clean = digits.slice(1);
+    } else if (digits.length === 10 && /^[6-9]/.test(digits)) {
+      clean = digits;
+    }
+    if (clean) {
+      result.phone = clean;
+      break;
     }
   }
 
