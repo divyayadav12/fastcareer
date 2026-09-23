@@ -21,6 +21,7 @@ export interface ParsedResumeResult {
   caFinalYear?: string;
   caFinalAttempts?: string;
   articleshipFirm?: string;
+  linkedinUrl?: string;
 }
 
 /**
@@ -60,10 +61,21 @@ export function extractTextFromPdfBuffer(buffer: Buffer): string {
 
   // 3. Extract text inside parentheses (PDF string literals: (text) Tj)
   let extractedLiterals = '';
-  const tjRegex = /\(([^)]+)\)\s*Tj/g;
+  const tjRegex = /\(([^)]+)\)\s*(?:Tj|'|")/g;
   let tjMatch;
   while ((tjMatch = tjRegex.exec(fullText)) !== null) {
     extractedLiterals += ' ' + tjMatch[1];
+  }
+
+  // 4. Extract from TJ arrays: [ (text1) 20 (text2) ] TJ
+  const arrayTjRegex = /\[([^\]]+)\]\s*TJ/gi;
+  let arrMatch;
+  while ((arrMatch = arrayTjRegex.exec(fullText)) !== null) {
+    const inner = arrMatch[1];
+    const subMatch = inner.match(/\(([^)]+)\)/g);
+    if (subMatch) {
+      extractedLiterals += ' ' + subMatch.map(s => s.slice(1, -1)).join('');
+    }
   }
 
   return `${fullText} \n ${extractedLiterals}`;
@@ -73,7 +85,6 @@ export function parseResumeBuffer(buffer: Buffer, originalFilename: string = '')
   const result: ParsedResumeResult = {};
   const extractedPdfText = extractTextFromPdfBuffer(buffer);
   
-  // Clean special characters and newlines for regex searching
   const searchPool = `${originalFilename} \n ${extractedPdfText}`;
 
   // 1. Extract Email Address
@@ -83,7 +94,7 @@ export function parseResumeBuffer(buffer: Buffer, originalFilename: string = '')
     const validEmails = emailMatches.filter(em => 
       !em.toLowerCase().includes('example.com') && 
       !em.toLowerCase().includes('schema.org') && 
-      !em.toLowerCase().includes('w3.org') &&
+      !em.toLowerCase().includes('w3.org') && 
       !em.toLowerCase().includes('adobe.com') &&
       !em.toLowerCase().includes('sentry.io') &&
       !em.toLowerCase().includes('github.com')
@@ -93,22 +104,33 @@ export function parseResumeBuffer(buffer: Buffer, originalFilename: string = '')
     }
   }
 
-  // 2. Extract Phone Number (10 digits starting with 6,7,8,9 with optional +91 or 0 prefix)
-  const phoneRegex = /(?:(?:\+91|0091|0)[\s-]?)?([6-9]\d{9})\b/g;
-  let phoneMatch;
-  while ((phoneMatch = phoneRegex.exec(searchPool)) !== null) {
-    if (phoneMatch[1] && phoneMatch[1].length === 10) {
-      result.phone = phoneMatch[1];
-      break;
+  // Space-separated email fallback: name @ domain . com
+  if (!result.email) {
+    const spacedEmailRegex = /([a-zA-Z0-9._%+-]+)\s*@\s*([a-zA-Z0-9.-]+)\s*\.\s*([a-zA-Z]{2,6})/i;
+    const spMatch = searchPool.match(spacedEmailRegex);
+    if (spMatch && spMatch[1] && spMatch[2] && spMatch[3]) {
+      const reconstructed = `${spMatch[1]}@${spMatch[2]}.${spMatch[3]}`.toLowerCase();
+      if (!reconstructed.includes('example.com') && !reconstructed.includes('schema.org')) {
+        result.email = reconstructed;
+      }
     }
   }
 
-  // Fallback for phone with space: 98765 43210
+  // 2. Extract Phone Number (10 digits starting with 6,7,8,9)
+  const phoneRegex = /(?:(?:\+91|0091|0)[\s.-]?)?([6-9]\d{4}[\s.-]?\d{5})\b/g;
+  let phoneMatch = phoneRegex.exec(searchPool);
+  if (phoneMatch && phoneMatch[1]) {
+    const cleanDigits = phoneMatch[1].replace(/\D/g, '');
+    if (cleanDigits.length === 10) {
+      result.phone = cleanDigits;
+    }
+  }
+
   if (!result.phone) {
-    const spacedPhoneRegex = /(?:(?:\+91|0091|0)[\s-]?)?([6-9]\d{4})[\s-](\d{5})\b/g;
-    const spMatch = spacedPhoneRegex.exec(searchPool);
-    if (spMatch && spMatch[1] && spMatch[2]) {
-      result.phone = `${spMatch[1]}${spMatch[2]}`;
+    const raw10Regex = /\b([6-9]\d{9})\b/g;
+    const rawMatch = raw10Regex.exec(searchPool);
+    if (rawMatch && rawMatch[1]) {
+      result.phone = rawMatch[1];
     }
   }
 
@@ -122,7 +144,14 @@ export function parseResumeBuffer(buffer: Buffer, originalFilename: string = '')
     }
   }
 
-  // 4. Extract Work Status
+  // 4. LinkedIn Profile URL
+  const linkedinRegex = /(?:https?:\/\/)?(?:www\.)?linkedin\.com\/in\/([a-zA-Z0-9_-]+)/i;
+  const linkedinMatch = searchPool.match(linkedinRegex);
+  if (linkedinMatch) {
+    result.linkedinUrl = `https://www.linkedin.com/in/${linkedinMatch[1]}`;
+  }
+
+  // 5. Extract Work Status
   if (
     lowerSearch.includes('fresher') || 
     lowerSearch.includes('articleship completed') || 
@@ -142,7 +171,7 @@ export function parseResumeBuffer(buffer: Buffer, originalFilename: string = '')
     result.workStatus = 'experienced';
   }
 
-  // 5. Extract Candidate Name (Top lines from clean text, then fallback to filename/email)
+  // 6. Extract Candidate Name
   const commonIgnoreWords = new Set([
     'resume', 'cv', 'curriculum', 'vitae', 'biodata', 'profile', 'contact',
     'email', 'phone', 'mobile', 'address', 'page', 'career', 'objective',
@@ -151,7 +180,6 @@ export function parseResumeBuffer(buffer: Buffer, originalFilename: string = '')
     'fresher', 'experienced', 'draft', 'copy', 'wfh', 'ca', 'ca_final', 'ca_inter'
   ]);
 
-  // Try extracting from candidate name in text
   const textLines = extractedPdfText
     .split(/[\r\n]+/)
     .map(l => l.replace(/[^a-zA-Z\s]/g, ' ').trim())
@@ -171,7 +199,6 @@ export function parseResumeBuffer(buffer: Buffer, originalFilename: string = '')
     result.firstName = parts[0];
     result.lastName = parts.slice(1).join(' ');
   } else {
-    // Extract from filename
     const cleanFileName = originalFilename
       .replace(/\.[^/.]+$/, '')
       .replace(/[_-]/g, ' ')

@@ -1,3 +1,4 @@
+import pako from 'pako';
 import { ALL_CITIES } from './constants';
 
 const POPULAR_CITIES = [
@@ -32,50 +33,114 @@ export interface ExtractedResumeData {
 }
 
 /**
- * Reads any Android ContentResolver URI or file:// URI cleanly using XMLHttpRequest + FileReader
+ * Fetch raw ArrayBuffer from local content:// or file:// URI via XMLHttpRequest
  */
-export const readUriAsText = (uri: string): Promise<string> => {
+export const readUriAsArrayBuffer = (uri: string): Promise<ArrayBuffer | null> => {
   return new Promise((resolve) => {
     try {
-      if (!uri) return resolve('');
+      if (!uri) return resolve(null);
       const xhr = new XMLHttpRequest();
       xhr.onload = function () {
-        try {
-          const reader = new FileReader();
-          reader.onloadend = function () {
-            resolve((reader.result as string) || '');
-          };
-          reader.onerror = function () {
-            resolve('');
-          };
-          reader.readAsText(xhr.response);
-        } catch {
-          resolve('');
-        }
+        resolve(xhr.response as ArrayBuffer);
       };
       xhr.onerror = function () {
-        resolve('');
+        resolve(null);
       };
       xhr.open('GET', uri);
-      xhr.responseType = 'blob';
+      xhr.responseType = 'arraybuffer';
       xhr.send();
     } catch {
-      resolve('');
+      resolve(null);
     }
   });
 };
 
+/**
+ * Extracts raw and Flate-decompressed text streams from PDF ArrayBuffer
+ */
+export function extractTextFromPdfArrayBuffer(arrayBuffer: ArrayBuffer): string {
+  let fullText = '';
+  const uint8 = new Uint8Array(arrayBuffer);
+  
+  // 1. Raw ASCII string conversion
+  let rawStr = '';
+  const chunkSize = 8192;
+  for (let i = 0; i < uint8.length; i += chunkSize) {
+    const chunk = uint8.subarray(i, i + chunkSize);
+    rawStr += String.fromCharCode.apply(null, chunk as any);
+  }
+  fullText += rawStr + ' ';
+
+  // 2. Scan and decompress all PDF Flate streams
+  let pos = 0;
+  while ((pos = rawStr.indexOf('stream', pos)) !== -1) {
+    let start = pos + 6;
+    if (rawStr[start] === '\r') start++;
+    if (rawStr[start] === '\n') start++;
+    
+    const end = rawStr.indexOf('endstream', start);
+    if (end === -1) break;
+
+    const streamBytes = uint8.subarray(start, end);
+    try {
+      const decompressed = pako.inflate(streamBytes);
+      let decompStr = '';
+      for (let j = 0; j < decompressed.length; j += chunkSize) {
+        decompStr += String.fromCharCode.apply(null, decompressed.subarray(j, j + chunkSize) as any);
+      }
+      fullText += decompStr + ' ';
+    } catch (e) {
+      try {
+        const decompressedRaw = pako.inflateRaw(streamBytes);
+        let decompStr = '';
+        for (let j = 0; j < decompressedRaw.length; j += chunkSize) {
+          decompStr += String.fromCharCode.apply(null, decompressedRaw.subarray(j, j + chunkSize) as any);
+        }
+        fullText += decompStr + ' ';
+      } catch (e2) {}
+    }
+
+    pos = end + 9;
+  }
+
+  // 3. Extract text inside parentheses (PDF string literals: (text) Tj)
+  let extractedLiterals = '';
+  const tjRegex = /\(([^)]+)\)\s*(?:Tj|'|")/g;
+  let tjMatch;
+  while ((tjMatch = tjRegex.exec(fullText)) !== null) {
+    extractedLiterals += ' ' + tjMatch[1];
+  }
+
+  // 4. Extract from TJ arrays: [ (text1) 20 (text2) ] TJ
+  const arrayTjRegex = /\[([^\]]+)\]\s*TJ/gi;
+  let arrMatch;
+  while ((arrMatch = arrayTjRegex.exec(fullText)) !== null) {
+    const inner = arrMatch[1];
+    const subMatch = inner.match(/\(([^)]+)\)/g);
+    if (subMatch) {
+      extractedLiterals += ' ' + subMatch.map(s => s.slice(1, -1)).join('');
+    }
+  }
+
+  return `${fullText} \n ${extractedLiterals}`;
+}
+
 export async function parseResumeDocument(file: { uri: string; name?: string }): Promise<ExtractedResumeData> {
   const result: ExtractedResumeData = {};
-  let rawText = '';
+  let extractedPdfText = '';
 
   if (file.uri) {
     try {
-      rawText = await readUriAsText(file.uri);
-    } catch (e) {}
+      const arrayBuffer = await readUriAsArrayBuffer(file.uri);
+      if (arrayBuffer) {
+        extractedPdfText = extractTextFromPdfArrayBuffer(arrayBuffer);
+      }
+    } catch (e) {
+      console.warn('PDF ArrayBuffer decompression warning:', e);
+    }
   }
 
-  const combinedSearchText = `${file.name || ''} \n ${rawText}`;
+  const combinedSearchText = `${file.name || ''} \n ${extractedPdfText}`;
   const lowerText = combinedSearchText.toLowerCase();
 
   // 1. Extract Email Address
@@ -83,23 +148,44 @@ export async function parseResumeDocument(file: { uri: string; name?: string }):
   const emailMatches = combinedSearchText.match(emailRegex);
   if (emailMatches && emailMatches.length > 0) {
     const validEmails = emailMatches.filter(em => 
-      !em.includes('example.com') && 
-      !em.includes('schema.org') && 
-      !em.includes('w3.org') && 
-      !em.includes('adobe.com')
+      !em.toLowerCase().includes('example.com') && 
+      !em.toLowerCase().includes('schema.org') && 
+      !em.toLowerCase().includes('w3.org') && 
+      !em.toLowerCase().includes('adobe.com') &&
+      !em.toLowerCase().includes('github.com')
     );
     if (validEmails.length > 0) {
       result.email = validEmails[0].toLowerCase().trim();
     }
   }
 
-  // 2. Extract Mobile Number (10 digits starting with 6-9)
-  const phoneRegex = /(?:(?:\+91|0091|0)[\s-]?)?([6-9]\d{9})\b/g;
-  let phoneMatch;
-  while ((phoneMatch = phoneRegex.exec(combinedSearchText)) !== null) {
-    if (phoneMatch[1] && phoneMatch[1].length === 10) {
-      result.phone = phoneMatch[1];
-      break;
+  // Space-separated email fallback: name @ domain . com
+  if (!result.email) {
+    const spacedEmailRegex = /([a-zA-Z0-9._%+-]+)\s*@\s*([a-zA-Z0-9.-]+)\s*\.\s*([a-zA-Z]{2,6})/i;
+    const spMatch = combinedSearchText.match(spacedEmailRegex);
+    if (spMatch && spMatch[1] && spMatch[2] && spMatch[3]) {
+      const reconstructed = `${spMatch[1]}@${spMatch[2]}.${spMatch[3]}`.toLowerCase();
+      if (!reconstructed.includes('example.com') && !reconstructed.includes('schema.org')) {
+        result.email = reconstructed;
+      }
+    }
+  }
+
+  // 2. Extract Mobile Number (10 digits starting with 6,7,8,9)
+  const phoneRegex = /(?:(?:\+?91|0091|0)[\s.-]?)?([6-9]\d{4}[\s.-]?\d{5})\b/g;
+  let phoneMatch = phoneRegex.exec(combinedSearchText);
+  if (phoneMatch && phoneMatch[1]) {
+    const cleanDigits = phoneMatch[1].replace(/\D/g, '');
+    if (cleanDigits.length === 10) {
+      result.phone = cleanDigits;
+    }
+  }
+
+  if (!result.phone) {
+    const raw10Regex = /\b([6-9]\d{9})\b/g;
+    const rawMatch = raw10Regex.exec(combinedSearchText);
+    if (rawMatch && rawMatch[1]) {
+      result.phone = rawMatch[1];
     }
   }
 
@@ -152,28 +238,50 @@ export async function parseResumeDocument(file: { uri: string; name?: string }):
     }
   }
 
-  // 7. Extract Candidate Name from filename
-  const cleanFileName = (file.name || '')
-    .replace(/\.[^/.]+$/, '')
-    .replace(/[_-]/g, ' ')
-    .replace(/[0-9+()@.]/g, ' ')
-    .trim();
-
-  const ignoreWords = new Set([
-    'resume', 'cv', 'curriculum', 'vitae', 'biodata', 'profile', 'final', 'ca',
-    'pdf', 'docx', 'doc', 'updated', 'latest', 'new', 'ca_final', 'ca_inter',
-    'chartered', 'accountant', 'fresher', 'experienced', 'draft', 'copy', 'wfh'
+  // 7. Extract Candidate Name (from PDF text content first, then fallback to filename)
+  const commonIgnoreWords = new Set([
+    'resume', 'cv', 'curriculum', 'vitae', 'biodata', 'profile', 'contact',
+    'email', 'phone', 'mobile', 'address', 'page', 'career', 'objective',
+    'summary', 'experience', 'education', 'skills', 'declaration', 'personal',
+    'pdf', 'docx', 'doc', 'updated', 'latest', 'new', 'chartered', 'accountant',
+    'fresher', 'experienced', 'draft', 'copy', 'wfh', 'ca', 'ca_final', 'ca_inter'
   ]);
 
-  const nameWords = cleanFileName
-    .split(/\s+/)
-    .filter(w => w.length > 1 && !ignoreWords.has(w.toLowerCase()));
+  const textLines = extractedPdfText
+    .split(/[\r\n]+/)
+    .map(l => l.replace(/[^a-zA-Z\s]/g, ' ').trim())
+    .filter(l => l.length > 2 && l.length < 40);
 
-  if (nameWords.length >= 2) {
-    result.firstName = nameWords[0].charAt(0).toUpperCase() + nameWords[0].slice(1).toLowerCase();
-    result.lastName = nameWords[1].charAt(0).toUpperCase() + nameWords[1].slice(1).toLowerCase();
-  } else if (nameWords.length === 1) {
-    result.firstName = nameWords[0].charAt(0).toUpperCase() + nameWords[0].slice(1).toLowerCase();
+  let detectedName = '';
+  for (const line of textLines.slice(0, 15)) {
+    const words = line.split(/\s+/).filter(w => w.length > 1 && !commonIgnoreWords.has(w.toLowerCase()));
+    if (words.length >= 2 && words.length <= 3) {
+      detectedName = words.map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+      break;
+    }
+  }
+
+  if (detectedName) {
+    const parts = detectedName.split(' ');
+    result.firstName = parts[0];
+    result.lastName = parts.slice(1).join(' ');
+  } else {
+    const cleanFileName = (file.name || '')
+      .replace(/\.[^/.]+$/, '')
+      .replace(/[_-]/g, ' ')
+      .replace(/[0-9+()@.]/g, ' ')
+      .trim();
+
+    const nameWords = cleanFileName
+      .split(/\s+/)
+      .filter(w => w.length > 1 && !commonIgnoreWords.has(w.toLowerCase()));
+
+    if (nameWords.length >= 2) {
+      result.firstName = nameWords[0].charAt(0).toUpperCase() + nameWords[0].slice(1).toLowerCase();
+      result.lastName = nameWords[1].charAt(0).toUpperCase() + nameWords[1].slice(1).toLowerCase();
+    } else if (nameWords.length === 1) {
+      result.firstName = nameWords[0].charAt(0).toUpperCase() + nameWords[0].slice(1).toLowerCase();
+    }
   }
 
   if (!result.firstName && result.email) {
