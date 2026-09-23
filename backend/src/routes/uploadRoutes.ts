@@ -69,12 +69,15 @@ router.post('/', upload.single('resume'), async (req: any, res: any) => {
     return res.status(400).json({ message: 'No file uploaded' });
   }
 
+  const originalName = req.file.originalname || req.body?.originalname || 'resume.pdf';
+  const mimeType = req.file.mimetype || 'application/pdf';
+
   let finalUrl = '';
   let parsedData: any = {};
 
   // 1. Immediately parse the buffer for extracted resume details
   try {
-    parsedData = parseResumeBuffer(req.file.buffer, req.file.originalname || '');
+    parsedData = parseResumeBuffer(req.file.buffer, originalName);
   } catch (err) {
     console.warn('Server resume parsing non-critical warning:', err);
   }
@@ -84,8 +87,8 @@ router.post('/', upload.single('resume'), async (req: any, res: any) => {
     if (isCloudinaryConfigured) {
       finalUrl = await uploadBufferToCloudinary(
         req.file.buffer, 
-        req.file.originalname || 'resume.pdf',
-        req.file.mimetype || 'application/pdf'
+        originalName,
+        mimeType
       );
     }
   } catch (cloudinaryErr) {
@@ -93,7 +96,7 @@ router.post('/', upload.single('resume'), async (req: any, res: any) => {
   }
 
   if (!finalUrl) {
-    finalUrl = saveBufferToLocal(req.file.buffer, req.file.originalname || 'resume.pdf');
+    finalUrl = saveBufferToLocal(req.file.buffer, originalName);
   }
 
   return res.json({
@@ -110,11 +113,14 @@ router.post('/parse', upload.single('resume'), async (req: any, res: any) => {
     return res.status(400).json({ message: 'No file uploaded' });
   }
 
+  const originalName = req.file.originalname || req.body?.originalname || 'resume.pdf';
+  const mimeType = req.file.mimetype || 'application/pdf';
+
   let finalUrl = '';
   let parsedData: any = {};
 
   try {
-    parsedData = parseResumeBuffer(req.file.buffer, req.file.originalname || '');
+    parsedData = parseResumeBuffer(req.file.buffer, originalName);
   } catch (err) {
     console.warn('Server parse error:', err);
   }
@@ -123,14 +129,14 @@ router.post('/parse', upload.single('resume'), async (req: any, res: any) => {
     if (isCloudinaryConfigured) {
       finalUrl = await uploadBufferToCloudinary(
         req.file.buffer,
-        req.file.originalname || 'resume.pdf',
-        req.file.mimetype || 'application/pdf'
+        originalName,
+        mimeType
       );
     }
   } catch (cloudErr) {}
 
   if (!finalUrl) {
-    finalUrl = saveBufferToLocal(req.file.buffer, req.file.originalname || 'resume.pdf');
+    finalUrl = saveBufferToLocal(req.file.buffer, originalName);
   }
 
   return res.json({

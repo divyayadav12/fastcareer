@@ -1,6 +1,6 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform } from 'react-native';
+import * as FileSystem from 'expo-file-system/legacy';
 
 export const API_BASE_URL = 'https://fastcareer.onrender.com/api';
 
@@ -42,18 +42,11 @@ api.interceptors.request.use(
 
 /**
  * Universal Multipart File Upload Helper for Mobile (React Native / Expo)
- * Avoids Axios boundary stripping Network Errors by using native fetch.
+ * Uses Expo native FileSystem.uploadAsync to prevent FormDataPart / Axios boundary bugs on Android & iOS.
  */
 export const uploadFileApi = async (file: any, fieldName: string = 'resume') => {
   try {
-    const formData = new FormData();
-    const uri = Platform.OS === 'android' ? file.uri : file.uri.replace('file://', '');
-    
-    formData.append(fieldName, {
-      uri,
-      name: file.name || 'resume.pdf',
-      type: file.mimeType || file.type || 'application/pdf',
-    } as any);
+    if (!file || !file.uri) return null;
 
     const userString = await AsyncStorage.getItem('user');
     const directToken = await AsyncStorage.getItem('token');
@@ -65,25 +58,80 @@ export const uploadFileApi = async (file: any, fieldName: string = 'resume') => 
       } catch (e) {}
     }
 
-    const headers: Record<string, string> = {};
+    const headers: Record<string, string> = {
+      'Accept': 'application/json',
+    };
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const res = await fetch(`${API_BASE_URL}/upload`, {
-      method: 'POST',
-      body: formData,
-      headers,
+    // 1. Primary: Use Expo FileSystem.uploadAsync (Native Android/iOS background uploader)
+    try {
+      const uploadResult = await FileSystem.uploadAsync(
+        `${API_BASE_URL}/upload`,
+        file.uri,
+        {
+          fieldName: fieldName,
+          httpMethod: 'POST',
+          uploadType: FileSystem.FileSystemUploadType.MULTIPART,
+          headers,
+          parameters: {
+            originalname: file.name || 'resume.pdf',
+          },
+        }
+      );
+
+      if (uploadResult && uploadResult.status >= 200 && uploadResult.status < 300) {
+        if (uploadResult.body) {
+          try {
+            return JSON.parse(uploadResult.body);
+          } catch (e) {
+            return { url: uploadResult.body, resumeUrl: uploadResult.body };
+          }
+        }
+      }
+    } catch (fsErr) {
+      console.warn('FileSystem.uploadAsync fallback triggered:', fsErr);
+    }
+
+    // 2. Fallback: XMLHttpRequest
+    const xhrResponse = await new Promise<any>((resolve) => {
+      try {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', `${API_BASE_URL}/upload`);
+        if (token) {
+          xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+        }
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              resolve(JSON.parse(xhr.responseText));
+            } catch {
+              resolve({ url: xhr.responseText });
+            }
+          } else {
+            resolve(null);
+          }
+        };
+        xhr.onerror = () => resolve(null);
+        xhr.ontimeout = () => resolve(null);
+        xhr.timeout = 30000;
+
+        const formData = new FormData();
+        formData.append(fieldName, {
+          uri: file.uri,
+          name: file.name || 'resume.pdf',
+          type: file.mimeType || file.type || 'application/pdf',
+        } as any);
+        xhr.send(formData);
+      } catch {
+        resolve(null);
+      }
     });
 
-    if (res.ok) {
-      return await res.json();
-    } else {
-      const errText = await res.text();
-      console.warn('Upload non-ok response:', res.status, errText);
-    }
+    return xhrResponse;
   } catch (err) {
-    console.warn('uploadFileApi error:', err);
+    console.warn('uploadFileApi total error:', err);
   }
   return null;
 };
