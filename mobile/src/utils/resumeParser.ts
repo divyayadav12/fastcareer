@@ -49,7 +49,9 @@ const PDF_KEYWORDS_IGNORE = new Set([
   'px', 'cm', 'inch', 'mm', 'rgb', 'cmyk', 'gray', 'scale', 'view', 'rect', 'box',
   'frontenddeveloper', 'backenddeveloper', 'fullstackdeveloper', 'developer', 'engineer',
   'software', 'frontend', 'backend', 'fullstack', 'react', 'node', 'java', 'python',
-  'designer', 'intern', 'analyst', 'consultant', 'manager', 'associate', 'lead', 'head'
+  'designer', 'intern', 'analyst', 'consultant', 'manager', 'associate', 'lead', 'head',
+  'sw', 'dev', 'fe', 'be', 'se', 'sde', 'sde1', 'sde2', 'sde3', 'qa', 'tech', 'eng', 'engg',
+  'ui', 'ux', 'web', 'app', 'android', 'ios', 'tester', 'trainee', 'officer', 'executive', 'sr', 'jr'
 ]);
 
 export function isValidEmailAddress(email: string): boolean {
@@ -448,24 +450,30 @@ export async function parseResumeDocument(file: { uri: string; name?: string }):
     .split(/\s+/)
     .filter(w => w.length > 1 && !PDF_KEYWORDS_IGNORE.has(w.toLowerCase()));
 
-  if (fileWords.length >= 2) {
-    result.firstName = fileWords[0].charAt(0).toUpperCase() + fileWords[0].slice(1).toLowerCase();
-    result.lastName = fileWords[1].charAt(0).toUpperCase() + fileWords[1].slice(1).toLowerCase();
-  } else if (fileWords.length === 1) {
-    const singleWord = fileWords[0].toLowerCase();
-    let splitDone = false;
+  // Split compound names like Divyayadav -> Divya Yadav
+  const expandedFileWords: string[] = [];
+  for (const rawWord of fileWords) {
+    const wordLower = rawWord.toLowerCase();
+    let split = false;
     for (const surname of INDIAN_SURNAMES) {
-      if (singleWord.endsWith(surname) && singleWord.length > surname.length + 2) {
-        const first = singleWord.slice(0, singleWord.length - surname.length);
-        result.firstName = first.charAt(0).toUpperCase() + first.slice(1);
-        result.lastName = surname.charAt(0).toUpperCase() + surname.slice(1);
-        splitDone = true;
+      if (wordLower.endsWith(surname) && wordLower.length > surname.length + 2) {
+        const first = wordLower.slice(0, wordLower.length - surname.length);
+        expandedFileWords.push(first.charAt(0).toUpperCase() + first.slice(1));
+        expandedFileWords.push(surname.charAt(0).toUpperCase() + surname.slice(1));
+        split = true;
         break;
       }
     }
-    if (!splitDone) {
-      result.firstName = fileWords[0].charAt(0).toUpperCase() + fileWords[0].slice(1).toLowerCase();
+    if (!split) {
+      expandedFileWords.push(rawWord);
     }
+  }
+
+  if (expandedFileWords.length >= 2) {
+    result.firstName = expandedFileWords[0].charAt(0).toUpperCase() + expandedFileWords[0].slice(1).toLowerCase();
+    result.lastName = expandedFileWords[1].charAt(0).toUpperCase() + expandedFileWords[1].slice(1).toLowerCase();
+  } else if (expandedFileWords.length === 1) {
+    result.firstName = expandedFileWords[0].charAt(0).toUpperCase() + expandedFileWords[0].slice(1).toLowerCase();
   }
 
   // If name not extracted from filename, scan clean PDF text lines
