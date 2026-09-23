@@ -44,34 +44,13 @@ import { File as ExpoFile } from 'expo-file-system';
 
 /**
  * Converts any local URI (content://, file://, blob:) into a Base64 string.
- * Resilient multi-tier conversion for Android and iOS.
+ * Uses native Expo FileSystem directly without triggering Blob warnings.
  */
 export const convertUriToBase64 = async (uri: string): Promise<string> => {
   if (!uri) return '';
   if (uri.startsWith('data:')) return uri;
 
-  // 1. Fetch -> Blob -> FileReader (Native RN standard)
-  try {
-    const res = await fetch(uri);
-    const blob = await res.blob();
-    const base64 = await new Promise<string>((resolve) => {
-      try {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          resolve((reader.result as string) || '');
-        };
-        reader.onerror = () => resolve('');
-        reader.readAsDataURL(blob);
-      } catch {
-        resolve('');
-      }
-    });
-    if (base64 && base64.length > 50) {
-      return base64.startsWith('data:') ? base64 : `data:application/pdf;base64,${base64}`;
-    }
-  } catch (fetchErr) {}
-
-  // 2. Direct read with legacy FileSystem
+  // 1. Direct native read with legacy FileSystem
   try {
     if (FileSystem && typeof FileSystem.readAsStringAsync === 'function') {
       const base64 = await FileSystem.readAsStringAsync(uri, {
@@ -83,7 +62,7 @@ export const convertUriToBase64 = async (uri: string): Promise<string> => {
     }
   } catch (fsErr) {}
 
-  // 3. Sandboxed cache copy + FileSystem read
+  // 2. Sandboxed cache copy + FileSystem read
   if (FileSystem && FileSystem.cacheDirectory) {
     const tempTarget = `${FileSystem.cacheDirectory}res_${Date.now()}.pdf`;
     try {
@@ -101,7 +80,7 @@ export const convertUriToBase64 = async (uri: string): Promise<string> => {
     } catch (copyErr) {}
   }
 
-  // 4. Fallback to XHR + FileReader
+  // 3. Fallback to XHR + FileReader (No Response.blob warning)
   return new Promise((resolve) => {
     try {
       const xhr = new XMLHttpRequest();

@@ -241,28 +241,16 @@ export async function parseResumeDocument(file: { uri: string; name?: string }):
   let extractedPdfText = '';
 
   if (file.uri) {
-    // 1. Direct fetch ArrayBuffer (lightning fast & avoids base64 encoding overhead)
     try {
-      const res = await fetch(file.uri);
-      const ab = await res.arrayBuffer();
-      if (ab && ab.byteLength > 0) {
-        extractedPdfText = extractTextFromPdfBytes(new Uint8Array(ab));
-      }
-    } catch (fetchErr) {}
-
-    // 2. Base64 fallback if direct arrayBuffer was empty
-    if (!extractedPdfText) {
-      try {
-        const base64 = await convertUriToBase64(file.uri);
-        if (base64) {
-          const uint8 = base64ToUint8Array(base64);
-          if (uint8 && uint8.length > 0) {
-            extractedPdfText = extractTextFromPdfBytes(uint8);
-          }
+      const base64 = await convertUriToBase64(file.uri);
+      if (base64) {
+        const uint8 = base64ToUint8Array(base64);
+        if (uint8 && uint8.length > 0) {
+          extractedPdfText = extractTextFromPdfBytes(uint8);
         }
-      } catch (e) {
-        console.warn('PDF Base64 byte decompression warning:', e);
       }
+    } catch (e) {
+      console.warn('PDF Base64 byte decompression warning:', e);
     }
   }
 
