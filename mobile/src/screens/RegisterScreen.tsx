@@ -10,7 +10,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { register, reset } from '../store/authSlice';
 import type { AppDispatch, RootState } from '../store';
 import * as DocumentPicker from 'expo-document-picker';
-import api, { API_BASE_URL } from '../services/api';
+import api, { API_BASE_URL, uploadFileApi } from '../services/api';
 import { ALL_CITIES } from '../utils/constants';
 import { parseResumeDocument } from '../utils/resumeParser';
 
@@ -131,6 +131,8 @@ export default function RegisterScreen({ navigation }: any) {
     return extracted;
   };
 
+  const [uploadedResumeUrl, setUploadedResumeUrl] = useState('');
+
   const pickDocument = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
@@ -149,7 +151,7 @@ export default function RegisterScreen({ navigation }: any) {
 
         const extractedList: string[] = [];
 
-        // 1. Deep file content parsing (reads text / stream inside PDF & DOCX)
+        // 1. Deep local parsing
         try {
           const parsed = await parseResumeDocument(file);
           if (parsed.firstName) {
@@ -180,49 +182,44 @@ export default function RegisterScreen({ navigation }: any) {
           console.warn('Local file parser warning:', e);
         }
 
-        // 2. Server-side deep buffer extraction
+        // 2. Upload to Cloud & Deep server extraction
         try {
-          const formData = new FormData();
-          formData.append('resume', {
-            uri: file.uri,
-            name: file.name || 'resume.pdf',
-            type: file.mimeType || 'application/pdf',
-          } as any);
-
-          const uploadRes = await api.post('/upload', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-            timeout: 10000,
-          });
-
-          if (uploadRes.data?.parsedData) {
-            const sp = uploadRes.data.parsedData;
-            if (sp.email) {
-              setEmail(sp.email);
-              if (!extractedList.includes('Email')) extractedList.push('Email');
+          const uploadRes = await uploadFileApi(file, 'resume');
+          if (uploadRes) {
+            const cloudUrl = uploadRes.url || uploadRes.resumeUrl || '';
+            if (cloudUrl) {
+              setUploadedResumeUrl(cloudUrl);
             }
-            if (sp.phone) {
-              setPhone(sp.phone);
-              if (!extractedList.includes('Phone')) extractedList.push('Phone');
-            }
-            if (sp.city) {
-              setCurrentCity(sp.city);
-              if (!extractedList.includes('City')) extractedList.push('City');
-            }
-            if (sp.firstName) {
-              setFirstName(sp.firstName);
-              if (!extractedList.includes('First Name')) extractedList.push('First Name');
-            }
-            if (sp.lastName) {
-              setLastName(sp.lastName);
-              if (!extractedList.includes('Last Name')) extractedList.push('Last Name');
-            }
-            if (sp.workStatus) {
-              setWorkStatus(sp.workStatus);
-              if (!extractedList.includes('Work Status')) extractedList.push('Work Status');
+            if (uploadRes.parsedData) {
+              const sp = uploadRes.parsedData;
+              if (sp.email) {
+                setEmail(sp.email);
+                if (!extractedList.includes('Email')) extractedList.push('Email');
+              }
+              if (sp.phone) {
+                setPhone(sp.phone);
+                if (!extractedList.includes('Phone')) extractedList.push('Phone');
+              }
+              if (sp.city) {
+                setCurrentCity(sp.city);
+                if (!extractedList.includes('City')) extractedList.push('City');
+              }
+              if (sp.firstName) {
+                setFirstName(sp.firstName);
+                if (!extractedList.includes('First Name')) extractedList.push('First Name');
+              }
+              if (sp.lastName) {
+                setLastName(sp.lastName);
+                if (!extractedList.includes('Last Name')) extractedList.push('Last Name');
+              }
+              if (sp.workStatus) {
+                setWorkStatus(sp.workStatus);
+                if (!extractedList.includes('Work Status')) extractedList.push('Work Status');
+              }
             }
           }
         } catch (serverErr) {
-          // Server parse is optional background enhancement
+          console.warn('Cloud upload warning:', serverErr);
         }
 
         setScannedFields(extractedList);
@@ -230,12 +227,12 @@ export default function RegisterScreen({ navigation }: any) {
 
         if (extractedList.length > 0) {
           Alert.alert(
-            '⚡ Resume Auto-Filled!',
-            `Auto-populated from resume content: ${extractedList.join(', ')}.\n\nPlease review details and set a password to register.`,
+            '⚡ Resume Auto-Filled & Attached!',
+            `Auto-populated: ${extractedList.join(', ')}.\n\nPlease review details and set a password to register.`,
             [{ text: 'OK' }]
           );
         } else {
-          Alert.alert('Resume Attached 📄', 'Resume attached! Please complete your details below.');
+          Alert.alert('Resume Attached 📄', 'Resume attached successfully! Please complete your details below.');
         }
       }
     } catch (err) {
@@ -257,37 +254,16 @@ export default function RegisterScreen({ navigation }: any) {
       }
     }
 
-    let uploadedResumeUrl = '';
-    if (resumeFile) {
-      const formData = new FormData();
-      formData.append('resume', {
-        uri: resumeFile.uri,
-        name: resumeFile.name || 'resume.pdf',
-        type: resumeFile.mimeType || 'application/pdf',
-      } as any);
-
+    let finalResumeUrl = uploadedResumeUrl;
+    if (!finalResumeUrl && resumeFile) {
       try {
         setIsUploading(true);
-        const uploadRes = await api.post('/upload', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-          timeout: 20000,
-        });
-        uploadedResumeUrl = uploadRes.data?.url || uploadRes.data?.resumeUrl || '';
-      } catch (err: any) {
-        console.warn('Primary resume upload failed, trying fallback...');
-        try {
-          const fbRes = await api.post('/users/upload-resume', formData, {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            },
-            timeout: 20000,
-          });
-          uploadedResumeUrl = fbRes.data?.url || fbRes.data?.resumeUrl || '';
-        } catch (fbErr) {
-          console.warn('Resume upload server was unreachable, proceeding with registration...');
+        const uploadRes = await uploadFileApi(resumeFile, 'resume');
+        if (uploadRes) {
+          finalResumeUrl = uploadRes.url || uploadRes.resumeUrl || '';
         }
+      } catch (err) {
+        console.warn('Registration upload fallback:', err);
       } finally {
         setIsUploading(false);
       }
@@ -304,7 +280,7 @@ export default function RegisterScreen({ navigation }: any) {
           phone: phone.trim(),
           currentCity,
           isFresherCA: workStatus === 'fresher',
-          resumeUrl: uploadedResumeUrl,
+          resumeUrl: finalResumeUrl,
         }),
       })
     );

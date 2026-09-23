@@ -8,7 +8,7 @@ import { Step2CA } from '../components/candidate-profile/Step2CA';
 import { Step3Articleship } from '../components/candidate-profile/Step3Articleship';
 import { Step4EducationExperience } from '../components/candidate-profile/Step4EducationExperience';
 import { Step5Review } from '../components/candidate-profile/Step5Review';
-import api from '../services/api';
+import api, { uploadFileApi } from '../services/api';
 import { updateUser } from '../store/authSlice';
 
 export default function ProfileScreen({ navigation }: any) {
@@ -100,18 +100,14 @@ export default function ProfileScreen({ navigation }: any) {
   const handleFileUpload = async (file: any) => {
     setUploading(true);
     try {
-      const formData = new FormData();
-      formData.append('resume', {
-        uri: file.uri,
-        name: file.name || 'resume.pdf',
-        type: file.mimeType || 'application/pdf',
-      } as any);
-
-      const response = await api.post('/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      setResumeUrl(response.data.url);
-      Alert.alert('Success', 'Resume uploaded successfully!');
+      const uploadRes = await uploadFileApi(file, 'resume');
+      if (uploadRes && (uploadRes.url || uploadRes.resumeUrl)) {
+        const fileUrl = uploadRes.url || uploadRes.resumeUrl;
+        setResumeUrl(fileUrl);
+        Alert.alert('Success 🎉', 'Resume uploaded successfully!');
+      } else {
+        Alert.alert('Upload Error', 'Could not upload resume. Please try again.');
+      }
     } catch (error) {
       Alert.alert('Error', 'Could not upload resume.');
     } finally {

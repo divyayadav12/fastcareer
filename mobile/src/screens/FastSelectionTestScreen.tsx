@@ -11,7 +11,7 @@ import {
   Linking
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import api from '../services/api';
+import api, { uploadFileApi } from '../services/api';
 import * as DocumentPicker from 'expo-document-picker';
 
 interface QuestionDef {
@@ -162,19 +162,8 @@ export default function FastSelectionTestScreen({ navigation }: any) {
         const file = videoFiles[qId];
         if (file) {
           try {
-            const formData = new FormData();
-            formData.append('resume', {
-              uri: file.uri,
-              name: file.name || `video_q${qId}.mp4`,
-              type: file.mimeType || 'video/mp4',
-            } as any);
-
-            const uploadRes = await api.post('/upload', formData, {
-              headers: { 'Content-Type': 'multipart/form-data' },
-              timeout: 30000,
-            });
-
-            const uploadedUrl = uploadRes.data?.url || uploadRes.data?.resumeUrl || file.name;
+            const uploadRes = await uploadFileApi(file, 'resume');
+            const uploadedUrl = uploadRes?.url || uploadRes?.resumeUrl || file.name;
             if (qId === 5) q5Answer = uploadedUrl;
             if (qId === 6) q6Answer = uploadedUrl;
           } catch (uploadErr) {

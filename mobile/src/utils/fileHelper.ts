@@ -1,13 +1,16 @@
-﻿import * as FileSystem from 'expo-file-system/legacy';
+import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import { Alert, Linking, Platform } from 'react-native';
+import { API_BASE_URL } from '../services/api';
+
+const SERVER_HOST = API_BASE_URL.replace(/\/api\/?$/, '');
 
 export const getResumeUrl = (url: string) => {
   if (!url) return '';
   if (url.includes('res.cloudinary.com')) return url.substring(url.indexOf('https://res.cloudinary.com'));
-  if (url.includes('/uploads/')) return `http://192.168.29.97:5000/uploads/${url.split('/uploads/')[1]}`;
+  if (url.includes('/uploads/')) return `${SERVER_HOST}/uploads/${url.split('/uploads/')[1]}`;
   if (url.startsWith('http')) return url;
-  return `http://192.168.29.97:5000/${url}`;
+  return `${SERVER_HOST}/${url.replace(/^\//, '')}`;
 };
 
 export const viewResume = (url: string) => {
