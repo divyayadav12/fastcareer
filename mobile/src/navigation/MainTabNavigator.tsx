@@ -23,6 +23,7 @@ import ShareJobScreen from '../screens/ShareJobScreen';
 import ImpDownloadsScreen from '../screens/ImpDownloadsScreen';
 import ResumeDownloadsScreen from '../screens/ResumeDownloadsScreen';
 import ResumeViewScreen from '../screens/ResumeViewScreen';
+import FastSelectionTestScreen from '../screens/FastSelectionTestScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -50,6 +51,11 @@ function MenuStack() {
         name="MenuRoot" 
         component={CandidateMenuScreen} 
         options={{ title: 'More Features' }} 
+      />
+      <Stack.Screen 
+        name="FastSelection" 
+        component={FastSelectionTestScreen} 
+        options={{ title: 'Fast Selection Test' }} 
       />
       <Stack.Screen 
         name="JobFair" 

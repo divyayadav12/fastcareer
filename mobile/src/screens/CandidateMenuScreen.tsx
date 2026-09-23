@@ -8,6 +8,7 @@ export default function CandidateMenuScreen({ navigation }: any) {
       title: "Profile & Career Openings",
       items: [
         { name: "Update 5-Step Profile", icon: "person", route: "Profile" },
+        { name: "Fast Selection Online Test", icon: "flash", route: "FastSelection" },
         { name: "Job Fair & Campus Drives", icon: "business", route: "JobFair" },
         { name: "Current Openings", icon: "briefcase", route: "Jobs" },
         { name: "My Applied Jobs", icon: "document-text", route: "MyApps" }
