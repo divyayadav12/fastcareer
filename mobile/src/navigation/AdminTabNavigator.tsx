@@ -8,6 +8,7 @@ import AdminCandidatesScreen from '../screens/AdminCandidatesScreen';
 import AdminJobsScreen from '../screens/AdminJobsScreen';
 import AdminSettingsScreen from '../screens/AdminSettingsScreen';
 import AdminApplicationsScreen from '../screens/AdminApplicationsScreen';
+import AdminTestResultsScreen from '../screens/AdminTestResultsScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -18,12 +19,15 @@ export default function AdminTabNavigator() {
         headerShown: true,
         tabBarActiveTintColor: '#034b71',
         tabBarInactiveTintColor: '#64748b',
-        tabBarLabelStyle: { fontSize: 11, fontWeight: '500' },
+        tabBarLabelStyle: { fontSize: 10, fontWeight: '600' },
+        headerStyle: { backgroundColor: '#ffffff' },
+        headerTitleStyle: { color: '#0f172a', fontWeight: 'bold' },
         tabBarIcon: ({ color, size }) => {
           let iconName = 'grid';
           if (route.name === 'Dashboard') iconName = 'grid';
           else if (route.name === 'Jobs') iconName = 'briefcase';
           else if (route.name === 'Apps') iconName = 'document-text';
+          else if (route.name === 'TestResults') iconName = 'ribbon';
           else if (route.name === 'Settings') iconName = 'settings';
           return <Ionicons name={iconName as any} size={size} color={color} />;
         },
@@ -56,7 +60,12 @@ export default function AdminTabNavigator() {
       <Tab.Screen 
         name="Apps" 
         component={AdminApplicationsScreen} 
-        options={{ title: 'Job Application' }} 
+        options={{ title: 'Applications' }} 
+      />
+      <Tab.Screen 
+        name="TestResults" 
+        component={AdminTestResultsScreen} 
+        options={{ title: 'Test Results' }} 
       />
       <Tab.Screen name="Settings" component={AdminSettingsScreen} />
     </Tab.Navigator>

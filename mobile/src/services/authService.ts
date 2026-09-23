@@ -20,18 +20,25 @@ export interface LoginData {
 
 export interface UserResponse {
   _id: string;
+  id?: string;
   firstName: string;
   lastName: string;
+  name?: string;
   email: string;
   role: 'candidate' | 'employer' | 'admin';
   token: string;
   phone?: string;
+  city?: string;
   resumeUrl?: string;
   profileCompleted?: boolean;
   personalDetails?: any;
   caPortfolio?: any;
+  caFinalInfo?: any;
+  caInterInfo?: any;
+  articleshipInfo?: any;
   qualifications?: any;
   experienceInfo?: any;
+  [key: string]: any;
 }
 
 const register = async (userData: RegisterData): Promise<UserResponse> => {

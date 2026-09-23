@@ -14,6 +14,16 @@ import MyApplicationsScreen from '../screens/MyApplicationsScreen';
 import CandidateMenuScreen from '../screens/CandidateMenuScreen';
 import CandidateFeatureScreen from '../screens/CandidateFeatureScreen';
 
+import JobFairScreen from '../screens/JobFairScreen';
+import FeedbackScreen from '../screens/FeedbackScreen';
+import ReferFriendScreen from '../screens/ReferFriendScreen';
+import CompaniesRegisteredScreen from '../screens/CompaniesRegisteredScreen';
+import WantToChangeJobScreen from '../screens/WantToChangeJobScreen';
+import ShareJobScreen from '../screens/ShareJobScreen';
+import ImpDownloadsScreen from '../screens/ImpDownloadsScreen';
+import ResumeDownloadsScreen from '../screens/ResumeDownloadsScreen';
+import ResumeViewScreen from '../screens/ResumeViewScreen';
+
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
@@ -28,12 +38,68 @@ function HomeStack() {
 
 function MenuStack() {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="MenuRoot" component={CandidateMenuScreen} />
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: true,
+        headerStyle: { backgroundColor: '#ffffff' },
+        headerTitleStyle: { color: '#0f172a', fontWeight: 'bold' },
+        headerTintColor: '#034b71',
+      }}
+    >
+      <Stack.Screen 
+        name="MenuRoot" 
+        component={CandidateMenuScreen} 
+        options={{ title: 'More Features' }} 
+      />
+      <Stack.Screen 
+        name="JobFair" 
+        component={JobFairScreen} 
+        options={{ title: 'Job Fairs & Drives' }} 
+      />
+      <Stack.Screen 
+        name="Feedback" 
+        component={FeedbackScreen} 
+        options={{ title: 'Feel it, Say it!' }} 
+      />
+      <Stack.Screen 
+        name="ReferFriend" 
+        component={ReferFriendScreen} 
+        options={{ title: 'Refer a Friend' }} 
+      />
+      <Stack.Screen 
+        name="CompaniesRegistered" 
+        component={CompaniesRegisteredScreen} 
+        options={{ title: 'Registered Recruiters' }} 
+      />
+      <Stack.Screen 
+        name="WantToChangeJob" 
+        component={WantToChangeJobScreen} 
+        options={{ title: 'Want to Change a Job?' }} 
+      />
+      <Stack.Screen 
+        name="ShareJob" 
+        component={ShareJobScreen} 
+        options={{ title: 'Share Job Opportunities' }} 
+      />
+      <Stack.Screen 
+        name="ImpDownloads" 
+        component={ImpDownloadsScreen} 
+        options={{ title: 'Important Downloads' }} 
+      />
+      <Stack.Screen 
+        name="ResumeDownloads" 
+        component={ResumeDownloadsScreen} 
+        options={{ title: 'Resume Templates' }} 
+      />
+      <Stack.Screen 
+        name="ResumeView" 
+        component={ResumeViewScreen} 
+        options={{ title: 'My CA Resume' }} 
+      />
       <Stack.Screen 
         name="CandidateFeature" 
         component={CandidateFeatureScreen} 
-        options={({ route }: any) => ({ headerShown: true, title: route.params?.title || 'Feature', headerBackTitleVisible: false })} 
+        options={({ route }: any) => ({ title: route.params?.title || 'Feature' })} 
       />
     </Stack.Navigator>
   );
@@ -110,7 +176,11 @@ export default function MainTabNavigator() {
         })}
       />
       <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: 'Profile' }} />
-      <Tab.Screen name="Menu" component={MenuStack} options={{ title: 'More' }} />
+      <Tab.Screen 
+        name="Menu" 
+        component={MenuStack} 
+        options={{ title: 'More', headerShown: false }} 
+      />
     </Tab.Navigator>
   );
 }

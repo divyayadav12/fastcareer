@@ -204,6 +204,13 @@ export default function AdminDashboardScreen({ navigation }: any) {
                 route: 'Apps',
               },
               {
+                icon: 'ribbon-outline',
+                label: 'Test Results',
+                color: '#ec4899',
+                bg: '#fdf2f8',
+                route: 'TestResults',
+              },
+              {
                 icon: 'settings-outline',
                 label: 'Settings',
                 color: '#8b5cf6',
@@ -220,9 +227,9 @@ export default function AdminDashboardScreen({ navigation }: any) {
                 <View style={[s.actionIcon, { backgroundColor: item.bg }]}>
                   <Ionicons name={item.icon as any} size={20} color={item.color} />
                 </View>
-              <Text style={s.actionLabel} numberOfLines={1}>{item.label}</Text>
-            </TouchableOpacity>
-          ))}
+                <Text style={s.actionLabel} numberOfLines={1}>{item.label}</Text>
+              </TouchableOpacity>
+            ))}
         </View>
       </View>
 

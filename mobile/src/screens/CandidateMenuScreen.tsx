@@ -1,45 +1,45 @@
-﻿import React from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function CandidateMenuScreen({ navigation }: any) {
   const sections = [
     {
-      title: "Profile & Jobs",
+      title: "Profile & Career Openings",
       items: [
-        { name: "Update Profile", icon: "person", route: "Profile" },
-        { name: "Job Fair Available", icon: "business", feature: true },
-        { name: "Current Openings", icon: "briefcase", route: "Jobs" }
+        { name: "Update 5-Step Profile", icon: "person", route: "Profile" },
+        { name: "Job Fair & Campus Drives", icon: "business", route: "JobFair" },
+        { name: "Current Openings", icon: "briefcase", route: "Jobs" },
+        { name: "My Applied Jobs", icon: "document-text", route: "MyApps" }
       ]
     },
     {
       title: "Resume & Downloads",
       items: [
-        { name: "Resume Downloads", icon: "download", feature: true },
-        { name: "Resume Print (Site)", icon: "print", feature: true },
-        { name: "IMP Downloads", icon: "document-text", feature: true }
+        { name: "View / Print My Resume", icon: "eye", route: "ResumeView" },
+        { name: "Download Resume Templates", icon: "download", route: "ResumeDownloads" },
+        { name: "Important Guides & Downloads", icon: "document-text", route: "ImpDownloads" }
       ]
     },
     {
       title: "Community & Feedback",
       items: [
-        { name: "Feel it Say it", icon: "chatbubble-ellipses", feature: true },
-        { name: "Refer to a Friend", icon: "share-social", feature: true },
-        { name: "Companies Registered", icon: "business", feature: true }
+        { name: "Feel it, Say it! (Feedback)", icon: "chatbubble-ellipses", route: "Feedback" },
+        { name: "Refer to a Friend (Earn Rewards)", icon: "gift", route: "ReferFriend" },
+        { name: "Registered Companies & Big 4s", icon: "business", route: "CompaniesRegistered" }
       ]
     },
     {
       title: "Career Actions",
       items: [
-        { name: "Want to Change a Job?", icon: "refresh", feature: true },
-        { name: "Share Job Opportunities", icon: "share", feature: true },
-        { name: "Placement History", icon: "time", route: "MyApps" }
+        { name: "Want to Change a Job? (Discreet)", icon: "refresh-circle", route: "WantToChangeJob" },
+        { name: "Share Job Opportunities", icon: "share-social", route: "ShareJob" },
       ]
     }
   ];
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {sections.map((sec, idx) => (
         <View key={idx} style={styles.section}>
           <Text style={styles.sectionTitle}>{sec.title}</Text>
@@ -49,12 +49,16 @@ export default function CandidateMenuScreen({ navigation }: any) {
                 key={i} 
                 style={[styles.item, i === sec.items.length - 1 && styles.noBorder]}
                 onPress={() => {
-                  if (item.route) navigation.navigate(item.route);
-                  else navigation.navigate('CandidateFeature', { title: item.name });
+                  if (item.route) {
+                    navigation.navigate(item.route);
+                  }
                 }}
+                activeOpacity={0.7}
               >
                 <View style={styles.itemLeft}>
-                  <Ionicons name={item.icon as any} size={20} color="#64748b" />
+                  <View style={styles.iconCircle}>
+                    <Ionicons name={item.icon as any} size={18} color="#034b71" />
+                  </View>
                   <Text style={styles.itemText}>{item.name}</Text>
                 </View>
                 <Ionicons name="chevron-forward" size={16} color="#cbd5e1" />
@@ -68,12 +72,14 @@ export default function CandidateMenuScreen({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f8fafc', padding: 16 },
-  section: { marginBottom: 24 },
-  sectionTitle: { fontSize: 13, fontWeight: 'bold', color: '#94a3b8', textTransform: 'uppercase', marginBottom: 8, marginLeft: 8 },
-  card: { backgroundColor: '#fff', borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: '#e2e8f0' },
-  item: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
+  container: { flex: 1, backgroundColor: '#f8fafc' },
+  content: { padding: 16, paddingBottom: 40 },
+  section: { marginBottom: 20 },
+  sectionTitle: { fontSize: 12, fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase', marginBottom: 8, marginLeft: 6, letterSpacing: 0.5 },
+  card: { backgroundColor: '#fff', borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: '#e2e8f0', elevation: 1 },
+  item: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 14, borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
   noBorder: { borderBottomWidth: 0 },
-  itemLeft: { flexDirection: 'row', alignItems: 'center' },
-  itemText: { fontSize: 15, color: '#334155', marginLeft: 12, fontWeight: '500' }
+  itemLeft: { flexDirection: 'row', alignItems: 'center', flex: 1 },
+  iconCircle: { width: 34, height: 34, borderRadius: 17, backgroundColor: '#e0f2fe', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  itemText: { fontSize: 14, color: '#1e293b', fontWeight: '600', flex: 1 }
 });
