@@ -196,25 +196,29 @@ export default function RegisterScreen({ navigation }: any) {
 
           if (uploadRes.data?.parsedData) {
             const sp = uploadRes.data.parsedData;
-            if (sp.email && !email) {
+            if (sp.email) {
               setEmail(sp.email);
               if (!extractedList.includes('Email')) extractedList.push('Email');
             }
-            if (sp.phone && !phone) {
+            if (sp.phone) {
               setPhone(sp.phone);
               if (!extractedList.includes('Phone')) extractedList.push('Phone');
             }
-            if (sp.city && !currentCity) {
+            if (sp.city) {
               setCurrentCity(sp.city);
               if (!extractedList.includes('City')) extractedList.push('City');
             }
-            if (sp.firstName && !firstName) {
+            if (sp.firstName) {
               setFirstName(sp.firstName);
               if (!extractedList.includes('First Name')) extractedList.push('First Name');
             }
-            if (sp.lastName && !lastName) {
+            if (sp.lastName) {
               setLastName(sp.lastName);
               if (!extractedList.includes('Last Name')) extractedList.push('Last Name');
+            }
+            if (sp.workStatus) {
+              setWorkStatus(sp.workStatus);
+              if (!extractedList.includes('Work Status')) extractedList.push('Work Status');
             }
           }
         } catch (serverErr) {

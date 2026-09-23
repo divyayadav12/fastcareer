@@ -1,5 +1,4 @@
-import * as FileSystem from 'expo-file-system/legacy';
-import { ALL_CITIES } from './constants';
+import zlib from 'zlib';
 
 const POPULAR_CITIES = [
   'Mumbai', 'Delhi', 'Bangalore', 'Bengaluru', 'Hyderabad', 'Ahmedabad', 'Chennai',
@@ -12,7 +11,7 @@ const POPULAR_CITIES = [
   'Guwahati', 'Chandigarh', 'Noida', 'Gurugram', 'Gurgaon'
 ];
 
-export interface ExtractedResumeData {
+export interface ParsedResumeResult {
   firstName?: string;
   lastName?: string;
   email?: string;
@@ -21,75 +20,86 @@ export interface ExtractedResumeData {
   workStatus?: 'fresher' | 'experienced';
 }
 
-export async function parseResumeDocument(file: { uri: string; name?: string }): Promise<ExtractedResumeData> {
-  const result: ExtractedResumeData = {};
-  let rawText = '';
+export function extractTextFromPdfBuffer(buffer: Buffer): string {
+  let fullText = '';
+  fullText += buffer.toString('latin1') + ' ';
 
-  // 1. Try reading text from local file using expo-file-system legacy API
-  try {
-    if (file.uri) {
-      rawText = await FileSystem.readAsStringAsync(file.uri, {
-        encoding: FileSystem.EncodingType.UTF8,
-      });
-    }
-  } catch (e) {
+  const str = buffer.toString('binary');
+  let streamIndex = 0;
+
+  while ((streamIndex = str.indexOf('stream', streamIndex)) !== -1) {
+    let start = streamIndex + 6;
+    if (str[start] === '\r') start++;
+    if (str[start] === '\n') start++;
+    const end = str.indexOf('endstream', start);
+    if (end === -1) break;
+
+    const streamBuffer = buffer.subarray(start, end);
     try {
-      const b64 = await FileSystem.readAsStringAsync(file.uri, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-      if (typeof atob === 'function') {
-        rawText = atob(b64);
-      }
-    } catch (_) {}
+      const decompressed = zlib.inflateSync(streamBuffer);
+      fullText += decompressed.toString('latin1') + ' ';
+    } catch (e) {
+      try {
+        const decompressedRaw = zlib.inflateRawSync(streamBuffer);
+        fullText += decompressedRaw.toString('latin1') + ' ';
+      } catch (e2) {}
+    }
+    streamIndex = end + 9;
   }
 
-  const combinedSearchText = `${file.name || ''} \n ${rawText}`;
+  return fullText;
+}
 
-  // 2. Extract Email Address
+export function parseResumeBuffer(buffer: Buffer, originalFilename: string = ''): ParsedResumeResult {
+  const result: ParsedResumeResult = {};
+  const extractedPdfText = extractTextFromPdfBuffer(buffer);
+  const searchPool = `${originalFilename} \n ${extractedPdfText}`;
+
+  // 1. Extract Email
   const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6})/gi;
-  const emailMatches = combinedSearchText.match(emailRegex);
+  const emailMatches = searchPool.match(emailRegex);
   if (emailMatches && emailMatches.length > 0) {
     const validEmails = emailMatches.filter(em => 
       !em.includes('example.com') && 
       !em.includes('schema.org') && 
       !em.includes('w3.org') &&
-      !em.includes('adobe.com')
+      !em.includes('adobe.com') &&
+      !em.includes('sentry.io')
     );
     if (validEmails.length > 0) {
       result.email = validEmails[0].toLowerCase().trim();
     }
   }
 
-  // 3. Extract Mobile Number (10 digits starting with 6-9)
+  // 2. Extract Phone Number (10 digits starting with 6,7,8,9)
   const phoneRegex = /(?:(?:\+91|0091|0)[\s-]?)?([6-9]\d{9})\b/g;
   let phoneMatch;
-  while ((phoneMatch = phoneRegex.exec(combinedSearchText)) !== null) {
+  while ((phoneMatch = phoneRegex.exec(searchPool)) !== null) {
     if (phoneMatch[1] && phoneMatch[1].length === 10) {
       result.phone = phoneMatch[1];
       break;
     }
   }
 
-  // 4. Extract City (from Popular Cities or ALL_CITIES)
-  const lowerText = combinedSearchText.toLowerCase();
+  // 3. Extract City
+  const lowerSearch = searchPool.toLowerCase();
   for (const city of POPULAR_CITIES) {
-    const cityLower = city.toLowerCase();
-    const regex = new RegExp(`\\b${cityLower}\\b`, 'i');
-    if (regex.test(lowerText)) {
+    const regex = new RegExp(`\\b${city.toLowerCase()}\\b`, 'i');
+    if (regex.test(lowerSearch)) {
       result.city = city === 'Bangalore' ? 'Bengaluru' : city === 'Gurgaon' ? 'Gurugram' : city;
       break;
     }
   }
 
-  // 5. Extract Work Status
-  if (lowerText.includes('fresher') || lowerText.includes('articleship completed') || lowerText.includes('ca fresher')) {
+  // 4. Extract Work Status
+  if (lowerSearch.includes('fresher') || lowerSearch.includes('articleship completed') || lowerSearch.includes('ca fresher')) {
     result.workStatus = 'fresher';
-  } else if (lowerText.includes('years of experience') || lowerText.includes('total experience') || lowerText.includes('post qualification experience') || lowerText.includes('senior associate') || lowerText.includes('manager')) {
+  } else if (lowerSearch.includes('years of experience') || lowerSearch.includes('total experience') || lowerSearch.includes('post qualification experience') || lowerSearch.includes('senior associate') || lowerSearch.includes('manager')) {
     result.workStatus = 'experienced';
   }
 
-  // 6. Extract Candidate Name from filename
-  const cleanFileName = (file.name || '')
+  // 5. Extract Candidate Name from filename
+  const cleanFileName = originalFilename
     .replace(/\.[^/.]+$/, '')
     .replace(/[_-]/g, ' ')
     .replace(/[0-9+()@.]/g, ' ')
@@ -97,14 +107,11 @@ export async function parseResumeDocument(file: { uri: string; name?: string }):
 
   const ignoreWords = new Set([
     'resume', 'cv', 'curriculum', 'vitae', 'biodata', 'profile', 'final', 'ca',
-    'pdf', 'docx', 'doc', 'updated', 'latest', 'new', 'ca_final', 'ca_inter',
-    'chartered', 'accountant', 'fresher', 'experienced', 'draft', 'copy', 'wfh'
+    'pdf', 'docx', 'doc', 'updated', 'latest', 'new', 'chartered', 'accountant',
+    'fresher', 'experienced', 'draft', 'copy', 'wfh'
   ]);
 
-  const nameWords = cleanFileName
-    .split(/\s+/)
-    .filter(w => w.length > 1 && !ignoreWords.has(w.toLowerCase()));
-
+  const nameWords = cleanFileName.split(/\s+/).filter(w => w.length > 1 && !ignoreWords.has(w.toLowerCase()));
   if (nameWords.length >= 2) {
     result.firstName = nameWords[0].charAt(0).toUpperCase() + nameWords[0].slice(1).toLowerCase();
     result.lastName = nameWords[1].charAt(0).toUpperCase() + nameWords[1].slice(1).toLowerCase();
@@ -112,9 +119,10 @@ export async function parseResumeDocument(file: { uri: string; name?: string }):
     result.firstName = nameWords[0].charAt(0).toUpperCase() + nameWords[0].slice(1).toLowerCase();
   }
 
+  // Fallback name from email if needed
   if (!result.firstName && result.email) {
-    const emailPrefix = result.email.split('@')[0].replace(/[0-9_.]/g, ' ').trim();
-    const parts = emailPrefix.split(/\s+/).filter(p => p.length > 1);
+    const prefix = result.email.split('@')[0].replace(/[0-9_.]/g, ' ').trim();
+    const parts = prefix.split(/\s+/).filter(p => p.length > 1);
     if (parts.length >= 2) {
       result.firstName = parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();
       result.lastName = parts[1].charAt(0).toUpperCase() + parts[1].slice(1).toLowerCase();
