@@ -117,7 +117,7 @@ export default function RegisterScreen({ navigation }: any) {
           'application/msword',
           'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         ],
-        copyToCacheDirectory: true,
+        copyToCacheDirectory: false,
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {

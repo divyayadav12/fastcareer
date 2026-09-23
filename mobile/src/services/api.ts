@@ -44,28 +44,33 @@ import { File as ExpoFile } from 'expo-file-system';
 
 /**
  * Converts any local URI (content://, file://, blob:) into a Base64 string.
- * Supports both Expo 57 new File API and expo-file-system/legacy API.
+ * Safely copies content:// URI to sandboxed cache directory first to prevent Location isn't readable errors.
  */
 export const convertUriToBase64 = async (uri: string): Promise<string> => {
   if (!uri) return '';
   if (uri.startsWith('data:')) return uri;
 
-  // 1. Try Expo 57 new File API
-  try {
-    if (typeof ExpoFile !== 'undefined') {
-      const fileObj = new ExpoFile(uri);
-      if (fileObj && typeof fileObj.base64 === 'function') {
-        const b64 = await fileObj.base64();
-        if (b64) {
-          return b64.startsWith('data:') ? b64 : `data:application/pdf;base64,${b64}`;
-        }
+  // 1. Copy content:// or external file:// to internal sandboxed cacheDirectory
+  if (FileSystem && FileSystem.cacheDirectory) {
+    const tempTarget = `${FileSystem.cacheDirectory}res_${Date.now()}.pdf`;
+    try {
+      await FileSystem.copyAsync({
+        from: uri,
+        to: tempTarget,
+      });
+      const base64 = await FileSystem.readAsStringAsync(tempTarget, {
+        encoding: FileSystem.EncodingType ? FileSystem.EncodingType.Base64 : ('base64' as any),
+      });
+      FileSystem.deleteAsync(tempTarget, { idempotent: true }).catch(() => {});
+      if (base64) {
+        return base64.startsWith('data:') ? base64 : `data:application/pdf;base64,${base64}`;
       }
+    } catch (copyErr) {
+      // try direct read below
     }
-  } catch (newApiErr) {
-    // try legacy below
   }
 
-  // 2. Try expo-file-system/legacy readAsStringAsync
+  // 2. Direct read with legacy FileSystem
   try {
     if (FileSystem && typeof FileSystem.readAsStringAsync === 'function') {
       const base64 = await FileSystem.readAsStringAsync(uri, {
@@ -75,11 +80,9 @@ export const convertUriToBase64 = async (uri: string): Promise<string> => {
         return base64.startsWith('data:') ? base64 : `data:application/pdf;base64,${base64}`;
       }
     }
-  } catch (fsErr) {
-    // fallback to XHR below
-  }
+  } catch (fsErr) {}
 
-  // 2. Fallback to XHR + FileReader
+  // 3. Fallback to XHR + FileReader
   return new Promise((resolve) => {
     try {
       const xhr = new XMLHttpRequest();
@@ -111,51 +114,19 @@ export const convertUriToBase64 = async (uri: string): Promise<string> => {
 
 /**
  * 100% Reliable File Uploader for Mobile
- * Uses native FileSystem.uploadAsync (bypasses Android scoped storage and sandbox issues)
- * with Base64 JSON fallback.
+ * Uses Base64 JSON and sandboxed FileSystem upload.
  */
 export const uploadFileApi = async (file: any, fieldName: string = 'resume') => {
   try {
     if (!file || !file.uri) return null;
 
-    // 1. Primary: Native FileSystem.uploadAsync
-    try {
-      if (FileSystem && typeof FileSystem.uploadAsync === 'function') {
-        const uploadResponse = await FileSystem.uploadAsync(
-          `${API_BASE_URL}/upload`,
-          file.uri,
-          {
-            httpMethod: 'POST',
-            uploadType: FileSystem.FileSystemUploadType ? FileSystem.FileSystemUploadType.MULTIPART : (1 as any),
-            fieldName,
-            mimeType: file.mimeType || file.type || 'application/pdf',
-            parameters: {
-              originalname: file.name || 'resume.pdf',
-            },
-            headers: {
-              'Accept': 'application/json',
-            },
-          }
-        );
-        if (uploadResponse && uploadResponse.body) {
-          try {
-            const data = JSON.parse(uploadResponse.body);
-            if (data && (data.url || data.parsedData)) {
-              return data;
-            }
-          } catch (jsonErr) {}
-        }
-      }
-    } catch (uploadAsyncErr) {
-      console.warn('FileSystem.uploadAsync fallback:', uploadAsyncErr);
-    }
-
-    // 2. Secondary fallback: Base64 JSON
+    // 1. Convert URI to Base64 (sandboxed)
     let base64 = '';
     try {
       base64 = await convertUriToBase64(file.uri);
     } catch (convertErr) {}
 
+    // 2. Post Base64 JSON payload to backend
     if (base64) {
       try {
         const response = await api.post('/upload/base64', {
@@ -171,6 +142,39 @@ export const uploadFileApi = async (file: any, fieldName: string = 'resume') => 
       } catch (postErr) {
         console.warn('Upload API request error:', postErr);
       }
+    }
+
+    // 3. Fallback: Copy to sandboxed cache and upload
+    if (FileSystem && FileSystem.cacheDirectory && typeof FileSystem.uploadAsync === 'function') {
+      const tempPath = `${FileSystem.cacheDirectory}up_${Date.now()}.pdf`;
+      try {
+        await FileSystem.copyAsync({ from: file.uri, to: tempPath });
+        const uploadResponse = await FileSystem.uploadAsync(
+          `${API_BASE_URL}/upload`,
+          tempPath,
+          {
+            httpMethod: 'POST',
+            uploadType: FileSystem.FileSystemUploadType ? FileSystem.FileSystemUploadType.MULTIPART : (1 as any),
+            fieldName,
+            mimeType: file.mimeType || file.type || 'application/pdf',
+            parameters: {
+              originalname: file.name || 'resume.pdf',
+            },
+            headers: {
+              'Accept': 'application/json',
+            },
+          }
+        );
+        FileSystem.deleteAsync(tempPath, { idempotent: true }).catch(() => {});
+        if (uploadResponse && uploadResponse.body) {
+          try {
+            const data = JSON.parse(uploadResponse.body);
+            if (data && (data.url || data.parsedData)) {
+              return data;
+            }
+          } catch (e) {}
+        }
+      } catch (uploadAsyncErr) {}
     }
   } catch (err) {
     console.warn('uploadFileApi error:', err);
