@@ -76,7 +76,7 @@ export const convertUriToBase64 = async (uri: string): Promise<string> => {
       }
     }
   } catch (fsErr) {
-    console.warn('Legacy FileSystem read error:', fsErr);
+    // fallback to XHR below
   }
 
   // 2. Fallback to XHR + FileReader
@@ -111,21 +111,51 @@ export const convertUriToBase64 = async (uri: string): Promise<string> => {
 
 /**
  * 100% Reliable File Uploader for Mobile
- * Reads local URI via Android ContentResolver and posts clean Base64 JSON.
+ * Uses native FileSystem.uploadAsync (bypasses Android scoped storage and sandbox issues)
+ * with Base64 JSON fallback.
  */
 export const uploadFileApi = async (file: any, fieldName: string = 'resume') => {
   try {
     if (!file || !file.uri) return null;
 
-    // 1. Convert URI to Base64 using XHR blob + FileReader
+    // 1. Primary: Native FileSystem.uploadAsync
+    try {
+      if (FileSystem && typeof FileSystem.uploadAsync === 'function') {
+        const uploadResponse = await FileSystem.uploadAsync(
+          `${API_BASE_URL}/upload`,
+          file.uri,
+          {
+            httpMethod: 'POST',
+            uploadType: FileSystem.FileSystemUploadType ? FileSystem.FileSystemUploadType.MULTIPART : (1 as any),
+            fieldName,
+            mimeType: file.mimeType || file.type || 'application/pdf',
+            parameters: {
+              originalname: file.name || 'resume.pdf',
+            },
+            headers: {
+              'Accept': 'application/json',
+            },
+          }
+        );
+        if (uploadResponse && uploadResponse.body) {
+          try {
+            const data = JSON.parse(uploadResponse.body);
+            if (data && (data.url || data.parsedData)) {
+              return data;
+            }
+          } catch (jsonErr) {}
+        }
+      }
+    } catch (uploadAsyncErr) {
+      console.warn('FileSystem.uploadAsync fallback:', uploadAsyncErr);
+    }
+
+    // 2. Secondary fallback: Base64 JSON
     let base64 = '';
     try {
       base64 = await convertUriToBase64(file.uri);
-    } catch (convertErr) {
-      console.warn('Base64 conversion failed:', convertErr);
-    }
+    } catch (convertErr) {}
 
-    // 2. Post Base64 JSON payload to backend
     if (base64) {
       try {
         const response = await api.post('/upload/base64', {
