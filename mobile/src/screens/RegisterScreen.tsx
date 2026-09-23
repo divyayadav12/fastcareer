@@ -12,6 +12,7 @@ import type { AppDispatch, RootState } from '../store';
 import * as DocumentPicker from 'expo-document-picker';
 import api, { API_BASE_URL } from '../services/api';
 import { ALL_CITIES } from '../utils/constants';
+import { parseResumeDocument } from '../utils/resumeParser';
 
 const POPULAR_CITIES = [
   'Mumbai', 'Delhi', 'Bangalore', 'Hyderabad', 'Ahmedabad', 'Chennai',
@@ -146,22 +147,96 @@ export default function RegisterScreen({ navigation }: any) {
         setResumeFile(file);
         setIsScanning(true);
 
-        const extracted = parseResumeInfo(file.name || 'resume.pdf');
-        setScannedFields(extracted);
+        const extractedList: string[] = [];
+
+        // 1. Deep file content parsing (reads text / stream inside PDF & DOCX)
+        try {
+          const parsed = await parseResumeDocument(file);
+          if (parsed.firstName) {
+            setFirstName(parsed.firstName);
+            extractedList.push('First Name');
+          }
+          if (parsed.lastName) {
+            setLastName(parsed.lastName);
+            extractedList.push('Last Name');
+          }
+          if (parsed.email) {
+            setEmail(parsed.email);
+            extractedList.push('Email');
+          }
+          if (parsed.phone) {
+            setPhone(parsed.phone);
+            extractedList.push('Phone');
+          }
+          if (parsed.city) {
+            setCurrentCity(parsed.city);
+            extractedList.push('City');
+          }
+          if (parsed.workStatus) {
+            setWorkStatus(parsed.workStatus);
+            extractedList.push('Work Status');
+          }
+        } catch (e) {
+          console.warn('Local file parser warning:', e);
+        }
+
+        // 2. Server-side deep buffer extraction
+        try {
+          const formData = new FormData();
+          formData.append('resume', {
+            uri: file.uri,
+            name: file.name || 'resume.pdf',
+            type: file.mimeType || 'application/pdf',
+          } as any);
+
+          const uploadRes = await api.post('/upload', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+            timeout: 10000,
+          });
+
+          if (uploadRes.data?.parsedData) {
+            const sp = uploadRes.data.parsedData;
+            if (sp.email && !email) {
+              setEmail(sp.email);
+              if (!extractedList.includes('Email')) extractedList.push('Email');
+            }
+            if (sp.phone && !phone) {
+              setPhone(sp.phone);
+              if (!extractedList.includes('Phone')) extractedList.push('Phone');
+            }
+            if (sp.city && !currentCity) {
+              setCurrentCity(sp.city);
+              if (!extractedList.includes('City')) extractedList.push('City');
+            }
+            if (sp.firstName && !firstName) {
+              setFirstName(sp.firstName);
+              if (!extractedList.includes('First Name')) extractedList.push('First Name');
+            }
+            if (sp.lastName && !lastName) {
+              setLastName(sp.lastName);
+              if (!extractedList.includes('Last Name')) extractedList.push('Last Name');
+            }
+          }
+        } catch (serverErr) {
+          // Server parse is optional background enhancement
+        }
+
+        setScannedFields(extractedList);
         setIsScanning(false);
 
-        if (extracted.length > 0) {
+        if (extractedList.length > 0) {
           Alert.alert(
             '⚡ Resume Auto-Filled!',
-            `Auto-populated from resume: ${extracted.join(', ')}.\n\nPlease review and set a password to register.`,
-            [{ text: 'Great!' }]
+            `Auto-populated from resume content: ${extractedList.join(', ')}.\n\nPlease review details and set a password to register.`,
+            [{ text: 'OK' }]
           );
         } else {
-          Alert.alert('Resume Attached 📄', 'Resume attached successfully! Please complete your details below.');
+          Alert.alert('Resume Attached 📄', 'Resume attached! Please complete your details below.');
         }
       }
     } catch (err) {
       console.log('Error picking document:', err);
+      setIsScanning(false);
     }
   };
 
