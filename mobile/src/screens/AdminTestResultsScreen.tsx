@@ -9,10 +9,11 @@ import {
   Modal,
   ScrollView,
   ActivityIndicator,
-  Alert,
-  Linking
+  Alert
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { WebView } from 'react-native-webview';
 import api from '../services/api';
 
 interface AssessmentSubmission {
@@ -42,6 +43,10 @@ export default function AdminTestResultsScreen() {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedAssessment, setSelectedAssessment] = useState<AssessmentSubmission | null>(null);
+
+  // In-App Video Player State
+  const [selectedVideoUrl, setSelectedVideoUrl] = useState<string | null>(null);
+  const [selectedVideoTitle, setSelectedVideoTitle] = useState<string>('');
 
   // Evaluation Form inside modal
   const [reviewStatus, setReviewStatus] = useState<string>('submitted');
@@ -245,7 +250,7 @@ export default function AdminTestResultsScreen() {
         onRequestClose={() => setSelectedAssessment(null)}
       >
         {selectedAssessment && (
-          <View style={styles.modalContainer}>
+          <SafeAreaView style={styles.modalContainer}>
             <View style={styles.modalHeader}>
               <View>
                 <Text style={styles.modalTitle}>
@@ -293,16 +298,21 @@ export default function AdminTestResultsScreen() {
                       <TouchableOpacity
                         style={styles.mediaLinkBtn}
                         onPress={() => {
-                          if (ans.candidateAnswer && ans.candidateAnswer.startsWith('http')) {
-                            Linking.openURL(ans.candidateAnswer);
+                          if (ans.candidateAnswer && (ans.candidateAnswer.startsWith('http') || ans.candidateAnswer.startsWith('/uploads'))) {
+                            const fullUrl = ans.candidateAnswer.startsWith('http')
+                              ? ans.candidateAnswer
+                              : `https://fastcareer.onrender.com${ans.candidateAnswer}`;
+                            setSelectedVideoUrl(fullUrl);
+                            setSelectedVideoTitle(`Q${idx + 1} • ${ans.type === 'video' ? 'Video Answer' : 'Voice Audio'} (${selectedAssessment.candidate?.firstName || ''} ${selectedAssessment.candidate?.lastName || ''})`);
                           } else {
-                            Alert.alert('Media URL', ans.candidateAnswer || 'No media link found');
+                            Alert.alert('Media Response', ans.candidateAnswer || 'No media link found');
                           }
                         }}
+                        activeOpacity={0.8}
                       >
-                        <Ionicons name={ans.type === 'video' ? 'videocam' : 'volume-high'} size={18} color="#034b71" />
+                        <Ionicons name={ans.type === 'video' ? 'play-circle' : 'volume-high'} size={22} color="#034b71" />
                         <Text style={styles.mediaLinkText}>
-                          Play {ans.type === 'video' ? 'Video Recording' : 'Voice Audio'} ↗
+                          Play {ans.type === 'video' ? 'Video Recording' : 'Voice Audio'} In-App ▶
                         </Text>
                       </TouchableOpacity>
                     ) : (
@@ -375,8 +385,81 @@ export default function AdminTestResultsScreen() {
                 </TouchableOpacity>
               </View>
             </ScrollView>
-          </View>
+          </SafeAreaView>
         )}
+      </Modal>
+
+      {/* ─── In-App Video Player Modal ────────────────────────────────────────── */}
+      <Modal
+        visible={!!selectedVideoUrl}
+        animationType="fade"
+        transparent={false}
+        onRequestClose={() => setSelectedVideoUrl(null)}
+      >
+        <SafeAreaView style={styles.videoPlayerContainer}>
+          <View style={styles.videoPlayerHeader}>
+            <View style={{ flex: 1, marginRight: 10 }}>
+              <Text style={styles.videoPlayerTitle} numberOfLines={1}>{selectedVideoTitle || 'Candidate Video Recording'}</Text>
+              <Text style={styles.videoPlayerSub}>FAST Careers In-App Player</Text>
+            </View>
+            <TouchableOpacity onPress={() => setSelectedVideoUrl(null)} style={styles.videoCloseBtn}>
+              <Ionicons name="close" size={26} color="#ffffff" />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.videoWrapper}>
+            {selectedVideoUrl ? (
+              <WebView
+                source={{
+                  html: `
+                    <!DOCTYPE html>
+                    <html>
+                      <head>
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+                        <style>
+                          * { margin: 0; padding: 0; box-sizing: border-box; }
+                          body, html {
+                            width: 100%;
+                            height: 100%;
+                            background-color: #000000;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            overflow: hidden;
+                          }
+                          video {
+                            width: 100vw;
+                            height: 100vh;
+                            max-height: 100%;
+                            object-fit: contain;
+                          }
+                        </style>
+                      </head>
+                      <body>
+                        <video 
+                          controls 
+                          autoplay 
+                          playsinline 
+                          webkit-playsinline
+                          controlsList="nodownload"
+                          src="${selectedVideoUrl}"
+                        >
+                          Your browser does not support playing this video.
+                        </video>
+                      </body>
+                    </html>
+                  `
+                }}
+                style={styles.webviewVideo}
+                allowsFullscreenVideo={true}
+                mediaPlaybackRequiresUserAction={false}
+                javaScriptEnabled={true}
+                domStorageEnabled={true}
+                originWhitelist={['*']}
+              />
+            ) : null}
+          </View>
+        </SafeAreaView>
       </Modal>
     </View>
   );
@@ -437,7 +520,7 @@ const styles = StyleSheet.create({
   answerBody: { backgroundColor: '#f8fafc', borderRadius: 8, padding: 10 },
   answerLabel: { fontSize: 11, color: '#64748b', fontWeight: '600', marginBottom: 4 },
   textAnswer: { fontSize: 13, color: '#0f172a' },
-  mediaLinkBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#e0f2fe', borderRadius: 8, padding: 10, gap: 8 },
+  mediaLinkBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#e0f2fe', borderRadius: 10, padding: 12, gap: 10 },
   mediaLinkText: { fontSize: 13, fontWeight: 'bold', color: '#034b71' },
   evalCard: { backgroundColor: '#ffffff', borderRadius: 14, padding: 16, marginTop: 10, borderWidth: 1, borderColor: '#e2e8f0' },
   inputLabel: { fontSize: 13, fontWeight: '700', color: '#334155', marginBottom: 8 },
@@ -450,5 +533,23 @@ const styles = StyleSheet.create({
   notesInput: { backgroundColor: '#f8fafc', borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 10, padding: 12, fontSize: 13, color: '#0f172a', minHeight: 80, marginTop: 6 },
   saveEvalBtn: { backgroundColor: '#034b71', borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 18 },
   saveEvalBtnText: { color: '#ffffff', fontSize: 14, fontWeight: 'bold' },
-  disabledBtn: { backgroundColor: '#94a3b8' }
+  disabledBtn: { backgroundColor: '#94a3b8' },
+
+  // Video Player Styles
+  videoPlayerContainer: { flex: 1, backgroundColor: '#000000' },
+  videoPlayerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#0f172a',
+    borderBottomWidth: 1,
+    borderBottomColor: '#1e293b'
+  },
+  videoPlayerTitle: { fontSize: 14, fontWeight: '700', color: '#ffffff' },
+  videoPlayerSub: { fontSize: 11, color: '#94a3b8', marginTop: 2 },
+  videoCloseBtn: { padding: 4 },
+  videoWrapper: { flex: 1, backgroundColor: '#000000' },
+  webviewVideo: { flex: 1, backgroundColor: '#000000' },
 });
