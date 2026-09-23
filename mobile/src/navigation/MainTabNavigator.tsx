@@ -33,6 +33,17 @@ function HomeStack() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="HomeList" component={HomeScreen} />
       <Stack.Screen name="JobDetails" component={JobDetailsScreen} />
+      <Stack.Screen 
+        name="FastSelection" 
+        component={FastSelectionTestScreen} 
+        options={{ 
+          headerShown: true, 
+          title: 'Fast Selection Online Test',
+          headerStyle: { backgroundColor: '#ffffff' },
+          headerTitleStyle: { color: '#0f172a', fontWeight: 'bold' },
+          headerTintColor: '#034b71',
+        }} 
+      />
     </Stack.Navigator>
   );
 }

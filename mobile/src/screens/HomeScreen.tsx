@@ -4,6 +4,7 @@ import {
   TouchableOpacity, FlatList, ActivityIndicator, RefreshControl
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import api from '../services/api';
 
 export default function HomeScreen({ navigation }: any) {
@@ -109,13 +110,6 @@ export default function HomeScreen({ navigation }: any) {
         </ScrollView>
       </View>
 
-      {/* Results Header */}
-      <View style={styles.resultsHeader}>
-        <Text style={styles.resultsText}>
-          {filteredJobs.length} {filteredJobs.length === 1 ? 'Job' : 'Jobs'} Found
-        </Text>
-      </View>
-
       {loading ? (
         <ActivityIndicator size="large" color="#034b71" style={{ marginTop: 40 }} />
       ) : (
@@ -128,6 +122,57 @@ export default function HomeScreen({ navigation }: any) {
           keyboardShouldPersistTaps="handled"
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#034b71']} />
+          }
+          ListHeaderComponent={
+            <View style={styles.listHeaderWrapper}>
+              {/* FAST Selection Candidate Test Card */}
+              <TouchableOpacity
+                style={styles.fastSelectionCard}
+                activeOpacity={0.88}
+                onPress={() => navigation.navigate('FastSelection')}
+              >
+                <View style={styles.fastSelectionTopRow}>
+                  <View style={styles.fastSelectionIconCircle}>
+                    <Ionicons name="flash" size={20} color="#f59e0b" />
+                  </View>
+                  <View style={{ flex: 1, marginLeft: 12 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' }}>
+                      <Text style={styles.fastSelectionTitle}>FAST Selection Online Test</Text>
+                      <View style={styles.livePill}>
+                        <Text style={styles.livePillText}>LIVE ⚡</Text>
+                      </View>
+                    </View>
+                    <Text style={styles.fastSelectionDesc}>
+                      Take the verified candidate assessment & get fast-tracked for top CA & Finance interviews.
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={styles.fastSelectionActionRow}>
+                  <View style={styles.fastSelectionFeatures}>
+                    <View style={styles.featureItem}>
+                      <Ionicons name="checkmark-circle" size={14} color="#38bdf8" />
+                      <Text style={styles.featureItemText}>6 Questions</Text>
+                    </View>
+                    <View style={styles.featureItem}>
+                      <Ionicons name="checkmark-circle" size={14} color="#38bdf8" />
+                      <Text style={styles.featureItemText}>Video Pitch</Text>
+                    </View>
+                  </View>
+                  <View style={styles.takeTestBtn}>
+                    <Text style={styles.takeTestBtnText}>Give Test</Text>
+                    <Ionicons name="arrow-forward" size={15} color="#034b71" style={{ marginLeft: 4 }} />
+                  </View>
+                </View>
+              </TouchableOpacity>
+
+              {/* Results Count Header */}
+              <View style={styles.resultsHeader}>
+                <Text style={styles.resultsText}>
+                  {filteredJobs.length} {filteredJobs.length === 1 ? 'Job' : 'Jobs'} Found
+                </Text>
+              </View>
+            </View>
           }
           ListEmptyComponent={
             <View style={{ alignItems: 'center', marginTop: 40 }}>
@@ -150,10 +195,98 @@ const styles = StyleSheet.create({
   categoryText: { color: '#64748b', fontWeight: '600', fontSize: 14 },
   categoryTextActive: { color: '#ffffff' },
 
-  resultsHeader: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 },
+  listContainer: { padding: 16, paddingBottom: 40 },
+  listHeaderWrapper: { marginBottom: 8 },
+
+  /* Fast Selection Banner */
+  fastSelectionCard: {
+    backgroundColor: '#022c43',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#034b71',
+    shadowColor: '#022c43',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  fastSelectionTopRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  fastSelectionIconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#074266',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  fastSelectionTitle: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    marginRight: 6,
+  },
+  livePill: {
+    backgroundColor: '#fef3c7',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  livePillText: {
+    color: '#b45309',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  fastSelectionDesc: {
+    fontSize: 12,
+    color: '#cbd5e1',
+    lineHeight: 17,
+    marginTop: 4,
+  },
+  fastSelectionActionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 14,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#074266',
+  },
+  fastSelectionFeatures: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  featureItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  featureItemText: {
+    fontSize: 11,
+    color: '#94a3b8',
+    fontWeight: '500',
+  },
+  takeTestBtn: {
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  takeTestBtnText: {
+    color: '#034b71',
+    fontWeight: 'bold',
+    fontSize: 13,
+  },
+
+  resultsHeader: { paddingTop: 8, paddingBottom: 4 },
   resultsText: { fontSize: 14, fontWeight: 'bold', color: '#475569' },
 
-  listContainer: { padding: 16, paddingBottom: 40 },
   jobCard: { backgroundColor: '#ffffff', borderRadius: 16, padding: 20, marginBottom: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2, borderWidth: 1, borderColor: '#e2e8f0', position: 'relative' },
   hotBadge: { position: 'absolute', top: 16, right: 16, backgroundColor: '#fef2f2', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, borderWidth: 1, borderColor: '#fecaca' },
   hotText: { color: '#ef4444', fontSize: 10, fontWeight: 'bold' },
