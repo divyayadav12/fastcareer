@@ -119,31 +119,54 @@ export async function parseResumeBuffer(buffer: Buffer, originalFilename: string
   const searchPool = `${originalFilename} \n ${extractedPdfText}`;
   const lowerText = searchPool.toLowerCase();
 
-  // 1. Extract Email Address
-  const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6})/gi;
-  const emailMatches = searchPool.match(emailRegex);
-  if (emailMatches && emailMatches.length > 0) {
-    const validEmails = emailMatches.filter(em => 
-      !em.toLowerCase().includes('example.com') && 
-      !em.toLowerCase().includes('schema.org') && 
-      !em.toLowerCase().includes('w3.org') && 
-      !em.toLowerCase().includes('adobe.com') &&
-      !em.toLowerCase().includes('github.com')
-    );
-    if (validEmails.length > 0) {
-      result.email = validEmails[0].toLowerCase().trim();
+  // 1. Extract Email Address (Multi-tier Regex)
+  const emailCandidates: string[] = [];
+
+  // Match standard emails
+  const standardMatches = searchPool.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,10})/gi) || [];
+  emailCandidates.push(...standardMatches);
+
+  // Match mailto: links
+  const mailtoMatches = searchPool.match(/mailto:\s*([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,10})/gi) || [];
+  for (const m of mailtoMatches) {
+    const clean = m.replace(/^mailto:\s*/i, '');
+    emailCandidates.push(clean);
+  }
+
+  // Match spaced emails (e.g. name @ domain . com or name.last @ domain.com)
+  const spacedRegex = /([a-zA-Z0-9._%+-]+)\s*@\s*([a-zA-Z0-9.-]+)\s*\.\s*([a-zA-Z]{2,10})/gi;
+  let spMatch;
+  while ((spMatch = spacedRegex.exec(searchPool)) !== null) {
+    if (spMatch[1] && spMatch[2] && spMatch[3]) {
+      emailCandidates.push(`${spMatch[1].replace(/\s+/g, '')}@${spMatch[2].replace(/\s+/g, '')}.${spMatch[3].replace(/\s+/g, '')}`);
     }
   }
 
-  // Space-separated email fallback: name @ domain . com
-  if (!result.email) {
-    const spacedEmailRegex = /([a-zA-Z0-9._%+-]+)\s*@\s*([a-zA-Z0-9.-]+)\s*\.\s*([a-zA-Z]{2,6})/i;
-    const spMatch = searchPool.match(spacedEmailRegex);
-    if (spMatch && spMatch[1] && spMatch[2] && spMatch[3]) {
-      const reconstructed = `${spMatch[1]}@${spMatch[2]}.${spMatch[3]}`.toLowerCase();
-      if (!reconstructed.includes('example.com') && !reconstructed.includes('schema.org')) {
-        result.email = reconstructed;
-      }
+  // Match email labeled lines (e.g. Email: user@domain.com)
+  const labeledEmailRegex = /(?:email|e-mail|mail)\s*[:\-\s]\s*([^\s\r\n<>]+@[^\s\r\n<>]+)/gi;
+  let lblMatch;
+  while ((lblMatch = labeledEmailRegex.exec(searchPool)) !== null) {
+    if (lblMatch[1]) {
+      emailCandidates.push(lblMatch[1].replace(/[^a-zA-Z0-9._%+-@]/g, ''));
+    }
+  }
+
+  // Select first valid non-system email
+  for (const rawEmail of emailCandidates) {
+    const clean = rawEmail.toLowerCase().trim().replace(/^mailto:/i, '').replace(/[),;:]+$/, '');
+    if (
+      clean.includes('@') &&
+      clean.includes('.') &&
+      !clean.includes('example.com') &&
+      !clean.includes('schema.org') &&
+      !clean.includes('w3.org') &&
+      !clean.includes('adobe.com') &&
+      !clean.includes('github.com') &&
+      !clean.includes('google.com') &&
+      !clean.includes('fastcareer')
+    ) {
+      result.email = clean;
+      break;
     }
   }
 
@@ -173,12 +196,31 @@ export async function parseResumeBuffer(buffer: Buffer, originalFilename: string
     }
   }
 
-  // 3. Extract City
-  for (const city of POPULAR_CITIES) {
-    const regex = new RegExp(`\\b${city.toLowerCase()}\\b`, 'i');
-    if (regex.test(lowerText)) {
-      result.city = city === 'Bangalore' ? 'Bengaluru' : city === 'Gurgaon' ? 'Gurugram' : city;
-      break;
+  // 3. Extract City (Multi-tier search)
+  const normalizedCityText = ` ${lowerText.replace(/[^a-z0-9]/g, ' ')} `;
+
+  // Tier 1: Look for city near explicit location keywords
+  const locationKeywordRegex = /(?:location|city|address|current\s*city|residence|based\s*in|native|hometown|residing\s*in|place)\s*[:\-\s]+([a-z\s]{3,30})/gi;
+  let locMatch;
+  while ((locMatch = locationKeywordRegex.exec(lowerText)) !== null) {
+    const snippet = ` ${locMatch[1].replace(/[^a-z0-9]/g, ' ')} `;
+    for (const city of POPULAR_CITIES) {
+      if (snippet.includes(` ${city.toLowerCase()} `)) {
+        result.city = city === 'Bangalore' ? 'Bengaluru' : city === 'Gurgaon' ? 'Gurugram' : city;
+        break;
+      }
+    }
+    if (result.city) break;
+  }
+
+  // Tier 2: Check POPULAR_CITIES across whole resume
+  if (!result.city) {
+    for (const city of POPULAR_CITIES) {
+      const cityKey = ` ${city.toLowerCase()} `;
+      if (normalizedCityText.includes(cityKey)) {
+        result.city = city === 'Bangalore' ? 'Bengaluru' : city === 'Gurgaon' ? 'Gurugram' : city;
+        break;
+      }
     }
   }
 
