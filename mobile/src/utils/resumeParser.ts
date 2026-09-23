@@ -169,6 +169,12 @@ export function extractTextFromPdfBytes(uint8: Uint8Array): string {
     fullText += ' ' + decodePdfString(uMatch[1]) + ' ';
   }
 
+  // Raw mailto matches
+  const rawMailMatches = rawStr.match(/(?:mailto:)?([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,10})/gi) || [];
+  for (const rm of rawMailMatches) {
+    fullText += ' ' + rm + ' ';
+  }
+
   let pos = 0;
   while ((pos = rawStr.indexOf('stream', pos)) !== -1) {
     let start = pos + 6;
@@ -186,6 +192,10 @@ export function extractTextFromPdfBytes(uint8: Uint8Array): string {
         decompStr += String.fromCharCode.apply(null, decompressed.subarray(j, j + chunkSize) as any);
       }
       fullText += decodeHexPdf(decompStr) + ' ' + decodePdfString(decompStr) + ' ';
+      const strEmails = decompStr.match(/(?:mailto:)?([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,10})/gi) || [];
+      for (const se of strEmails) {
+        fullText += ' ' + se + ' ';
+      }
     } catch (e) {
       try {
         const decompressedRaw = pako.inflateRaw(streamBytes);
@@ -194,6 +204,10 @@ export function extractTextFromPdfBytes(uint8: Uint8Array): string {
           decompStr += String.fromCharCode.apply(null, decompressedRaw.subarray(j, j + chunkSize) as any);
         }
         fullText += decodeHexPdf(decompStr) + ' ' + decodePdfString(decompStr) + ' ';
+        const strEmails = decompStr.match(/(?:mailto:)?([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,10})/gi) || [];
+        for (const se of strEmails) {
+          fullText += ' ' + se + ' ';
+        }
       } catch (e2) {}
     }
 
@@ -241,19 +255,12 @@ export async function parseResumeDocument(file: { uri: string; name?: string }):
   const combinedSearchText = `${file.name || ''} \n ${extractedPdfText}`;
   const lowerText = combinedSearchText.toLowerCase();
 
-  // 1. Extract Email Address (Comprehensive Multi-tier Search)
+  // 1. Extract Email Address (Exhaustive Search)
   const emailCandidates: string[] = [];
 
-  // Match standard emails
-  const standardMatches = combinedSearchText.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,10})/gi) || [];
+  // Match standard emails and mailto: links
+  const standardMatches = combinedSearchText.match(/(?:mailto:)?([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,10})/gi) || [];
   emailCandidates.push(...standardMatches);
-
-  // Match mailto: links
-  const mailtoMatches = combinedSearchText.match(/mailto:\s*([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,10})/gi) || [];
-  for (const m of mailtoMatches) {
-    const clean = m.replace(/^mailto:\s*/i, '');
-    emailCandidates.push(clean);
-  }
 
   // Token-level scan for any word containing @ and a dot
   const allTokens = combinedSearchText.split(/[\s\r\n\t,;"'<>()[\]{}]+/);
@@ -287,7 +294,7 @@ export async function parseResumeDocument(file: { uri: string; name?: string }):
 
   // Select first valid non-system email (Strict ASCII validation)
   for (const rawEmail of emailCandidates) {
-    const clean = rawEmail.toLowerCase().trim().replace(/^mailto:/i, '').replace(/[),;:]+$/, '');
+    const clean = rawEmail.toLowerCase().trim().replace(/^mailto:/i, '').replace(/^[^\w+]+/, '').replace(/[^\w]+$/, '');
     if (isValidEmailAddress(clean)) {
       result.email = clean;
       break;
@@ -408,7 +415,16 @@ export async function parseResumeDocument(file: { uri: string; name?: string }):
     }
   }
 
-  // 7. Extract Candidate Name (Filename prioritized if valid 2-word name, then text lines)
+  // 7. Extract Candidate Name (Filename prioritized with Indian surname splitter)
+  const INDIAN_SURNAMES = [
+    'yadav', 'sharma', 'gupta', 'verma', 'jain', 'singh', 'kumar', 'mishra', 'patel', 'shah',
+    'agrawal', 'agarwal', 'chouhan', 'chauhan', 'pandey', 'tiwari', 'dubey', 'tripathi', 'shukla',
+    'reddy', 'nair', 'iyer', 'menon', 'rao', 'das', 'ghosh', 'banerjee', 'mukherjee', 'chatterjee',
+    'bose', 'roy', 'dutta', 'sen', 'mitra', 'joshi', 'bhat', 'bhatt', 'saxena', 'mehta', 'soni',
+    'khatri', 'malhotra', 'kapoor', 'khanna', 'chopra', 'bhatia', 'sethi', 'arora', 'grover', 'garg',
+    'bansal', 'mittal', 'goel', 'goyal', 'sinha', 'jha', 'thakur', 'kaur'
+  ];
+
   const cleanFileName = (file.name || '')
     .replace(/\.[^/.]+$/, '')
     .replace(/([a-z])([A-Z])/g, '$1 $2')
@@ -424,7 +440,20 @@ export async function parseResumeDocument(file: { uri: string; name?: string }):
     result.firstName = fileWords[0].charAt(0).toUpperCase() + fileWords[0].slice(1).toLowerCase();
     result.lastName = fileWords[1].charAt(0).toUpperCase() + fileWords[1].slice(1).toLowerCase();
   } else if (fileWords.length === 1) {
-    result.firstName = fileWords[0].charAt(0).toUpperCase() + fileWords[0].slice(1).toLowerCase();
+    const singleWord = fileWords[0].toLowerCase();
+    let splitDone = false;
+    for (const surname of INDIAN_SURNAMES) {
+      if (singleWord.endsWith(surname) && singleWord.length > surname.length + 2) {
+        const first = singleWord.slice(0, singleWord.length - surname.length);
+        result.firstName = first.charAt(0).toUpperCase() + first.slice(1);
+        result.lastName = surname.charAt(0).toUpperCase() + surname.slice(1);
+        splitDone = true;
+        break;
+      }
+    }
+    if (!splitDone) {
+      result.firstName = fileWords[0].charAt(0).toUpperCase() + fileWords[0].slice(1).toLowerCase();
+    }
   }
 
   // If name not extracted from filename, scan clean PDF text lines

@@ -278,7 +278,16 @@ export async function parseResumeBuffer(buffer: Buffer, originalFilename: string
     result.workStatus = 'experienced';
   }
 
-  // 6. Extract Candidate Name (Filename prioritized if valid 2-word name)
+  // 6. Extract Candidate Name (Filename prioritized with Indian surname splitter)
+  const INDIAN_SURNAMES = [
+    'yadav', 'sharma', 'gupta', 'verma', 'jain', 'singh', 'kumar', 'mishra', 'patel', 'shah',
+    'agrawal', 'agarwal', 'chouhan', 'chauhan', 'pandey', 'tiwari', 'dubey', 'tripathi', 'shukla',
+    'reddy', 'nair', 'iyer', 'menon', 'rao', 'das', 'ghosh', 'banerjee', 'mukherjee', 'chatterjee',
+    'bose', 'roy', 'dutta', 'sen', 'mitra', 'joshi', 'bhat', 'bhatt', 'saxena', 'mehta', 'soni',
+    'khatri', 'malhotra', 'kapoor', 'khanna', 'chopra', 'bhatia', 'sethi', 'arora', 'grover', 'garg',
+    'bansal', 'mittal', 'goel', 'goyal', 'sinha', 'jha', 'thakur', 'kaur'
+  ];
+
   const cleanFileName = originalFilename
     .replace(/\.[^/.]+$/, '')
     .replace(/([a-z])([A-Z])/g, '$1 $2')
@@ -294,7 +303,20 @@ export async function parseResumeBuffer(buffer: Buffer, originalFilename: string
     result.firstName = fileWords[0].charAt(0).toUpperCase() + fileWords[0].slice(1).toLowerCase();
     result.lastName = fileWords[1].charAt(0).toUpperCase() + fileWords[1].slice(1).toLowerCase();
   } else if (fileWords.length === 1) {
-    result.firstName = fileWords[0].charAt(0).toUpperCase() + fileWords[0].slice(1).toLowerCase();
+    const singleWord = fileWords[0].toLowerCase();
+    let splitDone = false;
+    for (const surname of INDIAN_SURNAMES) {
+      if (singleWord.endsWith(surname) && singleWord.length > surname.length + 2) {
+        const first = singleWord.slice(0, singleWord.length - surname.length);
+        result.firstName = first.charAt(0).toUpperCase() + first.slice(1);
+        result.lastName = surname.charAt(0).toUpperCase() + surname.slice(1);
+        splitDone = true;
+        break;
+      }
+    }
+    if (!splitDone) {
+      result.firstName = fileWords[0].charAt(0).toUpperCase() + fileWords[0].slice(1).toLowerCase();
+    }
   }
 
   if (!result.firstName) {
