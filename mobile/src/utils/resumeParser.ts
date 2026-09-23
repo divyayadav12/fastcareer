@@ -6,7 +6,7 @@ const POPULAR_CITIES = [
   'Indore', 'Thane', 'Bhopal', 'Visakhapatnam', 'Patna', 'Vadodara',
   'Ghaziabad', 'Ludhiana', 'Agra', 'Nashik', 'Faridabad', 'Meerut',
   'Rajkot', 'Varanasi', 'Srinagar', 'Aurangabad', 'Dhanbad', 'Amritsar',
-  'Navi Mumbai', 'Allahabad', 'Ranchi', 'Howrah', 'Coimbatore', 'Jabalpur',
+  'Navi Mumbai', 'Allahabad', 'Prayagraj', 'Ranchi', 'Howrah', 'Coimbatore', 'Jabalpur',
   'Gwalior', 'Vijayawada', 'Jodhpur', 'Madurai', 'Raipur', 'Kota',
   'Guwahati', 'Chandigarh', 'Noida', 'Gurugram', 'Gurgaon'
 ];
@@ -18,23 +18,47 @@ export interface ExtractedResumeData {
   phone?: string;
   city?: string;
   workStatus?: 'fresher' | 'experienced';
+  linkedinUrl?: string;
+  bothGroups1stAttempt?: boolean;
+  group1Attempts?: string;
+  group1Month?: string;
+  group1Year?: string;
+  group2Attempts?: string;
+  group2Month?: string;
+  group2Year?: string;
+  ranker?: string;
+  completionSessionMonth?: string;
+  completionSessionYear?: string;
 }
 
 /**
- * Reads any Android ContentResolver URI or file:// URI cleanly using Web Blob/FileReader
+ * Reads any Android ContentResolver URI or file:// URI cleanly using XMLHttpRequest + FileReader
  */
 export const readUriAsText = (uri: string): Promise<string> => {
-  return new Promise(async (resolve) => {
+  return new Promise((resolve) => {
     try {
       if (!uri) return resolve('');
-      const response = await fetch(uri);
-      const blob = await response.blob();
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        resolve((reader.result as string) || '');
+      const xhr = new XMLHttpRequest();
+      xhr.onload = function () {
+        try {
+          const reader = new FileReader();
+          reader.onloadend = function () {
+            resolve((reader.result as string) || '');
+          };
+          reader.onerror = function () {
+            resolve('');
+          };
+          reader.readAsText(xhr.response);
+        } catch {
+          resolve('');
+        }
       };
-      reader.onerror = () => resolve('');
-      reader.readAsText(blob);
+      xhr.onerror = function () {
+        resolve('');
+      };
+      xhr.open('GET', uri);
+      xhr.responseType = 'blob';
+      xhr.send();
     } catch {
       resolve('');
     }
@@ -45,7 +69,6 @@ export async function parseResumeDocument(file: { uri: string; name?: string }):
   const result: ExtractedResumeData = {};
   let rawText = '';
 
-  // 1. Read text from URI using native fetch/FileReader (no FileSystem permissions needed)
   if (file.uri) {
     try {
       rawText = await readUriAsText(file.uri);
@@ -53,15 +76,16 @@ export async function parseResumeDocument(file: { uri: string; name?: string }):
   }
 
   const combinedSearchText = `${file.name || ''} \n ${rawText}`;
+  const lowerText = combinedSearchText.toLowerCase();
 
-  // 2. Extract Email Address
+  // 1. Extract Email Address
   const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6})/gi;
   const emailMatches = combinedSearchText.match(emailRegex);
   if (emailMatches && emailMatches.length > 0) {
     const validEmails = emailMatches.filter(em => 
       !em.includes('example.com') && 
       !em.includes('schema.org') && 
-      !em.includes('w3.org') &&
+      !em.includes('w3.org') && 
       !em.includes('adobe.com')
     );
     if (validEmails.length > 0) {
@@ -69,7 +93,7 @@ export async function parseResumeDocument(file: { uri: string; name?: string }):
     }
   }
 
-  // 3. Extract Mobile Number (10 digits starting with 6-9)
+  // 2. Extract Mobile Number (10 digits starting with 6-9)
   const phoneRegex = /(?:(?:\+91|0091|0)[\s-]?)?([6-9]\d{9})\b/g;
   let phoneMatch;
   while ((phoneMatch = phoneRegex.exec(combinedSearchText)) !== null) {
@@ -79,8 +103,7 @@ export async function parseResumeDocument(file: { uri: string; name?: string }):
     }
   }
 
-  // 4. Extract City (from Popular Cities or ALL_CITIES)
-  const lowerText = combinedSearchText.toLowerCase();
+  // 3. Extract City (from Popular Cities or ALL_CITIES)
   for (const city of POPULAR_CITIES) {
     const cityLower = city.toLowerCase();
     const regex = new RegExp(`\\b${cityLower}\\b`, 'i');
@@ -90,6 +113,13 @@ export async function parseResumeDocument(file: { uri: string; name?: string }):
     }
   }
 
+  // 4. LinkedIn Profile URL
+  const linkedinRegex = /(?:https?:\/\/)?(?:www\.)?linkedin\.com\/in\/([a-zA-Z0-9_-]+)/i;
+  const linkedinMatch = combinedSearchText.match(linkedinRegex);
+  if (linkedinMatch) {
+    result.linkedinUrl = `https://www.linkedin.com/in/${linkedinMatch[1]}`;
+  }
+
   // 5. Extract Work Status
   if (lowerText.includes('fresher') || lowerText.includes('articleship completed') || lowerText.includes('ca fresher')) {
     result.workStatus = 'fresher';
@@ -97,7 +127,32 @@ export async function parseResumeDocument(file: { uri: string; name?: string }):
     result.workStatus = 'experienced';
   }
 
-  // 6. Extract Candidate Name from filename
+  // 6. CA Final Details Extraction
+  const bothGroups1st = /\b(?:both\s+groups?|both\s+grp)[\s\w,-]{0,30}\b(?:1st|first)\s+attempt\b/i.test(combinedSearchText) ||
+    /\b(?:1st|first)\s+attempt[\s\w,-]{0,30}\b(?:both\s+groups?|both\s+grp)\b/i.test(combinedSearchText);
+
+  if (bothGroups1st) {
+    result.bothGroups1stAttempt = true;
+    result.group1Attempts = '1';
+    result.group2Attempts = '1';
+  }
+
+  const examMonthMatch = combinedSearchText.match(/\b(?:CA\s+Final|Chartered\s+Accountant)[\s:-]+(?:cleared|passed|completed)?[\s:-]*\b(Jan(?:uary)?|May|Sep(?:tember)?|Nov(?:ember)?)\b[\s,/-]+(20[12]\d)\b/i);
+  if (examMonthMatch) {
+    const m = examMonthMatch[1].slice(0, 3);
+    const formattedMonth = m === 'jan' ? 'Jan' : m === 'may' ? 'May' : m === 'sep' ? 'Sep' : 'Nov';
+    const y = examMonthMatch[2];
+    result.completionSessionMonth = formattedMonth;
+    result.completionSessionYear = y;
+    result.group1Month = formattedMonth;
+    result.group1Year = y;
+    if (bothGroups1st) {
+      result.group2Month = formattedMonth;
+      result.group2Year = y;
+    }
+  }
+
+  // 7. Extract Candidate Name from filename
   const cleanFileName = (file.name || '')
     .replace(/\.[^/.]+$/, '')
     .replace(/[_-]/g, ' ')

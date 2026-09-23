@@ -9,8 +9,22 @@ export interface RegisterData {
   role: 'candidate' | 'employer';
   phone?: string;
   currentCity?: string;
+  linkedinUrl?: string;
   isFresherCA?: boolean;
   resumeUrl?: string;
+  caFinal?: {
+    bothGroups1stAttempt?: boolean;
+    group1Attempts?: string;
+    group1Month?: string;
+    group1Year?: string;
+    group2Attempts?: string;
+    group2Month?: string;
+    group2Year?: string;
+    ranker?: string;
+    completionSessionMonth?: string;
+    completionSessionYear?: string;
+  };
+  [key: string]: any;
 }
 
 export interface LoginData {
@@ -59,6 +73,7 @@ const login = async (userData: LoginData): Promise<UserResponse> => {
 
 const logout = async () => {
   await AsyncStorage.removeItem('user');
+  await AsyncStorage.removeItem('token');
 };
 
 const authService = {
