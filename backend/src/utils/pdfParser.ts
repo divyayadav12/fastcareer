@@ -39,8 +39,34 @@ const PDF_KEYWORDS_IGNORE = new Set([
   'education', 'skills', 'declaration', 'personal', 'pdf', 'docx', 'doc', 'updated',
   'latest', 'new', 'chartered', 'accountant', 'fresher', 'experienced', 'draft', 'copy',
   'wfh', 'ca', 'ca_final', 'ca_inter', 'final', 'inter', 'true', 'false', 'null', 'pt',
-  'px', 'cm', 'inch', 'mm', 'rgb', 'cmyk', 'gray', 'scale', 'view', 'rect', 'box'
+  'px', 'cm', 'inch', 'mm', 'rgb', 'cmyk', 'gray', 'scale', 'view', 'rect', 'box',
+  'frontenddeveloper', 'backenddeveloper', 'fullstackdeveloper', 'developer', 'engineer',
+  'software', 'frontend', 'backend', 'fullstack', 'react', 'node', 'java', 'python',
+  'designer', 'intern', 'analyst', 'consultant', 'manager', 'associate', 'lead', 'head'
 ]);
+
+export function isValidEmailAddress(email: string): boolean {
+  if (!email || typeof email !== 'string') return false;
+  const clean = email.trim().toLowerCase();
+  const regex = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,10}$/;
+  if (!regex.test(clean)) return false;
+
+  const parts = clean.split('@');
+  if (parts.length !== 2) return false;
+  const [username, domain] = parts;
+  if (username.length < 1 || domain.length < 3) return false;
+
+  const domainParts = domain.split('.');
+  const tld = domainParts[domainParts.length - 1];
+  if (!/^[a-z]{2,10}$/.test(tld)) return false;
+
+  const ignoreDomains = ['example.com', 'schema.org', 'w3.org', 'adobe.com', 'github.com', 'fastcareer'];
+  for (const ign of ignoreDomains) {
+    if (clean.includes(ign)) return false;
+  }
+
+  return true;
+}
 
 /**
  * Decompresses and extracts readable text from raw PDF buffer using zlib
@@ -163,20 +189,10 @@ export async function parseResumeBuffer(buffer: Buffer, originalFilename: string
     }
   }
 
-  // Select first valid non-system email
+  // Select first valid non-system email (Strict ASCII validation)
   for (const rawEmail of emailCandidates) {
     const clean = rawEmail.toLowerCase().trim().replace(/^mailto:/i, '').replace(/[),;:]+$/, '');
-    if (
-      clean.includes('@') &&
-      clean.includes('.') &&
-      !clean.includes('example.com') &&
-      !clean.includes('schema.org') &&
-      !clean.includes('w3.org') &&
-      !clean.includes('adobe.com') &&
-      !clean.includes('github.com') &&
-      !clean.includes('google.com') &&
-      !clean.includes('fastcareer')
-    ) {
+    if (isValidEmailAddress(clean)) {
       result.email = clean;
       break;
     }
@@ -265,6 +281,7 @@ export async function parseResumeBuffer(buffer: Buffer, originalFilename: string
   // 6. Extract Candidate Name (Filename prioritized if valid 2-word name)
   const cleanFileName = originalFilename
     .replace(/\.[^/.]+$/, '')
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
     .replace(/[_-]/g, ' ')
     .replace(/[0-9+()@.]/g, ' ')
     .trim();
