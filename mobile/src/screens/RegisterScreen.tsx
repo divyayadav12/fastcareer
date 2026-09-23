@@ -183,23 +183,23 @@ export default function RegisterScreen({ navigation }: any) {
             }
             if (uploadRes.parsedData) {
               const sp = uploadRes.parsedData;
-              if (sp.email && !email) {
+              if (sp.email) {
                 setEmail(sp.email);
                 if (!extractedList.includes('Email')) extractedList.push('Email');
               }
-              if (sp.phone && !phone) {
+              if (sp.phone) {
                 setPhone(sp.phone);
                 if (!extractedList.includes('Phone')) extractedList.push('Phone');
               }
-              if (sp.city && !currentCity) {
+              if (sp.city) {
                 setCurrentCity(sp.city);
                 if (!extractedList.includes('City')) extractedList.push('City');
               }
-              if (sp.firstName && !firstName) {
+              if (sp.firstName) {
                 setFirstName(sp.firstName);
                 if (!extractedList.includes('First Name')) extractedList.push('First Name');
               }
-              if (sp.lastName && !lastName) {
+              if (sp.lastName) {
                 setLastName(sp.lastName);
                 if (!extractedList.includes('Last Name')) extractedList.push('Last Name');
               }
@@ -219,7 +219,7 @@ export default function RegisterScreen({ navigation }: any) {
         if (extractedList.length > 0) {
           Alert.alert(
             '⚡ Resume Auto-Filled & Attached!',
-            `Auto-populated: ${extractedList.join(', ')}.\n\nPlease review details and set a password to register.`,
+            `Auto-populated: ${extractedList.join(', ')}.\n\nPlease enter a password and review your details to register.`,
             [{ text: 'OK' }]
           );
         } else {
@@ -233,14 +233,34 @@ export default function RegisterScreen({ navigation }: any) {
   };
 
   const handleRegister = async () => {
-    if (!firstName || !lastName || !email || !password) {
-      Alert.alert('Missing Fields', 'Please fill in First Name, Last Name, Email, and Password.');
+    if (!firstName.trim()) {
+      Alert.alert('First Name Required', 'Please enter your First Name.');
+      return;
+    }
+    if (!lastName.trim()) {
+      Alert.alert('Last Name Required', 'Please enter your Last Name.');
+      return;
+    }
+    if (!email.trim()) {
+      Alert.alert('Email Required', 'Please enter your Email Address.');
+      return;
+    }
+    if (!password) {
+      Alert.alert('Password Required 🔒', 'Please create a password for your account (minimum 6 characters).');
+      return;
+    }
+    if (password.length < 6) {
+      Alert.alert('Password Too Short', 'Password must be at least 6 characters long.');
       return;
     }
 
     if (role === 'candidate') {
-      if (!phone || !currentCity) {
-        Alert.alert('Candidate Info Required', 'Please enter your Mobile Number and select your City.');
+      if (!phone.trim()) {
+        Alert.alert('Mobile Number Required', 'Please enter your 10-digit Mobile Number.');
+        return;
+      }
+      if (!currentCity.trim()) {
+        Alert.alert('City Location Required', 'Please select your Current City.');
         return;
       }
     }
