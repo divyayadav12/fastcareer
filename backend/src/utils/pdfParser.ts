@@ -24,18 +24,33 @@ export interface ParsedResumeResult {
   linkedinUrl?: string;
 }
 
+const PDF_KEYWORDS_IGNORE = new Set([
+  'rotate', 'trans', 'transform', 'matrix', 'obj', 'endobj', 'stream', 'endstream',
+  'xref', 'trailer', 'mediabox', 'cropbox', 'annots', 'resources', 'font', 'type',
+  'subtype', 'catalog', 'pages', 'producer', 'creator', 'creationdate', 'moddate',
+  'flatedecode', 'dctdecode', 'filter', 'length', 'root', 'info', 'parent', 'contents',
+  'width', 'height', 'colorspace', 'devicergb', 'devicegray', 'devicecmyk', 'procset',
+  'extgstate', 'fontdescriptor', 'basefont', 'firstchar', 'lastchar', 'fontbbox',
+  'capheight', 'ascent', 'descent', 'flags', 'stemv', 'italicangle', 'fontname',
+  'charprocs', 'encoding', 'version', 'identity', 'unicodemap', 'cmap', 'cid', 'gstate',
+  'resume', 'curriculum', 'vitae', 'biodata', 'profile', 'contact', 'email', 'phone',
+  'mobile', 'address', 'page', 'career', 'objective', 'summary', 'experience',
+  'education', 'skills', 'declaration', 'personal', 'pdf', 'docx', 'doc', 'updated',
+  'latest', 'new', 'chartered', 'accountant', 'fresher', 'experienced', 'draft', 'copy',
+  'wfh', 'ca', 'ca_final', 'ca_inter', 'final', 'inter', 'true', 'false', 'null', 'pt',
+  'px', 'cm', 'inch', 'mm', 'rgb', 'cmyk', 'gray', 'scale', 'view', 'rect', 'box'
+]);
+
 /**
  * Decompresses and extracts readable text from raw PDF buffer
  */
 export function extractTextFromPdfBuffer(buffer: Buffer): string {
   let fullText = '';
   
-  // 1. Convert whole buffer to text (catches uncompressed text objects)
   try {
     fullText += buffer.toString('latin1') + ' ';
   } catch (e) {}
 
-  // 2. Scan and decompress all PDF FlateDecode streams
   const str = buffer.toString('binary');
   let streamIndex = 0;
 
@@ -59,7 +74,6 @@ export function extractTextFromPdfBuffer(buffer: Buffer): string {
     streamIndex = end + 9;
   }
 
-  // 3. Extract text inside parentheses (PDF string literals: (text) Tj)
   let extractedLiterals = '';
   const tjRegex = /\(([^)]+)\)\s*(?:Tj|'|")/g;
   let tjMatch;
@@ -67,7 +81,6 @@ export function extractTextFromPdfBuffer(buffer: Buffer): string {
     extractedLiterals += ' ' + tjMatch[1];
   }
 
-  // 4. Extract from TJ arrays: [ (text1) 20 (text2) ] TJ
   const arrayTjRegex = /\[([^\]]+)\]\s*TJ/gi;
   let arrMatch;
   while ((arrMatch = arrayTjRegex.exec(fullText)) !== null) {
@@ -86,6 +99,7 @@ export function parseResumeBuffer(buffer: Buffer, originalFilename: string = '')
   const extractedPdfText = extractTextFromPdfBuffer(buffer);
   
   const searchPool = `${originalFilename} \n ${extractedPdfText}`;
+  const lowerText = searchPool.toLowerCase();
 
   // 1. Extract Email Address
   const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6})/gi;
@@ -96,7 +110,6 @@ export function parseResumeBuffer(buffer: Buffer, originalFilename: string = '')
       !em.toLowerCase().includes('schema.org') && 
       !em.toLowerCase().includes('w3.org') && 
       !em.toLowerCase().includes('adobe.com') &&
-      !em.toLowerCase().includes('sentry.io') &&
       !em.toLowerCase().includes('github.com')
     );
     if (validEmails.length > 0) {
@@ -117,7 +130,7 @@ export function parseResumeBuffer(buffer: Buffer, originalFilename: string = '')
   }
 
   // 2. Extract Phone Number (10 digits starting with 6,7,8,9)
-  const phoneRegex = /(?:(?:\+91|0091|0)[\s.-]?)?([6-9]\d{4}[\s.-]?\d{5})\b/g;
+  const phoneRegex = /(?:(?:\+?91|0091|0)[\s.-]?)?([6-9]\d{4}[\s.-]?\d{5})\b/g;
   let phoneMatch = phoneRegex.exec(searchPool);
   if (phoneMatch && phoneMatch[1]) {
     const cleanDigits = phoneMatch[1].replace(/\D/g, '');
@@ -135,10 +148,9 @@ export function parseResumeBuffer(buffer: Buffer, originalFilename: string = '')
   }
 
   // 3. Extract City
-  const lowerSearch = searchPool.toLowerCase();
   for (const city of POPULAR_CITIES) {
     const regex = new RegExp(`\\b${city.toLowerCase()}\\b`, 'i');
-    if (regex.test(lowerSearch)) {
+    if (regex.test(lowerText)) {
       result.city = city === 'Bangalore' ? 'Bengaluru' : city === 'Gurgaon' ? 'Gurugram' : city;
       break;
     }
@@ -153,71 +165,61 @@ export function parseResumeBuffer(buffer: Buffer, originalFilename: string = '')
 
   // 5. Extract Work Status
   if (
-    lowerSearch.includes('fresher') || 
-    lowerSearch.includes('articleship completed') || 
-    lowerSearch.includes('ca fresher') || 
-    lowerSearch.includes('recently qualified')
+    lowerText.includes('fresher') || 
+    lowerText.includes('articleship completed') || 
+    lowerText.includes('ca fresher') || 
+    lowerText.includes('recently qualified')
   ) {
     result.workStatus = 'fresher';
   } else if (
-    lowerSearch.includes('years of experience') || 
-    lowerSearch.includes('yrs experience') || 
-    lowerSearch.includes('total experience') || 
-    lowerSearch.includes('post qualification experience') || 
-    lowerSearch.includes('senior associate') || 
-    lowerSearch.includes('assistant manager') || 
-    lowerSearch.includes('manager')
+    lowerText.includes('years of experience') || 
+    lowerText.includes('yrs experience') || 
+    lowerText.includes('total experience') || 
+    lowerText.includes('post qualification experience') || 
+    lowerText.includes('senior associate') || 
+    lowerText.includes('manager')
   ) {
     result.workStatus = 'experienced';
   }
 
-  // 6. Extract Candidate Name
-  const commonIgnoreWords = new Set([
-    'resume', 'cv', 'curriculum', 'vitae', 'biodata', 'profile', 'contact',
-    'email', 'phone', 'mobile', 'address', 'page', 'career', 'objective',
-    'summary', 'experience', 'education', 'skills', 'declaration', 'personal',
-    'pdf', 'docx', 'doc', 'updated', 'latest', 'new', 'chartered', 'accountant',
-    'fresher', 'experienced', 'draft', 'copy', 'wfh', 'ca', 'ca_final', 'ca_inter'
-  ]);
+  // 6. Extract Candidate Name (Filename prioritized if valid 2-word name)
+  const cleanFileName = originalFilename
+    .replace(/\.[^/.]+$/, '')
+    .replace(/[_-]/g, ' ')
+    .replace(/[0-9+()@.]/g, ' ')
+    .trim();
 
-  const textLines = extractedPdfText
-    .split(/[\r\n]+/)
-    .map(l => l.replace(/[^a-zA-Z\s]/g, ' ').trim())
-    .filter(l => l.length > 2 && l.length < 40);
+  const fileWords = cleanFileName
+    .split(/\s+/)
+    .filter(w => w.length > 1 && !PDF_KEYWORDS_IGNORE.has(w.toLowerCase()));
 
-  let detectedName = '';
-  for (const line of textLines.slice(0, 15)) {
-    const words = line.split(/\s+/).filter(w => w.length > 1 && !commonIgnoreWords.has(w.toLowerCase()));
-    if (words.length >= 2 && words.length <= 3) {
-      detectedName = words.map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
-      break;
-    }
+  if (fileWords.length >= 2) {
+    result.firstName = fileWords[0].charAt(0).toUpperCase() + fileWords[0].slice(1).toLowerCase();
+    result.lastName = fileWords[1].charAt(0).toUpperCase() + fileWords[1].slice(1).toLowerCase();
+  } else if (fileWords.length === 1) {
+    result.firstName = fileWords[0].charAt(0).toUpperCase() + fileWords[0].slice(1).toLowerCase();
   }
 
-  if (detectedName) {
-    const parts = detectedName.split(' ');
-    result.firstName = parts[0];
-    result.lastName = parts.slice(1).join(' ');
-  } else {
-    const cleanFileName = originalFilename
-      .replace(/\.[^/.]+$/, '')
-      .replace(/[_-]/g, ' ')
-      .replace(/[0-9+()@.]/g, ' ')
-      .trim();
+  if (!result.firstName) {
+    const textLines = extractedPdfText
+      .split(/[\r\n]+/)
+      .map(l => l.replace(/[^a-zA-Z\s]/g, ' ').trim())
+      .filter(l => l.length > 2 && l.length < 40);
 
-    const nameWords = cleanFileName.split(/\s+/).filter(w => w.length > 1 && !commonIgnoreWords.has(w.toLowerCase()));
-    if (nameWords.length >= 2) {
-      result.firstName = nameWords[0].charAt(0).toUpperCase() + nameWords[0].slice(1).toLowerCase();
-      result.lastName = nameWords[1].charAt(0).toUpperCase() + nameWords[1].slice(1).toLowerCase();
-    } else if (nameWords.length === 1) {
-      result.firstName = nameWords[0].charAt(0).toUpperCase() + nameWords[0].slice(1).toLowerCase();
+    for (const line of textLines.slice(0, 20)) {
+      const words = line.split(/\s+/).filter(w => w.length > 1 && !PDF_KEYWORDS_IGNORE.has(w.toLowerCase()));
+      if (words.length >= 2 && words.length <= 3) {
+        result.firstName = words[0].charAt(0).toUpperCase() + words[0].slice(1).toLowerCase();
+        result.lastName = words.slice(1).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+        break;
+      }
     }
   }
 
   // Fallback name from email
   if (!result.firstName && result.email) {
     const prefix = result.email.split('@')[0].replace(/[0-9_.]/g, ' ').trim();
-    const parts = prefix.split(/\s+/).filter(p => p.length > 1 && !commonIgnoreWords.has(p.toLowerCase()));
+    const parts = prefix.split(/\s+/).filter(p => p.length > 1 && !PDF_KEYWORDS_IGNORE.has(p.toLowerCase()));
     if (parts.length >= 2) {
       result.firstName = parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();
       result.lastName = parts[1].charAt(0).toUpperCase() + parts[1].slice(1).toLowerCase();
