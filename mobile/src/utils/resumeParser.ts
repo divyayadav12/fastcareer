@@ -78,6 +78,29 @@ export function base64ToUint8Array(base64: string): Uint8Array {
   return bytes;
 }
 
+function decodeHexPdf(str: string): string {
+  return str.replace(/<([0-9a-fA-F\s]{4,})>/g, (_, hex) => {
+    const cleanHex = hex.replace(/\s+/g, '');
+    let decoded = '';
+    if (cleanHex.length >= 4 && cleanHex.startsWith('00')) {
+      for (let i = 0; i < cleanHex.length; i += 4) {
+        const code = parseInt(cleanHex.substr(i, 4), 16);
+        if (code >= 32 && code <= 126) {
+          decoded += String.fromCharCode(code);
+        }
+      }
+    } else {
+      for (let i = 0; i < cleanHex.length; i += 2) {
+        const code = parseInt(cleanHex.substr(i, 2), 16);
+        if (code >= 32 && code <= 126) {
+          decoded += String.fromCharCode(code);
+        }
+      }
+    }
+    return decoded ? ` ${decoded} ` : '';
+  });
+}
+
 function decodePdfString(str: string): string {
   return str
     .replace(/\\([0-7]{1,3})/g, (_, oct) => String.fromCharCode(parseInt(oct, 8)))
@@ -105,6 +128,11 @@ export function extractTextFromPdfBytes(uint8: Uint8Array): string {
   }
   fullText += rawStr + ' ';
 
+  // Decode any hex sequences in rawStr
+  try {
+    fullText += decodeHexPdf(rawStr) + ' ';
+  } catch (e) {}
+
   // Extract URI and mailto links from raw PDF dictionary
   const uriRegex = /\/URI\s*\(([^)]+)\)/gi;
   let uMatch;
@@ -128,7 +156,7 @@ export function extractTextFromPdfBytes(uint8: Uint8Array): string {
       for (let j = 0; j < decompressed.length; j += chunkSize) {
         decompStr += String.fromCharCode.apply(null, decompressed.subarray(j, j + chunkSize) as any);
       }
-      fullText += decodePdfString(decompStr) + ' ';
+      fullText += decodeHexPdf(decompStr) + ' ' + decodePdfString(decompStr) + ' ';
     } catch (e) {
       try {
         const decompressedRaw = pako.inflateRaw(streamBytes);
@@ -136,7 +164,7 @@ export function extractTextFromPdfBytes(uint8: Uint8Array): string {
         for (let j = 0; j < decompressedRaw.length; j += chunkSize) {
           decompStr += String.fromCharCode.apply(null, decompressedRaw.subarray(j, j + chunkSize) as any);
         }
-        fullText += decodePdfString(decompStr) + ' ';
+        fullText += decodeHexPdf(decompStr) + ' ' + decodePdfString(decompStr) + ' ';
       } catch (e2) {}
     }
 
@@ -184,7 +212,7 @@ export async function parseResumeDocument(file: { uri: string; name?: string }):
   const combinedSearchText = `${file.name || ''} \n ${extractedPdfText}`;
   const lowerText = combinedSearchText.toLowerCase();
 
-  // 1. Extract Email Address (Multi-tier Regex)
+  // 1. Extract Email Address (Comprehensive Multi-tier Search)
   const emailCandidates: string[] = [];
 
   // Match standard emails
@@ -198,7 +226,19 @@ export async function parseResumeDocument(file: { uri: string; name?: string }):
     emailCandidates.push(clean);
   }
 
-  // Match spaced emails (e.g. name @ domain . com or name.last @ domain.com)
+  // Token-level scan for any word containing @ and a dot
+  const allTokens = combinedSearchText.split(/[\s\r\n\t,;"'<>()[\]{}]+/);
+  for (const tok of allTokens) {
+    if (tok.includes('@') && tok.includes('.')) {
+      const cleanTok = tok.replace(/^[^\w+]+|[^\w]+$/g, '');
+      const parts = cleanTok.split('@');
+      if (parts.length === 2 && parts[0].length >= 1 && parts[1].length >= 4 && parts[1].includes('.')) {
+        emailCandidates.push(cleanTok);
+      }
+    }
+  }
+
+  // Match spaced emails (e.g. name @ domain . com or n a m e @ g m a i l . c o m)
   const spacedRegex = /([a-zA-Z0-9._%+-]+)\s*@\s*([a-zA-Z0-9.-]+)\s*\.\s*([a-zA-Z]{2,10})/gi;
   let spMatch;
   while ((spMatch = spacedRegex.exec(combinedSearchText)) !== null) {

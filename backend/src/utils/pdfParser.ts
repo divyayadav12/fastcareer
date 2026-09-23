@@ -133,6 +133,18 @@ export async function parseResumeBuffer(buffer: Buffer, originalFilename: string
     emailCandidates.push(clean);
   }
 
+  // Token-level scan for any word containing @ and a dot
+  const allTokens = searchPool.split(/[\s\r\n\t,;"'<>()[\]{}]+/);
+  for (const tok of allTokens) {
+    if (tok.includes('@') && tok.includes('.')) {
+      const cleanTok = tok.replace(/^[^\w+]+|[^\w]+$/g, '');
+      const parts = cleanTok.split('@');
+      if (parts.length === 2 && parts[0].length >= 1 && parts[1].length >= 4 && parts[1].includes('.')) {
+        emailCandidates.push(cleanTok);
+      }
+    }
+  }
+
   // Match spaced emails (e.g. name @ domain . com or name.last @ domain.com)
   const spacedRegex = /([a-zA-Z0-9._%+-]+)\s*@\s*([a-zA-Z0-9.-]+)\s*\.\s*([a-zA-Z]{2,10})/gi;
   let spMatch;
