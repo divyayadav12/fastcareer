@@ -64,51 +64,125 @@ const saveBufferToLocal = (buffer: Buffer, originalname: string): string => {
   return `/uploads/${filename}`;
 };
 
-router.post('/', upload.single('resume'), async (req: any, res: any) => {
-  if (!req.file || !req.file.buffer) {
-    return res.status(400).json({ message: 'No file uploaded' });
-  }
+// Unified processor for Base64 payloads
+async function handleBase64Upload(base64: string, filename?: string, mimeType?: string) {
+  const cleanBase64 = base64.replace(/^data:[^;]+;base64,/, '');
+  const buffer = Buffer.from(cleanBase64, 'base64');
+  const originalName = filename || 'resume.pdf';
+  const cleanMime = mimeType || 'application/pdf';
 
-  const originalName = req.file.originalname || req.body?.originalname || 'resume.pdf';
-  const mimeType = req.file.mimetype || 'application/pdf';
+  let parsedData: any = {};
+  try {
+    parsedData = parseResumeBuffer(buffer, originalName);
+  } catch (parseErr) {
+    console.warn('Base64 resume parsing warning:', parseErr);
+  }
 
   let finalUrl = '';
-  let parsedData: any = {};
-
-  // 1. Immediately parse the buffer for extracted resume details
-  try {
-    parsedData = parseResumeBuffer(req.file.buffer, originalName);
-  } catch (err) {
-    console.warn('Server resume parsing non-critical warning:', err);
-  }
-
-  // 2. Upload to Cloudinary or fallback to Local Disk
   try {
     if (isCloudinaryConfigured) {
-      finalUrl = await uploadBufferToCloudinary(
-        req.file.buffer, 
-        originalName,
-        mimeType
-      );
+      finalUrl = await uploadBufferToCloudinary(buffer, originalName, cleanMime);
     }
-  } catch (cloudinaryErr) {
-    console.warn('Cloudinary upload fallback to disk storage:', cloudinaryErr);
+  } catch (cloudErr) {
+    console.warn('Cloudinary upload fallback:', cloudErr);
   }
 
   if (!finalUrl) {
-    finalUrl = saveBufferToLocal(req.file.buffer, originalName);
+    finalUrl = saveBufferToLocal(buffer, originalName);
   }
 
-  return res.json({
+  return {
+    success: true,
     url: finalUrl,
     resumeUrl: finalUrl,
     parsedData,
-    success: true,
+  };
+}
+
+// 1. Base64 Upload Endpoint
+router.post('/base64', async (req: any, res: any) => {
+  try {
+    const { base64, filename, mimeType } = req.body;
+    if (!base64) {
+      return res.status(400).json({ message: 'No base64 data provided' });
+    }
+    const result = await handleBase64Upload(base64, filename, mimeType);
+    return res.json(result);
+  } catch (err: any) {
+    console.error('Base64 upload exception:', err);
+    return res.status(500).json({ message: 'Upload failed', error: err.message });
+  }
+});
+
+// 2. Root Upload Endpoint (handles both Multipart and Base64 JSON)
+router.post('/', async (req: any, res: any, next: any) => {
+  if (req.body && req.body.base64) {
+    try {
+      const result = await handleBase64Upload(req.body.base64, req.body.filename, req.body.mimeType);
+      return res.json(result);
+    } catch (e: any) {
+      return res.status(500).json({ message: 'Upload failed', error: e.message });
+    }
+  }
+
+  upload.single('resume')(req, res, async (err) => {
+    if (err) {
+      console.warn('Multer error:', err);
+      return res.status(400).json({ message: err.message || 'File upload error' });
+    }
+
+    if (!req.file || !req.file.buffer) {
+      if (req.body && req.body.base64) {
+        const result = await handleBase64Upload(req.body.base64, req.body.filename, req.body.mimeType);
+        return res.json(result);
+      }
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    const originalName = req.file.originalname || req.body?.originalname || 'resume.pdf';
+    const mimeType = req.file.mimetype || 'application/pdf';
+
+    let finalUrl = '';
+    let parsedData: any = {};
+
+    try {
+      parsedData = parseResumeBuffer(req.file.buffer, originalName);
+    } catch (parseErr) {
+      console.warn('Server resume parsing non-critical warning:', parseErr);
+    }
+
+    try {
+      if (isCloudinaryConfigured) {
+        finalUrl = await uploadBufferToCloudinary(
+          req.file.buffer, 
+          originalName,
+          mimeType
+        );
+      }
+    } catch (cloudinaryErr) {
+      console.warn('Cloudinary upload fallback to disk storage:', cloudinaryErr);
+    }
+
+    if (!finalUrl) {
+      finalUrl = saveBufferToLocal(req.file.buffer, originalName);
+    }
+
+    return res.json({
+      url: finalUrl,
+      resumeUrl: finalUrl,
+      parsedData,
+      success: true,
+    });
   });
 });
 
-// Dedicated parse route
+// 3. Dedicated parse route
 router.post('/parse', upload.single('resume'), async (req: any, res: any) => {
+  if (req.body && req.body.base64) {
+    const result = await handleBase64Upload(req.body.base64, req.body.filename, req.body.mimeType);
+    return res.json(result);
+  }
+
   if (!req.file || !req.file.buffer) {
     return res.status(400).json({ message: 'No file uploaded' });
   }
