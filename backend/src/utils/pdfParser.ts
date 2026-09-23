@@ -127,10 +127,22 @@ export async function parseResumeBuffer(buffer: Buffer, originalFilename: string
 
   // 1. Primary: Mozilla PDF.js engine
   try {
-    const fn = typeof pdfParse === 'function' ? pdfParse : (pdfParse && pdfParse.default ? pdfParse.default : pdfParse);
-    const pdfData = await fn(buffer);
-    if (pdfData && pdfData.text) {
-      extractedPdfText += pdfData.text + ' ';
+    if (pdfParse && pdfParse.PDFParse) {
+      const parser = new pdfParse.PDFParse({ data: buffer });
+      const data = await parser.getText();
+      if (data && data.text) {
+        extractedPdfText += data.text + ' ';
+      }
+    } else if (typeof pdfParse === 'function') {
+      const pdfData = await pdfParse(buffer);
+      if (pdfData && pdfData.text) {
+        extractedPdfText += pdfData.text + ' ';
+      }
+    } else if (pdfParse && typeof pdfParse.default === 'function') {
+      const pdfData = await pdfParse.default(buffer);
+      if (pdfData && pdfData.text) {
+        extractedPdfText += pdfData.text + ' ';
+      }
     }
   } catch (pdfErr) {
     console.warn('pdfParse fallback:', pdfErr);
