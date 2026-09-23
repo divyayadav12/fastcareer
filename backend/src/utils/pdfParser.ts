@@ -60,7 +60,7 @@ export function isValidEmailAddress(email: string): boolean {
   const tld = domainParts[domainParts.length - 1];
   if (!/^[a-z]{2,10}$/.test(tld)) return false;
 
-  const ignoreDomains = ['example.com', 'schema.org', 'w3.org', 'adobe.com', 'github.com', 'fastcareer'];
+  const ignoreDomains = ['example.com', 'schema.org', 'w3.org', 'adobe.com', 'domain.com'];
   for (const ign of ignoreDomains) {
     if (clean.includes(ign)) return false;
   }
