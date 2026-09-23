@@ -1,4 +1,3 @@
-import * as FileSystem from 'expo-file-system/legacy';
 import { ALL_CITIES } from './constants';
 
 const POPULAR_CITIES = [
@@ -21,26 +20,36 @@ export interface ExtractedResumeData {
   workStatus?: 'fresher' | 'experienced';
 }
 
+/**
+ * Reads any Android ContentResolver URI or file:// URI cleanly using Web Blob/FileReader
+ */
+export const readUriAsText = (uri: string): Promise<string> => {
+  return new Promise(async (resolve) => {
+    try {
+      if (!uri) return resolve('');
+      const response = await fetch(uri);
+      const blob = await response.blob();
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        resolve((reader.result as string) || '');
+      };
+      reader.onerror = () => resolve('');
+      reader.readAsText(blob);
+    } catch {
+      resolve('');
+    }
+  });
+};
+
 export async function parseResumeDocument(file: { uri: string; name?: string }): Promise<ExtractedResumeData> {
   const result: ExtractedResumeData = {};
   let rawText = '';
 
-  // 1. Try reading text from local file using expo-file-system legacy API
-  try {
-    if (file.uri) {
-      rawText = await FileSystem.readAsStringAsync(file.uri, {
-        encoding: FileSystem.EncodingType.UTF8,
-      });
-    }
-  } catch (e) {
+  // 1. Read text from URI using native fetch/FileReader (no FileSystem permissions needed)
+  if (file.uri) {
     try {
-      const b64 = await FileSystem.readAsStringAsync(file.uri, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-      if (typeof atob === 'function') {
-        rawText = atob(b64);
-      }
-    } catch (_) {}
+      rawText = await readUriAsText(file.uri);
+    } catch (e) {}
   }
 
   const combinedSearchText = `${file.name || ''} \n ${rawText}`;
