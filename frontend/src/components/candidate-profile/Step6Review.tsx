@@ -83,7 +83,7 @@ export const Step6Review = ({ personal, caPortfolio, qualifications, experienceI
         </div>
       </Section>
 
-      <Section title="Articleship" icon={Building} step={3}>
+      <Section title="Articleship" icon={Building} step={2}>
         <DataItem label="Total Experience" value={`${caPortfolio.articleships.reduce((acc, curr) => acc + (parseInt(curr.noOfMonths) || 0), 0)} Months`} />
         <DataItem label="Completion Date" value={`${caPortfolio.articleshipCompletionDateMonth} ${caPortfolio.articleshipCompletionDateYear}`} />
         <div className="col-span-1 md:col-span-2">
@@ -91,7 +91,7 @@ export const Step6Review = ({ personal, caPortfolio, qualifications, experienceI
         </div>
       </Section>
 
-      <Section title="Education" icon={GraduationCap} step={4}>
+      <Section title="Education" icon={GraduationCap} step={3}>
         <DataItem label="Graduation" value={`${qualifications.graduation.type} - ${qualifications.graduation.college} (${qualifications.graduation.percentage}%)`} />
         <DataItem label="Class XII" value={`${qualifications.class12.percentage}% (${qualifications.class12.year})`} />
       </Section>

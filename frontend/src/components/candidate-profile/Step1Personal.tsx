@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { DatePicker } from '../DatePicker';
 import { STATES, STATE_CITY_MAP } from '../../utils/constants';
 
 export const Step1Personal = ({ personal, setPersonal, user, resumeUrl, handleFileUpload, uploading, viewCandidateResume, handleAutoFillFromResume, scanningResume }: any) => {
@@ -80,29 +79,6 @@ export const Step1Personal = ({ personal, setPersonal, user, resumeUrl, handleFi
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">First Name <span className="text-red-500">*</span></label>
-            <input type="text" value={user?.firstName || ''} disabled className="w-full px-4 py-2 border border-gray-200 rounded-xl bg-gray-50 text-gray-500" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-            <input type="text" value={user?.lastName || ''} disabled className="w-full px-4 py-2 border border-gray-200 rounded-xl bg-gray-50 text-gray-500" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email Id <span className="text-red-500">*</span></label>
-            <input type="email" value={user?.email || ''} disabled className="w-full px-4 py-2 border border-gray-200 rounded-xl bg-gray-50 text-gray-500" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Mobile No. <span className="text-red-500">*</span></label>
-            <input type="tel" value={personal.phone} onChange={(e) => setPersonal({...personal, phone: e.target.value.replace(/\D/g, '')})} className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
-            <DatePicker value={personal.dateOfBirth ? new Date(personal.dateOfBirth) : null} onChange={(date) => {
-              const formattedDate = date ? new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString().split('T')[0] : '';
-              setPersonal({...personal, dateOfBirth: formattedDate});
-            }} className="w-full" />
-          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Gender <span className="text-red-500">*</span></label>
             <select value={personal.gender} onChange={(e) => setPersonal({...personal, gender: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">

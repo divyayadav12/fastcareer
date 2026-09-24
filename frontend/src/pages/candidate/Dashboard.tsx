@@ -13,7 +13,6 @@ import { ArrowLeft, ArrowRight, Save, Check } from 'lucide-react';
 
 import { Stepper } from '../../components/candidate-profile/Stepper';
 import { Step1Personal } from '../../components/candidate-profile/Step1Personal';
-import { Step2CA } from '../../components/candidate-profile/Step2CA';
 import { Step3Articleship } from '../../components/candidate-profile/Step3Articleship';
 import { Step4Education } from '../../components/candidate-profile/Step4Education';
 import { Step5Experience } from '../../components/candidate-profile/Step5Experience';
@@ -376,9 +375,8 @@ export const CandidateDashboard = () => {
     }
   };
 
-  const steps = ['Personal Details', 'CA Qualification', 'Articleship', 'Education & Experience', 'Review'];
+  const steps = ['Personal & Address', 'Articleship', 'Education', 'Experience', 'Review Profile'];
 
-  
   const calculateProfileCompletion = () => {
     let score = 0;
     let total = 6;
@@ -387,7 +385,7 @@ export const CandidateDashboard = () => {
     if (personal.currentCity) score += 1;
     if (resumeUrl) score += 1;
     if (caPortfolio.caFinal?.group1Attempts || caPortfolio.caInter?.group1Attempts) score += 1;
-    if (caPortfolio.articleshipFirmName) score += 1;
+    if (caPortfolio.articleships?.[0]?.firmName) score += 1;
     
     return Math.round((score / total) * 100);
   };
@@ -427,15 +425,9 @@ export const CandidateDashboard = () => {
               scanningResume={scanningResume}
             />
           )}
-          {step === 2 && <Step2CA caPortfolio={caPortfolio} setCaPortfolio={setCaPortfolio} />}
-          {step === 3 && <Step3Articleship caPortfolio={caPortfolio} setCaPortfolio={setCaPortfolio} />}
-          {step === 4 && (
-            <div className="space-y-12">
-              <Step4Education qualifications={qualifications} setQualifications={setQualifications} />
-              <div className="border-t border-gray-200"></div>
-              <Step5Experience experienceInfo={experienceInfo} setExperienceInfo={setExperienceInfo} personal={personal} setPersonal={setPersonal} />
-            </div>
-          )}
+          {step === 2 && <Step3Articleship caPortfolio={caPortfolio} setCaPortfolio={setCaPortfolio} />}
+          {step === 3 && <Step4Education qualifications={qualifications} setQualifications={setQualifications} />}
+          {step === 4 && <Step5Experience experienceInfo={experienceInfo} setExperienceInfo={setExperienceInfo} personal={personal} setPersonal={setPersonal} />}
           {step === 5 && <Step6Review personal={personal} caPortfolio={caPortfolio} qualifications={qualifications} experienceInfo={experienceInfo} setStep={setStep} user={user} />}
         </div>
       </div>
