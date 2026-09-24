@@ -428,7 +428,18 @@ export const CandidateDashboard = () => {
           {step === 2 && <Step3Articleship caPortfolio={caPortfolio} setCaPortfolio={setCaPortfolio} />}
           {step === 3 && <Step4Education qualifications={qualifications} setQualifications={setQualifications} />}
           {step === 4 && <Step5Experience experienceInfo={experienceInfo} setExperienceInfo={setExperienceInfo} personal={personal} setPersonal={setPersonal} />}
-          {step === 5 && <Step6Review personal={personal} caPortfolio={caPortfolio} qualifications={qualifications} experienceInfo={experienceInfo} setStep={setStep} user={user} />}
+          {step === 5 && (
+            <Step6Review
+              personal={personal}
+              setPersonal={setPersonal}
+              caPortfolio={caPortfolio}
+              setCaPortfolio={setCaPortfolio}
+              qualifications={qualifications}
+              experienceInfo={experienceInfo}
+              setStep={setStep}
+              user={user}
+            />
+          )}
         </div>
       </div>
 
