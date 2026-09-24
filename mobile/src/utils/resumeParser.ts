@@ -17,6 +17,7 @@ export interface ExtractedResumeData {
   lastName?: string;
   email?: string;
   phone?: string;
+  dateOfBirth?: string;
   city?: string;
   workStatus?: 'fresher' | 'experienced';
   linkedinUrl?: string;
@@ -30,6 +31,16 @@ export interface ExtractedResumeData {
   ranker?: string;
   completionSessionMonth?: string;
   completionSessionYear?: string;
+  caInterBothGroups1stAttempt?: boolean;
+  caInterGroup1Attempts?: string;
+  caInterGroup1Month?: string;
+  caInterGroup1Year?: string;
+  caInterGroup2Attempts?: string;
+  caInterGroup2Month?: string;
+  caInterGroup2Year?: string;
+  caInterRanker?: string;
+  caInterCompletionMonth?: string;
+  caInterCompletionYear?: string;
 }
 
 const PDF_KEYWORDS_IGNORE = new Set([
@@ -329,7 +340,30 @@ export async function parseResumeDocument(file: { uri: string; name?: string }):
     }
   }
 
-  // 3. Extract City (Multi-tier search)
+  // 3. Extract Date of Birth (DOB)
+  const dobMatch = combinedSearchText.match(/\b(?:DOB|D\.O\.B|Date\s+of\s+Birth|Birth\s+Date|Born)[\s:-]+(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}|\d{1,2}\s+(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+\d{2,4})\b/i);
+  if (dobMatch && dobMatch[1]) {
+    try {
+      const rawDob = dobMatch[1].trim();
+      const dateParts = rawDob.split(/[\/\-\.]/);
+      if (dateParts.length === 3) {
+        let [d, m, y] = dateParts;
+        if (y.length === 2) y = parseInt(y, 10) > 40 ? `19${y}` : `20${y}`;
+        const day = d.padStart(2, '0');
+        const month = m.padStart(2, '0');
+        result.dateOfBirth = `${y}-${month}-${day}`;
+      } else {
+        const parsedD = new Date(rawDob);
+        if (!isNaN(parsedD.getTime())) {
+          result.dateOfBirth = parsedD.toISOString().split('T')[0];
+        }
+      }
+    } catch {
+      // ignore date parse errors
+    }
+  }
+
+  // 4. Extract City (Multi-tier search)
   const normalizedCityText = ` ${lowerText.replace(/[^a-z0-9]/g, ' ')} `;
 
   // Tier 1: Look for city near explicit location keywords
@@ -378,21 +412,46 @@ export async function parseResumeDocument(file: { uri: string; name?: string }):
     }
   }
 
-  // 4. LinkedIn Profile URL
+  // 5. LinkedIn Profile URL
   const linkedinRegex = /(?:https?:\/\/)?(?:www\.)?linkedin\.com\/in\/([a-zA-Z0-9_-]+)/i;
   const linkedinMatch = combinedSearchText.match(linkedinRegex);
   if (linkedinMatch) {
     result.linkedinUrl = `https://www.linkedin.com/in/${linkedinMatch[1]}`;
   }
 
-  // 5. Extract Work Status
+  // 6. Extract Work Status
   if (lowerText.includes('fresher') || lowerText.includes('articleship completed') || lowerText.includes('ca fresher')) {
     result.workStatus = 'fresher';
   } else if (lowerText.includes('years of experience') || lowerText.includes('total experience') || lowerText.includes('post qualification experience') || lowerText.includes('senior associate') || lowerText.includes('manager')) {
     result.workStatus = 'experienced';
   }
 
-  // 6. CA Final Details Extraction
+  // 7. CA Intermediate Details Extraction
+  const interBothGroups1st = /\b(?:CA\s+Inter(?:mediate)?|IPCC)[\s\w,-]{0,35}\b(?:both\s+groups?|both\s+grp)[\s\w,-]{0,30}\b(?:1st|first)\s+attempt\b/i.test(combinedSearchText) ||
+    /\b(?:both\s+groups?|both\s+grp)[\s\w,-]{0,30}\b(?:1st|first)\s+attempt[\s\w,-]{0,35}\b(?:CA\s+Inter(?:mediate)?|IPCC)\b/i.test(combinedSearchText);
+
+  if (interBothGroups1st) {
+    result.caInterBothGroups1stAttempt = true;
+    result.caInterGroup1Attempts = '1';
+    result.caInterGroup2Attempts = '1';
+  }
+
+  const interExamMatch = combinedSearchText.match(/\b(?:CA\s+Inter(?:mediate)?|IPCC)[\s:-]+(?:cleared|passed|completed)?[\s:-]*\b(Jan(?:uary)?|May|Sep(?:tember)?|Nov(?:ember)?)\b[\s,/-]+(20[12]\d)\b/i);
+  if (interExamMatch) {
+    const m = interExamMatch[1].slice(0, 3);
+    const formattedMonth = m === 'jan' ? 'Jan' : m === 'may' ? 'May' : m === 'sep' ? 'Sep' : 'Nov';
+    const y = interExamMatch[2];
+    result.caInterCompletionMonth = formattedMonth;
+    result.caInterCompletionYear = y;
+    result.caInterGroup1Month = formattedMonth;
+    result.caInterGroup1Year = y;
+    if (interBothGroups1st) {
+      result.caInterGroup2Month = formattedMonth;
+      result.caInterGroup2Year = y;
+    }
+  }
+
+  // 8. CA Final Details Extraction
   const bothGroups1st = /\b(?:both\s+groups?|both\s+grp)[\s\w,-]{0,30}\b(?:1st|first)\s+attempt\b/i.test(combinedSearchText) ||
     /\b(?:1st|first)\s+attempt[\s\w,-]{0,30}\b(?:both\s+groups?|both\s+grp)\b/i.test(combinedSearchText);
 

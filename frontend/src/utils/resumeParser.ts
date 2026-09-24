@@ -46,6 +46,18 @@ export interface ParsedResumeData {
   caFinalCompletionMonth?: string;
   caFinalCompletionYear?: string;
 
+  // CA Intermediate Details
+  caInterBothGroups1stAttempt?: boolean;
+  caInterGroup1Attempts?: string;
+  caInterGroup1Month?: string;
+  caInterGroup1Year?: string;
+  caInterGroup2Attempts?: string;
+  caInterGroup2Month?: string;
+  caInterGroup2Year?: string;
+  caInterRanker?: string;
+  caInterCompletionMonth?: string;
+  caInterCompletionYear?: string;
+
   // Education
   graduationCollege?: string;
   graduationYear?: string;
@@ -367,6 +379,53 @@ export function parseResumeText(rawText: string): ParsedResumeData {
   } else {
     result.caFinalRanker = 'No';
   }
+
+  // CA Intermediate / IPCC Details Parsing
+  const caInterBothGroups = /\b(?:CA\s+Inter(?:mediate)?|IPCC|PCC)[\s\w,-]{0,30}\b(?:both\s+groups?|both\s+grp)[\s\w,-]{0,30}\b(?:1st|first)\s+attempt\b/i.test(cleanText) ||
+    /\b(?:CA\s+Inter(?:mediate)?|IPCC|PCC)[^\n]{0,50}\b(?:1st|first)\s+attempt\b/i.test(cleanText) ||
+    /\b(?:IPCC|Intermediate)\s*:\s*Cleared\s+Both\s+Groups\s+in\s+1st\s+Attempt\b/i.test(cleanText);
+
+  if (caInterBothGroups) {
+    result.caInterBothGroups1stAttempt = true;
+    result.caInterGroup1Attempts = '1';
+    result.caInterGroup2Attempts = '1';
+  }
+
+  const interExamMatch = cleanText.match(/\b(?:CA\s+Inter(?:mediate)?|IPCC|PCC)[\s:-]+(?:cleared|passed|completed)?[\s:-]*\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)[\s,/-]+(20[12]\d)\b/i) ||
+    cleanText.match(/\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)[\s,/-]+(20[12]\d)[^\n]{0,60}\b(?:CA\s+Inter(?:mediate)?|IPCC)\b/i);
+
+  if (interExamMatch) {
+    const m = normalizeExamMonth(interExamMatch[1]);
+    const y = interExamMatch[2];
+    result.caInterYear = y;
+    result.caInterCompletionMonth = m;
+    result.caInterCompletionYear = y;
+    result.caInterGroup1Month = m;
+    result.caInterGroup1Year = y;
+    if (caInterBothGroups) {
+      result.caInterGroup2Month = m;
+      result.caInterGroup2Year = y;
+    }
+  } else {
+    const interYearOnly = cleanText.match(/\b(?:CA\s+Inter(?:mediate)?|IPCC|PCC)[\s:-]+(?:cleared|passed|completed)?[\s:-]*(20[12]\d)\b/i);
+    if (interYearOnly) {
+      result.caInterYear = interYearOnly[1];
+      result.caInterCompletionYear = interYearOnly[1];
+      result.caInterGroup1Year = interYearOnly[1];
+      if (caInterBothGroups) result.caInterGroup2Year = interYearOnly[1];
+    }
+  }
+
+  const interG1AttemptMatch = cleanText.match(/\b(?:Inter(?:mediate)?|IPCC)[^\n]{0,30}\b(?:Group\s*(?:1|I)|Grp\s*(?:1|I))[^\n]{0,30}\b(\d+)(?:st|nd|rd|th)?\s+attempt\b/i);
+  if (interG1AttemptMatch) {
+    result.caInterGroup1Attempts = interG1AttemptMatch[1];
+  }
+  const interG2AttemptMatch = cleanText.match(/\b(?:Inter(?:mediate)?|IPCC)[^\n]{0,30}\b(?:Group\s*(?:2|II)|Grp\s*(?:2|II))[^\n]{0,30}\b(\d+)(?:st|nd|rd|th)?\s+attempt\b/i);
+  if (interG2AttemptMatch) {
+    result.caInterGroup2Attempts = interG2AttemptMatch[1];
+  }
+
+  result.caInterRanker = 'No';
 
   // 10. Education Details
   // Graduation College

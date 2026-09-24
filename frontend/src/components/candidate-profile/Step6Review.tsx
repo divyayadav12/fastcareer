@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { User, FileText, Briefcase, GraduationCap, Building } from 'lucide-react';
 
 export const Step6Review = ({ personal, caPortfolio, qualifications, experienceInfo, setStep, user }) => {
@@ -42,18 +42,43 @@ export const Step6Review = ({ personal, caPortfolio, qualifications, experienceI
         <DataItem label="Current Location" value={`${personal.currentCity}, ${personal.currentState}`} />
       </Section>
 
-      <Section title="CA Qualification" icon={FileText} step={2}>
-        <DataItem label="Fresher CA" value={caPortfolio.isFresherCA ? 'Yes' : 'No'} />
-        <div className="col-span-1 md:col-span-2 grid grid-cols-2 gap-4 mt-2">
-          <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
-            <div className="text-xs font-bold text-gray-500 mb-2">CA Inter</div>
-            <div className="text-sm">Group I: {caPortfolio.caInter.group1Month} {caPortfolio.caInter.group1Year} ({caPortfolio.caInter.group1Attempts} attempt)</div>
-            <div className="text-sm">Group II: {caPortfolio.caInter.group2Month} {caPortfolio.caInter.group2Year} ({caPortfolio.caInter.group2Attempts} attempt)</div>
+      <Section title="CA Qualification (From Registration)" icon={FileText} step={1}>
+        <DataItem label="Fresher CA" value={caPortfolio.isFresherCA ? 'Yes (Fresher)' : 'No (Experienced)'} />
+        <div className="col-span-1 md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+          {/* CA Inter Card */}
+          <div className="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 space-y-2">
+            <div className="flex items-center justify-between border-b border-indigo-100 pb-2">
+              <span className="text-xs font-bold text-indigo-900 uppercase tracking-wider">CA Intermediate</span>
+              {caPortfolio.caInter?.bothGroups1stAttempt && (
+                <span className="text-[10.5px] font-bold bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full">
+                  ✓ Both Groups 1st Attempt
+                </span>
+              )}
+            </div>
+            <div className="text-xs text-slate-700 space-y-1 pt-1">
+              <div><span className="font-semibold text-slate-900">Group I:</span> {caPortfolio.caInter?.group1Month || '-'} {caPortfolio.caInter?.group1Year || '-'} ({caPortfolio.caInter?.group1Attempts || '1'} {parseInt(caPortfolio.caInter?.group1Attempts || '1') > 1 ? 'attempts' : 'attempt'})</div>
+              <div><span className="font-semibold text-slate-900">Group II:</span> {caPortfolio.caInter?.group2Month || '-'} {caPortfolio.caInter?.group2Year || '-'} ({caPortfolio.caInter?.group2Attempts || '1'} {parseInt(caPortfolio.caInter?.group2Attempts || '1') > 1 ? 'attempts' : 'attempt'})</div>
+              <div><span className="font-semibold text-slate-900">Ranker:</span> {caPortfolio.caInter?.ranker || 'No'}</div>
+              <div><span className="font-semibold text-slate-900">Completion:</span> {caPortfolio.caInter?.completionSessionMonth || '-'} {caPortfolio.caInter?.completionSessionYear || '-'}</div>
+            </div>
           </div>
-          <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
-            <div className="text-xs font-bold text-gray-500 mb-2">CA Final</div>
-            <div className="text-sm">Group I: {caPortfolio.caFinal.group1Month} {caPortfolio.caFinal.group1Year} ({caPortfolio.caFinal.group1Attempts} attempt)</div>
-            <div className="text-sm">Group II: {caPortfolio.caFinal.group2Month} {caPortfolio.caFinal.group2Year} ({caPortfolio.caFinal.group2Attempts} attempt)</div>
+
+          {/* CA Final Card */}
+          <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100 space-y-2">
+            <div className="flex items-center justify-between border-b border-blue-100 pb-2">
+              <span className="text-xs font-bold text-blue-900 uppercase tracking-wider">CA Final</span>
+              {caPortfolio.caFinal?.bothGroups1stAttempt && (
+                <span className="text-[10.5px] font-bold bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+                  ✓ Both Groups 1st Attempt
+                </span>
+              )}
+            </div>
+            <div className="text-xs text-slate-700 space-y-1 pt-1">
+              <div><span className="font-semibold text-slate-900">Group I:</span> {caPortfolio.caFinal?.group1Month || '-'} {caPortfolio.caFinal?.group1Year || '-'} ({caPortfolio.caFinal?.group1Attempts || '1'} {parseInt(caPortfolio.caFinal?.group1Attempts || '1') > 1 ? 'attempts' : 'attempt'})</div>
+              <div><span className="font-semibold text-slate-900">Group II:</span> {caPortfolio.caFinal?.group2Month || '-'} {caPortfolio.caFinal?.group2Year || '-'} ({caPortfolio.caFinal?.group2Attempts || '1'} {parseInt(caPortfolio.caFinal?.group2Attempts || '1') > 1 ? 'attempts' : 'attempt'})</div>
+              <div><span className="font-semibold text-slate-900">Ranker:</span> {caPortfolio.caFinal?.ranker || 'No'}</div>
+              <div><span className="font-semibold text-slate-900">Completion:</span> {caPortfolio.caFinal?.completionSessionMonth || '-'} {caPortfolio.caFinal?.completionSessionYear || '-'}</div>
+            </div>
           </div>
         </div>
       </Section>

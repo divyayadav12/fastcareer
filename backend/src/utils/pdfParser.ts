@@ -18,7 +18,32 @@ export interface ParsedResumeResult {
   email?: string;
   phone?: string;
   city?: string;
+  dateOfBirth?: string;
   workStatus?: 'fresher' | 'experienced';
+  caInter?: {
+    bothGroups1stAttempt?: boolean;
+    group1Attempts?: string;
+    group1Month?: string;
+    group1Year?: string;
+    group2Attempts?: string;
+    group2Month?: string;
+    group2Year?: string;
+    ranker?: string;
+    completionSessionMonth?: string;
+    completionSessionYear?: string;
+  };
+  caFinal?: {
+    bothGroups1stAttempt?: boolean;
+    group1Attempts?: string;
+    group1Month?: string;
+    group1Year?: string;
+    group2Attempts?: string;
+    group2Month?: string;
+    group2Year?: string;
+    ranker?: string;
+    completionSessionMonth?: string;
+    completionSessionYear?: string;
+  };
   caFinalYear?: string;
   caFinalAttempts?: string;
   articleshipFirm?: string;
@@ -366,6 +391,112 @@ export async function parseResumeBuffer(buffer: Buffer, originalFilename: string
       result.firstName = parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();
     }
   }
+
+  // 7. Extract Date of Birth (DOB)
+  const dobRegex1 = /\b(?:DOB|Date of Birth|Birth Date|D\.O\.B)[\s:-]+([0-3]?\d[\/\-.][0-1]?\d[\/\-.](?:19|20)\d{2})\b/i;
+  const dobMatch1 = searchPool.match(dobRegex1);
+  if (dobMatch1) {
+    const parts = dobMatch1[1].split(/[\/\-.]/);
+    if (parts.length === 3) {
+      const day = parts[0].padStart(2, '0');
+      const month = parts[1].padStart(2, '0');
+      const year = parts[2];
+      result.dateOfBirth = `${year}-${month}-${day}`;
+    }
+  }
+
+  if (!result.dateOfBirth) {
+    const dobRegex2 = /\b(?:DOB|Date of Birth|Birth Date|D\.O\.B)[\s:-]+([0-3]?\d)\s+(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)[,\s]+((?:19|20)\d{2})\b/i;
+    const dobMatch2 = searchPool.match(dobRegex2);
+    if (dobMatch2) {
+      const day = dobMatch2[1].padStart(2, '0');
+      const mStr = dobMatch2[2].toLowerCase().slice(0, 3);
+      const monthsMap: Record<string, string> = { jan: '01', feb: '02', mar: '03', apr: '04', may: '05', jun: '06', jul: '07', aug: '08', sep: '09', oct: '10', nov: '11', dec: '12' };
+      const month = monthsMap[mStr] || '01';
+      const year = dobMatch2[3];
+      result.dateOfBirth = `${year}-${month}-${day}`;
+    }
+  }
+
+  // 8. CA Final Details Extraction
+  const caFinalObj: any = {
+    bothGroups1stAttempt: false,
+    group1Attempts: '1',
+    group1Month: 'May',
+    group1Year: '2023',
+    group2Attempts: '1',
+    group2Month: 'May',
+    group2Year: '2023',
+    ranker: 'No',
+    completionSessionMonth: 'May',
+    completionSessionYear: '2023'
+  };
+
+  const finalBothGroups = /\b(?:CA\s+Final|Final)[\s\w,-]{0,30}\b(?:both\s+groups?|both\s+grp)[\s\w,-]{0,30}\b(?:1st|first)\s+attempt\b/i.test(searchPool) ||
+    /\b(?:both\s+groups?|both\s+grp)[\s\w,-]{0,30}\b(?:1st|first)\s+attempt\b/i.test(searchPool);
+
+  if (finalBothGroups) {
+    caFinalObj.bothGroups1stAttempt = true;
+    caFinalObj.group1Attempts = '1';
+    caFinalObj.group2Attempts = '1';
+  }
+
+  const finalExamMatch = searchPool.match(/\b(?:CA\s+Final|Chartered\s+Accountant)[\s:-]+(?:cleared|passed|completed)?[\s:-]*\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)[\s,/-]+(20[12]\d)\b/i);
+  if (finalExamMatch) {
+    const m = finalExamMatch[1].slice(0, 3);
+    const formattedM = m.charAt(0).toUpperCase() + m.slice(1).toLowerCase();
+    const y = finalExamMatch[2];
+    caFinalObj.completionSessionMonth = formattedM;
+    caFinalObj.completionSessionYear = y;
+    caFinalObj.group1Month = formattedM;
+    caFinalObj.group1Year = y;
+    caFinalObj.group2Month = formattedM;
+    caFinalObj.group2Year = y;
+    result.caFinalYear = y;
+  }
+
+  const finalRankMatch = searchPool.match(/\b(?:AIR|All\s+India\s+Rank)[\s:-]*(\d{1,3})\b/i);
+  if (finalRankMatch) {
+    caFinalObj.ranker = parseInt(finalRankMatch[1]) <= 10 ? 'Top 1-10' : 'Top 11-50';
+  }
+  result.caFinal = caFinalObj;
+
+  // 9. CA Intermediate / IPCC Details Extraction
+  const caInterObj: any = {
+    bothGroups1stAttempt: false,
+    group1Attempts: '1',
+    group1Month: 'May',
+    group1Year: '2020',
+    group2Attempts: '1',
+    group2Month: 'May',
+    group2Year: '2020',
+    ranker: 'No',
+    completionSessionMonth: 'May',
+    completionSessionYear: '2020'
+  };
+
+  const interBothGroups = /\b(?:CA\s+Inter(?:mediate)?|IPCC|PCC)[\s\w,-]{0,30}\b(?:both\s+groups?|both\s+grp)[\s\w,-]{0,30}\b(?:1st|first)\s+attempt\b/i.test(searchPool) ||
+    /\b(?:CA\s+Inter(?:mediate)?|IPCC|PCC)[^\n]{0,50}\b(?:1st|first)\s+attempt\b/i.test(searchPool);
+
+  if (interBothGroups) {
+    caInterObj.bothGroups1stAttempt = true;
+    caInterObj.group1Attempts = '1';
+    caInterObj.group2Attempts = '1';
+  }
+
+  const interExamMatch = searchPool.match(/\b(?:CA\s+Inter(?:mediate)?|IPCC|PCC)[\s:-]+(?:cleared|passed|completed)?[\s:-]*\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)[\s,/-]+(20[12]\d)\b/i);
+  if (interExamMatch) {
+    const m = interExamMatch[1].slice(0, 3);
+    const formattedM = m.charAt(0).toUpperCase() + m.slice(1).toLowerCase();
+    const y = interExamMatch[2];
+    caInterObj.completionSessionMonth = formattedM;
+    caInterObj.completionSessionYear = y;
+    caInterObj.group1Month = formattedM;
+    caInterObj.group1Year = y;
+    caInterObj.group2Month = formattedM;
+    caInterObj.group2Year = y;
+  }
+  result.caInter = caInterObj;
 
   return result;
 }

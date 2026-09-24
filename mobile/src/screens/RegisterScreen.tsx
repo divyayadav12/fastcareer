@@ -29,6 +29,7 @@ export default function RegisterScreen({ navigation }: any) {
   
   // Candidate Specific Fields
   const [phone, setPhone] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
   const [currentCity, setCurrentCity] = useState('');
   const [linkedinUrl, setLinkedinUrl] = useState('');
   const [workStatus, setWorkStatus] = useState<'fresher' | 'experienced'>('fresher');
@@ -37,6 +38,45 @@ export default function RegisterScreen({ navigation }: any) {
   const [isScanning, setIsScanning] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [scannedFields, setScannedFields] = useState<string[]>([]);
+
+  // CA Intermediate Examination State
+  const [caInter, setCaInter] = useState({
+    bothGroups1stAttempt: false,
+    group1Attempts: '1',
+    group1Month: 'May',
+    group1Year: '2020',
+    group2Attempts: '1',
+    group2Month: 'May',
+    group2Year: '2020',
+    ranker: 'No',
+    completionSessionMonth: 'May',
+    completionSessionYear: '2020',
+  });
+
+  const handleCaInterChange = (field: string, value: any) => {
+    setCaInter(prev => {
+      const next = { ...prev, [field]: value };
+      if (field === 'bothGroups1stAttempt' && value === true) {
+        next.group1Attempts = '1';
+        next.group2Attempts = '1';
+        if (next.group1Month) next.group2Month = next.group1Month;
+        if (next.group1Year) next.group2Year = next.group1Year;
+        if (next.group1Month) next.completionSessionMonth = next.group1Month;
+        if (next.group1Year) next.completionSessionYear = next.group1Year;
+      }
+      if (next.bothGroups1stAttempt) {
+        if (field === 'group1Month') {
+          next.group2Month = value;
+          next.completionSessionMonth = value;
+        }
+        if (field === 'group1Year') {
+          next.group2Year = value;
+          next.completionSessionYear = value;
+        }
+      }
+      return next;
+    });
+  };
 
   // CA Final Examination State
   const [caFinal, setCaFinal] = useState({
@@ -146,6 +186,10 @@ export default function RegisterScreen({ navigation }: any) {
             setPhone(parsed.phone);
             extractedList.push('Phone');
           }
+          if (parsed.dateOfBirth) {
+            setDateOfBirth(parsed.dateOfBirth);
+            extractedList.push('Date of Birth');
+          }
           if (parsed.city) {
             setCurrentCity(parsed.city);
             extractedList.push('City');
@@ -158,9 +202,20 @@ export default function RegisterScreen({ navigation }: any) {
             setWorkStatus(parsed.workStatus);
             extractedList.push('Work Status');
           }
+          if (parsed.caInterBothGroups1stAttempt !== undefined) {
+            handleCaInterChange('bothGroups1stAttempt', parsed.caInterBothGroups1stAttempt);
+            extractedList.push('CA Inter Attempts');
+          }
+          if (parsed.caInterCompletionMonth) {
+            handleCaInterChange('completionSessionMonth', parsed.caInterCompletionMonth);
+          }
+          if (parsed.caInterCompletionYear) {
+            handleCaInterChange('completionSessionYear', parsed.caInterCompletionYear);
+            extractedList.push('CA Inter Year');
+          }
           if (parsed.bothGroups1stAttempt !== undefined) {
             handleCaFinalChange('bothGroups1stAttempt', parsed.bothGroups1stAttempt);
-            extractedList.push('CA Attempts');
+            extractedList.push('CA Final Attempts');
           }
           if (parsed.completionSessionMonth) {
             handleCaFinalChange('completionSessionMonth', parsed.completionSessionMonth);
@@ -190,6 +245,10 @@ export default function RegisterScreen({ navigation }: any) {
               if (sp.phone) {
                 setPhone(sp.phone);
                 if (!extractedList.includes('Phone')) extractedList.push('Phone');
+              }
+              if (sp.dateOfBirth) {
+                setDateOfBirth(sp.dateOfBirth);
+                if (!extractedList.includes('Date of Birth')) extractedList.push('Date of Birth');
               }
               if (sp.city) {
                 setCurrentCity(sp.city);
@@ -259,6 +318,10 @@ export default function RegisterScreen({ navigation }: any) {
         Alert.alert('Mobile Number Required', 'Please enter your 10-digit Mobile Number.');
         return;
       }
+      if (!dateOfBirth.trim()) {
+        Alert.alert('Date of Birth Required', 'Please enter your Date of Birth.');
+        return;
+      }
       if (!currentCity.trim()) {
         Alert.alert('City Location Required', 'Please select your Current City.');
         return;
@@ -291,8 +354,21 @@ export default function RegisterScreen({ navigation }: any) {
         ...(role === 'candidate' && {
           phone: phone.trim(),
           currentCity,
+          dateOfBirth,
           isFresherCA: workStatus === 'fresher',
           resumeUrl: finalResumeUrl,
+          caInter: {
+            bothGroups1stAttempt: caInter.bothGroups1stAttempt,
+            group1Attempts: caInter.group1Attempts || '1',
+            group1Month: caInter.group1Month || 'May',
+            group1Year: caInter.group1Year || '2020',
+            group2Attempts: caInter.group2Attempts || '1',
+            group2Month: caInter.group2Month || 'May',
+            group2Year: caInter.group2Year || '2020',
+            ranker: caInter.ranker || 'No',
+            completionSessionMonth: caInter.completionSessionMonth || 'May',
+            completionSessionYear: caInter.completionSessionYear || '2020',
+          },
           caFinal: {
             bothGroups1stAttempt: caFinal.bothGroups1stAttempt,
             group1Attempts: caFinal.group1Attempts || '1',
@@ -489,6 +565,23 @@ export default function RegisterScreen({ navigation }: any) {
         </View>
       </View>
 
+      {/* Date of Birth (Candidate Mode) */}
+      {role === 'candidate' && (
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Date of Birth <Text style={{ color: 'red' }}>*</Text></Text>
+          <View style={styles.iconInputContainer}>
+            <Ionicons name="calendar-outline" size={18} color="#94a3b8" style={styles.inputIcon} />
+            <TextInput
+              style={styles.iconInput}
+              value={dateOfBirth}
+              onChangeText={setDateOfBirth}
+              placeholder="YYYY-MM-DD (e.g. 1998-05-15)"
+              placeholderTextColor="#94a3b8"
+            />
+          </View>
+        </View>
+      )}
+
       {/* Current Location City */}
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Current City {role === 'candidate' && <Text style={{ color: 'red' }}>*</Text>}</Text>
@@ -566,6 +659,145 @@ export default function RegisterScreen({ navigation }: any) {
                 <Text style={styles.workCardTitle}>Fresher / Semi-CA</Text>
                 <Text style={styles.workCardSub}>Recent pass / Articleship</Text>
               </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* ─── CA Intermediate Examination Details Card ───────────────────────── */}
+          <View style={[styles.caCard, { marginBottom: 16 }]}>
+            <View style={styles.caCardHeader}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Ionicons name="school-outline" size={20} color="#4338ca" style={{ marginRight: 6 }} />
+                <Text style={[styles.caCardTitle, { color: '#312e81' }]}>CA Intermediate Details *</Text>
+              </View>
+            </View>
+
+            {/* Both Groups 1st Attempt Checkbox */}
+            <TouchableOpacity
+              style={styles.checkboxRow}
+              onPress={() => handleCaInterChange('bothGroups1stAttempt', !caInter.bothGroups1stAttempt)}
+              activeOpacity={0.8}
+            >
+              <Ionicons
+                name={caInter.bothGroups1stAttempt ? 'checkbox' : 'square-outline'}
+                size={22}
+                color={caInter.bothGroups1stAttempt ? '#4338ca' : '#94a3b8'}
+                style={{ marginRight: 8 }}
+              />
+              <Text style={styles.checkboxLabel}>Both Groups - 1st Attempt</Text>
+            </TouchableOpacity>
+
+            {/* Group I Details */}
+            <View style={styles.groupSubCard}>
+              <Text style={styles.groupSubTitle}>Group I</Text>
+              <View style={styles.caSelectRow}>
+                {/* Attempts */}
+                <View style={{ flex: 1, marginRight: 6 }}>
+                  <Text style={styles.subFieldLabel}>Attempts</Text>
+                  <TouchableOpacity
+                    style={[styles.dropdownBtn, caInter.bothGroups1stAttempt && styles.dropdownDisabled]}
+                    disabled={caInter.bothGroups1stAttempt}
+                    onPress={() => openPicker('Inter Group 1 Attempts', ATTEMPTS, (v) => handleCaInterChange('group1Attempts', v))}
+                  >
+                    <Text style={styles.dropdownBtnText}>{caInter.group1Attempts}</Text>
+                    <Ionicons name="chevron-down" size={14} color="#64748b" />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Month */}
+                <View style={{ flex: 1, marginRight: 6 }}>
+                  <Text style={styles.subFieldLabel}>Month</Text>
+                  <TouchableOpacity
+                    style={styles.dropdownBtn}
+                    onPress={() => openPicker('Inter Group 1 Month', MONTHS, (v) => handleCaInterChange('group1Month', v))}
+                  >
+                    <Text style={styles.dropdownBtnText}>{caInter.group1Month}</Text>
+                    <Ionicons name="chevron-down" size={14} color="#64748b" />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Year */}
+                <View style={{ flex: 1.2 }}>
+                  <Text style={styles.subFieldLabel}>Year</Text>
+                  <TouchableOpacity
+                    style={styles.dropdownBtn}
+                    onPress={() => openPicker('Inter Group 1 Year', YEARS, (v) => handleCaInterChange('group1Year', v))}
+                  >
+                    <Text style={styles.dropdownBtnText}>{caInter.group1Year}</Text>
+                    <Ionicons name="chevron-down" size={14} color="#64748b" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+
+            {/* Group II Details */}
+            <View style={styles.groupSubCard}>
+              <Text style={styles.groupSubTitle}>Group II</Text>
+              <View style={styles.caSelectRow}>
+                {/* Attempts */}
+                <View style={{ flex: 1, marginRight: 6 }}>
+                  <Text style={styles.subFieldLabel}>Attempts</Text>
+                  <TouchableOpacity
+                    style={[styles.dropdownBtn, caInter.bothGroups1stAttempt && styles.dropdownDisabled]}
+                    disabled={caInter.bothGroups1stAttempt}
+                    onPress={() => openPicker('Inter Group 2 Attempts', ATTEMPTS, (v) => handleCaInterChange('group2Attempts', v))}
+                  >
+                    <Text style={styles.dropdownBtnText}>{caInter.group2Attempts}</Text>
+                    <Ionicons name="chevron-down" size={14} color="#64748b" />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Month */}
+                <View style={{ flex: 1, marginRight: 6 }}>
+                  <Text style={styles.subFieldLabel}>Month</Text>
+                  <TouchableOpacity
+                    style={[styles.dropdownBtn, caInter.bothGroups1stAttempt && styles.dropdownDisabled]}
+                    disabled={caInter.bothGroups1stAttempt}
+                    onPress={() => openPicker('Inter Group 2 Month', MONTHS, (v) => handleCaInterChange('group2Month', v))}
+                  >
+                    <Text style={styles.dropdownBtnText}>{caInter.group2Month}</Text>
+                    <Ionicons name="chevron-down" size={14} color="#64748b" />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Year */}
+                <View style={{ flex: 1.2 }}>
+                  <Text style={styles.subFieldLabel}>Year</Text>
+                  <TouchableOpacity
+                    style={[styles.dropdownBtn, caInter.bothGroups1stAttempt && styles.dropdownDisabled]}
+                    disabled={caInter.bothGroups1stAttempt}
+                    onPress={() => openPicker('Inter Group 2 Year', YEARS, (v) => handleCaInterChange('group2Year', v))}
+                  >
+                    <Text style={styles.dropdownBtnText}>{caInter.group2Year}</Text>
+                    <Ionicons name="chevron-down" size={14} color="#64748b" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+
+            {/* Ranker & Completion Session */}
+            <View style={styles.caSelectRow}>
+              <View style={{ flex: 1, marginRight: 8 }}>
+                <Text style={styles.subFieldLabel}>Ranker</Text>
+                <TouchableOpacity
+                  style={styles.dropdownBtn}
+                  onPress={() => openPicker('Inter Ranker', RANKER_OPTIONS, (v) => handleCaInterChange('ranker', v))}
+                >
+                  <Text style={styles.dropdownBtnText}>{caInter.ranker}</Text>
+                  <Ionicons name="chevron-down" size={14} color="#64748b" />
+                </TouchableOpacity>
+              </View>
+
+              <View style={{ flex: 1 }}>
+                <Text style={styles.subFieldLabel}>Completion Session</Text>
+                <TouchableOpacity
+                  style={[styles.dropdownBtn, caInter.bothGroups1stAttempt && styles.dropdownDisabled]}
+                  disabled={caInter.bothGroups1stAttempt}
+                  onPress={() => openPicker('Inter Completion Session Year', YEARS, (v) => handleCaInterChange('completionSessionYear', v))}
+                >
+                  <Text style={styles.dropdownBtnText}>{caInter.completionSessionMonth} {caInter.completionSessionYear}</Text>
+                  <Ionicons name="chevron-down" size={14} color="#64748b" />
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
 

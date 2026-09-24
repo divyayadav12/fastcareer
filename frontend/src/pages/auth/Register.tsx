@@ -45,6 +45,7 @@ export const Register = () => {
 
   // Candidate Specific Fields
   const [phone, setPhone] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
   const [currentCity, setCurrentCity] = useState('');
   const [workStatus, setWorkStatus] = useState<'fresher' | 'experienced'>('experienced');
   const [linkedinUrl, setLinkedinUrl] = useState('');
@@ -52,6 +53,45 @@ export const Register = () => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [isScanningResume, setIsScanningResume] = useState(false);
   const [scannedFields, setScannedFields] = useState<string[]>([]);
+
+  // CA Intermediate Examination State
+  const [caInter, setCaInter] = useState({
+    bothGroups1stAttempt: false,
+    group1Attempts: '1',
+    group1Month: 'May',
+    group1Year: '2020',
+    group2Attempts: '1',
+    group2Month: 'May',
+    group2Year: '2020',
+    ranker: 'No',
+    completionSessionMonth: 'May',
+    completionSessionYear: '2020',
+  });
+
+  const handleCaInterChange = (field: string, value: any) => {
+    setCaInter(prev => {
+      const next = { ...prev, [field]: value };
+      if (field === 'bothGroups1stAttempt' && value === true) {
+        next.group1Attempts = '1';
+        next.group2Attempts = '1';
+        if (next.group1Month) next.group2Month = next.group1Month;
+        if (next.group1Year) next.group2Year = next.group1Year;
+        if (next.group1Month) next.completionSessionMonth = next.group1Month;
+        if (next.group1Year) next.completionSessionYear = next.group1Year;
+      }
+      if (next.bothGroups1stAttempt) {
+        if (field === 'group1Month') {
+          next.group2Month = value;
+          next.completionSessionMonth = value;
+        }
+        if (field === 'group1Year') {
+          next.group2Year = value;
+          next.completionSessionYear = value;
+        }
+      }
+      return next;
+    });
+  };
 
   // CA Final Examination State
   const [caFinal, setCaFinal] = useState({
@@ -185,6 +225,10 @@ export const Register = () => {
         setPhone(parsed.phone);
         extracted.push('Phone');
       }
+      if (parsed.dateOfBirth) {
+        setDateOfBirth(parsed.dateOfBirth);
+        extracted.push('Date of Birth');
+      }
       if (parsed.city) {
         setCurrentCity(parsed.city);
         extracted.push('City');
@@ -196,6 +240,25 @@ export const Register = () => {
       if (parsed.workStatus) {
         setWorkStatus(parsed.workStatus);
         extracted.push('Experience Stage');
+      }
+      if (parsed.caInterBothGroups1stAttempt !== undefined || parsed.caInterGroup1Year || parsed.caInterYear) {
+        setCaInter(prev => {
+          const next = { ...prev };
+          if (parsed.caInterBothGroups1stAttempt !== undefined) {
+            next.bothGroups1stAttempt = parsed.caInterBothGroups1stAttempt;
+          }
+          if (parsed.caInterGroup1Attempts) next.group1Attempts = parsed.caInterGroup1Attempts;
+          if (parsed.caInterGroup1Month) next.group1Month = parsed.caInterGroup1Month;
+          if (parsed.caInterGroup1Year) next.group1Year = parsed.caInterGroup1Year;
+          if (parsed.caInterGroup2Attempts) next.group2Attempts = parsed.caInterGroup2Attempts;
+          if (parsed.caInterGroup2Month) next.group2Month = parsed.caInterGroup2Month;
+          if (parsed.caInterGroup2Year) next.group2Year = parsed.caInterGroup2Year;
+          if (parsed.caInterRanker) next.ranker = parsed.caInterRanker;
+          if (parsed.caInterCompletionMonth) next.completionSessionMonth = parsed.caInterCompletionMonth;
+          if (parsed.caInterCompletionYear) next.completionSessionYear = parsed.caInterCompletionYear;
+          return next;
+        });
+        extracted.push('CA Inter Details');
       }
       if (parsed.caFinalBothGroups1stAttempt !== undefined || parsed.caFinalGroup1Year || parsed.caFinalYear) {
         setCaFinal(prev => {
@@ -256,6 +319,18 @@ export const Register = () => {
         return;
       }
 
+      if (!dateOfBirth) {
+        setFormError('Please select your Date of Birth.');
+        toast.error('Please select your Date of Birth.');
+        return;
+      }
+
+      if (!caInter.group1Month || !caInter.group1Year || !caInter.group2Month || !caInter.group2Year || !caInter.completionSessionMonth || !caInter.completionSessionYear) {
+        setFormError('Please complete all mandatory CA Intermediate qualification details.');
+        toast.error('Please complete all mandatory CA Intermediate qualification details.');
+        return;
+      }
+
       if (!caFinal.group1Month || !caFinal.group1Year || !caFinal.group2Month || !caFinal.group2Year || !caFinal.completionSessionMonth || !caFinal.completionSessionYear) {
         setFormError('Please complete all mandatory CA Final examination details.');
         toast.error('Please complete all mandatory CA Final examination details.');
@@ -291,8 +366,21 @@ export const Register = () => {
       ...(role === 'candidate' && {
         phone,
         currentCity,
+        dateOfBirth,
         isFresherCA: workStatus === 'fresher',
         resumeUrl: uploadedResumeUrl,
+        caInter: {
+          bothGroups1stAttempt: caInter.bothGroups1stAttempt,
+          group1Attempts: caInter.group1Attempts || '1',
+          group1Month: caInter.group1Month || 'May',
+          group1Year: caInter.group1Year || '2020',
+          group2Attempts: caInter.group2Attempts || '1',
+          group2Month: caInter.group2Month || 'May',
+          group2Year: caInter.group2Year || '2020',
+          ranker: caInter.ranker || 'No',
+          completionSessionMonth: caInter.completionSessionMonth || 'May',
+          completionSessionYear: caInter.completionSessionYear || '2020',
+        },
         caFinal: {
           bothGroups1stAttempt: caFinal.bothGroups1stAttempt,
           group1Attempts: caFinal.group1Attempts || '1',
@@ -529,7 +617,7 @@ export const Register = () => {
                   </div>
                 </div>
 
-                {/* Password and City row */}
+                {/* Password and DOB / Location row */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1.5">Create Password *</label>
@@ -553,90 +641,189 @@ export const Register = () => {
                     </div>
                   </div>
 
-                  {/* Searchable City Location */}
-                  <div className="relative" ref={cityDropdownRef}>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                      Current Location *
-                    </label>
-
-                    {/* Trigger Box */}
-                    <div
-                      onClick={() => {
-                        setCityDropdownOpen(prev => !prev);
-                        setTimeout(() => cityInputRef.current?.focus(), 100);
-                      }}
-                      className={`w-full px-3.5 py-2.5 border rounded-xl flex items-center justify-between cursor-pointer bg-white transition-all shadow-2xs ${
-                        cityDropdownOpen ? 'border-primary ring-2 ring-primary/20' : 'border-slate-200 hover:border-slate-300'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2 flex-1 min-w-0">
-                        <MapPin size={16} className={currentCity ? 'text-primary shrink-0' : 'text-slate-400 shrink-0'} />
-                        <span className={`block truncate text-sm ${currentCity ? 'font-medium text-slate-900' : 'text-slate-400'}`}>
-                          {currentCity || 'Select Primary City'}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1 ml-1.5">
-                        {currentCity && (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setCurrentCity('');
-                              setCitySearchQuery('');
-                            }}
-                            className="p-1 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors"
-                            title="Clear city"
-                          >
-                            <X size={13} />
-                          </button>
-                        )}
-                        <ChevronDown size={16} className={`text-slate-400 transition-transform duration-200 ${cityDropdownOpen ? 'rotate-180 text-primary' : ''}`} />
-                      </div>
+                  {role === 'candidate' ? (
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        Date of Birth <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="date"
+                        required={role === 'candidate'}
+                        value={dateOfBirth}
+                        onChange={(e) => setDateOfBirth(e.target.value)}
+                        max={new Date().toISOString().split('T')[0]}
+                        className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-white text-slate-900 cursor-pointer"
+                      />
                     </div>
-
-                    {/* Hidden input for HTML5 form validation */}
-                    <input
-                      type="text"
-                      tabIndex={-1}
-                      value={currentCity}
-                      required={role === 'candidate'}
-                      onChange={() => {}}
-                      className="opacity-0 absolute inset-x-0 bottom-0 h-0 pointer-events-none"
-                    />
-
-                    {/* Dropdown Menu */}
-                    {cityDropdownOpen && (
-                      <div className="absolute z-50 mt-1.5 w-full bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-                        <div className="p-2.5 border-b border-slate-100 bg-slate-50/80">
-                          <div className="relative">
-                            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                            <input
-                              ref={cityInputRef}
-                              type="text"
-                              value={citySearchQuery}
-                              onChange={(e) => setCitySearchQuery(e.target.value)}
-                              placeholder="Type city (e.g. Pune, Jaipur...)"
-                              className="w-full pl-8 pr-7 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                            />
-                            {citySearchQuery && (
-                              <button
-                                type="button"
-                                onClick={() => setCitySearchQuery('')}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                              >
-                                <X size={13} />
-                              </button>
-                            )}
-                          </div>
+                  ) : (
+                    /* Searchable City Location for Employer */
+                    <div className="relative" ref={cityDropdownRef}>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        Current Location *
+                      </label>
+                      <div
+                        onClick={() => {
+                          setCityDropdownOpen(prev => !prev);
+                          setTimeout(() => cityInputRef.current?.focus(), 100);
+                        }}
+                        className={`w-full px-3.5 py-2.5 border rounded-xl flex items-center justify-between cursor-pointer bg-white transition-all shadow-2xs ${
+                          cityDropdownOpen ? 'border-primary ring-2 ring-primary/20' : 'border-slate-200 hover:border-slate-300'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <MapPin size={16} className={currentCity ? 'text-primary shrink-0' : 'text-slate-400 shrink-0'} />
+                          <span className={`block truncate text-sm ${currentCity ? 'font-medium text-slate-900' : 'text-slate-400'}`}>
+                            {currentCity || 'Select Primary City'}
+                          </span>
                         </div>
+                        <div className="flex items-center gap-1 ml-1.5">
+                          {currentCity && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setCurrentCity('');
+                                setCitySearchQuery('');
+                              }}
+                              className="p-1 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors"
+                              title="Clear city"
+                            >
+                              <X size={13} />
+                            </button>
+                          )}
+                          <ChevronDown size={16} className={`text-slate-400 transition-transform duration-200 ${cityDropdownOpen ? 'rotate-180 text-primary' : ''}`} />
+                        </div>
+                      </div>
+                      <input
+                        type="text"
+                        tabIndex={-1}
+                        value={currentCity}
+                        required
+                        onChange={() => {}}
+                        className="opacity-0 absolute inset-x-0 bottom-0 h-0 pointer-events-none"
+                      />
+                    </div>
+                  )}
+                </div>
 
-                        {!citySearchQuery.trim() && (
-                          <div className="p-2.5 border-b border-slate-100 bg-white">
-                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                              Popular Cities
+                {/* Candidate Location & LinkedIn row */}
+                {role === 'candidate' && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    {/* Searchable City Location */}
+                    <div className="relative" ref={cityDropdownRef}>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        Current Location <span className="text-red-500">*</span>
+                      </label>
+
+                      {/* Trigger Box */}
+                      <div
+                        onClick={() => {
+                          setCityDropdownOpen(prev => !prev);
+                          setTimeout(() => cityInputRef.current?.focus(), 100);
+                        }}
+                        className={`w-full px-3.5 py-2.5 border rounded-xl flex items-center justify-between cursor-pointer bg-white transition-all shadow-2xs ${
+                          cityDropdownOpen ? 'border-primary ring-2 ring-primary/20' : 'border-slate-200 hover:border-slate-300'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <MapPin size={16} className={currentCity ? 'text-primary shrink-0' : 'text-slate-400 shrink-0'} />
+                          <span className={`block truncate text-sm ${currentCity ? 'font-medium text-slate-900' : 'text-slate-400'}`}>
+                            {currentCity || 'Select Primary City'}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1 ml-1.5">
+                          {currentCity && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setCurrentCity('');
+                                setCitySearchQuery('');
+                              }}
+                              className="p-1 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors"
+                              title="Clear city"
+                            >
+                              <X size={13} />
+                            </button>
+                          )}
+                          <ChevronDown size={16} className={`text-slate-400 transition-transform duration-200 ${cityDropdownOpen ? 'rotate-180 text-primary' : ''}`} />
+                        </div>
+                      </div>
+
+                      {/* Hidden input for HTML5 form validation */}
+                      <input
+                        type="text"
+                        tabIndex={-1}
+                        value={currentCity}
+                        required={role === 'candidate'}
+                        onChange={() => {}}
+                        className="opacity-0 absolute inset-x-0 bottom-0 h-0 pointer-events-none"
+                      />
+
+                      {/* Dropdown Menu */}
+                      {cityDropdownOpen && (
+                        <div className="absolute z-50 mt-1.5 w-full bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                          <div className="p-2.5 border-b border-slate-100 bg-slate-50/80">
+                            <div className="relative">
+                              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                              <input
+                                ref={cityInputRef}
+                                type="text"
+                                value={citySearchQuery}
+                                onChange={(e) => setCitySearchQuery(e.target.value)}
+                                placeholder="Type city (e.g. Pune, Jaipur...)"
+                                className="w-full pl-8 pr-7 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                              />
+                              {citySearchQuery && (
+                                <button
+                                  type="button"
+                                  onClick={() => setCitySearchQuery('')}
+                                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                                >
+                                  <X size={13} />
+                                </button>
+                              )}
                             </div>
-                            <div className="flex flex-wrap gap-1">
-                              {POPULAR_CITIES.slice(0, 10).map(city => (
+                          </div>
+
+                          {!citySearchQuery.trim() && (
+                            <div className="p-2.5 border-b border-slate-100 bg-white">
+                              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                                Popular Cities
+                              </div>
+                              <div className="flex flex-wrap gap-1">
+                                {POPULAR_CITIES.slice(0, 10).map(city => (
+                                  <button
+                                    key={city}
+                                    type="button"
+                                    onClick={() => {
+                                      setCurrentCity(city);
+                                      setCityDropdownOpen(false);
+                                      setCitySearchQuery('');
+                                    }}
+                                    className={`px-2 py-0.5 text-[11px] rounded-md font-medium transition-all ${
+                                      currentCity === city
+                                        ? 'bg-primary text-white font-semibold'
+                                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                                    }`}
+                                  >
+                                    {city}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="max-h-52 overflow-y-auto divide-y divide-slate-50">
+                            <div className="px-3 py-1 bg-slate-50 text-[10px] font-bold text-slate-400 uppercase tracking-wider sticky top-0 z-10 flex justify-between items-center">
+                              <span>{citySearchQuery.trim() ? `Search Results` : 'All Indian Cities (A-Z)'}</span>
+                              <span className="text-[10px] text-slate-400 font-normal">
+                                {filteredCities.length} cities
+                              </span>
+                            </div>
+
+                            {filteredCities.length > 0 ? (
+                              filteredCities.map(city => (
                                 <button
                                   key={city}
                                   type="button"
@@ -645,93 +832,63 @@ export const Register = () => {
                                     setCityDropdownOpen(false);
                                     setCitySearchQuery('');
                                   }}
-                                  className={`px-2 py-0.5 text-[11px] rounded-md font-medium transition-all ${
-                                    currentCity === city
-                                      ? 'bg-primary text-white font-semibold'
-                                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                                  className={`w-full px-3.5 py-2 text-left text-xs flex items-center justify-between hover:bg-blue-50/70 transition-colors ${
+                                    currentCity === city ? 'bg-blue-50 font-semibold text-primary' : 'text-slate-700'
                                   }`}
                                 >
-                                  {city}
+                                  <div className="flex items-center gap-2">
+                                    <MapPin size={13} className={currentCity === city ? 'text-primary' : 'text-slate-400'} />
+                                    <span>{city}</span>
+                                  </div>
+                                  {currentCity === city && <Check size={14} className="text-primary" />}
                                 </button>
-                              ))}
-                            </div>
+                              ))
+                            ) : (
+                              <div className="p-3 text-center">
+                                <p className="text-xs text-slate-500 mb-2">No cities found for "{citySearchQuery}"</p>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setCurrentCity(citySearchQuery.trim());
+                                    setCityDropdownOpen(false);
+                                    setCitySearchQuery('');
+                                  }}
+                                  className="px-3 py-1 text-xs font-semibold bg-blue-50 text-primary border border-primary/20 rounded-lg hover:bg-blue-100 transition-colors"
+                                >
+                                  Use "{citySearchQuery.trim()}" as city
+                                </button>
+                              </div>
+                            )}
                           </div>
-                        )}
-
-                        <div className="max-h-52 overflow-y-auto divide-y divide-slate-50">
-                          <div className="px-3 py-1 bg-slate-50 text-[10px] font-bold text-slate-400 uppercase tracking-wider sticky top-0 z-10 flex justify-between items-center">
-                            <span>{citySearchQuery.trim() ? `Search Results` : 'All Indian Cities (A-Z)'}</span>
-                            <span className="text-[10px] text-slate-400 font-normal">
-                              {filteredCities.length} cities
-                            </span>
-                          </div>
-
-                          {filteredCities.length > 0 ? (
-                            filteredCities.map(city => (
-                              <button
-                                key={city}
-                                type="button"
-                                onClick={() => {
-                                  setCurrentCity(city);
-                                  setCityDropdownOpen(false);
-                                  setCitySearchQuery('');
-                                }}
-                                className={`w-full px-3.5 py-2 text-left text-xs flex items-center justify-between hover:bg-blue-50/70 transition-colors ${
-                                  currentCity === city ? 'bg-blue-50 font-semibold text-primary' : 'text-slate-700'
-                                }`}
-                              >
-                                <div className="flex items-center gap-2">
-                                  <MapPin size={13} className={currentCity === city ? 'text-primary' : 'text-slate-400'} />
-                                  <span>{city}</span>
-                                </div>
-                                {currentCity === city && <Check size={14} className="text-primary" />}
-                              </button>
-                            ))
-                          ) : (
-                            <div className="p-3 text-center">
-                              <p className="text-xs text-slate-500 mb-2">No cities found for "{citySearchQuery}"</p>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setCurrentCity(citySearchQuery.trim());
-                                  setCityDropdownOpen(false);
-                                  setCitySearchQuery('');
-                                }}
-                                className="px-3 py-1 text-xs font-semibold bg-blue-50 text-primary border border-primary/20 rounded-lg hover:bg-blue-100 transition-colors"
-                              >
-                                Use "{citySearchQuery.trim()}" as city
-                              </button>
-                            </div>
-                          )}
                         </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* LinkedIn Profile ID / URL (Optional) */}
-                <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <label className="block text-xs font-semibold text-slate-700">
-                      LinkedIn Profile URL <span className="text-slate-400 font-normal text-[11px]">(Optional)</span>
-                    </label>
-                    <span className="text-[10.5px] text-slate-400 font-medium">e.g. linkedin.com/in/username</span>
-                  </div>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                      <svg className="w-4 h-4 fill-[#0077b5]" viewBox="0 0 24 24">
-                        <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z" />
-                      </svg>
+                      )}
                     </div>
-                    <input
-                      type="url"
-                      value={linkedinUrl}
-                      onChange={(e) => setLinkedinUrl(e.target.value)}
-                      placeholder="https://www.linkedin.com/in/your-profile"
-                      className="w-full pl-10 pr-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                    />
+
+                    {/* LinkedIn Profile ID / URL (Optional) */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className="block text-xs font-semibold text-slate-700">
+                          LinkedIn Profile URL <span className="text-slate-400 font-normal text-[11px]">(Optional)</span>
+                        </label>
+                        <span className="text-[10.5px] text-slate-400 font-medium">e.g. linkedin.com/in/username</span>
+                      </div>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                          <svg className="w-4 h-4 fill-[#0077b5]" viewBox="0 0 24 24">
+                            <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z" />
+                          </svg>
+                        </div>
+                        <input
+                          type="url"
+                          value={linkedinUrl}
+                          onChange={(e) => setLinkedinUrl(e.target.value)}
+                          placeholder="https://www.linkedin.com/in/your-profile"
+                          className="w-full pl-10 pr-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Candidate Career Stage & Resume Upload */}
                 {role === 'candidate' && (
@@ -797,6 +954,161 @@ export const Register = () => {
                               : 'border-slate-300'
                           }`}>
                             {workStatus === 'fresher' && <Check size={12} strokeWidth={3} />}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* CA Intermediate Qualification Card */}
+                    <div className="bg-slate-50/80 border border-slate-200/90 rounded-2xl p-4 sm:p-5 space-y-4">
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200/80 pb-3 gap-2">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <GraduationCap className="w-5 h-5 text-indigo-600" />
+                            <h3 className="text-sm sm:text-base font-bold text-slate-900">
+                              CA Intermediate Qualification Details <span className="text-red-500">*</span>
+                            </h3>
+                          </div>
+                          <p className="text-[11px] text-slate-500 mt-0.5">
+                            Auto-filled from resume if mentioned, or select manually (Mandatory)
+                          </p>
+                        </div>
+                        <label className="flex items-center gap-2 cursor-pointer bg-indigo-50/90 px-3.5 py-1.5 rounded-xl border border-indigo-200/80 hover:bg-indigo-100/70 transition-colors shrink-0">
+                          <input 
+                            type="checkbox" 
+                            checked={caInter.bothGroups1stAttempt} 
+                            onChange={(e) => handleCaInterChange('bothGroups1stAttempt', e.target.checked)} 
+                            className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer" 
+                          />
+                          <span className="text-xs text-indigo-950 font-bold">Both Groups - 1st Attempt</span>
+                        </label>
+                      </div>
+
+                      {/* Group I & Group II Grids */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Group I */}
+                        <div className="bg-white p-3.5 rounded-xl border border-slate-200/80 space-y-2.5 shadow-2xs">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">Group I</span>
+                            <span className="text-[10px] text-indigo-600 font-semibold bg-indigo-50 px-2 py-0.5 rounded">Required</span>
+                          </div>
+                          <div className="grid grid-cols-3 gap-2">
+                            <div>
+                              <label className="block text-[10.5px] font-semibold text-slate-500 mb-1">Attempts *</label>
+                              <select 
+                                disabled={caInter.bothGroups1stAttempt} 
+                                value={caInter.group1Attempts} 
+                                onChange={(e) => handleCaInterChange('group1Attempts', e.target.value)} 
+                                className="w-full px-2 py-2 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500/20 disabled:bg-slate-100 disabled:text-slate-400 font-medium bg-white cursor-pointer"
+                              >
+                                {ATTEMPTS.map(a => <option key={a} value={a}>{a}</option>)}
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-[10.5px] font-semibold text-slate-500 mb-1">Month *</label>
+                              <select 
+                                value={caInter.group1Month} 
+                                onChange={(e) => handleCaInterChange('group1Month', e.target.value)} 
+                                className="w-full px-2 py-2 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500/20 font-medium bg-white cursor-pointer"
+                              >
+                                <option value="">Month</option>
+                                {CA_EXAM_MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-[10.5px] font-semibold text-slate-500 mb-1">Year *</label>
+                              <select 
+                                value={caInter.group1Year} 
+                                onChange={(e) => handleCaInterChange('group1Year', e.target.value)} 
+                                className="w-full px-2 py-2 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500/20 font-medium bg-white cursor-pointer"
+                              >
+                                <option value="">Year</option>
+                                {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Group II */}
+                        <div className="bg-white p-3.5 rounded-xl border border-slate-200/80 space-y-2.5 shadow-2xs">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">Group II</span>
+                            <span className="text-[10px] text-indigo-600 font-semibold bg-indigo-50 px-2 py-0.5 rounded">Required</span>
+                          </div>
+                          <div className="grid grid-cols-3 gap-2">
+                            <div>
+                              <label className="block text-[10.5px] font-semibold text-slate-500 mb-1">Attempts *</label>
+                              <select 
+                                disabled={caInter.bothGroups1stAttempt} 
+                                value={caInter.group2Attempts} 
+                                onChange={(e) => handleCaInterChange('group2Attempts', e.target.value)} 
+                                className="w-full px-2 py-2 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500/20 disabled:bg-slate-100 disabled:text-slate-400 font-medium bg-white cursor-pointer"
+                              >
+                                {ATTEMPTS.map(a => <option key={a} value={a}>{a}</option>)}
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-[10.5px] font-semibold text-slate-500 mb-1">Month *</label>
+                              <select 
+                                disabled={caInter.bothGroups1stAttempt} 
+                                value={caInter.group2Month} 
+                                onChange={(e) => handleCaInterChange('group2Month', e.target.value)} 
+                                className="w-full px-2 py-2 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500/20 disabled:bg-slate-100 disabled:text-slate-400 font-medium bg-white cursor-pointer"
+                              >
+                                <option value="">Month</option>
+                                {CA_EXAM_MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-[10.5px] font-semibold text-slate-500 mb-1">Year *</label>
+                              <select 
+                                disabled={caInter.bothGroups1stAttempt} 
+                                value={caInter.group2Year} 
+                                onChange={(e) => handleCaInterChange('group2Year', e.target.value)} 
+                                className="w-full px-2 py-2 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500/20 disabled:bg-slate-100 disabled:text-slate-400 font-medium bg-white cursor-pointer"
+                              >
+                                <option value="">Year</option>
+                                {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Ranker & Completion Session */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-white p-3.5 rounded-xl border border-slate-200/80 shadow-2xs">
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-700 mb-1">Ranker *</label>
+                          <select 
+                            value={caInter.ranker} 
+                            onChange={(e) => handleCaInterChange('ranker', e.target.value)} 
+                            className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500/20 font-medium bg-white cursor-pointer"
+                          >
+                            <option value="No">No</option>
+                            <option value="Yes">Yes (Ranker)</option>
+                          </select>
+                        </div>
+                        <div className="sm:col-span-2">
+                          <label className="block text-xs font-semibold text-slate-700 mb-1">Completion Session *</label>
+                          <div className="grid grid-cols-2 gap-2">
+                            <select 
+                              disabled={caInter.bothGroups1stAttempt} 
+                              value={caInter.completionSessionMonth} 
+                              onChange={(e) => handleCaInterChange('completionSessionMonth', e.target.value)} 
+                              className="w-full px-2.5 py-2 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500/20 disabled:bg-slate-100 disabled:text-slate-400 font-medium bg-white cursor-pointer"
+                            >
+                              <option value="">Month</option>
+                              {CA_EXAM_MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
+                            </select>
+                            <select 
+                              disabled={caInter.bothGroups1stAttempt} 
+                              value={caInter.completionSessionYear} 
+                              onChange={(e) => handleCaInterChange('completionSessionYear', e.target.value)} 
+                              className="w-full px-2.5 py-2 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500/20 disabled:bg-slate-100 disabled:text-slate-400 font-medium bg-white cursor-pointer"
+                            >
+                              <option value="">Year</option>
+                              {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+                            </select>
                           </div>
                         </div>
                       </div>
