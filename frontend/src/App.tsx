@@ -15,6 +15,7 @@ import { JobDetails } from './pages/JobDetails';
 import { Login } from './pages/auth/Login';
 import { Register } from './pages/auth/Register';
 import { PlacementDriveForm } from './pages/PlacementDriveForm';
+import { PlacementResults } from './pages/PlacementResults';
 import { CandidateDashboard } from './pages/candidate/Dashboard';
 import { JobFair } from './pages/candidate/JobFair';
 import { CurrentOpenings } from './pages/candidate/CurrentOpenings';
@@ -88,6 +89,8 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/placement-drive" element={<PlacementDriveForm />} />
+            <Route path="/placement-results" element={<PlacementResults />} />
+            <Route path="/ca-results" element={<PlacementResults />} />
             
             {/* Candidate Routes */}
             <Route path="/candidate/dashboard" element={<CandidateDashboard />} />

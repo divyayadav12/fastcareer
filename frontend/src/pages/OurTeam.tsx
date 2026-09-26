@@ -18,10 +18,12 @@ import {
   BookOpen,
   Award,
   Building2,
-  Flame
+  Flame,
+  Globe
 } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Link } from 'react-router-dom';
+import { ExecutiveLeadershipCards } from '../components/ExecutiveLeadershipCards';
 
 interface EventItem {
   id: number;
@@ -410,37 +412,23 @@ export const OurTeam: React.FC = () => {
 
   return (
     <div className="bg-gray-50 min-h-screen pt-24 pb-16">
-      {/* Professional Corporate Hero Banner - Solid #1F2937 Background */}
-      <div className="relative bg-[#1F2937] text-white py-16 px-4 sm:px-6 lg:px-8 overflow-hidden shadow-xl">
+      {/* Professional Corporate Hero Banner */}
+      <div className="relative bg-gradient-to-b from-slate-50 via-white to-slate-50 text-slate-900 py-16 px-4 sm:px-6 lg:px-8 overflow-hidden border-b border-slate-200">
         <div className="max-w-7xl mx-auto text-center relative z-10">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-blue-200 text-xs sm:text-sm font-semibold mb-4 shadow-sm">
-            <Sparkles size={16} className="text-yellow-400" />
-            <span>Culture, Leadership & Learning Moments</span>
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-800 text-xs sm:text-sm font-bold mb-4 shadow-xs">
+            <Sparkles size={16} className="text-blue-700" />
+            <span>Fast Career Consultants Private Limited</span>
           </div>
 
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white">
-            Learning Masterclasses & <span className="text-white">Cultural Celebrations</span>
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 mb-4">
+            Our <span className="text-blue-700">Leadership & Team</span>
           </h1>
+          <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto mb-8 font-normal">
+            Guided by 18+ years of expertise in Chartered Accountant placements, corporate campus drives, and executive finance recruitment.
+          </p>
 
-          {/* Quick Metrics Bar */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto mt-8">
-            <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl p-4 text-center hover:bg-white/15 transition-all">
-              <div className="text-2xl sm:text-3xl font-extrabold text-white">120+</div>
-              <div className="text-xs sm:text-sm text-gray-300 font-medium mt-1">Masterclasses & Workshops</div>
-            </div>
-            <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl p-4 text-center hover:bg-white/15 transition-all">
-              <div className="text-2xl sm:text-3xl font-extrabold text-white">100%</div>
-              <div className="text-xs sm:text-sm text-gray-300 font-medium mt-1">Cultural Festive Spirit</div>
-            </div>
-            <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl p-4 text-center hover:bg-white/15 transition-all">
-              <div className="text-2xl sm:text-3xl font-extrabold text-white">40+</div>
-              <div className="text-xs sm:text-sm text-gray-300 font-medium mt-1">Corporate Placement Summits</div>
-            </div>
-            <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl p-4 text-center hover:bg-white/15 transition-all">
-              <div className="text-2xl sm:text-3xl font-extrabold text-white">15+</div>
-              <div className="text-xs sm:text-sm text-gray-300 font-medium mt-1">Years of Leadership</div>
-            </div>
-          </div>
+          {/* Key Executive Leadership Cards */}
+          <ExecutiveLeadershipCards className="max-w-4xl mx-auto" />
         </div>
       </div>
 

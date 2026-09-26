@@ -692,7 +692,7 @@ export default function RegisterScreen({ navigation }: any) {
               <View style={styles.caSelectRow}>
                 {/* Attempts */}
                 <View style={{ flex: 1, marginRight: 6 }}>
-                  <Text style={styles.subFieldLabel}>Attempts</Text>
+                  <Text style={styles.subFieldLabel}>Attempts *</Text>
                   <TouchableOpacity
                     style={[styles.dropdownBtn, caInter.bothGroups1stAttempt && styles.dropdownDisabled]}
                     disabled={caInter.bothGroups1stAttempt}
@@ -705,7 +705,7 @@ export default function RegisterScreen({ navigation }: any) {
 
                 {/* Month */}
                 <View style={{ flex: 1, marginRight: 6 }}>
-                  <Text style={styles.subFieldLabel}>Month</Text>
+                  <Text style={styles.subFieldLabel}>Month *</Text>
                   <TouchableOpacity
                     style={styles.dropdownBtn}
                     onPress={() => openPicker('Inter Group 1 Month', MONTHS, (v) => handleCaInterChange('group1Month', v))}
@@ -717,7 +717,7 @@ export default function RegisterScreen({ navigation }: any) {
 
                 {/* Year */}
                 <View style={{ flex: 1.2 }}>
-                  <Text style={styles.subFieldLabel}>Year</Text>
+                  <Text style={styles.subFieldLabel}>Year *</Text>
                   <TouchableOpacity
                     style={styles.dropdownBtn}
                     onPress={() => openPicker('Inter Group 1 Year', YEARS, (v) => handleCaInterChange('group1Year', v))}
@@ -735,7 +735,7 @@ export default function RegisterScreen({ navigation }: any) {
               <View style={styles.caSelectRow}>
                 {/* Attempts */}
                 <View style={{ flex: 1, marginRight: 6 }}>
-                  <Text style={styles.subFieldLabel}>Attempts</Text>
+                  <Text style={styles.subFieldLabel}>Attempts *</Text>
                   <TouchableOpacity
                     style={[styles.dropdownBtn, caInter.bothGroups1stAttempt && styles.dropdownDisabled]}
                     disabled={caInter.bothGroups1stAttempt}
@@ -748,7 +748,7 @@ export default function RegisterScreen({ navigation }: any) {
 
                 {/* Month */}
                 <View style={{ flex: 1, marginRight: 6 }}>
-                  <Text style={styles.subFieldLabel}>Month</Text>
+                  <Text style={styles.subFieldLabel}>Month *</Text>
                   <TouchableOpacity
                     style={[styles.dropdownBtn, caInter.bothGroups1stAttempt && styles.dropdownDisabled]}
                     disabled={caInter.bothGroups1stAttempt}
@@ -761,7 +761,7 @@ export default function RegisterScreen({ navigation }: any) {
 
                 {/* Year */}
                 <View style={{ flex: 1.2 }}>
-                  <Text style={styles.subFieldLabel}>Year</Text>
+                  <Text style={styles.subFieldLabel}>Year *</Text>
                   <TouchableOpacity
                     style={[styles.dropdownBtn, caInter.bothGroups1stAttempt && styles.dropdownDisabled]}
                     disabled={caInter.bothGroups1stAttempt}
@@ -777,7 +777,7 @@ export default function RegisterScreen({ navigation }: any) {
             {/* Ranker & Completion Session */}
             <View style={styles.caSelectRow}>
               <View style={{ flex: 1, marginRight: 8 }}>
-                <Text style={styles.subFieldLabel}>Ranker</Text>
+                <Text style={styles.subFieldLabel}>Ranker *</Text>
                 <TouchableOpacity
                   style={styles.dropdownBtn}
                   onPress={() => openPicker('Inter Ranker', RANKER_OPTIONS, (v) => handleCaInterChange('ranker', v))}
@@ -788,7 +788,7 @@ export default function RegisterScreen({ navigation }: any) {
               </View>
 
               <View style={{ flex: 1 }}>
-                <Text style={styles.subFieldLabel}>Completion Session</Text>
+                <Text style={styles.subFieldLabel}>Completion Session *</Text>
                 <TouchableOpacity
                   style={[styles.dropdownBtn, caInter.bothGroups1stAttempt && styles.dropdownDisabled]}
                   disabled={caInter.bothGroups1stAttempt}
@@ -831,7 +831,7 @@ export default function RegisterScreen({ navigation }: any) {
               <View style={styles.caSelectRow}>
                 {/* Attempts */}
                 <View style={{ flex: 1, marginRight: 6 }}>
-                  <Text style={styles.subFieldLabel}>Attempts</Text>
+                  <Text style={styles.subFieldLabel}>Attempts *</Text>
                   <TouchableOpacity
                     style={[styles.dropdownBtn, caFinal.bothGroups1stAttempt && styles.dropdownDisabled]}
                     disabled={caFinal.bothGroups1stAttempt}
@@ -844,7 +844,7 @@ export default function RegisterScreen({ navigation }: any) {
 
                 {/* Month */}
                 <View style={{ flex: 1, marginRight: 6 }}>
-                  <Text style={styles.subFieldLabel}>Month</Text>
+                  <Text style={styles.subFieldLabel}>Month *</Text>
                   <TouchableOpacity
                     style={styles.dropdownBtn}
                     onPress={() => openPicker('Group 1 Month', MONTHS, (v) => handleCaFinalChange('group1Month', v))}
@@ -856,7 +856,7 @@ export default function RegisterScreen({ navigation }: any) {
 
                 {/* Year */}
                 <View style={{ flex: 1.2 }}>
-                  <Text style={styles.subFieldLabel}>Year</Text>
+                  <Text style={styles.subFieldLabel}>Year *</Text>
                   <TouchableOpacity
                     style={styles.dropdownBtn}
                     onPress={() => openPicker('Group 1 Year', YEARS, (v) => handleCaFinalChange('group1Year', v))}
@@ -874,7 +874,7 @@ export default function RegisterScreen({ navigation }: any) {
               <View style={styles.caSelectRow}>
                 {/* Attempts */}
                 <View style={{ flex: 1, marginRight: 6 }}>
-                  <Text style={styles.subFieldLabel}>Attempts</Text>
+                  <Text style={styles.subFieldLabel}>Attempts *</Text>
                   <TouchableOpacity
                     style={[styles.dropdownBtn, caFinal.bothGroups1stAttempt && styles.dropdownDisabled]}
                     disabled={caFinal.bothGroups1stAttempt}
@@ -887,7 +887,7 @@ export default function RegisterScreen({ navigation }: any) {
 
                 {/* Month */}
                 <View style={{ flex: 1, marginRight: 6 }}>
-                  <Text style={styles.subFieldLabel}>Month</Text>
+                  <Text style={styles.subFieldLabel}>Month *</Text>
                   <TouchableOpacity
                     style={[styles.dropdownBtn, caFinal.bothGroups1stAttempt && styles.dropdownDisabled]}
                     disabled={caFinal.bothGroups1stAttempt}
@@ -900,7 +900,7 @@ export default function RegisterScreen({ navigation }: any) {
 
                 {/* Year */}
                 <View style={{ flex: 1.2 }}>
-                  <Text style={styles.subFieldLabel}>Year</Text>
+                  <Text style={styles.subFieldLabel}>Year *</Text>
                   <TouchableOpacity
                     style={[styles.dropdownBtn, caFinal.bothGroups1stAttempt && styles.dropdownDisabled]}
                     disabled={caFinal.bothGroups1stAttempt}
@@ -916,7 +916,7 @@ export default function RegisterScreen({ navigation }: any) {
             {/* Ranker & Completion Session */}
             <View style={styles.caSelectRow}>
               <View style={{ flex: 1, marginRight: 8 }}>
-                <Text style={styles.subFieldLabel}>Ranker</Text>
+                <Text style={styles.subFieldLabel}>Ranker *</Text>
                 <TouchableOpacity
                   style={styles.dropdownBtn}
                   onPress={() => openPicker('All India Ranker', RANKER_OPTIONS, (v) => handleCaFinalChange('ranker', v))}
@@ -927,7 +927,7 @@ export default function RegisterScreen({ navigation }: any) {
               </View>
 
               <View style={{ flex: 1 }}>
-                <Text style={styles.subFieldLabel}>Completion Session</Text>
+                <Text style={styles.subFieldLabel}>Completion Session *</Text>
                 <TouchableOpacity
                   style={styles.dropdownBtn}
                   onPress={() => openPicker('Completion Session Year', YEARS, (v) => handleCaFinalChange('completionSessionYear', v))}

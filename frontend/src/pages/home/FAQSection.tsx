@@ -81,7 +81,7 @@ export const FAQSection: React.FC = () => {
   };
 
   return (
-    <section className="py-20 sm:py-24 bg-gradient-to-b from-[#F8FAFC] via-white to-[#F8FAFC] relative overflow-hidden" id="faq">
+    <section className="py-10 sm:py-12 bg-gradient-to-b from-[#F8FAFC] via-white to-[#F8FAFC] relative overflow-hidden border-b border-slate-200" id="faq">
       {/* Background Soft Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-blue-100/30 rounded-full blur-3xl pointer-events-none" />
 
@@ -92,7 +92,7 @@ export const FAQSection: React.FC = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-60px" }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="text-center max-w-3xl mx-auto mb-12"
+          className="text-center max-w-3xl mx-auto mb-8 sm:mb-10"
         >
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-xs sm:text-sm font-bold mb-3 shadow-xs">
             <HelpCircle size={16} className="text-primary" />
@@ -109,7 +109,7 @@ export const FAQSection: React.FC = () => {
         </motion.div>
 
         {/* Minimal Clean FAQ Accordion matching reference image */}
-        <div className="space-y-3.5 mb-12">
+        <div className="space-y-3 mb-8">
           {FAQS.map((faq, idx) => {
             const isOpen = openId === faq.id;
             return (

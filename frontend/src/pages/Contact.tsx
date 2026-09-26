@@ -1,10 +1,11 @@
 import toast from 'react-hot-toast';
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Mail, Phone, MapPin, Send } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, Globe } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { useForm } from 'react-hook-form';
+import { ExecutiveLeadershipCards } from '../components/ExecutiveLeadershipCards';
 
 type ContactFormData = {
   name?: string;
@@ -60,71 +61,96 @@ export const Contact = () => {
   return (
     <div className="w-full relative">
       {/* Hero Section */}
-      <section className="bg-secondary text-white pt-32 pb-20 px-4">
+      <section className="bg-gradient-to-b from-slate-50 via-white to-slate-50 text-slate-900 pt-32 pb-16 px-4 border-b border-slate-200">
         <div className="max-w-7xl mx-auto text-center">
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-4xl md:text-5xl font-bold mb-6"
+            className="text-3xl sm:text-5xl lg:text-6xl font-black mb-4 tracking-tight text-slate-900"
           >
-            Contact Us
+            Contact <span className="text-blue-700">FAST CAREERS</span>
           </motion.h1>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-xl text-gray-300 max-w-2xl mx-auto"
+            className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto font-normal"
           >
-            Whether you're an employer looking for exceptional talent, or a professional seeking your next big opportunity, we're here to help.
+            Whether you're an employer looking for exceptional Chartered Accountants, or a candidate seeking placement assistance, our leadership is just a call or message away.
           </motion.p>
         </div>
       </section>
 
       {/* Contact Content */}
-      <section className="py-20 px-4 bg-gray-50">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16">
+      <section className="py-16 px-4 bg-gray-50">
+        <div className="max-w-7xl mx-auto">
           
-          {/* Contact Details */}
-          <div>
-            <h2 className="text-3xl font-bold text-text mb-8">Get In Touch</h2>
-            <p className="text-gray-600 mb-10 leading-relaxed">
-              Reach out to our dedicated team of recruitment specialists. We aim to respond to all inquiries within 24 business hours.
-            </p>
+          {/* Executive Leadership Direct Contacts */}
+          <div className="mb-14">
+            <div className="text-center max-w-2xl mx-auto mb-8">
+              <span className="text-xs font-bold text-blue-600 bg-blue-50 px-3.5 py-1 rounded-full border border-blue-200 uppercase tracking-wider">
+                Direct Leadership Access
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mt-2">
+                Executive Leadership Contacts
+              </h2>
+              <p className="text-slate-600 text-sm mt-1">
+                Reach out directly to our directors for corporate partnerships and candidate placement mandates.
+              </p>
+            </div>
+
+            <ExecutiveLeadershipCards />
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
             
-            <div className="space-y-6">
-              <div className="flex items-start p-4 rounded-xl bg-white border border-gray-100 shadow-sm">
-                <div className="bg-blue-50 p-3.5 rounded-xl text-primary mr-5">
-                  <Phone className="w-6 h-6" />
+            {/* Contact Details & Company Presence */}
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-4">Corporate Office & Presence</h2>
+              <p className="text-gray-600 mb-8 leading-relaxed text-sm sm:text-base">
+                Reach out to our dedicated operations desk. We aim to respond to all corporate inquiries within 24 business hours.
+              </p>
+              
+              <div className="space-y-4">
+                <div className="flex items-start p-4 rounded-2xl bg-white border border-gray-100 shadow-sm">
+                  <div className="bg-blue-50 p-3 rounded-xl text-primary mr-4 shrink-0">
+                    <MapPin className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-slate-900 mb-0.5">Corporate Headquarters</h4>
+                    <p className="text-gray-800 font-semibold text-xs sm:text-sm">Fast Career Consultants Private Limited</p>
+                    <p className="text-gray-600 text-xs mt-0.5">Opposite Jain Mandir, Geeta Bhawan Square, Indore, Madhya Pradesh - 452001</p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="text-base font-semibold text-text mb-0.5">Call Us</h4>
-                  <p className="text-gray-800 font-medium">+91 11 4567 8900</p>
-                  <p className="text-gray-500 text-xs mt-0.5">Mon-Sat, 9:00 AM - 7:00 PM (IST)</p>
-                </div>
-              </div>
 
-              <div className="flex items-start p-4 rounded-xl bg-white border border-gray-100 shadow-sm">
-                <div className="bg-blue-50 p-3.5 rounded-xl text-primary mr-5">
-                  <Mail className="w-6 h-6" />
+                <div className="flex items-start p-4 rounded-2xl bg-white border border-gray-100 shadow-sm">
+                  <div className="bg-blue-50 p-3 rounded-xl text-primary mr-4 shrink-0">
+                    <Mail className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-slate-900 mb-0.5">Official Inquiries & Support</h4>
+                    <p className="text-gray-800 font-medium text-xs sm:text-sm">
+                      <a href="mailto:sarthak@fast-india.com" className="hover:text-blue-600 text-slate-700 font-semibold">sarthak@fast-india.com</a>
+                      <span className="mx-2 text-slate-300">|</span>
+                      <a href="mailto:ritesh@fast-india.com" className="hover:text-blue-600 text-slate-700 font-semibold">ritesh@fast-india.com</a>
+                    </p>
+                    <p className="text-slate-400 text-xs mt-0.5">General & Recruitment Desk: contact@fast-india.com</p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="text-base font-semibold text-text mb-0.5">Email Us</h4>
-                  <p className="text-gray-800 font-medium">info@fastcareers.com<br/>careers@fastcareers.com</p>
-                </div>
-              </div>
 
-              <div className="flex items-start p-4 rounded-xl bg-white border border-gray-100 shadow-sm">
-                <div className="bg-blue-50 p-3.5 rounded-xl text-primary mr-5">
-                  <MapPin className="w-6 h-6" />
-                </div>
-                <div>
-                  <h4 className="text-base font-semibold text-text mb-0.5">Corporate Headquarters</h4>
-                  <p className="text-gray-600 text-sm">Level 4, Business Tower,<br/>Connaught Place, New Delhi 110001, India</p>
+                <div className="flex items-start p-4 rounded-2xl bg-white border border-gray-100 shadow-sm">
+                  <div className="bg-blue-50 p-3 rounded-xl text-primary mr-4 shrink-0">
+                    <Phone className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-slate-900 mb-0.5">Support Timings</h4>
+                    <p className="text-gray-700 font-medium text-xs sm:text-sm">Monday to Saturday: 9:30 AM - 7:00 PM (IST)</p>
+                    <p className="text-slate-500 text-xs mt-0.5">FAST CA Campus Drives across 8+ Major Metro Venues & Virtual</p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
           
           {/* Contact Form */}
           <div className="bg-white p-8 md:p-10 rounded-3xl shadow-sm border border-gray-100">
@@ -206,6 +232,40 @@ export const Contact = () => {
             </form>
           </div>
         </div>
+
+        {/* Interactive Google Map Section */}
+        <div className="mt-12 sm:mt-16 bg-white rounded-3xl p-5 sm:p-7 border-2 border-slate-200/90 shadow-md">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-4 border-b border-slate-100">
+            <div>
+              <div className="flex items-center gap-2">
+                <MapPin className="text-blue-600 animate-bounce" size={20} />
+                <h3 className="text-lg sm:text-xl font-black text-slate-900">
+                  FAST Careers Corporate Headquarters & Pan-India Venues
+                </h3>
+              </div>
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">
+                Headquartered in Indore with physical campus recruitment centers in 9+ major metro hubs.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-blue-700 bg-blue-50 px-3.5 py-1 rounded-full border border-blue-200">
+                10+ Physical Hubs & Virtual
+              </span>
+            </div>
+          </div>
+
+          <div className="w-full h-80 sm:h-96 rounded-2xl overflow-hidden border border-slate-200 shadow-inner relative">
+            <iframe
+              title="FAST Careers Office Location Map"
+              src="https://maps.google.com/maps?q=Indore,Madhya%20Pradesh,India&t=&z=13&ie=UTF8&iwloc=&output=embed"
+              className="w-full h-full border-0"
+              loading="lazy"
+              allowFullScreen
+            />
+          </div>
+        </div>
+
+      </div>
       </section>
 
       {/* Floating WhatsApp Action Widget (Bottom-Right) */}

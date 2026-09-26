@@ -49,17 +49,26 @@ export const registerUser = async (req: Request, res: Response) => {
   const { firstName, lastName, email, password, role, phone, currentCity, dateOfBirth, isFresherCA, resumeUrl, linkedinUrl, caFinal, caInter } = req.body;
 
   try {
-    const userExists = await User.findOne({ email });
+    const trimmedEmail = (email || '').toLowerCase().trim();
+
+    if (!trimmedEmail) {
+      res.status(400).json({ message: 'Email address is required.' });
+      return;
+    }
+
+    const userExists = await User.findOne({ email: trimmedEmail });
 
     if (userExists) {
-      res.status(400).json({ message: 'This email is already registered. Please use a different email address.' });
+      res.status(400).json({ 
+        message: `The email "${trimmedEmail}" is already registered. Please sign in or use another email address.` 
+      });
       return;
     }
 
     const user = await User.create({
-      firstName,
-      lastName,
-      email,
+      firstName: firstName?.trim(),
+      lastName: lastName?.trim(),
+      email: trimmedEmail,
       password,
       role: role || 'candidate',
       phone: phone || '',
@@ -94,10 +103,17 @@ export const registerUser = async (req: Request, res: Response) => {
         token: generateToken(user._id.toString()),
       });
     } else {
-      res.status(400).json({ message: 'Invalid user data' });
+      res.status(400).json({ message: 'Invalid user data provided.' });
     }
-  } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+  } catch (error: any) {
+    console.error('Registration Error:', error);
+    if (error.code === 11000 || error.message?.includes('duplicate key')) {
+      res.status(400).json({ 
+        message: 'This email address is already registered in the system. Please sign in to your account or enter a different email.' 
+      });
+      return;
+    }
+    res.status(500).json({ message: error.message || 'Server error during registration. Please try again.' });
   }
 };
 

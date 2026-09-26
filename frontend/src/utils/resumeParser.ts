@@ -196,19 +196,30 @@ export function parseResumeText(rawText: string): ParsedResumeData {
   const lines = cleanText
     .split('\n')
     .map(l => l.trim())
-    .filter(l => l.length > 0 && l.length < 50);
+    .filter(l => l.length > 0 && l.length < 60);
 
   let candidateName = '';
-  for (const line of lines.slice(0, 8)) {
-    if (line.includes('@') || /(?:\+?91|\d{5})/i.test(line)) continue;
-    if (COMMON_NON_NAMES.has(line.toLowerCase())) continue;
-    
-    const words = line.split(/\s+/).filter(w => /^[a-zA-Z.'-]+$/.test(w));
-    if (words.length >= 2 && words.length <= 4) {
-      const isHeaderWord = words.some(w => COMMON_NON_NAMES.has(w.toLowerCase()));
-      if (!isHeaderWord) {
-        candidateName = words.map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
-        break;
+
+  // Explicit Name: pattern
+  const explicitNameMatch = cleanText.match(/\b(?:Name|Candidate Name|Full Name)[\s:-]+([A-Z][A-Za-z.'-]+(?:\s+[A-Z][A-Za-z.'-]+){1,3})\b/i);
+  if (explicitNameMatch) {
+    candidateName = explicitNameMatch[1].trim();
+  }
+
+  if (!candidateName) {
+    for (const line of lines.slice(0, 8)) {
+      if (line.includes('@') || /(?:\+?91|\d{5})/i.test(line)) continue;
+      if (COMMON_NON_NAMES.has(line.toLowerCase())) continue;
+      
+      // Remove prefixes like CA, Mr., Ms., Mrs., Dr.
+      const sanitizedLine = line.replace(/^(?:CA\s+|Mr\.\s+|Ms\.\s+|Mrs\.\s+|Dr\.\s+)/i, '').trim();
+      const words = sanitizedLine.split(/\s+/).filter(w => /^[a-zA-Z.'-]+$/.test(w));
+      if (words.length >= 2 && words.length <= 4) {
+        const isHeaderWord = words.some(w => COMMON_NON_NAMES.has(w.toLowerCase()));
+        if (!isHeaderWord) {
+          candidateName = words.map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+          break;
+        }
       }
     }
   }
@@ -229,17 +240,104 @@ export function parseResumeText(rawText: string): ParsedResumeData {
     result.lastName = nameParts.slice(1).join(' ') || '';
   }
 
-  // 6. Date of Birth
-  const dobRegex = /\b(?:DOB|Date of Birth|Birth Date|D\.O\.B)[\s:-]+([0-3]?\d[\/\-.][0-1]?\d[\/\-.](?:19|20)\d{2})\b/i;
-  const dobMatch = cleanText.match(dobRegex);
-  if (dobMatch) {
-    const parts = dobMatch[1].split(/[\/\-.]/);
-    if (parts.length === 3) {
-      // Formatted as YYYY-MM-DD
-      const day = parts[0].padStart(2, '0');
-      const month = parts[1].padStart(2, '0');
-      const year = parts[2];
-      result.dateOfBirth = `${year}-${month}-${day}`;
+  // 6. Comprehensive Date of Birth (DOB) Extraction
+  const MONTH_MAP: Record<string, string> = {
+    jan: '01', january: '01',
+    feb: '02', february: '02',
+    mar: '03', march: '03',
+    apr: '04', april: '04',
+    may: '05',
+    jun: '06', june: '06',
+    jul: '07', july: '07',
+    aug: '08', august: '08',
+    sep: '09', sept: '09', september: '09',
+    oct: '10', october: '10',
+    nov: '11', november: '11',
+    dec: '12', december: '12'
+  };
+
+  const parseRawDateToIso = (raw: string): string | undefined => {
+    if (!raw) return undefined;
+    const str = raw.trim().replace(/[,]/g, ' ').replace(/\s+/g, ' ');
+
+    // 1. YYYY-MM-DD or YYYY/MM/DD or YYYY.MM.DD
+    const ymdMatch = str.match(/\b(19\d{2}|20\d{2})[\/\-.](0?[1-9]|1[0-2])[\/\-.](0?[1-9]|[12]\d|3[01])\b/);
+    if (ymdMatch) {
+      const y = ymdMatch[1];
+      const m = ymdMatch[2].padStart(2, '0');
+      const d = ymdMatch[3].padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    // 2. DD-MM-YYYY or DD/MM/YYYY or DD.MM.YYYY
+    const dmyMatch = str.match(/\b(0?[1-9]|[12]\d|3[01])[\/\-.](0?[1-9]|1[0-2])[\/\-.](19\d{2}|20\d{2})\b/);
+    if (dmyMatch) {
+      const d = dmyMatch[1].padStart(2, '0');
+      const m = dmyMatch[2].padStart(2, '0');
+      const y = dmyMatch[3];
+      return `${y}-${m}-${d}`;
+    }
+
+    // 3. DD-MM-YY or DD/MM/YY (2-digit year)
+    const dmy2Match = str.match(/\b(0?[1-9]|[12]\d|3[01])[\/\-.](0?[1-9]|1[0-2])[\/\-.](\d{2})\b/);
+    if (dmy2Match) {
+      const d = dmy2Match[1].padStart(2, '0');
+      const m = dmy2Match[2].padStart(2, '0');
+      const yr = parseInt(dmy2Match[3], 10);
+      const y = yr > 40 ? `19${yr}` : `20${yr < 10 ? '0' + yr : yr}`;
+      return `${y}-${m}-${d}`;
+    }
+
+    // 4. DD [MonthName] YYYY (e.g. 14th May 1998, 14-May-1998, 14 May 1998)
+    const textMonthMatch1 = str.match(/\b(0?[1-9]|[12]\d|3[01])(?:st|nd|rd|th)?[\s\/\-.\\-]+(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|sept|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)[\s\/\-.\\-]+(19\d{2}|20\d{2}|\d{2})\b/i);
+    if (textMonthMatch1) {
+      const d = textMonthMatch1[1].padStart(2, '0');
+      const mStr = textMonthMatch1[2].toLowerCase();
+      const m = MONTH_MAP[mStr] || '01';
+      let yr = textMonthMatch1[3];
+      if (yr.length === 2) {
+        const yrNum = parseInt(yr, 10);
+        yr = yrNum > 40 ? `19${yrNum}` : `20${yrNum < 10 ? '0' + yrNum : yrNum}`;
+      }
+      return `${yr}-${m}-${d}`;
+    }
+
+    // 5. [MonthName] DD, YYYY (e.g. May 14, 1998 or May 14th 1998)
+    const textMonthMatch2 = str.match(/\b(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|sept|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)[\s\/\-.\\-]+(0?[1-9]|[12]\d|3[01])(?:st|nd|rd|th)?[\s\/\-.\\-]+(19\d{2}|20\d{2}|\d{2})\b/i);
+    if (textMonthMatch2) {
+      const mStr = textMonthMatch2[1].toLowerCase();
+      const m = MONTH_MAP[mStr] || '01';
+      const d = textMonthMatch2[2].padStart(2, '0');
+      let yr = textMonthMatch2[3];
+      if (yr.length === 2) {
+        const yrNum = parseInt(yr, 10);
+        yr = yrNum > 40 ? `19${yrNum}` : `20${yrNum < 10 ? '0' + yrNum : yrNum}`;
+      }
+      return `${yr}-${m}-${d}`;
+    }
+
+    return undefined;
+  };
+
+  // Check labeled DOB patterns
+  const dobRegex = /(?:date\s+of\s+birth|d\.?\s*o\.?\s*b\.?|birth\s*date|birthdate|born(?:\s+on)?)\s*[:=\-]?\s*([^\n\r;|]{3,40})/gi;
+  let dobMatch: RegExpExecArray | null;
+  while ((dobMatch = dobRegex.exec(cleanText)) !== null) {
+    const isoDate = parseRawDateToIso(dobMatch[1]);
+    if (isoDate) {
+      result.dateOfBirth = isoDate;
+      break;
+    }
+  }
+
+  // Fallback: check inside Personal Details / Biodata section
+  if (!result.dateOfBirth) {
+    const personalSectionMatch = cleanText.match(/(?:personal\s+(?:details|profile|information)|biodata|bio\s+data)[\s\S]{0,500}/i);
+    if (personalSectionMatch) {
+      const isoDate = parseRawDateToIso(personalSectionMatch[0]);
+      if (isoDate) {
+        result.dateOfBirth = isoDate;
+      }
     }
   }
 

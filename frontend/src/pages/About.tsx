@@ -1,223 +1,195 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { LeadershipCard } from '../components/LeadershipCard';
-import { Target, Eye, Shield, Users, Download, FileText, Sparkles, Building2, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Target, Eye, Shield, Users, Download, FileText, Sparkles, Building2, CheckCircle2, ArrowRight, Award, MapPin } from 'lucide-react';
 import { RecruiterMarquee } from '../components/RecruiterMarquee';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/Button';
 
 const coreValues = [
   {
-    icon: <Target className="text-primary w-8 h-8" />,
-    title: 'Excellence',
-    description: 'We strive for exceptional quality in every CA and executive placement.'
+    icon: <Target className="text-blue-700 w-8 h-8" />,
+    title: 'Excellence in Finance',
+    description: 'We strive for exceptional quality in every CA fresher and seasoned executive placement.'
   },
   {
-    icon: <Eye className="text-primary w-8 h-8" />,
-    title: 'Transparency',
-    description: 'Clear, ethical, and honest communication with clients and candidates.'
+    icon: <Eye className="text-blue-700 w-8 h-8" />,
+    title: '100% Pre-Screened Candidates',
+    description: 'Rigorously verified attempt counts, articleship credentials, and technical exposure.'
   },
   {
-    icon: <Shield className="text-primary w-8 h-8" />,
-    title: 'Integrity',
-    description: 'Upholding strict confidentiality and the highest standards of recruitment ethics.'
+    icon: <Shield className="text-blue-700 w-8 h-8" />,
+    title: 'Integrity & Ethics',
+    description: 'Upholding strict confidentiality and transparent recruitment commercials for clients.'
   },
   {
-    icon: <Users className="text-primary w-8 h-8" />,
-    title: 'Partnership',
-    description: 'Building long-term strategic relationships rather than transactional exchanges.'
+    icon: <Users className="text-blue-700 w-8 h-8" />,
+    title: 'Pan-India Reach',
+    description: 'Connecting candidates and corporates across 10+ major cities and centralized virtual drives.'
   }
 ];
 
 export const About = () => {
   return (
-    <div className="w-full">
-      {/* Hero Section - Solid #1F2937 Background */}
-      <section className="bg-[#1F2937] text-white pt-32 pb-20 px-4 relative overflow-hidden">
+    <div className="w-full bg-slate-50">
+      
+      {/* Hero Section - Clean Light Corporate Design */}
+      <section className="bg-gradient-to-b from-slate-50 via-white to-slate-50 pt-32 pb-16 px-4 border-b border-slate-200">
         <div className="max-w-7xl mx-auto text-center relative z-10">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 text-blue-200 text-xs sm:text-sm font-semibold mb-4 border border-white/10 shadow-sm"
-          >
-            <Sparkles size={15} className="text-yellow-400" />
-            <span>Pioneering Finance & CA Headhunting Since 2008</span>
-          </motion.div>
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-800 text-xs sm:text-sm font-bold mb-4">
+            <Sparkles size={15} className="text-blue-700" />
+            <span>India's Largest CA Placement Company • Since 2008</span>
+          </div>
 
-          <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-4xl md:text-6xl font-extrabold mb-6 tracking-tight text-white"
-          >
-            About <span className="text-white">FAST CAREERS</span>
-          </motion.h1>
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black mb-6 tracking-tight text-slate-900">
+            About <span className="text-blue-700">FAST CAREERS</span>
+          </h1>
           
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed mb-8"
-          >
-            Connecting India's finest Chartered Accountants & finance leaders with Fortune 500 enterprises, Big 4s, and leading industrial conglomerates for over 16 years.
-          </motion.p>
+          <p className="text-base sm:text-lg text-slate-600 max-w-3xl mx-auto leading-relaxed mb-8 font-normal">
+            <strong className="text-slate-900">Fast Career Consultants Private Limited</strong> connects India's finest Chartered Accountants & finance leaders with 60+ top-notch corporates, Big 4s, and leading industrial conglomerates.
+          </p>
 
-          {/* Quick Action Buttons in Hero */}
-          <div className="flex flex-wrap items-center justify-center gap-4">
-            <a
-              href="/FAST_Careers_Corporate_Profile.pdf"
-              download="FAST_Careers_Corporate_Profile.pdf"
-              className="inline-flex items-center gap-2 px-6 py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-extrabold rounded-xl shadow-lg hover:shadow-emerald-500/30 transition-all transform hover:-translate-y-0.5"
-            >
-              <Download size={18} />
-              <span>Download Corporate Profile (PDF)</span>
-            </a>
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+            <Link to="/placement-results">
+              <motion.button 
+                whileHover={{ scale: 1.03, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                className="px-6 py-3.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl shadow-md transition-all flex items-center gap-2 text-sm sm:text-base"
+              >
+                <Award size={18} />
+                <span>Our Placement Result & Analysis</span>
+              </motion.button>
+            </Link>
+            <Link to="/placement-drive">
+              <motion.button 
+                whileHover={{ scale: 1.03, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                className="px-6 py-3.5 bg-white hover:bg-slate-50 text-slate-900 border-2 border-slate-300 font-bold rounded-xl transition-all flex items-center gap-2 text-sm sm:text-base"
+              >
+                <Building2 size={18} className="text-blue-700" />
+                <span>Join Campus Drive</span>
+              </motion.button>
+            </Link>
             <Link to="/team">
-              <button className="px-6 py-3.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold rounded-xl transition-all">
-                Meet Our Leadership & Team
-              </button>
+              <motion.button 
+                whileHover={{ scale: 1.03, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                className="px-6 py-3.5 bg-white hover:bg-slate-50 text-slate-900 border-2 border-slate-300 font-bold rounded-xl transition-all text-sm sm:text-base"
+              >
+                Meet Leadership & Team
+              </motion.button>
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Continuous Infinite Scrolling Recruiter Marquee */}
-      <RecruiterMarquee showTitle={true} theme="light" />
+      {/* Recruiter Marquee */}
+      <RecruiterMarquee showTitle={true} />
 
       {/* Our Story */}
-      <section className="py-20 px-4 bg-white">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+      <section className="py-20 px-4 bg-white border-b border-slate-200">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider mb-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold uppercase tracking-wider mb-3">
               <span>Our Heritage & Journey</span>
             </div>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-text mb-6">
-              16+ Years of Excellence in Finance & CA Talent
+            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 mb-6 tracking-tight">
+              18+ Years of Excellence in Finance & CA Talent
             </h2>
-            <p className="text-gray-600 mb-4 leading-relaxed">
-              Founded in 2008 on the principle that elite financial talent drives enterprise growth, FAST CAREERS began as a boutique advisory firm specializing in Chartered Accountant placements. Over the years, we have grown into India’s most trusted talent solutions brand.
+            <p className="text-slate-600 mb-4 leading-relaxed text-base">
+              Founded in 2008 with our maiden CA Campus in Indore, <strong>Fast Career Consultants Private Limited</strong> has grown into India’s largest specialized CA recruitment powerhouse. Today, over <strong className="text-blue-800">125,000+ Chartered Accountants</strong> are registered on our portal seeking career opportunities.
             </p>
-            <p className="text-gray-600 mb-4 leading-relaxed">
-              We partner directly with leading conglomerates including <strong>ITC, Hindustan Unilever (HUL), Tata Group, JPMorgan Chase, Jio Financial Services, NSE, Vedanta, CK Birla Group, ITC Hotels</strong>, and the <strong>Big 4 consulting firms (Deloitte, EY, PwC, KPMG)</strong> to deliver pre-vetted, high-caliber financial leadership.
+            <p className="text-slate-600 mb-4 leading-relaxed text-base">
+              We partner directly with <strong>60+ top-notch corporates</strong> including <strong>ITC Limited, National Stock Exchange (NSE), Citibank, ICICI Bank, Kotak Mahindra Bank, Deloitte, KPMG, EY, Aditya Birla Group, Vedanta, Johnson & Johnson, Vodafone, JM Financial</strong>, and many more.
             </p>
-            <p className="text-gray-600 leading-relaxed mb-6">
-              Our unique approach combines rigorous technical assessment, articleship background verification, and continuous candidate mentorship masterclasses.
+            <p className="text-slate-600 leading-relaxed mb-6 text-base">
+              After every ICAI exam result, <strong>All AIRs (All India Rankers) & 5,000+ candidates</strong> enroll with us for their first job through our bi-annual FAST CA Campus Drives conducted in <strong>January–February</strong> and <strong>August–September</strong>.
             </p>
 
-            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
-              <div className="p-3 bg-gray-50 rounded-xl">
-                <div className="text-2xl font-black text-primary">5,000+</div>
-                <div className="text-xs text-gray-500 font-medium">CA Placements</div>
+            <div className="grid grid-cols-3 gap-4 pt-4 border-t border-slate-100">
+              <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 shadow-xs">
+                <div className="text-2xl font-black text-blue-700">125K+</div>
+                <div className="text-xs text-slate-600 font-bold">Registered CAs</div>
               </div>
-              <div className="p-3 bg-gray-50 rounded-xl">
-                <div className="text-2xl font-black text-primary">150+</div>
-                <div className="text-xs text-gray-500 font-medium">Corporate Partners</div>
+              <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 shadow-xs">
+                <div className="text-2xl font-black text-blue-700">60+</div>
+                <div className="text-xs text-slate-600 font-bold">Top Corporates</div>
+              </div>
+              <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 shadow-xs">
+                <div className="text-2xl font-black text-blue-700">10+</div>
+                <div className="text-xs text-slate-600 font-bold">Campus Cities</div>
               </div>
             </div>
           </div>
 
-          {/* Corporate Profile Download Feature Box */}
-          <div className="bg-gradient-to-br from-[#0F2B48] via-[#163e65] to-[#0a1e33] rounded-3xl p-8 sm:p-10 text-white shadow-2xl relative overflow-hidden flex flex-col justify-between">
-            <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-teal-400/10 rounded-full blur-3xl pointer-events-none" />
-            
+          {/* Corporate Profile Feature Box - Clean Light 3D Card */}
+          <div className="bg-slate-50 rounded-3xl p-8 sm:p-10 border-2 border-slate-200 shadow-xl flex flex-col justify-between">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-teal-300 text-xs font-bold border border-white/10 mb-4">
-                <FileText size={14} />
-                <span>Official PDF Brochure 2026</span>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-bold border border-blue-200 mb-4">
+                <FileText size={14} className="text-blue-700" />
+                <span>Fast Career Consultants Private Limited</span>
               </div>
 
-              <h3 className="text-2xl sm:text-3xl font-extrabold text-white mb-3">
-                FAST Careers Corporate Profile
+              <h3 className="text-2xl sm:text-3xl font-black text-slate-900 mb-4">
+                Core Service Delivery Modes
               </h3>
 
-              <p className="text-gray-300 text-xs sm:text-sm leading-relaxed mb-6">
-                Download our comprehensive company deck containing recruitment methodologies, CA candidate screening framework, marquee client list, SLA metrics, and corporate engagement plans.
-              </p>
-
-              <div className="space-y-2.5 mb-8">
-                <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-200">
-                  <CheckCircle2 size={16} className="text-teal-400 flex-shrink-0" />
-                  <span>Executive Headhunting & CFO Practice Overview</span>
+              <div className="space-y-3.5 mb-8">
+                <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs">
+                  <div className="font-extrabold text-sm text-blue-700">Mode 1: FAST CA CAMPUS</div>
+                  <div className="text-xs text-slate-600 mt-1">Bi-annual private off-campus drives across 10+ cities for CA Freshers & Rankers post-ICAI results.</div>
                 </div>
-                <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-200">
-                  <CheckCircle2 size={16} className="text-teal-400 flex-shrink-0" />
-                  <span>Big 4 & Industrial Trainee Talent Pipelines</span>
+                <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs">
+                  <div className="font-extrabold text-sm text-emerald-700">Mode 2: Lateral Recruitments</div>
+                  <div className="text-xs text-slate-600 mt-1">1-on-1 executive hiring for experienced CAs & finance leadership from our 125K+ database.</div>
                 </div>
-                <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-200">
-                  <CheckCircle2 size={16} className="text-teal-400 flex-shrink-0" />
-                  <span>150+ Partner Portfolio & Case Studies</span>
-                </div>
-                <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-200">
-                  <CheckCircle2 size={16} className="text-teal-400 flex-shrink-0" />
-                  <span>Multi-City Branch Presence & Contact Directory</span>
+                <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs">
+                  <div className="font-extrabold text-sm text-slate-900">Mode 3: Company Specific Drives</div>
+                  <div className="text-xs text-slate-600 mt-1">Custom day-long dedicated hiring drives organized in any city of choice or virtual.</div>
                 </div>
               </div>
             </div>
 
-            <div className="pt-6 border-t border-white/10">
-              <a
-                href="/FAST_Careers_Corporate_Profile.pdf"
-                download="FAST_Careers_Corporate_Profile.pdf"
-                className="w-full inline-flex items-center justify-center gap-3 px-6 py-4 bg-white hover:bg-gray-100 text-primary font-extrabold rounded-2xl text-sm transition-all shadow-lg hover:shadow-xl hover:scale-[1.02]"
-              >
-                <Download size={18} className="text-primary" />
-                <span>Download Corporate Profile PDF</span>
-              </a>
-              <p className="text-center text-[11px] text-gray-400 mt-2">
-                Official Document • PDF Format • Instant Download
-              </p>
+            <div className="pt-4 border-t border-slate-200">
+              <Link to="/contact">
+                <motion.button 
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full py-3.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-sm"
+                >
+                  <span>Connect With Our Directors</span>
+                  <ArrowRight size={16} />
+                </motion.button>
+              </Link>
             </div>
           </div>
         </div>
       </section>
 
       {/* Core Values */}
-      <section className="py-20 px-4 bg-gray-50">
+      <section className="py-20 px-4 bg-slate-50">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-extrabold text-text mb-4">Our Core Values</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">The foundational principles that guide our daily recruitment operations and executive commitments.</p>
+            <h2 className="text-3xl font-black text-slate-900 mb-4 tracking-tight">Our Core Values</h2>
+            <p className="text-slate-600 max-w-2xl mx-auto text-sm sm:text-base">The foundational principles that guide our daily recruitment operations and executive commitments.</p>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {coreValues.map((value, idx) => (
               <motion.div 
                 key={idx}
-                whileHover={{ y: -6 }}
-                className="bg-white p-8 rounded-2xl shadow-xs hover:shadow-lg border border-gray-100 transition-all"
+                whileHover={{ y: -5 }}
+                className="bg-white p-7 rounded-2xl shadow-xs border border-slate-200 hover:shadow-md transition-all"
               >
-                <div className="mb-6 bg-blue-50 w-16 h-16 rounded-2xl flex items-center justify-center shadow-xs">
+                <div className="mb-5 bg-blue-50 w-14 h-14 rounded-xl flex items-center justify-center border border-blue-100">
                   {value.icon}
                 </div>
-                <h3 className="text-xl font-bold text-text mb-2">{value.title}</h3>
-                <p className="text-gray-600 text-sm leading-relaxed">{value.description}</p>
+                <h3 className="text-lg font-bold text-slate-900 mb-2">{value.title}</h3>
+                <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">{value.description}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Culture & Team Link Banner */}
-      <section className="py-16 px-4 bg-white border-t border-gray-100">
-        <div className="max-w-7xl mx-auto bg-gradient-to-r from-blue-50 via-teal-50/50 to-blue-50 rounded-3xl p-8 sm:p-12 border border-blue-100 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div>
-            <span className="px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full uppercase tracking-wider">
-              Life @ FAST Careers
-            </span>
-            <h3 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mt-2 mb-2">
-              Explore Our CA Masterclasses, Celebrations & Culture
-            </h3>
-            <p className="text-gray-600 text-xs sm:text-sm max-w-2xl">
-              See photos and stories from our nationwide CA workshops, annual awards, Diwali celebrations, hackathons, and corporate leadership summits.
-            </p>
-          </div>
-          <Link to="/team">
-            <Button variant="primary" size="md" className="flex-shrink-0 flex items-center gap-2 font-bold shadow-md">
-              <span>View Team & Activities</span>
-              <ArrowRight size={16} />
-            </Button>
-          </Link>
-        </div>
-      </section>
     </div>
   );
 };

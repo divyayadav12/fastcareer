@@ -312,28 +312,86 @@ export const Register = () => {
     setFormError('');
     let uploadedResumeUrl = '';
 
+    if (!firstName.trim() || !lastName.trim()) {
+      const err = 'Please enter your full name (First Name and Last Name are required).';
+      setFormError(err);
+      toast.error(err);
+      return;
+    }
+
+    if (!email.trim()) {
+      const err = 'Please enter your work or personal email address.';
+      setFormError(err);
+      toast.error(err);
+      return;
+    }
+
+    if (!password || password.length < 6) {
+      const err = 'Please create a password with at least 6 characters.';
+      setFormError(err);
+      toast.error(err);
+      return;
+    }
+
     if (role === 'candidate') {
-      if (!phone || !currentCity) {
-        setFormError('Please fill in all mandatory candidate fields (Phone, City).');
-        toast.error('Please fill in all mandatory candidate fields.');
+      const cleanPhone = phone.replace(/\D/g, '');
+      if (!cleanPhone || cleanPhone.length !== 10) {
+        const err = 'Please enter a valid 10-digit mobile number.';
+        setFormError(err);
+        toast.error(err);
         return;
       }
 
       if (!dateOfBirth) {
-        setFormError('Please select your Date of Birth.');
-        toast.error('Please select your Date of Birth.');
+        const err = 'Please select your Date of Birth (Mandatory).';
+        setFormError(err);
+        toast.error(err);
         return;
       }
 
-      if (!caInter.group1Month || !caInter.group1Year || !caInter.group2Month || !caInter.group2Year || !caInter.completionSessionMonth || !caInter.completionSessionYear) {
-        setFormError('Please complete all mandatory CA Intermediate qualification details.');
-        toast.error('Please complete all mandatory CA Intermediate qualification details.');
+      if (!currentCity.trim()) {
+        const err = 'Please select your Current Location / City (Mandatory).';
+        setFormError(err);
+        toast.error(err);
         return;
       }
 
-      if (!caFinal.group1Month || !caFinal.group1Year || !caFinal.group2Month || !caFinal.group2Year || !caFinal.completionSessionMonth || !caFinal.completionSessionYear) {
-        setFormError('Please complete all mandatory CA Final examination details.');
-        toast.error('Please complete all mandatory CA Final examination details.');
+      if (
+        !caInter.group1Attempts ||
+        !caInter.group1Month ||
+        !caInter.group1Year ||
+        !caInter.group2Attempts ||
+        !caInter.group2Month ||
+        !caInter.group2Year ||
+        !caInter.completionSessionMonth ||
+        !caInter.completionSessionYear
+      ) {
+        const err = 'Please complete all mandatory CA Intermediate qualification details.';
+        setFormError(err);
+        toast.error(err);
+        return;
+      }
+
+      if (
+        !caFinal.group1Attempts ||
+        !caFinal.group1Month ||
+        !caFinal.group1Year ||
+        !caFinal.group2Attempts ||
+        !caFinal.group2Month ||
+        !caFinal.group2Year ||
+        !caFinal.completionSessionMonth ||
+        !caFinal.completionSessionYear
+      ) {
+        const err = 'Please complete all mandatory CA Final examination details.';
+        setFormError(err);
+        toast.error(err);
+        return;
+      }
+
+      if (!resumeFile) {
+        const err = 'Please upload your Resume / CV (PDF or DOCX) to proceed with registration.';
+        setFormError(err);
+        toast.error(err);
         return;
       }
 
@@ -1273,7 +1331,7 @@ export const Register = () => {
                     <div>
                       <div className="flex items-center justify-between mb-1.5">
                         <label className="text-xs font-semibold text-slate-700">
-                          Upload Resume / CV (PDF or DOCX)
+                          Upload Resume / CV (PDF or DOCX) <span className="text-red-500">*</span>
                         </label>
                         <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full">
                           <Zap size={11} className="text-emerald-600 fill-emerald-600" />
