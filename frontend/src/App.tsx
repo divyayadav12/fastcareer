@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { Navbar } from './layouts/Navbar';
@@ -40,6 +40,43 @@ import { FastSelectionTest } from './pages/candidate/FastSelectionTest';
 import { CandidateTestResults } from './pages/admin/CandidateTestResults';
 import { ScrollToTop } from './components/ScrollToTop';
 
+// Lazy Loaded Routes
+const Home = lazy(() => import('./pages/Home').then(m => ({ default: m.Home })));
+const About = lazy(() => import('./pages/About').then(m => ({ default: m.About })));
+const OurTeam = lazy(() => import('./pages/OurTeam').then(m => ({ default: m.OurTeam })));
+const Services = lazy(() => import('./pages/Services').then(m => ({ default: m.Services })));
+const Expertise = lazy(() => import('./pages/Expertise').then(m => ({ default: m.Expertise })));
+const Employers = lazy(() => import('./pages/Employers').then(m => ({ default: m.Employers })));
+const Contact = lazy(() => import('./pages/Contact').then(m => ({ default: m.Contact })));
+const JobListings = lazy(() => import('./pages/JobListings').then(m => ({ default: m.JobListings })));
+const JobDetails = lazy(() => import('./pages/JobDetails').then(m => ({ default: m.JobDetails })));
+const Login = lazy(() => import('./pages/auth/Login').then(m => ({ default: m.Login })));
+const Register = lazy(() => import('./pages/auth/Register').then(m => ({ default: m.Register })));
+const PlacementDriveForm = lazy(() => import('./pages/PlacementDriveForm').then(m => ({ default: m.PlacementDriveForm })));
+const PlacementResults = lazy(() => import('./pages/PlacementResults').then(m => ({ default: m.PlacementResults })));
+const CandidateDashboard = lazy(() => import('./pages/candidate/Dashboard').then(m => ({ default: m.CandidateDashboard })));
+const JobFair = lazy(() => import('./pages/candidate/JobFair').then(m => ({ default: m.JobFair })));
+const CurrentOpenings = lazy(() => import('./pages/candidate/CurrentOpenings').then(m => ({ default: m.CurrentOpenings })));
+const ResumeDownloads = lazy(() => import('./pages/candidate/ResumeDownloads').then(m => ({ default: m.ResumeDownloads })));
+const ResumePrint = lazy(() => import('./pages/candidate/ResumePrint').then(m => ({ default: m.ResumePrint })));
+const Feedback = lazy(() => import('./pages/candidate/Feedback').then(m => ({ default: m.Feedback })));
+const ImpDownloads = lazy(() => import('./pages/candidate/ImpDownloads').then(m => ({ default: m.ImpDownloads })));
+const ReferFriend = lazy(() => import('./pages/candidate/ReferFriend').then(m => ({ default: m.ReferFriend })));
+const CompaniesRegistered = lazy(() => import('./pages/candidate/CompaniesRegistered').then(m => ({ default: m.CompaniesRegistered })));
+const WantToChangeJob = lazy(() => import('./pages/candidate/WantToChangeJob').then(m => ({ default: m.WantToChangeJob })));
+const PlacementHistory = lazy(() => import('./pages/candidate/PlacementHistory').then(m => ({ default: m.PlacementHistory })));
+const ShareJob = lazy(() => import('./pages/candidate/ShareJob').then(m => ({ default: m.ShareJob })));
+const EmployerDashboard = lazy(() => import('./pages/employer/Dashboard').then(m => ({ default: m.EmployerDashboard })));
+const EmployerApplications = lazy(() => import('./pages/employer/Applications').then(m => ({ default: m.EmployerApplications })));
+const ManageJobs = lazy(() => import('./pages/employer/ManageJobs').then(m => ({ default: m.ManageJobs })));
+const EmployerCandidates = lazy(() => import('./pages/employer/Candidates').then(m => ({ default: m.EmployerCandidates })));
+const EmployerBilling = lazy(() => import('./pages/employer/Billing').then(m => ({ default: m.EmployerBilling })));
+const CompanyProfile = lazy(() => import('./pages/employer/CompanyProfile').then(m => ({ default: m.CompanyProfile })));
+const PlatformData = lazy(() => import('./pages/employer/PlatformData').then(m => ({ default: m.PlatformData })));
+const AdminDashboard = lazy(() => import('./pages/admin/Dashboard').then(m => ({ default: m.AdminDashboard })));
+const FastSelectionTest = lazy(() => import('./pages/candidate/FastSelectionTest').then(m => ({ default: m.FastSelectionTest })));
+const CandidateTestResults = lazy(() => import('./pages/admin/CandidateTestResults').then(m => ({ default: m.CandidateTestResults })));
+
 function App() {
   return (
     <Router>
@@ -75,7 +112,14 @@ function App() {
       <div className="flex flex-col min-h-screen">
         <Navbar />
         <main className="flex-grow">
-          <Routes>
+          
+            <Suspense fallback={
+              <div className="flex flex-col items-center justify-center min-h-[60vh]">
+                <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-700 rounded-full animate-spin"></div>
+                <p className="mt-4 text-sm font-semibold text-slate-500">Loading Fast Careers...</p>
+              </div>
+            }>
+              <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
             <Route path="/team" element={<OurTeam />} />
@@ -120,7 +164,8 @@ function App() {
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/applications" element={<EmployerApplications />} />
             <Route path="/admin/test-results" element={<CandidateTestResults />} />
-          </Routes>
+                        </Routes>
+            </Suspense>
         </main>
         <Footer />
       </div>

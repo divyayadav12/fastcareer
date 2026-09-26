@@ -329,7 +329,7 @@ export const PlacementResults = () => {
                 </div>
 
                 {/* Vertical Interactive Bars */}
-                <div className="grid grid-cols-6 gap-2 sm:gap-3 items-end h-56 pb-2 border-b-2 border-slate-200">
+                <div className="grid grid-cols-6 gap-2 sm:gap-3 items-end h-64 pb-2 border-b-2 border-slate-200">
                   {passOutAttempts.map((item, idx) => (
                     <div key={idx} className="flex flex-col items-center h-full justify-end group">
                       
@@ -339,13 +339,13 @@ export const PlacementResults = () => {
                         {item.count >= 10000 ? `${(item.count/1000).toFixed(1)}k` : item.count}
                       </span>
 
-                      <div className="w-full max-w-[42px] bg-slate-200 rounded-t-lg overflow-hidden flex items-end h-full">
+                      <div className="w-full max-w-[42px] bg-slate-200 rounded-t-lg overflow-hidden flex-1 relative">
                         <motion.div 
                           initial={{ height: 0 }}
                           whileInView={{ height: item.heightPct }}
                           viewport={{ once: true }}
                           transition={{ duration: 0.8, delay: idx * 0.1 }}
-                          className={`w-full ${item.color} rounded-t-lg group-hover:opacity-90 transition-all`}
+                          className={`absolute bottom-0 left-0 w-full ${item.color} rounded-t-lg group-hover:opacity-90 transition-all`}
                         />
                       </div>
 
@@ -358,8 +358,35 @@ export const PlacementResults = () => {
                 </div>
               </div>
 
+              {/* Mid-Section Stats to Fill Space */}
+              <div className="flex-1 flex flex-col justify-center py-4">
+                <h4 className="text-xs font-black text-slate-800 mb-3 uppercase tracking-wide">Key Data Points</h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
+                    <div className="text-[10px] text-slate-500 font-bold mb-0.5">Peak Supply</div>
+                    <div className="text-lg font-black text-blue-700">20,446</div>
+                    <div className="text-[9px] font-bold text-slate-400 uppercase mt-0.5">May 2024</div>
+                  </div>
+                  <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
+                    <div className="text-[10px] text-slate-500 font-bold mb-0.5">Lowest Supply</div>
+                    <div className="text-lg font-black text-rose-600">7,590</div>
+                    <div className="text-[9px] font-bold text-slate-400 uppercase mt-0.5">Jan 2026</div>
+                  </div>
+                  <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
+                    <div className="text-[10px] text-slate-500 font-bold mb-0.5">Average Passing</div>
+                    <div className="text-lg font-black text-indigo-600">12,196</div>
+                    <div className="text-[9px] font-bold text-slate-400 uppercase mt-0.5">Per Attempt</div>
+                  </div>
+                  <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
+                    <div className="text-[10px] text-slate-500 font-bold mb-0.5">Overall Trend</div>
+                    <div className="text-lg font-black text-amber-600">-61%</div>
+                    <div className="text-[9px] font-bold text-slate-400 uppercase mt-0.5">Drop in 2 years</div>
+                  </div>
+                </div>
+              </div>
+
               {/* Strategic Insights */}
-              <div className="mt-6 space-y-2 text-xs text-slate-700">
+              <div className="mt-2 space-y-2 text-xs text-slate-700">
                 <div className="p-3 bg-white rounded-xl border border-slate-200 flex items-start gap-2">
                   <TrendingDown size={16} className="text-rose-600 shrink-0 mt-0.5" />
                   <span><strong>Supply Squeeze:</strong> May 2026 (7,931) & Jan 2026 (7,590) are dramatically lower than May 2024 (20,446).</span>
