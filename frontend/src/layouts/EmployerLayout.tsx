@@ -47,26 +47,17 @@ export const EmployerLayout = ({ children }: EmployerLayoutProps) => {
             <Link to="/employer/dashboard" className={getLinkClass('/employer/dashboard')}>
               <BarChart2 size={18} /> Dashboard
             </Link>
-            <Link to="/admin/test-results" className={getLinkClass('/admin/test-results')}>
-              <Award size={18} className="text-amber-500" /> Candidate Test Results
-            </Link>
             <Link to="/employer/applications" className={getLinkClass('/employer/applications')}>
-              <ClipboardList size={18} /> Applications
+              <ClipboardList size={18} /> Forwarded Candidates
             </Link>
             <Link to="/employer/jobs" className={getLinkClass('/employer/jobs')}>
               <Briefcase size={18} /> Manage Jobs
-            </Link>
-            <Link to="/employer/candidates" className={getLinkClass('/employer/candidates')}>
-              <Users size={18} /> Candidates
             </Link>
             
             
 
             <Link to="/employer/billing" className={getLinkClass('/employer/billing')}>
               <FileText size={18} /> Billing & Plans
-            </Link>
-            <Link to="/employer/platform-data" className={getLinkClass('/employer/platform-data')}>
-              <Database size={18} /> Platform Submissions
             </Link>
             <Link to="/employer/settings" className={getLinkClass('/employer/settings')}>
               <Settings size={18} /> Company Profile
