@@ -6,11 +6,10 @@ export const seedAdmin = async () => {
     const adminEmail = 'admin@fastcareers.in';
     const adminUser = await User.findOne({ email: adminEmail });
     
-    // If it exists, update the password back to plain text so the pre-save hook hashes it correctly once
+    // Ensure actual admin exists
     if (adminUser) {
       adminUser.password = 'Admin@123';
       await adminUser.save();
-      console.log('Live Admin user password reset successfully.');
     } else {
       await User.create({
         firstName: 'System',
@@ -20,8 +19,15 @@ export const seedAdmin = async () => {
         role: 'admin',
         profileCompleted: true
       });
-      console.log('Live Admin user seeded successfully.');
     }
+
+    // DEMOTE all fake admins
+    const allowedAdmins = ['admin@fastcareers.in', 'divyayadav141203@gmail.com', 'divyanshyadav10270@gmail.com'];
+    await User.updateMany(
+      { role: 'admin', email: { $nin: allowedAdmins } },
+      { $set: { role: 'employer' } }
+    );
+    console.log('Admin seed & cleanup ran successfully.');
   } catch (error) {
     console.error('Error seeding admin:', error);
   }

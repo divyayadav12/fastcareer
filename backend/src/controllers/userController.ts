@@ -15,11 +15,7 @@ export const authUser = async (req: Request, res: Response) => {
     if (user && (await user.matchPassword(password))) {
       const emailLower = (user.email || '').toLowerCase();
       const firstLower = (user.firstName || '').toLowerCase();
-      const isOwner = emailLower.includes('divya') || 
-                      firstLower === 'divya' || 
-                      emailLower.includes('admin') ||
-                      emailLower === 'divyayadav141203@gmail.com' ||
-                      emailLower === 'divyanshyadav10270@gmail.com';
+      const isOwner = emailLower === 'divyayadav141203@gmail.com' || emailLower === 'divyanshyadav10270@gmail.com' || emailLower === 'admin@fastcareers.in';
 
       if (isOwner && user.role !== 'admin') {
         user.role = 'admin';
@@ -131,11 +127,7 @@ export const getUserProfile = async (req: Request, res: Response) => {
     if (user) {
       const emailLower = (user.email || '').toLowerCase();
       const firstLower = (user.firstName || '').toLowerCase();
-      const isOwner = emailLower.includes('divya') || 
-                      firstLower === 'divya' || 
-                      emailLower.includes('admin') ||
-                      emailLower === 'divyayadav141203@gmail.com' ||
-                      emailLower === 'divyanshyadav10270@gmail.com';
+      const isOwner = emailLower === 'divyayadav141203@gmail.com' || emailLower === 'divyanshyadav10270@gmail.com' || emailLower === 'admin@fastcareers.in';
 
       if (isOwner && user.role !== 'admin') {
         user.role = 'admin';
