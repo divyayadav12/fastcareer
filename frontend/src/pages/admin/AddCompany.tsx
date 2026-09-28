@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { EmployerLayout } from '../../layouts/EmployerLayout';
 import { Building2, Mail, Lock, User, PlusCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
-import axios from 'axios';
+import api from '../../services/api';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 
@@ -39,7 +39,7 @@ export const AddCompany = () => {
       };
       
       // Hit the register endpoint with employer role (backend should allow admins to create employers)
-      const res = await axios.post('/api/users', payload, config);
+      const res = await api.post('/users', payload, config);
       
       toast.success(`Company ${formData.companyName} created successfully!`);
       setFormData({ firstName: '', lastName: '', companyName: '', email: '', password: '' });
