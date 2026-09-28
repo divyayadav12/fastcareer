@@ -4,7 +4,7 @@ import { Building2, Mail, Lock, User, PlusCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
-import { RootState } from '../../store';
+import type { RootState } from '../../store';
 
 export const AddCompany = () => {
   const { user } = useSelector((state: RootState) => state.auth);
@@ -29,7 +29,7 @@ export const AddCompany = () => {
       const config = {
         headers: {
           'Content-Type': 'application/json',
-          Authorization: \Bearer \\,
+          Authorization: `Bearer ${user?.token}`,
         },
       };
       
@@ -41,7 +41,7 @@ export const AddCompany = () => {
       // Hit the register endpoint with employer role (backend should allow admins to create employers)
       const res = await axios.post('/api/users', payload, config);
       
-      toast.success(\Company \ created successfully!\);
+      toast.success(`Company ${formData.companyName} created successfully!`);
       setFormData({ firstName: '', lastName: '', companyName: '', email: '', password: '' });
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to create company');
