@@ -35,10 +35,10 @@ export const EmployerLayout = ({ children }: EmployerLayoutProps) => {
             </div>
             <div>
               <h3 className="font-bold text-text truncate max-w-[150px]">
-                {user?.role === 'admin' ? (user?.firstName ? `${user.firstName} (Admin)` : 'FAST Admin') : (user?.companyName || user?.firstName || 'Employer')}
+                {user?.companyName || user?.firstName || 'Employer'}
               </h3>
               <p className="text-xs text-gray-500">
-                {user?.role === 'admin' ? 'Administrator' : 'Employer Account'}
+                Employer Account
               </p>
             </div>
           </div>
@@ -60,11 +60,7 @@ export const EmployerLayout = ({ children }: EmployerLayoutProps) => {
               <Users size={18} /> Candidates
             </Link>
             
-            {user?.role === 'admin' && (
-              <Link to="/admin/add-company" className={getLinkClass('/admin/add-company')}>
-                <Building size={18} className="text-indigo-500" /> Add Company
-              </Link>
-            )}
+            
 
             <Link to="/employer/billing" className={getLinkClass('/employer/billing')}>
               <FileText size={18} /> Billing & Plans

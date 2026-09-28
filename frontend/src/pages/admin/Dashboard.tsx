@@ -1,6 +1,6 @@
 import toast from 'react-hot-toast';
 import React, { useEffect, useState } from 'react';
-import { EmployerLayout } from '../../layouts/EmployerLayout';
+import { AdminLayout } from '../../layouts/AdminLayout';
 import { Shield, Users, Building, Briefcase, FileText, Settings, Activity, Download, MapPin, GraduationCap, ClipboardList, Award } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -120,7 +120,7 @@ export const AdminDashboard = () => {
   };
 
   return (
-    <EmployerLayout>
+    <AdminLayout>
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold text-text">Candidates Management</h1>
           <button 
@@ -206,6 +206,6 @@ export const AdminDashboard = () => {
             </table>
           </div>
         </div>
-    </EmployerLayout>
+    </AdminLayout>
   );
 };

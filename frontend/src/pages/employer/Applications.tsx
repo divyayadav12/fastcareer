@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { EmployerLayout } from '../../layouts/EmployerLayout';
+import { AdminLayout } from '../../layouts/AdminLayout';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 import api from '../../services/api';
@@ -141,8 +142,10 @@ export const EmployerApplications = () => {
     return matchesSearch && matchesStatus;
   });
 
+  const Layout = user?.role === 'admin' ? AdminLayout : EmployerLayout;
+
   return (
-    <EmployerLayout>
+    <Layout>
       <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Job Applications</h1>
@@ -434,6 +437,6 @@ export const EmployerApplications = () => {
           </div>
         </div>
       )}
-    </EmployerLayout>
+    </Layout>
   );
 };

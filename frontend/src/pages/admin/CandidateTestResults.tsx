@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { EmployerLayout } from '../../layouts/EmployerLayout';
+import { AdminLayout } from '../../layouts/AdminLayout';
 import { Shield, Activity, Users, Building, Briefcase, Settings, ClipboardList, Award, Search, RefreshCw, Eye, CheckCircle2, XCircle, Clock, Volume2, Video, Camera, Star, MessageSquare, X, Send, ExternalLink, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -138,7 +138,7 @@ export const CandidateTestResults = () => {
   });
 
   return (
-    <EmployerLayout>
+    <AdminLayout>
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-xs font-semibold uppercase tracking-wider mb-2">
@@ -541,6 +541,6 @@ export const CandidateTestResults = () => {
             </div>
           </div>
         )}
-    </EmployerLayout>
+    </AdminLayout>
   );
 };

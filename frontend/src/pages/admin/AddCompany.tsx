@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { EmployerLayout } from '../../layouts/EmployerLayout';
+import { AdminLayout } from '../../layouts/AdminLayout';
 import { Building2, Mail, Lock, User, PlusCircle, Building, Search, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
@@ -63,7 +63,7 @@ export const AddCompany = () => {
   };
 
   return (
-    <EmployerLayout>
+    <AdminLayout>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
@@ -223,6 +223,6 @@ export const AddCompany = () => {
           </div>
         </div>
       )}
-    </EmployerLayout>
+    </AdminLayout>
   );
 };
