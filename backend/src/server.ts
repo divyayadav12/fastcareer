@@ -12,12 +12,15 @@ import sharedJobRoutes from './routes/sharedJobRoutes';
 import candidateDashboardRoutes from './routes/candidateDashboardRoutes';
 import assessmentRoutes from './routes/assessmentRoutes';
 import connectDB from './config/db';
+import { seedAdmin } from './utils/seeder';
 
 dotenv.config();
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 // Connect to MongoDB
-connectDB();
+connectDB().then(() => {
+  seedAdmin(); // Ensure admin exists on server start
+});
 
 const app: Application = express();
 const PORT = process.env.PORT || 5000;
