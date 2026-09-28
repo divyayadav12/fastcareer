@@ -39,6 +39,7 @@ const EmployerBilling = lazy(() => import('./pages/employer/Billing').then(m => 
 const CompanyProfile = lazy(() => import('./pages/employer/CompanyProfile').then(m => ({ default: m.CompanyProfile })));
 const PlatformData = lazy(() => import('./pages/employer/PlatformData').then(m => ({ default: m.PlatformData })));
 const AdminDashboard = lazy(() => import('./pages/admin/Dashboard').then(m => ({ default: m.AdminDashboard })));
+const AddCompany = lazy(() => import('./pages/admin/AddCompany').then(m => ({ default: m.AddCompany })));
 const FastSelectionTest = lazy(() => import('./pages/candidate/FastSelectionTest').then(m => ({ default: m.FastSelectionTest })));
 const CandidateTestResults = lazy(() => import('./pages/admin/CandidateTestResults').then(m => ({ default: m.CandidateTestResults })));
 
@@ -127,6 +128,7 @@ function App() {
             
             {/* Admin Routes */}
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/admin/add-company" element={<AddCompany />} />
             <Route path="/admin/applications" element={<EmployerApplications />} />
             <Route path="/admin/test-results" element={<CandidateTestResults />} />
                         </Routes>

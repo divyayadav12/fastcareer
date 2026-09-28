@@ -226,34 +226,8 @@ export const Login = () => {
                 </p>
               </div>
 
-              {/* Role Switcher Tabs */}
-              <div className="grid grid-cols-2 p-1 bg-slate-100/90 rounded-xl mb-5">
-                <button
-                  type="button"
-                  onClick={() => setActiveRole('candidate')}
-                  className={`py-2 text-xs sm:text-sm font-semibold rounded-lg flex items-center justify-center gap-2 transition-all ${
-                    activeRole === 'candidate'
-                      ? 'bg-white text-slate-900 shadow-xs'
-                      : 'text-slate-500 hover:text-slate-700'
-                  }`}
-                >
-                  <GraduationCap size={16} className={activeRole === 'candidate' ? 'text-blue-600' : 'text-slate-400'} />
-                  <span>Candidate (CA / Finance)</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveRole('employer')}
-                  className={`py-2 text-xs sm:text-sm font-semibold rounded-lg flex items-center justify-center gap-2 transition-all ${
-                    activeRole === 'employer'
-                      ? 'bg-white text-slate-900 shadow-xs'
-                      : 'text-slate-500 hover:text-slate-700'
-                  }`}
-                >
-                  <Building2 size={16} className={activeRole === 'employer' ? 'text-blue-600' : 'text-slate-400'} />
-                  <span>Employer / Recruiter</span>
-                </button>
-              </div>
-
+              {/* Removed Role Switcher Tabs - Login is unified */}
+  
               {/* Form */}
               <form className="space-y-4" onSubmit={handleSubmit}>
                 

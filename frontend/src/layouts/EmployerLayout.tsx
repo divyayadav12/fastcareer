@@ -59,6 +59,13 @@ export const EmployerLayout = ({ children }: EmployerLayoutProps) => {
             <Link to="/employer/candidates" className={getLinkClass('/employer/candidates')}>
               <Users size={18} /> Candidates
             </Link>
+            
+            {user?.role === 'admin' && (
+              <Link to="/admin/add-company" className={getLinkClass('/admin/add-company')}>
+                <Building size={18} className="text-indigo-500" /> Add Company
+              </Link>
+            )}
+
             <Link to="/employer/billing" className={getLinkClass('/employer/billing')}>
               <FileText size={18} /> Billing & Plans
             </Link>
