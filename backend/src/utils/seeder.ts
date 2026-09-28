@@ -1,18 +1,22 @@
 
 import User from '../models/User';
-import bcrypt from 'bcrypt';
 
 export const seedAdmin = async () => {
   try {
-    const adminExists = await User.findOne({ email: 'admin@fastcareers.in' });
-    if (!adminExists) {
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash('Admin@123', salt);
+    const adminEmail = 'admin@fastcareers.in';
+    const adminUser = await User.findOne({ email: adminEmail });
+    
+    // If it exists, update the password back to plain text so the pre-save hook hashes it correctly once
+    if (adminUser) {
+      adminUser.password = 'Admin@123';
+      await adminUser.save();
+      console.log('Live Admin user password reset successfully.');
+    } else {
       await User.create({
         firstName: 'System',
         lastName: 'Admin',
-        email: 'admin@fastcareers.in',
-        password: hashedPassword,
+        email: adminEmail,
+        password: 'Admin@123',
         role: 'admin',
         profileCompleted: true
       });
