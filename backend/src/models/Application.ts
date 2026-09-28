@@ -6,6 +6,7 @@ export interface IApplication extends Document {
   resumeUrl: string;
   coverLetter?: string;
   status: 'applied' | 'reviewing' | 'shortlisted' | 'interviewed' | 'rejected' | 'hired';
+  sharedWithEmployer: boolean;
   appliedAt: Date;
   updatedAt: Date;
 }
@@ -21,6 +22,7 @@ const ApplicationSchema: Schema = new Schema(
       enum: ['applied', 'reviewing', 'shortlisted', 'interviewed', 'rejected', 'hired'], 
       default: 'applied' 
     },
+    sharedWithEmployer: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

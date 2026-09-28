@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import Application from '../models/Application';
 import Job from '../models/Job';
 import User from '../models/User';
+import { sendShortlistedWhatsApp } from '../utils/whatsappService';
 
 // @desc    Apply for a job
 // @route   POST /api/applications/:jobId
@@ -79,11 +80,27 @@ export const updateApplicationStatus = async (req: Request, res: Response) => {
   const { status } = req.body;
   
   try {
-    const application = await Application.findById(req.params.id);
+    const application = await Application.findById(req.params.id)
+      .populate('candidate', 'firstName personalDetails email')
+      .populate('job', 'title');
     
     if (application) {
       application.status = status;
       const updatedApplication = await application.save();
+
+      // Trigger WhatsApp Notification for Shortlist/Selection
+      if (status === 'shortlisted' || status === 'accepted') {
+        const candidate: any = application.candidate;
+        const job: any = application.job;
+        if (candidate?.personalDetails?.phone) {
+          sendShortlistedWhatsApp(
+            candidate.personalDetails.phone,
+            candidate.firstName || 'Candidate',
+            job?.title || 'a role'
+          );
+        }
+      }
+
       res.json(updatedApplication);
     } else {
       res.status(404).json({ message: 'Application not found' });
@@ -152,10 +169,10 @@ export const getEmployerApplications = async (req: Request, res: Response) => {
           ]
         });
         const allAccessibleJobIds = [...myJobIds, ...platformJobs.map(j => j._id)];
-        query = { job: { $in: allAccessibleJobIds } };
+        query = { job: { $in: allAccessibleJobIds }, sharedWithEmployer: true };
       } else {
-        // If employer hasn't created separate jobs yet, show all candidate applications
-        query = {};
+        // If employer hasn't created separate jobs yet, show shared candidate applications
+        query = { sharedWithEmployer: true };
       }
     }
     
@@ -212,3 +229,26 @@ export const getCandidateApplications = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Server Error' });
   }
 };
+
+// @desc    Share applications with employer
+// @route   PUT /api/applications/share
+// @access  Private (Admin)
+export const shareApplications = async (req: Request, res: Response) => {
+  const { applicationIds } = req.body;
+  
+  if (!applicationIds || !Array.isArray(applicationIds)) {
+    res.status(400).json({ message: 'applicationIds array is required' });
+    return;
+  }
+
+  try {
+    await Application.updateMany(
+      { _id: { $in: applicationIds } },
+      { $set: { sharedWithEmployer: true } }
+    );
+    res.json({ message: 'Applications successfully shared with employer' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+

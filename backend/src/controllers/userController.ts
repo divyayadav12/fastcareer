@@ -42,6 +42,8 @@ export const authUser = async (req: Request, res: Response) => {
   }
 };
 
+import { sendRegistrationWhatsApp } from '../utils/whatsappService';
+
 // @desc    Register a new user
 // @route   POST /api/users
 // @access  Public
@@ -88,6 +90,9 @@ export const registerUser = async (req: Request, res: Response) => {
     });
 
     if (user) {
+      if (user.personalDetails?.phone) {
+        sendRegistrationWhatsApp(user.personalDetails.phone, user.firstName);
+      }
       res.status(201).json({
         _id: user._id,
         firstName: user.firstName,

@@ -6,7 +6,8 @@ import {
   getEmployerApplications,
   getAllApplications,
   getCandidateApplications,
-  deleteApplication
+  deleteApplication,
+  shareApplications
 } from '../controllers/applicationController';
 import { upload } from '../utils/upload';
 import { protect, admin, employerOrAdmin } from '../middleware/authMiddleware';
@@ -19,6 +20,7 @@ router.get('/candidate/:id', protect, getCandidateApplications);
 router.post('/:jobId', protect, upload.single('resume'), applyForJob);
 router.get('/job/:jobId', protect, employerOrAdmin, getJobApplications);
 router.get('/employer', protect, employerOrAdmin, getEmployerApplications);
+router.put('/share', protect, admin, shareApplications);
 router.get('/', protect, employerOrAdmin, getAllApplications);
 router.route('/:id').delete(protect, employerOrAdmin, deleteApplication);
 router.put('/:id/status', protect, employerOrAdmin, updateApplicationStatus);
