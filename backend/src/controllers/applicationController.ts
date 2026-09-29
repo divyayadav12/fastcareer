@@ -161,18 +161,12 @@ export const getEmployerApplications = async (req: Request, res: Response) => {
       const myJobIds = myJobs.map(j => j._id);
 
       if (myJobIds.length > 0) {
-        // Also include platform unassigned jobs so employer doesn't miss applicants
-        const platformJobs = await Job.find({
-          $or: [
-            { postedBy: { $exists: false } },
-            { postedBy: null }
-          ]
-        });
-        const allAccessibleJobIds = [...myJobIds, ...platformJobs.map(j => j._id)];
-        query = { job: { $in: allAccessibleJobIds }, sharedWithEmployer: true };
+        query = { job: { $in: myJobIds }, sharedWithEmployer: true };
       } else {
-        // If employer hasn't created separate jobs yet, show shared candidate applications
-        query = { sharedWithEmployer: true };
+        // Show ONLY applications of candidates who are explicitly assigned to this employer by Admin
+        const assignedCandidates = await User.find({ role: 'candidate', assignedEmployers: user?._id }).select('_id');
+        const candidateIds = assignedCandidates.map(c => c._id);
+        query = { candidate: { $in: candidateIds }, sharedWithEmployer: true };
       }
     }
     

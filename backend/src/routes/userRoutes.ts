@@ -5,6 +5,7 @@ import {
   getUserProfile, 
   updateUserProfile, 
   getCandidates,
+  assignCandidatesToCompany,
   getEmployers,
   matchCandidatesFromExcel,
   downloadCandidateResumesZip,
@@ -31,6 +32,7 @@ router.post('/upload-resume', upload.single('resume'), (req, res) => {
 });
 router.route('/profile').get(protect, getUserProfile).put(protect, updateUserProfile);
 router.route('/candidates').get(protect, employerOrAdmin, getCandidates);
+router.put('/candidates/assign-company', protect, admin, assignCandidatesToCompany);
 router.route('/employers').get(protect, admin, getEmployers);
 router.get('/candidates/:id/resume', getCandidateResume);
 router.get('/resume/:id', getCandidateResume);

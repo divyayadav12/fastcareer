@@ -241,16 +241,55 @@ export const seedLiveCandidates = async (req: Request, res: Response) => {
 
 // @desc    Get all candidates
 // @route   GET /api/users/candidates
-// @access  Private/Admin
+// @access  Private/Admin or Employer (filtered by permission)
 export const getCandidates = async (req: Request, res: Response) => {
   try {
-    const candidates = await User.find({ role: 'candidate' })
+    const user = (req as any).user;
+    let query: any = { role: 'candidate' };
+
+    // If logged in as an Employer, ONLY return candidates explicitly assigned by Admin
+    if (user?.role === 'employer') {
+      query.assignedEmployers = user._id;
+    }
+
+    const candidates = await User.find(query)
+      .populate('assignedEmployers', 'companyName firstName lastName email')
       .sort({ createdAt: -1 })
       .select('-password');
     res.json(candidates);
   } catch (error) {
     console.error('Error fetching candidates:', error);
     res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// @desc    Assign or unassign candidates to a company
+// @route   PUT /api/users/candidates/assign-company
+// @access  Private/Admin
+export const assignCandidatesToCompany = async (req: Request, res: Response) => {
+  try {
+    const { candidateIds, employerId, action } = req.body;
+    if (!candidateIds || !Array.isArray(candidateIds) || candidateIds.length === 0 || !employerId) {
+      res.status(400).json({ message: 'candidateIds array and employerId are required' });
+      return;
+    }
+
+    if (action === 'unassign') {
+      await User.updateMany(
+        { _id: { $in: candidateIds }, role: 'candidate' },
+        { $pull: { assignedEmployers: employerId } }
+      );
+    } else {
+      await User.updateMany(
+        { _id: { $in: candidateIds }, role: 'candidate' },
+        { $addToSet: { assignedEmployers: employerId } }
+      );
+    }
+
+    res.json({ message: `Successfully ${action === 'unassign' ? 'unassigned' : 'assigned'} candidates.` });
+  } catch (error) {
+    console.error('Error assigning candidates:', error);
+    res.status(500).json({ message: 'Server error assigning candidates' });
   }
 };
 

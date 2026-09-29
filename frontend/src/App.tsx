@@ -121,7 +121,7 @@ function App() {
             <Route path="/employer/dashboard" element={<EmployerDashboard />} />
             <Route path="/employer/applications" element={<EmployerApplications />} />
             <Route path="/employer/jobs" element={<ManageJobs />} />
-            <Route path="/employer/candidates" element={<EmployerCandidates />} />
+            <Route path="/employer/candidates" element={<EmployerDashboard />} />
             <Route path="/employer/billing" element={<EmployerBilling />} />
             <Route path="/employer/settings" element={<CompanyProfile />} />
             <Route path="/employer/platform-data" element={<PlatformData />} />

@@ -112,6 +112,7 @@ export interface IUser extends Document {
   // Employer specific
   companyName?: string;
   companyWebsite?: string;
+  assignedEmployers?: mongoose.Types.ObjectId[];
   matchPassword(enteredPassword: string): Promise<boolean>;
 }
 
@@ -232,6 +233,7 @@ const UserSchema: Schema = new Schema(
     // --- Employer specific fields ---
     companyName: { type: String },
     companyWebsite: { type: String },
+    assignedEmployers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
   },
   { timestamps: true }
 );
