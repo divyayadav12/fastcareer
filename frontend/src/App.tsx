@@ -121,13 +121,14 @@ function App() {
             <Route path="/employer/dashboard" element={<EmployerDashboard />} />
             <Route path="/employer/applications" element={<EmployerApplications />} />
             <Route path="/employer/jobs" element={<ManageJobs />} />
-            <Route path="/employer/candidates" element={<EmployerDashboard />} />
+            <Route path="/employer/candidates" element={<EmployerCandidates />} />
             <Route path="/employer/billing" element={<EmployerBilling />} />
             <Route path="/employer/settings" element={<CompanyProfile />} />
             <Route path="/employer/platform-data" element={<PlatformData />} />
             
             {/* Admin Routes */}
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/candidates" element={<EmployerCandidates />} />
             <Route path="/admin/add-company" element={<AddCompany />} />
             <Route path="/admin/applications" element={<EmployerApplications />} />
             <Route path="/admin/test-results" element={<CandidateTestResults />} />

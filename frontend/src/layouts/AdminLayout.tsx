@@ -45,6 +45,9 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
             <Link to="/admin/dashboard" className={getLinkClass('/admin/dashboard')}>
               <Users size={18} /> Candidates Database
             </Link>
+            <Link to="/admin/candidates" className={getLinkClass('/admin/candidates')}>
+              <Search size={18} className="text-indigo-600" /> Search Candidates (Excel & ZIP)
+            </Link>
             <Link to="/admin/test-results" className={getLinkClass('/admin/test-results')}>
               <Award size={18} className="text-amber-500" /> Assessment Results
             </Link>

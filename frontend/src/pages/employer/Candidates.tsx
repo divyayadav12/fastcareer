@@ -1,6 +1,7 @@
 import toast from 'react-hot-toast';
 import React, { useState, useEffect, useRef } from 'react';
 import { EmployerLayout } from '../../layouts/EmployerLayout';
+import { AdminLayout } from '../../layouts/AdminLayout';
 import { Search, Filter, MapPin, GraduationCap, Download, DownloadCloud, FileSpreadsheet, CheckSquare, Square, UploadCloud, X, CheckCircle2, AlertCircle } from 'lucide-react';
 import axios from 'axios';
 import api from '../../services/api';
@@ -70,6 +71,7 @@ interface Candidate {
 
 export const EmployerCandidates = () => {
   const { user } = useSelector((state: any) => state.auth);
+  const Layout = user?.role === 'admin' ? AdminLayout : EmployerLayout;
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -502,7 +504,7 @@ export const EmployerCandidates = () => {
   };
 
   return (
-    <EmployerLayout>
+    <Layout>
       <div className="flex flex-col md:flex-row md:justify-between md:items-end mb-8 gap-4">
         <div>
           <h1 className="text-2xl font-bold text-text mb-2">Search Candidates</h1>
@@ -919,6 +921,6 @@ export const EmployerCandidates = () => {
           })
         )}
       </div>
-    </EmployerLayout>
+    </Layout>
   );
 };
