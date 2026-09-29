@@ -4,7 +4,7 @@ import { AdminLayout } from '../../layouts/AdminLayout';
 import { 
   Users, Building2, Download, MapPin, GraduationCap, 
   FileText, Search, PlusCircle, CheckSquare, Square, 
-  X, Check, ShieldCheck, UserCheck, Trash2, Building
+  X, Check, Building, Mail, User, Lock, ChevronDown
 } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
@@ -52,6 +52,36 @@ interface Employer {
   createdAt?: string;
 }
 
+const PREDEFINED_COMPANIES = [
+  'Tata Consultancy Services (TCS)',
+  'Hindustan Unilever Limited (HUL)',
+  'ITC Limited',
+  'Reliance Industries Limited',
+  'Deloitte India',
+  'Ernst & Young (EY)',
+  'KPMG India',
+  'PricewaterhouseCoopers (PwC)',
+  'ICICI Bank',
+  'HDFC Bank',
+  'Axis Bank',
+  'Wipro Limited',
+  'Infosys',
+  'Larsen & Toubro (L&T)',
+  'Aditya Birla Group',
+  'Bharti Airtel',
+  'Vedanta Limited',
+  'CK Birla Group',
+  'Mahindra & Mahindra',
+  'Godrej Group',
+  'Adani Group',
+  'Standard Chartered Bank',
+  'HSBC India',
+  'Grant Thornton',
+  'BDO India',
+  'RSM India',
+  'Other (Enter Custom Company Name)'
+];
+
 export const AdminDashboard = () => {
   const { user } = useSelector((state: RootState) => state.auth);
   const [candidates, setCandidates] = useState<Candidate[]>([]);
@@ -70,11 +100,11 @@ export const AdminDashboard = () => {
   const [isCompanyModalOpen, setIsCompanyModalOpen] = useState(false);
   const [activeModalTab, setActiveModalTab] = useState<'register' | 'list'>('register');
   const [companyForm, setCompanyForm] = useState({
-    companyName: '',
-    firstName: '',
-    lastName: '',
+    companyName: PREDEFINED_COMPANIES[0],
+    customCompanyName: '',
+    hrName: '',
     email: '',
-    password: '',
+    password: 'Company@123',
   });
   const [creatingCompany, setCreatingCompany] = useState(false);
 
@@ -162,23 +192,37 @@ export const AdminDashboard = () => {
     }
   };
 
-  // Create Company Handler
+  // Create Company Handler with Dropdown logic
   const handleCreateCompany = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!companyForm.companyName || !companyForm.firstName || !companyForm.email || !companyForm.password) {
-      toast.error('Please fill in all required fields.');
+    const finalCompanyName = companyForm.companyName === 'Other (Enter Custom Company Name)' 
+      ? companyForm.customCompanyName 
+      : companyForm.companyName;
+
+    if (!finalCompanyName || !companyForm.hrName || !companyForm.email) {
+      toast.error('Please select/enter Company Name, HR Name, and Login Email.');
       return;
     }
 
     setCreatingCompany(true);
     try {
       await api.post('/users', {
-        ...companyForm,
+        companyName: finalCompanyName,
+        firstName: companyForm.hrName,
+        lastName: '',
+        email: companyForm.email,
+        password: companyForm.password || 'Company@123',
         role: 'employer',
       });
 
-      toast.success(`Company "${companyForm.companyName}" registered successfully!`);
-      setCompanyForm({ companyName: '', firstName: '', lastName: '', email: '', password: '' });
+      toast.success(`Company "${finalCompanyName}" registered successfully!`);
+      setCompanyForm({ 
+        companyName: PREDEFINED_COMPANIES[0],
+        customCompanyName: '',
+        hrName: '', 
+        email: '', 
+        password: 'Company@123' 
+      });
       fetchEmployers();
       setActiveModalTab('list');
     } catch (err: any) {
@@ -282,7 +326,7 @@ export const AdminDashboard = () => {
               setActiveModalTab('register');
               setIsCompanyModalOpen(true);
             }}
-            className="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-xs transition-colors"
+            className="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-xs transition-colors cursor-pointer"
           >
             <Building2 size={16} /> Register / Manage Companies
           </button>
@@ -291,7 +335,7 @@ export const AdminDashboard = () => {
             onClick={handleBulkDownload}
             disabled={downloading}
             className={`flex-1 md:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
-              downloading ? 'bg-gray-400 text-white cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs'
+              downloading ? 'bg-gray-400 text-white cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer'
             }`}
           >
             <Download size={16} /> {downloading ? 'Generating ZIP...' : 'Export ZIP'}
@@ -356,7 +400,7 @@ export const AdminDashboard = () => {
             <button
               onClick={() => handleAssignCandidates('assign')}
               disabled={assigning}
-              className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 shadow-xs"
+              className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
             >
               <Check size={16} /> Grant Access
             </button>
@@ -364,14 +408,14 @@ export const AdminDashboard = () => {
             <button
               onClick={() => handleAssignCandidates('unassign')}
               disabled={assigning}
-              className="px-4 py-2 bg-rose-500/80 hover:bg-rose-600 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5"
+              className="px-4 py-2 bg-rose-500/80 hover:bg-rose-600 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
             >
-              <Trash2 size={16} /> Revoke
+              <X size={16} /> Revoke
             </button>
 
             <button
               onClick={() => setSelectedCandidateIds([])}
-              className="px-3 py-2 bg-indigo-800 hover:bg-indigo-700 text-indigo-200 text-xs font-medium rounded-xl transition-colors"
+              className="px-3 py-2 bg-indigo-800 hover:bg-indigo-700 text-indigo-200 text-xs font-medium rounded-xl transition-colors cursor-pointer"
             >
               Cancel
             </button>
@@ -516,7 +560,7 @@ export const AdminDashboard = () => {
       {/* Register & Manage Companies Modal */}
       {isCompanyModalOpen && (
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-in fade-in">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-100 flex flex-col max-h-[90vh]">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-xl overflow-hidden border border-slate-100 flex flex-col max-h-[90vh]">
             {/* Modal Header */}
             <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
               <div className="flex items-center gap-3">
@@ -530,7 +574,7 @@ export const AdminDashboard = () => {
               </div>
               <button 
                 onClick={() => setIsCompanyModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg transition-colors"
+                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg transition-colors cursor-pointer"
               >
                 <X size={20} />
               </button>
@@ -540,7 +584,7 @@ export const AdminDashboard = () => {
             <div className="flex border-b border-slate-100 px-6 pt-3 bg-slate-50/30 gap-6">
               <button
                 onClick={() => setActiveModalTab('register')}
-                className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition-all ${
+                className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
                   activeModalTab === 'register'
                     ? 'border-indigo-600 text-indigo-600'
                     : 'border-transparent text-slate-400 hover:text-slate-600'
@@ -550,7 +594,7 @@ export const AdminDashboard = () => {
               </button>
               <button
                 onClick={() => setActiveModalTab('list')}
-                className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition-all ${
+                className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
                   activeModalTab === 'list'
                     ? 'border-indigo-600 text-indigo-600'
                     : 'border-transparent text-slate-400 hover:text-slate-600'
@@ -564,80 +608,96 @@ export const AdminDashboard = () => {
             <div className="p-6 overflow-y-auto flex-1">
               {activeModalTab === 'register' ? (
                 <form onSubmit={handleCreateCompany} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">Company Name *</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="e.g. Tata Consultancy Services"
+                  {/* Field 1: Company Name Dropdown */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      1. Select Company Name *
+                    </label>
+                    <div className="relative">
+                      <select
                         value={companyForm.companyName}
                         onChange={(e) => setCompanyForm({ ...companyForm, companyName: e.target.value })}
-                        className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
-                      />
+                        className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white text-slate-800 font-medium appearance-none pr-10"
+                      >
+                        {PREDEFINED_COMPANIES.map((c, i) => (
+                          <option key={i} value={c}>{c}</option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-3.5 top-3 text-slate-400 pointer-events-none" size={16} />
                     </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">HR First Name *</label>
+                  </div>
+
+                  {/* If "Other" selected, show Custom Company Name Input */}
+                  {companyForm.companyName === 'Other (Enter Custom Company Name)' && (
+                    <div className="animate-in fade-in slide-in-from-top-1">
+                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        Enter Custom Company Name *
+                      </label>
                       <input
                         type="text"
                         required
-                        placeholder="e.g. Ramesh"
-                        value={companyForm.firstName}
-                        onChange={(e) => setCompanyForm({ ...companyForm, firstName: e.target.value })}
-                        className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                        placeholder="e.g. My Custom Corporate Pvt Ltd"
+                        value={companyForm.customCompanyName}
+                        onChange={(e) => setCompanyForm({ ...companyForm, customCompanyName: e.target.value })}
+                        className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                      />
+                    </div>
+                  )}
+
+                  {/* Field 2: HR Name */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      2. HR Representative Name *
+                    </label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-3 text-slate-400" size={16} />
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Ramesh Sharma"
+                        value={companyForm.hrName}
+                        onChange={(e) => setCompanyForm({ ...companyForm, hrName: e.target.value })}
+                        className="pl-9 w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
                       />
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">HR Last Name</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. Sharma"
-                        value={companyForm.lastName}
-                        onChange={(e) => setCompanyForm({ ...companyForm, lastName: e.target.value })}
-                        className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">Login Email *</label>
+                  {/* Field 3: Login Email */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      3. Login Email Address *
+                    </label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-3 text-slate-400" size={16} />
                       <input
                         type="email"
                         required
-                        placeholder="hr@tcs.com"
+                        placeholder="e.g. hr@company.com"
                         value={companyForm.email}
                         onChange={(e) => setCompanyForm({ ...companyForm, email: e.target.value })}
-                        className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                        className="pl-9 w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
                       />
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">Temporary Login Password *</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. Company@123"
-                      value={companyForm.password}
-                      onChange={(e) => setCompanyForm({ ...companyForm, password: e.target.value })}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
-                    />
-                    <p className="text-xs text-slate-400 mt-1">Share this email and password with the company HR to let them log in.</p>
+                  {/* Optional Password Notice */}
+                  <div className="bg-indigo-50/70 p-3 rounded-xl border border-indigo-100 flex items-center justify-between text-xs text-indigo-800">
+                    <span>Default Password: <strong>Company@123</strong></span>
+                    <span className="text-indigo-500">Auto-filled</span>
                   </div>
 
                   <div className="pt-4 flex justify-end gap-3 border-t border-slate-100">
                     <button
                       type="button"
                       onClick={() => setIsCompanyModalOpen(false)}
-                      className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-xl transition-colors"
+                      className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-xl transition-colors cursor-pointer"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={creatingCompany}
-                      className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors flex items-center gap-2"
+                      className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors flex items-center gap-2 cursor-pointer shadow-xs"
                     >
                       {creatingCompany ? 'Registering...' : 'Register Company'}
                     </button>
