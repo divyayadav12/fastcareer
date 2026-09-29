@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { EmployerLayout } from '../../layouts/EmployerLayout';
 import { AdminLayout } from '../../layouts/AdminLayout';
 import { useSelector } from 'react-redux';
@@ -28,7 +28,9 @@ import {
   Calendar,
   MapPin,
   Award,
-  Filter
+  Filter,
+  UploadCloud,
+  FileSpreadsheet
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getResumeUrl } from '../../utils/urlHelper';
@@ -56,12 +58,95 @@ export const EmployerApplications = () => {
   const [selectedEmployerId, setSelectedEmployerId] = useState<string>('');
   const [sharing, setSharing] = useState(false);
 
+  // Excel Matching States
+  const [isExcelMode, setIsExcelMode] = useState(false);
+  const [excelFileName, setExcelFileName] = useState('');
+  const [matchedEmails, setMatchedEmails] = useState<Set<string>>(new Set());
+  const [excelStats, setExcelStats] = useState<{
+    totalEmails: number;
+    matchedCandidates: number;
+    resumesAvailable: number;
+    resumesUnavailable: number;
+    notFound: number;
+  } | null>(null);
+  const [isProcessingExcel, setIsProcessingExcel] = useState(false);
+  const [processingStep, setProcessingStep] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   // Rich Filters
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [cityFilter, setCityFilter] = useState('all');
   const [caQualificationFilter, setCaQualificationFilter] = useState('all');
   const [dateFilter, setDateFilter] = useState('all');
+
+  const handleExcelUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedExtensions = ['.xlsx', '.xls'];
+    const fileExt = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+    if (!allowedExtensions.includes(fileExt)) {
+      toast.error('Please upload a valid Excel file (.xlsx or .xls).');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    setIsProcessingExcel(true);
+    setProcessingStep('Uploading Excel...');
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await api.post(
+        '/users/candidates/match-excel',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+
+      const data = res.data;
+      setIsExcelMode(true);
+      setExcelFileName(file.name);
+      setExcelStats({
+        totalEmails: data.totalEmails,
+        matchedCandidates: data.matchedCandidates,
+        resumesAvailable: data.resumesAvailable,
+        resumesUnavailable: data.resumesUnavailable,
+        notFound: data.notFound,
+      });
+
+      const emailSet = new Set<string>(
+        (data.candidates || []).map((c: any) => c.email.toLowerCase())
+      );
+      setMatchedEmails(emailSet);
+
+      toast.success(
+        `${data.matchedCandidates} candidates matched from Excel!`
+      );
+    } catch (err: any) {
+      console.error('Error matching Excel file:', err);
+      const msg = err.response?.data?.message || 'Failed to match candidates from Excel file.';
+      toast.error(msg);
+    } finally {
+      setIsProcessingExcel(false);
+      setProcessingStep('');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const clearExcelMode = () => {
+    setIsExcelMode(false);
+    setExcelFileName('');
+    setExcelStats(null);
+    setMatchedEmails(new Set());
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    toast.success('Returned to full applications list.');
+  };
 
   const fetchApplications = async () => {
     setLoading(true);
@@ -297,13 +382,24 @@ export const EmployerApplications = () => {
       }
     }
 
-    return matchesSearch && matchesStatus && matchesCity && matchesCA && matchesDate;
+    // 6. Excel email matching
+    const matchesExcel = !isExcelMode || matchedEmails.has(candidateEmail);
+
+    return matchesSearch && matchesStatus && matchesCity && matchesCA && matchesDate && matchesExcel;
   });
 
   const Layout = user?.role === 'admin' ? AdminLayout : EmployerLayout;
 
   return (
     <Layout>
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleExcelUpload}
+        accept=".xlsx, .xls"
+        className="hidden"
+      />
+
       <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900 flex items-center gap-2">
@@ -317,23 +413,87 @@ export const EmployerApplications = () => {
           </p>
         </div>
 
-        {user?.role === 'admin' && (
-          <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <button 
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isProcessingExcel}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-xl text-xs font-semibold hover:bg-indigo-100 transition-colors cursor-pointer disabled:opacity-50"
+            title="Upload Excel with candidate emails (.xlsx, .xls)"
+          >
+            <UploadCloud size={14} /> {isProcessingExcel ? (processingStep || 'Processing...') : 'Upload Excel Match'}
+          </button>
+
+          {user?.role === 'admin' && (
+            <>
+              <button
+                onClick={handleCleanupTestJobs}
+                className="inline-flex items-center gap-1.5 px-3 py-2 bg-rose-50 text-rose-700 hover:bg-rose-100 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+              >
+                <Trash2 size={14} /> Clean Test Jobs
+              </button>
+              <button
+                onClick={fetchApplications}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+              >
+                <RefreshCw size={14} /> Refresh List
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Excel Matching Summary Banner */}
+      {isExcelMode && excelStats && (
+        <div className="bg-white border border-blue-200 rounded-2xl p-6 shadow-sm mb-6 bg-gradient-to-r from-blue-50/50 via-white to-indigo-50/30">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-100">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-indigo-100 text-indigo-600 rounded-xl">
+                <FileSpreadsheet size={24} />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2 flex-wrap">
+                  Excel Match Results
+                  <span className="text-xs bg-indigo-100 text-indigo-700 font-semibold px-2.5 py-0.5 rounded-full">
+                    {excelFileName}
+                  </span>
+                </h2>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Showing only candidate applications whose email matches the uploaded Excel sheet.
+                </p>
+              </div>
+            </div>
             <button
-              onClick={handleCleanupTestJobs}
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-rose-50 text-rose-700 hover:bg-rose-100 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+              onClick={clearExcelMode}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors self-start sm:self-auto cursor-pointer"
             >
-              <Trash2 size={14} /> Clean Test Jobs
-            </button>
-            <button
-              onClick={fetchApplications}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
-            >
-              <RefreshCw size={14} /> Refresh List
+              <X size={16} /> Reset / Show All Applications
             </button>
           </div>
-        )}
-      </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mt-4">
+            <div className="bg-white border border-gray-200 p-3.5 rounded-xl shadow-2xs">
+              <p className="text-xs font-medium text-gray-500">Total Emails</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">{excelStats.totalEmails}</p>
+            </div>
+            <div className="bg-white border border-green-200 p-3.5 rounded-xl shadow-2xs bg-green-50/20">
+              <p className="text-xs font-medium text-green-700">Matched Candidates</p>
+              <p className="text-2xl font-bold text-green-700 mt-1">{excelStats.matchedCandidates}</p>
+            </div>
+            <div className="bg-white border border-emerald-200 p-3.5 rounded-xl shadow-2xs bg-emerald-50/20">
+              <p className="text-xs font-medium text-emerald-700">Resumes Available</p>
+              <p className="text-2xl font-bold text-emerald-700 mt-1">{excelStats.resumesAvailable}</p>
+            </div>
+            <div className="bg-white border border-amber-200 p-3.5 rounded-xl shadow-2xs bg-amber-50/20">
+              <p className="text-xs font-medium text-amber-700">Resume Not Available</p>
+              <p className="text-2xl font-bold text-amber-700 mt-1">{excelStats.resumesUnavailable}</p>
+            </div>
+            <div className="bg-white border border-gray-200 p-3.5 rounded-xl shadow-2xs bg-gray-50/50 col-span-2 sm:col-span-1">
+              <p className="text-xs font-medium text-gray-500">Not Found</p>
+              <p className="text-2xl font-bold text-gray-600 mt-1">{excelStats.notFound}</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ADMIN CONTROL PANEL: 3 Linked Dropdowns to Share Candidates with Registered Companies */}
       {user?.role === 'admin' && (
