@@ -45,22 +45,7 @@ export const EmployerLayout = ({ children }: EmployerLayoutProps) => {
 
           <nav className="space-y-1">
             <Link to="/employer/dashboard" className={getLinkClass('/employer/dashboard')}>
-              <BarChart2 size={18} /> Dashboard
-            </Link>
-            <Link to="/employer/applications" className={getLinkClass('/employer/applications')}>
-              <ClipboardList size={18} /> Forwarded Candidates
-            </Link>
-            <Link to="/employer/jobs" className={getLinkClass('/employer/jobs')}>
-              <Briefcase size={18} /> Manage Jobs
-            </Link>
-            
-            
-
-            <Link to="/employer/billing" className={getLinkClass('/employer/billing')}>
-              <FileText size={18} /> Billing & Plans
-            </Link>
-            <Link to="/employer/settings" className={getLinkClass('/employer/settings')}>
-              <Settings size={18} /> Company Profile
+              <Users size={18} /> Candidate Profiles
             </Link>
           </nav>
         </div>

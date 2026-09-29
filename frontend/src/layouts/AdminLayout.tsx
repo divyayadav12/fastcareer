@@ -48,6 +48,12 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
             <Link to="/admin/test-results" className={getLinkClass('/admin/test-results')}>
               <Award size={18} className="text-amber-500" /> Assessment Results
             </Link>
+            <Link to="/admin/add-company" className={getLinkClass('/admin/add-company')}>
+              <Building size={18} /> Manage Companies
+            </Link>
+            <Link to="/admin/applications" className={getLinkClass('/admin/applications')}>
+              <ClipboardList size={18} /> Shared Applications
+            </Link>
           </nav>
         </div>
       </aside>
