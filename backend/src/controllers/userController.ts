@@ -255,6 +255,25 @@ const sanitizeFilename = (name: string): string => {
   return name.replace(/[/\\?%*:|"<>]/g, '').trim().replace(/\s+/g, '_');
 };
 
+import { seed10AppliedCandidates } from '../seed10AppliedCandidates';
+
+// @desc    Seed 10 new candidate records with PDF resumes and job applications
+// @route   GET /api/users/seed-10-candidates
+// @access  Public / Admin
+export const seed10CandidatesController = async (req: Request, res: Response) => {
+  try {
+    const result = await seed10AppliedCandidates(false);
+    res.json({
+      success: true,
+      message: 'Successfully seeded 10 new candidate records with PDF resumes and submitted job applications!',
+      data: result,
+    });
+  } catch (error: any) {
+    console.error('Error in seed10CandidatesController:', error);
+    res.status(500).json({ message: error.message || 'Error seeding 10 candidates' });
+  }
+};
+
 // @desc    Seed 20 test candidates and resumes to the connected MongoDB database
 // @route   GET /api/users/seed-test-candidates
 // @access  Public / Admin

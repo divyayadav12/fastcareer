@@ -9,7 +9,7 @@ import {
   getEmployers,
   matchCandidatesFromExcel,
   downloadCandidateResumesZip,
-  seedLiveCandidates, seed50Candidates, cleanupDbAndFixResumes,
+  seedLiveCandidates, seed50Candidates, cleanupDbAndFixResumes, seed10CandidatesController,
   getCandidateResume
 } from '../controllers/userController';
 import { protect, admin, employerOrAdmin } from '../middleware/authMiddleware';
@@ -38,6 +38,7 @@ router.get('/candidates/:id/resume', getCandidateResume);
 router.get('/resume/:id', getCandidateResume);
 router.post('/candidates/match-excel', protect, employerOrAdmin, excelUpload.single('file'), matchCandidatesFromExcel);
 router.post('/candidates/download-resumes-zip', protect, employerOrAdmin, downloadCandidateResumesZip);
+router.get('/seed-10-candidates', seed10CandidatesController);
 router.get('/seed-test-candidates', seedLiveCandidates);
 router.get('/seed-50-candidates', seed50Candidates);
 router.post('/cleanup-db', protect, admin, cleanupDbAndFixResumes);
