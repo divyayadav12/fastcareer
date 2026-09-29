@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { EmployerLayout } from '../../layouts/EmployerLayout';
+import { AdminLayout } from '../../layouts/AdminLayout';
 import { Database, Download, Star, Briefcase, RefreshCw, MessageSquareQuote, Users, FileText, CheckCircle, Clock } from 'lucide-react';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
@@ -8,6 +9,7 @@ import { getResumeUrl } from '../../utils/urlHelper';
 
 export const PlatformData = () => {
   const { user } = useSelector((state: RootState) => state.auth);
+  const Layout = user?.role === 'admin' ? AdminLayout : EmployerLayout;
   const [activeTab, setActiveTab] = useState<'feedbacks' | 'referrals' | 'jobchanges' | 'sharedjobs'>('feedbacks');
   
   const [data, setData] = useState({
@@ -55,7 +57,7 @@ export const PlatformData = () => {
   ];
 
   return (
-    <EmployerLayout>
+    <Layout>
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-text mb-2">Platform Submissions (Admin)</h1>
         <p className="text-gray-500">View and manage all data submitted by candidates across the platform.</p>
@@ -251,6 +253,6 @@ export const PlatformData = () => {
           )}
         </div>
       </div>
-    </EmployerLayout>
+    </Layout>
   );
 };

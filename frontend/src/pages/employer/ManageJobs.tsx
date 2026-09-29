@@ -1,6 +1,7 @@
 import toast from 'react-hot-toast';
 import React, { useState, useEffect } from 'react';
 import { EmployerLayout } from '../../layouts/EmployerLayout';
+import { AdminLayout } from '../../layouts/AdminLayout';
 import { PlusCircle, Briefcase, X, MapPin, Building, DollarSign, Trash2 } from 'lucide-react';
 import { Button } from '../../components/Button';
 import api from '../../services/api';
@@ -9,6 +10,7 @@ import { ALL_CITIES } from '../../utils/constants';
 
 export const ManageJobs = () => {
   const { user } = useSelector((state: any) => state.auth);
+  const Layout = user?.role === 'admin' ? AdminLayout : EmployerLayout;
   const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -91,7 +93,7 @@ export const ManageJobs = () => {
   };
 
   return (
-    <EmployerLayout>
+    <Layout>
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold text-text">Manage Jobs</h1>
         <Button onClick={() => setShowModal(true)} className="flex items-center gap-2">
@@ -229,6 +231,6 @@ export const ManageJobs = () => {
           </div>
         </div>
       )}
-    </EmployerLayout>
+    </Layout>
   );
 };

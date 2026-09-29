@@ -1,11 +1,17 @@
 import React from 'react';
 import { EmployerLayout } from '../../layouts/EmployerLayout';
+import { AdminLayout } from '../../layouts/AdminLayout';
 import { CheckCircle2, CreditCard } from 'lucide-react';
 import { Button } from '../../components/Button';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../../store';
 
 export const EmployerBilling = () => {
+  const { user } = useSelector((state: RootState) => state.auth);
+  const Layout = user?.role === 'admin' ? AdminLayout : EmployerLayout;
+
   return (
-    <EmployerLayout>
+    <Layout>
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-text mb-2">Billing & Plans</h1>
         <p className="text-gray-500">Manage your subscription and billing details</p>
@@ -62,6 +68,6 @@ export const EmployerBilling = () => {
           </button>
         </div>
       </div>
-    </EmployerLayout>
+    </Layout>
   );
 };
