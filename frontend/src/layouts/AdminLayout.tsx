@@ -1,5 +1,5 @@
 import React from 'react';
-import { Building, Users, FileText, Settings, Briefcase, BarChart2, Database, ClipboardList, Award, Shield } from 'lucide-react';
+import { Building, Users, FileText, Settings, Briefcase, BarChart2, Database, ClipboardList, Award, Shield, Search } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../store';
