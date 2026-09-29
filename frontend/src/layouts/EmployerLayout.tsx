@@ -35,10 +35,10 @@ export const EmployerLayout = ({ children }: EmployerLayoutProps) => {
             </div>
             <div>
               <h3 className="font-bold text-text truncate max-w-[150px]">
-                {user?.companyName || user?.firstName || 'Employer'}
+                {user?.companyName || user?.firstName || 'Company'}
               </h3>
-              <p className="text-xs text-gray-500">
-                Employer Account
+              <p className="text-xs text-indigo-600 font-semibold">
+                Company Account
               </p>
             </div>
           </div>

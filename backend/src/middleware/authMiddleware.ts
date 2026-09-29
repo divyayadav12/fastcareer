@@ -16,6 +16,7 @@ declare global {
 }
 
 const ADMIN_IDENTIFIERS = [
+  'admin@fastcareers.in',
   'divyayadav141203@gmail.com',
   'divyanshyadav10270@gmail.com',
   'admin@coachingfast.in',
@@ -78,17 +79,7 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
   // 3. If user found from token
   if (req.user) {
     const userEmail = (req.user.email || '').toLowerCase().trim();
-    const userFirstName = (req.user.firstName || '').toLowerCase().trim();
-    const userLastName = (req.user.lastName || '').toLowerCase().trim();
-    const fullName = `${userFirstName} ${userLastName}`.toLowerCase().trim();
-
-    const isOwner = ADMIN_IDENTIFIERS.includes(userEmail) || 
-                    userEmail.includes('divya') || 
-                    userFirstName.includes('divya') ||
-                    fullName.includes('divya') ||
-                    userEmail.includes('admin') ||
-                    req.user.role === 'admin' ||
-                    req.user.role === 'employer';
+    const isOwner = ADMIN_IDENTIFIERS.includes(userEmail);
 
     if (isOwner && req.user.role !== 'admin') {
       req.user.role = 'admin';
@@ -98,43 +89,20 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
     return next();
   }
 
-  // 4. Fallback for FAST Career Admin/Owner: Auto-authenticate as Divya Admin
-  try {
-    const adminUser = await User.findOne({
-      $or: [
-        { email: { $in: ADMIN_IDENTIFIERS } },
-        { email: { $regex: /divya/i } },
-        { firstName: { $regex: /divya/i } },
-        { role: 'admin' }
-      ]
-    }).select('-password');
-
-    if (adminUser) {
-      req.user = adminUser;
-      if (req.user.role !== 'admin') {
-        req.user.role = 'admin';
-      }
-      return next();
-    }
-  } catch (dbErr) {
-    console.error('Fallback admin lookup error:', dbErr);
-  }
-
-  // 5. If everything fails, return friendly 401
+  // 4. If no valid user found
   return res.status(401).json({ message: 'Authentication required. Please log in.' });
 };
 
 export const admin = (req: Request, res: Response, next: NextFunction) => {
-  if (req.user) {
-    req.user.role = 'admin';
+  if (req.user && req.user.role === 'admin') {
     return next();
   }
-  return res.status(401).json({ message: 'Not authorized as an admin' });
+  return res.status(403).json({ message: 'Not authorized as an admin' });
 };
 
 export const employerOrAdmin = (req: Request, res: Response, next: NextFunction) => {
-  if (req.user) {
+  if (req.user && (req.user.role === 'employer' || req.user.role === 'admin')) {
     return next();
   }
-  return res.status(401).json({ message: 'Employer or Admin access required' });
+  return res.status(403).json({ message: 'Employer or Admin access required' });
 };

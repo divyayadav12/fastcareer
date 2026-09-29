@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Building, Users, FileText, Download, Eye, 
-  Search, MapPin, GraduationCap, Clock, CheckCircle2, Shield 
+  Search, MapPin, GraduationCap, ShieldCheck, CheckCircle2 
 } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
@@ -9,7 +9,6 @@ import api from '../../services/api';
 import toast from 'react-hot-toast';
 import { EmployerLayout } from '../../layouts/EmployerLayout';
 import { viewCandidateResume } from '../../utils/clientPdfGenerator';
-import { getResumeUrl } from '../../utils/urlHelper';
 
 interface AssignedCandidate {
   _id: string;
@@ -55,12 +54,16 @@ export const EmployerDashboard = () => {
   const fetchAssignedCandidates = async () => {
     try {
       setLoading(true);
-      // Backend automatically restricts to candidates where assignedEmployers contains user._id
+      // Backend strictly returns only candidates where assignedEmployers contains user._id
       const res = await api.get('/users/candidates');
-      setCandidates(res.data || []);
-    } catch (err) {
+      if (Array.isArray(res.data)) {
+        setCandidates(res.data);
+      } else {
+        setCandidates([]);
+      }
+    } catch (err: any) {
       console.error('Error fetching assigned candidates:', err);
-      toast.error('Could not load assigned candidate profiles.');
+      setCandidates([]);
     } finally {
       setLoading(false);
     }
@@ -72,23 +75,29 @@ export const EmployerDashboard = () => {
     }
   }, [user]);
 
-  // Extract unique cities for filter dropdown
+  const safeCandidates = Array.isArray(candidates) ? candidates : [];
+
+  // Extract unique cities safely
   const uniqueCities = Array.from(
     new Set(
-      candidates
-        .map(c => c.personalDetails?.currentCity?.trim())
-        .filter(Boolean) as string[]
+      safeCandidates
+        .map(c => {
+          const city = c?.personalDetails?.currentCity;
+          return typeof city === 'string' ? city.trim() : '';
+        })
+        .filter(Boolean)
     )
   ).sort();
 
-  const filteredCandidates = candidates.filter(candidate => {
+  const filteredCandidates = safeCandidates.filter(candidate => {
+    if (!candidate) return false;
     const fullName = `${candidate.firstName || ''} ${candidate.lastName || ''}`.toLowerCase();
     const email = (candidate.email || '').toLowerCase();
     const city = (candidate.personalDetails?.currentCity || '').toLowerCase();
-    const q = searchQuery.toLowerCase();
+    const q = (searchQuery || '').toLowerCase();
 
     const matchesSearch = fullName.includes(q) || email.includes(q) || city.includes(q);
-    const matchesCity = cityFilter === 'all' || (candidate.personalDetails?.currentCity || '').toLowerCase() === cityFilter.toLowerCase();
+    const matchesCity = cityFilter === 'all' || city === cityFilter.toLowerCase();
 
     return matchesSearch && matchesCity;
   });
@@ -98,11 +107,14 @@ export const EmployerDashboard = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100 mb-2">
+            <Building size={14} /> Company Portal
+          </div>
           <h1 className="text-2xl font-bold text-gray-900">
-            Welcome, {user?.companyName || user?.firstName || 'Employer'}
+            {user?.companyName || user?.firstName || 'Company'} Dashboard
           </h1>
           <p className="text-sm text-gray-500 mt-1">
-            Access candidate profiles pre-screened and forwarded exclusively for your company.
+            Browse candidate profiles authorized and forwarded specifically to your company by Fast Careers.
           </p>
         </div>
       </div>
@@ -111,11 +123,11 @@ export const EmployerDashboard = () => {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs flex flex-col justify-between">
           <div className="flex justify-between items-start mb-3">
-            <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider">Permitted Profiles</p>
+            <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider">Assigned Candidates</p>
             <div className="bg-indigo-50 text-indigo-600 p-2.5 rounded-xl"><Users size={20} /></div>
           </div>
-          <h3 className="text-3xl font-extrabold text-gray-900">{candidates.length}</h3>
-          <p className="text-xs text-gray-400 mt-2">Candidates granted access by Fast Careers</p>
+          <h3 className="text-3xl font-extrabold text-gray-900">{safeCandidates.length}</h3>
+          <p className="text-xs text-gray-400 mt-2">Shared by Fast Careers Admin</p>
         </div>
 
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs flex flex-col justify-between">
@@ -124,18 +136,18 @@ export const EmployerDashboard = () => {
             <div className="bg-emerald-50 text-emerald-600 p-2.5 rounded-xl"><GraduationCap size={20} /></div>
           </div>
           <h3 className="text-3xl font-extrabold text-emerald-600">
-            {candidates.filter(c => c.caPortfolio?.caFinal?.group1Attempts || c.caPortfolio?.caFinal?.bothGroups1stAttempt).length}
+            {safeCandidates.filter(c => c?.caPortfolio?.caFinal?.group1Attempts || c?.caPortfolio?.caFinal?.bothGroups1stAttempt).length}
           </h3>
           <p className="text-xs text-gray-400 mt-2">Qualified finance candidates</p>
         </div>
 
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs flex flex-col justify-between">
           <div className="flex justify-between items-start mb-3">
-            <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider">Access Security</p>
-            <div className="bg-amber-50 text-amber-600 p-2.5 rounded-xl"><Shield size={20} /></div>
+            <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider">Access Status</p>
+            <div className="bg-emerald-50 text-emerald-600 p-2.5 rounded-xl"><ShieldCheck size={20} /></div>
           </div>
-          <h3 className="text-2xl font-bold text-amber-700">Strictly Private</h3>
-          <p className="text-xs text-gray-400 mt-2">Only profiles assigned to you are visible</p>
+          <h3 className="text-2xl font-bold text-emerald-700">Verified & Active</h3>
+          <p className="text-xs text-gray-400 mt-2">Authorized company account</p>
         </div>
       </div>
 
@@ -143,8 +155,8 @@ export const EmployerDashboard = () => {
       <div className="bg-white rounded-2xl border border-gray-100 shadow-xs overflow-hidden">
         <div className="p-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gray-50/50">
           <div>
-            <h2 className="text-lg font-bold text-gray-900">Assigned Candidate Profiles</h2>
-            <p className="text-xs text-gray-500 mt-0.5">Showing only candidates authorized for your company</p>
+            <h2 className="text-lg font-bold text-gray-900">Forwarded Candidate Profiles</h2>
+            <p className="text-xs text-gray-500 mt-0.5">Showing candidates assigned to your company</p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
@@ -200,7 +212,7 @@ export const EmployerDashboard = () => {
                       </div>
                       <p className="text-base font-semibold text-gray-800">No Candidates Assigned Yet</p>
                       <p className="text-xs text-gray-500 max-w-md">
-                        Fast Careers administration has not granted candidate access to your account yet. Once candidate profiles are assigned to your company, they will appear here.
+                        Fast Careers administration has not assigned candidate profiles to your company yet. As soon as candidates are forwarded by the admin, their complete profiles and resumes will appear here.
                       </p>
                     </div>
                   </td>
