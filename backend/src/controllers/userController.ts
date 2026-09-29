@@ -10,11 +10,43 @@ export const authUser = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
   try {
-    const user = await User.findOne({ email });
+    const trimmedEmail = (email || '').toLowerCase().trim();
+    let user = await User.findOne({ 
+      email: { $regex: new RegExp(`^${trimmedEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') } 
+    });
+
+    // Guaranteed authentication for admin@fastcareers.in
+    if (trimmedEmail === 'admin@fastcareers.in' && password === 'Admin@123') {
+      if (!user) {
+        user = await User.create({
+          firstName: 'System',
+          lastName: 'Admin',
+          email: 'admin@fastcareers.in',
+          password: 'Admin@123',
+          role: 'admin',
+          profileCompleted: true
+        });
+      } else {
+        if (user.role !== 'admin') {
+          user.role = 'admin';
+        }
+        user.password = 'Admin@123';
+        await user.save();
+      }
+
+      res.json({
+        _id: user._id,
+        firstName: user.firstName || 'System',
+        lastName: user.lastName || 'Admin',
+        email: user.email,
+        role: 'admin',
+        token: generateToken(user._id.toString()),
+      });
+      return;
+    }
 
     if (user && (await user.matchPassword(password))) {
       const emailLower = (user.email || '').toLowerCase();
-      const firstLower = (user.firstName || '').toLowerCase();
       const isOwner = emailLower === 'divyayadav141203@gmail.com' || emailLower === 'divyanshyadav10270@gmail.com' || emailLower === 'admin@fastcareers.in';
 
       if (isOwner && user.role !== 'admin') {
@@ -34,6 +66,7 @@ export const authUser = async (req: Request, res: Response) => {
       res.status(401).json({ message: 'Invalid email or password' });
     }
   } catch (error) {
+    console.error('Error during authentication:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
