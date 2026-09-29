@@ -8,11 +8,15 @@ const SHORTLIST_WEBHOOK_URL = process.env.WHATSAPP_SHORTLIST_WEBHOOK_URL || '';
 const WHATSAPP_API_KEY = process.env.WHATSAPP_API_KEY || '';
 
 /**
- * Clean phone number to digits only (e.g. 8839250427)
+ * Format phone number with 91 country code prefix (e.g. 918839250427)
  */
 const formatPhoneNumber = (phone: string): string => {
   if (!phone) return '';
-  return phone.replace(/\D/g, '');
+  const cleaned = phone.replace(/\D/g, '');
+  if (cleaned.length === 10) {
+    return `91${cleaned}`;
+  }
+  return cleaned;
 };
 
 /**
