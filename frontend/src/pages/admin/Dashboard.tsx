@@ -3,8 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { AdminLayout } from '../../layouts/AdminLayout';
 import { 
   Users, Building2, Download, MapPin, GraduationCap, 
-  FileText, Search, PlusCircle, CheckSquare, Square, 
-  X, Check, Building, Mail, User, ShieldCheck, ChevronDown
+  FileText, Search, PlusCircle, X, Building, Mail, User
 } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
@@ -22,13 +21,6 @@ interface Candidate {
   email: string;
   phone?: string;
   resumeUrl?: string;
-  assignedEmployers?: Array<{
-    _id: string;
-    companyName?: string;
-    firstName?: string;
-    lastName?: string;
-    email: string;
-  }>;
   personalDetails?: {
     currentCity?: string;
     currentState?: string;
@@ -58,13 +50,7 @@ export const AdminDashboard = () => {
   const [employers, setEmployers] = useState<Employer[]>([]);
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(false);
-
-  // Filters & Selection
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCompanyFilter, setSelectedCompanyFilter] = useState('all');
-  const [selectedCandidateIds, setSelectedCandidateIds] = useState<string[]>([]);
-  const [assignTargetEmployerId, setAssignTargetEmployerId] = useState('');
-  const [assigning, setAssigning] = useState(false);
 
   // Company Modal State
   const [isCompanyModalOpen, setIsCompanyModalOpen] = useState(false);
@@ -93,11 +79,7 @@ export const AdminDashboard = () => {
   const fetchEmployers = async () => {
     try {
       const res = await api.get('/users/employers');
-      const empList = res.data || [];
-      setEmployers(empList);
-      if (empList.length > 0 && !assignTargetEmployerId) {
-        setAssignTargetEmployerId(empList[0]._id);
-      }
+      setEmployers(res.data || []);
     } catch (error) {
       console.error('Error fetching employers:', error);
     }
@@ -109,61 +91,6 @@ export const AdminDashboard = () => {
       fetchEmployers();
     }
   }, [user]);
-
-  // Selected registered employer object for 3 linked dropdowns
-  const selectedEmployer = employers.find(e => e._id === assignTargetEmployerId) || employers[0];
-
-  // Handle Candidate Selection
-  const toggleSelectCandidate = (id: string) => {
-    setSelectedCandidateIds(prev => 
-      prev.includes(id) ? prev.filter(cId => cId !== id) : [...prev, id]
-    );
-  };
-
-  const toggleSelectAll = () => {
-    if (selectedCandidateIds.length === filteredCandidates.length) {
-      setSelectedCandidateIds([]);
-    } else {
-      setSelectedCandidateIds(filteredCandidates.map(c => c._id));
-    }
-  };
-
-  // Grant or Remove Access
-  const handleAssignCandidates = async (action: 'assign' | 'unassign') => {
-    if (selectedCandidateIds.length === 0) {
-      toast.error('Please select at least one candidate using the checkboxes.');
-      return;
-    }
-    if (!assignTargetEmployerId) {
-      toast.error('Please select a registered company from the dropdown.');
-      return;
-    }
-
-    const targetCompany = employers.find(e => e._id === assignTargetEmployerId);
-    const companyTitle = targetCompany?.companyName || targetCompany?.firstName || 'selected company';
-
-    setAssigning(true);
-    try {
-      await api.put('/users/candidates/assign-company', {
-        candidateIds: selectedCandidateIds,
-        employerId: assignTargetEmployerId,
-        action,
-      });
-
-      toast.success(
-        action === 'assign'
-          ? `Granted ${selectedCandidateIds.length} candidate(s) access to ${companyTitle}!`
-          : `Removed access for ${selectedCandidateIds.length} candidate(s) from ${companyTitle}.`
-      );
-
-      setSelectedCandidateIds([]);
-      fetchCandidates();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to update candidate access.');
-    } finally {
-      setAssigning(false);
-    }
-  };
 
   // Create Company Handler (Database Registration)
   const handleCreateCompany = async (e: React.FormEvent) => {
@@ -201,23 +128,14 @@ export const AdminDashboard = () => {
     }
   };
 
-  // Filter candidates
+  // Filter candidates by search query
   const filteredCandidates = candidates.filter(candidate => {
     const fullName = `${candidate.firstName || ''} ${candidate.lastName || ''}`.toLowerCase();
     const email = (candidate.email || '').toLowerCase();
     const city = (candidate.personalDetails?.currentCity || '').toLowerCase();
     const q = searchQuery.toLowerCase();
 
-    const matchesSearch = fullName.includes(q) || email.includes(q) || city.includes(q);
-
-    let matchesCompany = true;
-    if (selectedCompanyFilter === 'unassigned') {
-      matchesCompany = !candidate.assignedEmployers || candidate.assignedEmployers.length === 0;
-    } else if (selectedCompanyFilter !== 'all') {
-      matchesCompany = candidate.assignedEmployers?.some(e => e._id === selectedCompanyFilter) || false;
-    }
-
-    return matchesSearch && matchesCompany;
+    return fullName.includes(q) || email.includes(q) || city.includes(q);
   });
 
   const handleBulkDownload = async () => {
@@ -239,7 +157,6 @@ export const AdminDashboard = () => {
         'Education': candidate.qualifications?.graduation?.collegeName 
                       ? `${candidate.qualifications.graduation.courseName || 'Graduation'} from ${candidate.qualifications.graduation.collegeName} (${candidate.qualifications.graduation.yearOfCompletion})` 
                       : 'Not provided',
-        'Permitted Companies': candidate.assignedEmployers?.map(e => e.companyName || e.firstName).join(', ') || 'Unassigned',
         'Resume Link': candidate.resumeUrl ? getResumeUrl(candidate.resumeUrl) : 'Not uploaded'
       }));
 
@@ -285,7 +202,7 @@ export const AdminDashboard = () => {
             <Users className="text-indigo-600" /> Candidates Database
           </h1>
           <p className="text-sm text-slate-500 mt-1">
-            Select candidates below and assign permission to registered companies.
+            Review registered candidates, search profiles, and export resume packages.
           </p>
         </div>
 
@@ -312,153 +229,21 @@ export const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* Grant Access Control Panel (3 Linked Dropdowns of Registered Companies) */}
-      <div className="bg-slate-900 text-white p-5 rounded-2xl shadow-md mb-6 border border-slate-800">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 pb-3 border-b border-slate-800">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-xs">
-              <Building size={18} />
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-white">Grant Permission to Registered Company</h3>
-              <p className="text-xs text-slate-400">Select a company registered in database to grant candidate access</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold px-2.5 py-1 bg-indigo-500/20 text-indigo-300 rounded-lg">
-              {selectedCandidateIds.length} Candidate(s) Selected
-            </span>
-          </div>
-        </div>
-
-        {/* 3 Linked Dropdowns of Registered Companies from Database */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-          {/* Dropdown 1: Company Name */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1">
-              <Building size={14} className="text-indigo-400" /> 1. Registered Company Name
-            </label>
-            <select
-              value={assignTargetEmployerId}
-              onChange={(e) => setAssignTargetEmployerId(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3.5 py-2.5 text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
-            >
-              {employers.length === 0 ? (
-                <option value="">No Companies Registered Yet</option>
-              ) : (
-                employers.map(emp => (
-                  <option key={emp._id} value={emp._id}>
-                    {emp.companyName || emp.firstName}
-                  </option>
-                ))
-              )}
-            </select>
-          </div>
-
-          {/* Dropdown 2: HR Representative Name */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1">
-              <User size={14} className="text-indigo-400" /> 2. HR Representative
-            </label>
-            <select
-              value={assignTargetEmployerId}
-              onChange={(e) => setAssignTargetEmployerId(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3.5 py-2.5 text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
-            >
-              {employers.length === 0 ? (
-                <option value="">No HR Registered</option>
-              ) : (
-                employers.map(emp => (
-                  <option key={emp._id} value={emp._id}>
-                    {emp.firstName} {emp.lastName || ''} ({emp.companyName || 'Company'})
-                  </option>
-                ))
-              )}
-            </select>
-          </div>
-
-          {/* Dropdown 3: Company Login Email */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1">
-              <Mail size={14} className="text-indigo-400" /> 3. Company Email
-            </label>
-            <select
-              value={assignTargetEmployerId}
-              onChange={(e) => setAssignTargetEmployerId(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3.5 py-2.5 text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
-            >
-              {employers.length === 0 ? (
-                <option value="">No Email Registered</option>
-              ) : (
-                employers.map(emp => (
-                  <option key={emp._id} value={emp._id}>
-                    {emp.email}
-                  </option>
-                ))
-              )}
-            </select>
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-800">
-          <div className="text-xs text-slate-400">
-            Selected Company: <span className="font-bold text-white">{selectedEmployer?.companyName || selectedEmployer?.firstName || 'None'}</span> ({selectedEmployer?.email || 'N/A'})
-          </div>
-
-          <div className="flex items-center gap-2.5">
-            <button
-              onClick={() => handleAssignCandidates('assign')}
-              disabled={assigning || selectedCandidateIds.length === 0}
-              className={`px-5 py-2.5 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 shadow-xs cursor-pointer ${
-                selectedCandidateIds.length === 0 ? 'bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-500'
-              }`}
-            >
-              <Check size={16} /> Grant Access ({selectedCandidateIds.length})
-            </button>
-
-            <button
-              onClick={() => handleAssignCandidates('unassign')}
-              disabled={assigning || selectedCandidateIds.length === 0}
-              className={`px-4 py-2.5 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer ${
-                selectedCandidateIds.length === 0 ? 'bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-rose-600/80 hover:bg-rose-600'
-              }`}
-            >
-              <X size={16} /> Revoke Access
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Filters Bar */}
+      {/* Search Filter Bar */}
       <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="relative w-full md:w-80">
+        <div className="relative w-full md:w-96">
           <Search className="absolute left-3 top-2.5 text-slate-400" size={16} />
           <input
             type="text"
-            placeholder="Search candidates..."
+            placeholder="Search candidates by name, email, or city..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9 pr-4 py-2 w-full border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
           />
         </div>
 
-        <div className="flex items-center gap-3 w-full md:w-auto">
-          <label className="text-xs font-semibold text-slate-500 shrink-0">Filter By Access:</label>
-          <select
-            value={selectedCompanyFilter}
-            onChange={(e) => setSelectedCompanyFilter(e.target.value)}
-            className="px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-slate-700 bg-white w-full md:w-64"
-          >
-            <option value="all">All Candidates ({candidates.length})</option>
-            <option value="unassigned">Unassigned Candidates</option>
-            {employers.map(emp => (
-              <option key={emp._id} value={emp._id}>
-                Permitted to: {emp.companyName || emp.firstName}
-              </option>
-            ))}
-          </select>
+        <div className="text-xs text-slate-500 font-medium">
+          Showing {filteredCandidates.length} of {candidates.length} Registered Candidates
         </div>
       </div>
 
@@ -468,128 +253,83 @@ export const AdminDashboard = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500">
-                <th className="px-4 py-4 w-12 text-center">
-                  <button onClick={toggleSelectAll} className="cursor-pointer text-slate-400 hover:text-slate-600">
-                    {selectedCandidateIds.length > 0 && selectedCandidateIds.length === filteredCandidates.length ? (
-                      <CheckSquare className="text-indigo-600" size={18} />
-                    ) : (
-                      <Square size={18} />
-                    )}
-                  </button>
-                </th>
-                <th className="px-4 py-4 font-semibold">Candidate</th>
-                <th className="px-4 py-4 font-semibold">Location</th>
-                <th className="px-4 py-4 font-semibold">Education</th>
-                <th className="px-4 py-4 font-semibold">Permitted Companies</th>
-                <th className="px-4 py-4 font-semibold text-right">Resume</th>
+                <th className="px-6 py-4 font-semibold">Candidate</th>
+                <th className="px-6 py-4 font-semibold">Location</th>
+                <th className="px-6 py-4 font-semibold">Education</th>
+                <th className="px-6 py-4 font-semibold">Registered On</th>
+                <th className="px-6 py-4 font-semibold text-right">Resume</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-sm">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
-                    Loading candidates...
+                  <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
+                    Loading candidate database...
                   </td>
                 </tr>
               ) : filteredCandidates.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-16 text-center text-slate-500">
-                    No candidates match the current filters.
+                  <td colSpan={5} className="px-6 py-16 text-center text-slate-500">
+                    No candidates found.
                   </td>
                 </tr>
               ) : (
-                filteredCandidates.map((candidate) => {
-                  const isSelected = selectedCandidateIds.includes(candidate._id);
-                  const assignedList = candidate.assignedEmployers || [];
-
-                  return (
-                    <tr 
-                      key={candidate._id} 
-                      className={`hover:bg-slate-50/70 transition-colors ${isSelected ? 'bg-indigo-50/40' : ''}`}
-                    >
-                      <td className="px-4 py-4 text-center">
-                        <button
-                          onClick={() => toggleSelectCandidate(candidate._id)}
-                          className="cursor-pointer text-slate-400 hover:text-slate-600"
-                        >
-                          {isSelected ? (
-                            <CheckSquare className="text-indigo-600" size={18} />
-                          ) : (
-                            <Square size={18} />
-                          )}
-                        </button>
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold uppercase shrink-0">
-                            {(candidate.firstName?.[0] || 'C')}{(candidate.lastName?.[0] || '')}
+                filteredCandidates.map((candidate) => (
+                  <tr key={candidate._id} className="hover:bg-slate-50/70 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold uppercase shrink-0">
+                          {(candidate.firstName?.[0] || 'C')}{(candidate.lastName?.[0] || '')}
+                        </div>
+                        <div>
+                          <div className="font-semibold text-slate-900">{candidate.firstName} {candidate.lastName}</div>
+                          <div className="text-xs text-slate-500">{candidate.email}</div>
+                          {candidate.phone && <div className="text-xs text-slate-400">{candidate.phone}</div>}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-slate-600 text-xs">
+                      {candidate.personalDetails?.currentCity ? (
+                        <div className="flex items-center gap-1">
+                          <MapPin size={14} className="text-slate-400" /> 
+                          {candidate.personalDetails.currentCity}, {candidate.personalDetails.currentState || ''}
+                        </div>
+                      ) : (
+                        <span className="text-slate-400 italic">Not provided</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-slate-600 text-xs">
+                      {candidate.qualifications?.graduation?.collegeName ? (
+                        <div>
+                          <div className="font-semibold text-slate-800 flex items-center gap-1">
+                            <GraduationCap size={14} className="text-indigo-500" /> 
+                            {candidate.qualifications.graduation.courseName || 'Graduation'}
                           </div>
-                          <div>
-                            <div className="font-semibold text-slate-900">{candidate.firstName} {candidate.lastName}</div>
-                            <div className="text-xs text-slate-500">{candidate.email}</div>
-                            {candidate.phone && <div className="text-xs text-slate-400">{candidate.phone}</div>}
+                          <div className="text-slate-500">
+                            {candidate.qualifications.graduation.collegeName} ({candidate.qualifications.graduation.yearOfCompletion})
                           </div>
                         </div>
-                      </td>
-                      <td className="px-4 py-4 text-slate-600 text-xs">
-                        {candidate.personalDetails?.currentCity ? (
-                          <div className="flex items-center gap-1">
-                            <MapPin size={14} className="text-slate-400" /> 
-                            {candidate.personalDetails.currentCity}, {candidate.personalDetails.currentState || ''}
-                          </div>
-                        ) : (
-                          <span className="text-slate-400 italic">Not provided</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-4 text-slate-600 text-xs">
-                        {candidate.qualifications?.graduation?.collegeName ? (
-                          <div>
-                            <div className="font-semibold text-slate-800 flex items-center gap-1">
-                              <GraduationCap size={14} className="text-indigo-500" /> 
-                              {candidate.qualifications.graduation.courseName || 'Graduation'}
-                            </div>
-                            <div className="text-slate-500">
-                              {candidate.qualifications.graduation.collegeName} ({candidate.qualifications.graduation.yearOfCompletion})
-                            </div>
-                          </div>
-                        ) : (
-                          <span className="text-slate-400 italic">Not provided</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-4">
-                        {assignedList.length === 0 ? (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-500">
-                            Unassigned
-                          </span>
-                        ) : (
-                          <div className="flex flex-wrap gap-1.5 max-w-xs">
-                            {assignedList.map((emp) => (
-                              <span
-                                key={emp._id}
-                                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200"
-                              >
-                                <Building size={12} />
-                                {emp.companyName || emp.firstName}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-4 py-4 text-right">
-                        {candidate.resumeUrl ? (
-                          <button 
-                            onClick={() => viewCandidateResume(candidate)} 
-                            className="inline-flex items-center gap-1 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
-                          >
-                            <FileText size={14} /> View CV
-                          </button>
-                        ) : (
-                          <span className="text-xs text-slate-400 italic">Not uploaded</span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })
+                      ) : (
+                        <span className="text-slate-400 italic">Not provided</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-xs text-slate-500">
+                      {new Date(candidate.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      {candidate.resumeUrl ? (
+                        <button 
+                          onClick={() => viewCandidateResume(candidate)} 
+                          className="inline-flex items-center gap-1 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                        >
+                          <FileText size={14} /> View CV
+                        </button>
+                      ) : (
+                        <span className="text-xs text-slate-400 italic">Not uploaded</span>
+                      )}
+                    </td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>
