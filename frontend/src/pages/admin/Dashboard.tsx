@@ -4,7 +4,7 @@ import { AdminLayout } from '../../layouts/AdminLayout';
 import { 
   Users, Building2, Download, MapPin, GraduationCap, 
   FileText, Search, PlusCircle, CheckSquare, Square, 
-  X, Check, Building, Mail, User, Lock, ChevronDown
+  X, Check, Building, Mail, User, ShieldCheck, ChevronDown
 } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
@@ -52,36 +52,6 @@ interface Employer {
   createdAt?: string;
 }
 
-const PREDEFINED_COMPANIES = [
-  'Tata Consultancy Services (TCS)',
-  'Hindustan Unilever Limited (HUL)',
-  'ITC Limited',
-  'Reliance Industries Limited',
-  'Deloitte India',
-  'Ernst & Young (EY)',
-  'KPMG India',
-  'PricewaterhouseCoopers (PwC)',
-  'ICICI Bank',
-  'HDFC Bank',
-  'Axis Bank',
-  'Wipro Limited',
-  'Infosys',
-  'Larsen & Toubro (L&T)',
-  'Aditya Birla Group',
-  'Bharti Airtel',
-  'Vedanta Limited',
-  'CK Birla Group',
-  'Mahindra & Mahindra',
-  'Godrej Group',
-  'Adani Group',
-  'Standard Chartered Bank',
-  'HSBC India',
-  'Grant Thornton',
-  'BDO India',
-  'RSM India',
-  'Other (Enter Custom Company Name)'
-];
-
 export const AdminDashboard = () => {
   const { user } = useSelector((state: RootState) => state.auth);
   const [candidates, setCandidates] = useState<Candidate[]>([]);
@@ -100,8 +70,7 @@ export const AdminDashboard = () => {
   const [isCompanyModalOpen, setIsCompanyModalOpen] = useState(false);
   const [activeModalTab, setActiveModalTab] = useState<'register' | 'list'>('register');
   const [companyForm, setCompanyForm] = useState({
-    companyName: PREDEFINED_COMPANIES[0],
-    customCompanyName: '',
+    companyName: '',
     hrName: '',
     email: '',
     password: 'Company@123',
@@ -124,9 +93,10 @@ export const AdminDashboard = () => {
   const fetchEmployers = async () => {
     try {
       const res = await api.get('/users/employers');
-      setEmployers(res.data || []);
-      if (res.data?.length > 0 && !assignTargetEmployerId) {
-        setAssignTargetEmployerId(res.data[0]._id);
+      const empList = res.data || [];
+      setEmployers(empList);
+      if (empList.length > 0 && !assignTargetEmployerId) {
+        setAssignTargetEmployerId(empList[0]._id);
       }
     } catch (error) {
       console.error('Error fetching employers:', error);
@@ -139,6 +109,9 @@ export const AdminDashboard = () => {
       fetchEmployers();
     }
   }, [user]);
+
+  // Selected registered employer object for 3 linked dropdowns
+  const selectedEmployer = employers.find(e => e._id === assignTargetEmployerId) || employers[0];
 
   // Handle Candidate Selection
   const toggleSelectCandidate = (id: string) => {
@@ -158,11 +131,11 @@ export const AdminDashboard = () => {
   // Grant or Remove Access
   const handleAssignCandidates = async (action: 'assign' | 'unassign') => {
     if (selectedCandidateIds.length === 0) {
-      toast.error('Please select at least one candidate.');
+      toast.error('Please select at least one candidate using the checkboxes.');
       return;
     }
     if (!assignTargetEmployerId) {
-      toast.error('Please select a company.');
+      toast.error('Please select a registered company from the dropdown.');
       return;
     }
 
@@ -179,12 +152,12 @@ export const AdminDashboard = () => {
 
       toast.success(
         action === 'assign'
-          ? `Successfully granted ${selectedCandidateIds.length} candidate(s) access to ${companyTitle}!`
-          : `Removed access to ${selectedCandidateIds.length} candidate(s) from ${companyTitle}.`
+          ? `Granted ${selectedCandidateIds.length} candidate(s) access to ${companyTitle}!`
+          : `Removed access for ${selectedCandidateIds.length} candidate(s) from ${companyTitle}.`
       );
 
       setSelectedCandidateIds([]);
-      fetchCandidates(); // Refresh list to update badges
+      fetchCandidates();
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to update candidate access.');
     } finally {
@@ -192,22 +165,19 @@ export const AdminDashboard = () => {
     }
   };
 
-  // Create Company Handler with Dropdown logic
+  // Create Company Handler (Database Registration)
   const handleCreateCompany = async (e: React.FormEvent) => {
     e.preventDefault();
-    const finalCompanyName = companyForm.companyName === 'Other (Enter Custom Company Name)' 
-      ? companyForm.customCompanyName 
-      : companyForm.companyName;
 
-    if (!finalCompanyName || !companyForm.hrName || !companyForm.email) {
-      toast.error('Please select/enter Company Name, HR Name, and Login Email.');
+    if (!companyForm.companyName || !companyForm.hrName || !companyForm.email) {
+      toast.error('Please fill in Company Name, HR Name, and Login Email.');
       return;
     }
 
     setCreatingCompany(true);
     try {
       await api.post('/users', {
-        companyName: finalCompanyName,
+        companyName: companyForm.companyName,
         firstName: companyForm.hrName,
         lastName: '',
         email: companyForm.email,
@@ -215,10 +185,9 @@ export const AdminDashboard = () => {
         role: 'employer',
       });
 
-      toast.success(`Company "${finalCompanyName}" registered successfully!`);
+      toast.success(`Company "${companyForm.companyName}" registered in Database!`);
       setCompanyForm({ 
-        companyName: PREDEFINED_COMPANIES[0],
-        customCompanyName: '',
+        companyName: '',
         hrName: '', 
         email: '', 
         password: 'Company@123' 
@@ -316,7 +285,7 @@ export const AdminDashboard = () => {
             <Users className="text-indigo-600" /> Candidates Database
           </h1>
           <p className="text-sm text-slate-500 mt-1">
-            Browse registered candidates and grant permission/access to specific companies.
+            Select candidates below and assign permission to registered companies.
           </p>
         </div>
 
@@ -328,7 +297,7 @@ export const AdminDashboard = () => {
             }}
             className="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-xs transition-colors cursor-pointer"
           >
-            <Building2 size={16} /> Register / Manage Companies
+            <Building2 size={16} /> Register New Company
           </button>
 
           <button 
@@ -343,13 +312,132 @@ export const AdminDashboard = () => {
         </div>
       </div>
 
+      {/* Grant Access Control Panel (3 Linked Dropdowns of Registered Companies) */}
+      <div className="bg-slate-900 text-white p-5 rounded-2xl shadow-md mb-6 border border-slate-800">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 pb-3 border-b border-slate-800">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-xs">
+              <Building size={18} />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-white">Grant Permission to Registered Company</h3>
+              <p className="text-xs text-slate-400">Select a company registered in database to grant candidate access</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold px-2.5 py-1 bg-indigo-500/20 text-indigo-300 rounded-lg">
+              {selectedCandidateIds.length} Candidate(s) Selected
+            </span>
+          </div>
+        </div>
+
+        {/* 3 Linked Dropdowns of Registered Companies from Database */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          {/* Dropdown 1: Company Name */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1">
+              <Building size={14} className="text-indigo-400" /> 1. Registered Company Name
+            </label>
+            <select
+              value={assignTargetEmployerId}
+              onChange={(e) => setAssignTargetEmployerId(e.target.value)}
+              className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3.5 py-2.5 text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
+            >
+              {employers.length === 0 ? (
+                <option value="">No Companies Registered Yet</option>
+              ) : (
+                employers.map(emp => (
+                  <option key={emp._id} value={emp._id}>
+                    {emp.companyName || emp.firstName}
+                  </option>
+                ))
+              )}
+            </select>
+          </div>
+
+          {/* Dropdown 2: HR Representative Name */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1">
+              <User size={14} className="text-indigo-400" /> 2. HR Representative
+            </label>
+            <select
+              value={assignTargetEmployerId}
+              onChange={(e) => setAssignTargetEmployerId(e.target.value)}
+              className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3.5 py-2.5 text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
+            >
+              {employers.length === 0 ? (
+                <option value="">No HR Registered</option>
+              ) : (
+                employers.map(emp => (
+                  <option key={emp._id} value={emp._id}>
+                    {emp.firstName} {emp.lastName || ''} ({emp.companyName || 'Company'})
+                  </option>
+                ))
+              )}
+            </select>
+          </div>
+
+          {/* Dropdown 3: Company Login Email */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1">
+              <Mail size={14} className="text-indigo-400" /> 3. Company Email
+            </label>
+            <select
+              value={assignTargetEmployerId}
+              onChange={(e) => setAssignTargetEmployerId(e.target.value)}
+              className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3.5 py-2.5 text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
+            >
+              {employers.length === 0 ? (
+                <option value="">No Email Registered</option>
+              ) : (
+                employers.map(emp => (
+                  <option key={emp._id} value={emp._id}>
+                    {emp.email}
+                  </option>
+                ))
+              )}
+            </select>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-800">
+          <div className="text-xs text-slate-400">
+            Selected Company: <span className="font-bold text-white">{selectedEmployer?.companyName || selectedEmployer?.firstName || 'None'}</span> ({selectedEmployer?.email || 'N/A'})
+          </div>
+
+          <div className="flex items-center gap-2.5">
+            <button
+              onClick={() => handleAssignCandidates('assign')}
+              disabled={assigning || selectedCandidateIds.length === 0}
+              className={`px-5 py-2.5 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 shadow-xs cursor-pointer ${
+                selectedCandidateIds.length === 0 ? 'bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-500'
+              }`}
+            >
+              <Check size={16} /> Grant Access ({selectedCandidateIds.length})
+            </button>
+
+            <button
+              onClick={() => handleAssignCandidates('unassign')}
+              disabled={assigning || selectedCandidateIds.length === 0}
+              className={`px-4 py-2.5 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer ${
+                selectedCandidateIds.length === 0 ? 'bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-rose-600/80 hover:bg-rose-600'
+              }`}
+            >
+              <X size={16} /> Revoke Access
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* Filters Bar */}
       <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="relative w-full md:w-80">
           <Search className="absolute left-3 top-2.5 text-slate-400" size={16} />
           <input
             type="text"
-            placeholder="Search by name, email, or city..."
+            placeholder="Search candidates..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9 pr-4 py-2 w-full border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
@@ -361,10 +449,10 @@ export const AdminDashboard = () => {
           <select
             value={selectedCompanyFilter}
             onChange={(e) => setSelectedCompanyFilter(e.target.value)}
-            className="px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-slate-700 bg-white w-full md:w-56"
+            className="px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-slate-700 bg-white w-full md:w-64"
           >
             <option value="all">All Candidates ({candidates.length})</option>
-            <option value="unassigned">Unassigned (Not Given to Any Company)</option>
+            <option value="unassigned">Unassigned Candidates</option>
             {employers.map(emp => (
               <option key={emp._id} value={emp._id}>
                 Permitted to: {emp.companyName || emp.firstName}
@@ -373,55 +461,6 @@ export const AdminDashboard = () => {
           </select>
         </div>
       </div>
-
-      {/* Bulk Assignment Bar (shows when candidates are selected) */}
-      {selectedCandidateIds.length > 0 && (
-        <div className="bg-indigo-900 text-white p-4 rounded-2xl shadow-lg mb-6 flex flex-col sm:flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2">
-          <div className="flex items-center gap-3">
-            <span className="bg-indigo-700 text-indigo-100 font-bold px-3 py-1 rounded-lg text-xs">
-              {selectedCandidateIds.length} Selected
-            </span>
-            <span className="text-sm font-medium">Assign access for selected candidates to company:</span>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
-            <select
-              value={assignTargetEmployerId}
-              onChange={(e) => setAssignTargetEmployerId(e.target.value)}
-              className="bg-indigo-800 text-white border border-indigo-700 rounded-xl px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-indigo-400 outline-none"
-            >
-              {employers.map(emp => (
-                <option key={emp._id} value={emp._id} className="text-slate-900">
-                  {emp.companyName || emp.firstName} ({emp.email})
-                </option>
-              ))}
-            </select>
-
-            <button
-              onClick={() => handleAssignCandidates('assign')}
-              disabled={assigning}
-              className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
-            >
-              <Check size={16} /> Grant Access
-            </button>
-
-            <button
-              onClick={() => handleAssignCandidates('unassign')}
-              disabled={assigning}
-              className="px-4 py-2 bg-rose-500/80 hover:bg-rose-600 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
-            >
-              <X size={16} /> Revoke
-            </button>
-
-            <button
-              onClick={() => setSelectedCandidateIds([])}
-              className="px-3 py-2 bg-indigo-800 hover:bg-indigo-700 text-indigo-200 text-xs font-medium rounded-xl transition-colors cursor-pointer"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Candidates Table */}
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
@@ -560,7 +599,7 @@ export const AdminDashboard = () => {
       {/* Register & Manage Companies Modal */}
       {isCompanyModalOpen && (
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-in fade-in">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-xl overflow-hidden border border-slate-100 flex flex-col max-h-[90vh]">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-100 flex flex-col max-h-[90vh]">
             {/* Modal Header */}
             <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
               <div className="flex items-center gap-3">
@@ -568,8 +607,8 @@ export const AdminDashboard = () => {
                   <Building2 size={20} />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-slate-900">Manage Companies & Access</h2>
-                  <p className="text-xs text-slate-500">Create company login credentials and view registered employers</p>
+                  <h2 className="text-lg font-bold text-slate-900">Register New Company</h2>
+                  <p className="text-xs text-slate-500">Create company credentials to store in database</p>
                 </div>
               </div>
               <button 
@@ -590,7 +629,7 @@ export const AdminDashboard = () => {
                     : 'border-transparent text-slate-400 hover:text-slate-600'
                 }`}
               >
-                <PlusCircle size={16} /> Register New Company
+                <PlusCircle size={16} /> Register Company
               </button>
               <button
                 onClick={() => setActiveModalTab('list')}
@@ -600,7 +639,7 @@ export const AdminDashboard = () => {
                     : 'border-transparent text-slate-400 hover:text-slate-600'
                 }`}
               >
-                <Building size={16} /> Registered Companies ({employers.length})
+                <Building size={16} /> Registered ({employers.length})
               </button>
             </div>
 
@@ -608,46 +647,28 @@ export const AdminDashboard = () => {
             <div className="p-6 overflow-y-auto flex-1">
               {activeModalTab === 'register' ? (
                 <form onSubmit={handleCreateCompany} className="space-y-4">
-                  {/* Field 1: Company Name Dropdown */}
+                  {/* Field 1: Company Name */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                      1. Select Company Name *
+                      Company Name *
                     </label>
                     <div className="relative">
-                      <select
-                        value={companyForm.companyName}
-                        onChange={(e) => setCompanyForm({ ...companyForm, companyName: e.target.value })}
-                        className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white text-slate-800 font-medium appearance-none pr-10"
-                      >
-                        {PREDEFINED_COMPANIES.map((c, i) => (
-                          <option key={i} value={c}>{c}</option>
-                        ))}
-                      </select>
-                      <ChevronDown className="absolute right-3.5 top-3 text-slate-400 pointer-events-none" size={16} />
-                    </div>
-                  </div>
-
-                  {/* If "Other" selected, show Custom Company Name Input */}
-                  {companyForm.companyName === 'Other (Enter Custom Company Name)' && (
-                    <div className="animate-in fade-in slide-in-from-top-1">
-                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                        Enter Custom Company Name *
-                      </label>
+                      <Building className="absolute left-3 top-3 text-slate-400" size={16} />
                       <input
                         type="text"
                         required
-                        placeholder="e.g. My Custom Corporate Pvt Ltd"
-                        value={companyForm.customCompanyName}
-                        onChange={(e) => setCompanyForm({ ...companyForm, customCompanyName: e.target.value })}
-                        className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                        placeholder="e.g. Tata Consultancy Services"
+                        value={companyForm.companyName}
+                        onChange={(e) => setCompanyForm({ ...companyForm, companyName: e.target.value })}
+                        className="pl-9 w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
                       />
                     </div>
-                  )}
+                  </div>
 
                   {/* Field 2: HR Name */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                      2. HR Representative Name *
+                      HR Representative Name *
                     </label>
                     <div className="relative">
                       <User className="absolute left-3 top-3 text-slate-400" size={16} />
@@ -665,14 +686,14 @@ export const AdminDashboard = () => {
                   {/* Field 3: Login Email */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                      3. Login Email Address *
+                      Login Email Address *
                     </label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-3 text-slate-400" size={16} />
                       <input
                         type="email"
                         required
-                        placeholder="e.g. hr@company.com"
+                        placeholder="e.g. hr@tcs.com"
                         value={companyForm.email}
                         onChange={(e) => setCompanyForm({ ...companyForm, email: e.target.value })}
                         className="pl-9 w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
@@ -680,7 +701,7 @@ export const AdminDashboard = () => {
                     </div>
                   </div>
 
-                  {/* Optional Password Notice */}
+                  {/* Default Password Notice */}
                   <div className="bg-indigo-50/70 p-3 rounded-xl border border-indigo-100 flex items-center justify-between text-xs text-indigo-800">
                     <span>Default Password: <strong>Company@123</strong></span>
                     <span className="text-indigo-500">Auto-filled</span>
@@ -699,7 +720,7 @@ export const AdminDashboard = () => {
                       disabled={creatingCompany}
                       className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors flex items-center gap-2 cursor-pointer shadow-xs"
                     >
-                      {creatingCompany ? 'Registering...' : 'Register Company'}
+                      {creatingCompany ? 'Saving to Database...' : 'Register Company'}
                     </button>
                   </div>
                 </form>
@@ -707,7 +728,7 @@ export const AdminDashboard = () => {
                 <div className="space-y-3">
                   {employers.length === 0 ? (
                     <div className="py-12 text-center text-slate-400 text-sm">
-                      No companies registered yet. Switch to the Register tab to create one.
+                      No companies registered in database yet.
                     </div>
                   ) : (
                     <div className="overflow-x-auto">
@@ -715,32 +736,20 @@ export const AdminDashboard = () => {
                         <thead>
                           <tr className="border-b border-slate-100 text-xs text-slate-400 uppercase">
                             <th className="py-2.5">Company Name</th>
-                            <th className="py-2.5">HR Representative</th>
-                            <th className="py-2.5">Login Email</th>
-                            <th className="py-2.5 text-right">Permitted Candidates</th>
+                            <th className="py-2.5">HR Name</th>
+                            <th className="py-2.5">Email</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
-                          {employers.map(emp => {
-                            const candidateCount = candidates.filter(c => 
-                              c.assignedEmployers?.some(e => e._id === emp._id)
-                            ).length;
-
-                            return (
-                              <tr key={emp._id} className="hover:bg-slate-50/50">
-                                <td className="py-3 font-semibold text-slate-900">
-                                  {emp.companyName || 'Not Set'}
-                                </td>
-                                <td className="py-3 text-slate-600">{emp.firstName} {emp.lastName || ''}</td>
-                                <td className="py-3 text-slate-500 font-mono text-xs">{emp.email}</td>
-                                <td className="py-3 text-right">
-                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700">
-                                    {candidateCount} Assigned
-                                  </span>
-                                </td>
-                              </tr>
-                            );
-                          })}
+                          {employers.map(emp => (
+                            <tr key={emp._id} className="hover:bg-slate-50/50">
+                              <td className="py-3 font-semibold text-slate-900">
+                                {emp.companyName || 'Not Set'}
+                              </td>
+                              <td className="py-3 text-slate-600">{emp.firstName} {emp.lastName || ''}</td>
+                              <td className="py-3 text-slate-500 font-mono text-xs">{emp.email}</td>
+                            </tr>
+                          ))}
                         </tbody>
                       </table>
                     </div>
