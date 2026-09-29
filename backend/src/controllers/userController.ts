@@ -71,7 +71,7 @@ export const authUser = async (req: Request, res: Response) => {
   }
 };
 
-import { sendRegistrationWhatsApp } from '../utils/whatsappService';
+import { sendRegistrationWhatsApp, sendCandidateSelectedWhatsApp } from '../utils/whatsappService';
 
 // @desc    Register a new user
 // @route   POST /api/users
@@ -317,6 +317,22 @@ export const assignCandidatesToCompany = async (req: Request, res: Response) => 
         { _id: { $in: candidateIds }, role: 'candidate' },
         { $addToSet: { assignedEmployers: employerId } }
       );
+
+      // Trigger TeleObi WhatsApp notification for assigned candidates
+      try {
+        const companyUser = await User.findById(employerId);
+        const companyName = companyUser?.companyName || companyUser?.firstName || 'Partner Company';
+        
+        const assignedCandidates = await User.find({ _id: { $in: candidateIds }, role: 'candidate' });
+        for (const candidate of assignedCandidates) {
+          const phone = candidate.phone || candidate.personalDetails?.phone;
+          if (phone) {
+            sendCandidateSelectedWhatsApp(phone, `${candidate.firstName} ${candidate.lastName || ''}`.trim(), companyName);
+          }
+        }
+      } catch (wsErr) {
+        console.error('Error triggering candidate selection WhatsApp webhook:', wsErr);
+      }
     }
 
     res.json({ message: `Successfully ${action === 'unassign' ? 'unassigned' : 'assigned'} candidates.` });

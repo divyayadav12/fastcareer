@@ -1,25 +1,20 @@
 import axios from 'axios';
 
-// These will be configured in the .env file once Sir provides the details
-const REGISTRATION_WEBHOOK_URL = process.env.WHATSAPP_REGISTRATION_WEBHOOK_URL || '';
-const SHORTLIST_WEBHOOK_URL = process.env.WHATSAPP_SHORTLIST_WEBHOOK_URL || '';
+const CANDIDATE_SELECTED_WEBHOOK_URL = process.env.WHATSAPP_SHORTLIST_WEBHOOK_URL || 'https://dash.teleobi.com/webhook/whatsapp-workflow/61602.439252.449757.1790665591';
+const REGISTRATION_WEBHOOK_URL = process.env.WHATSAPP_REGISTRATION_WEBHOOK_URL || CANDIDATE_SELECTED_WEBHOOK_URL;
 const WHATSAPP_API_KEY = process.env.WHATSAPP_API_KEY || '';
 
 /**
  * Sends a welcome WhatsApp message upon successful registration
- * @param phone Candidate's phone number
- * @param name Candidate's name
  */
 export const sendRegistrationWhatsApp = async (phone: string, name: string) => {
-  if (!REGISTRATION_WEBHOOK_URL) {
-    console.log(`[WhatsApp Sync] Registration Webhook URL missing. Would have sent message to ${phone}`);
-    return;
-  }
+  const url = REGISTRATION_WEBHOOK_URL;
+  if (!url) return;
 
   try {
-    // Note: The payload format might change based on Sir's sample JSON
     const payload = {
       phone: phone,
+      name: name,
       parameters: {
         One: name
       }
@@ -28,49 +23,48 @@ export const sendRegistrationWhatsApp = async (phone: string, name: string) => {
     const config = {
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': WHATSAPP_API_KEY ? `Bearer ${WHATSAPP_API_KEY}` : ''
+        ...(WHATSAPP_API_KEY ? { 'Authorization': `Bearer ${WHATSAPP_API_KEY}` } : {})
       }
     };
 
-    await axios.post(REGISTRATION_WEBHOOK_URL, payload, config);
-    console.log(`[WhatsApp] Registration message sent successfully to ${phone}`);
+    await axios.post(url, payload, config);
+    console.log(`[WhatsApp] Registration message sent to ${phone}`);
   } catch (error: any) {
-    console.error(`[WhatsApp Error] Failed to send registration message to ${phone}:`, error.message);
+    console.error(`[WhatsApp Error] Registration message to ${phone}:`, error.message);
   }
 };
 
 /**
- * Sends a congratulatory WhatsApp message upon shortlisting
- * @param phone Candidate's phone number
- * @param name Candidate's name
- * @param role The job role they were shortlisted for
+ * Sends WhatsApp notification when a candidate is selected / shortlisted / granted access to a company
  */
-export const sendShortlistedWhatsApp = async (phone: string, name: string, role: string) => {
-  if (!SHORTLIST_WEBHOOK_URL) {
-    console.log(`[WhatsApp Sync] Shortlist Webhook URL missing. Would have sent message to ${phone}`);
-    return;
-  }
+export const sendCandidateSelectedWhatsApp = async (phone: string, name: string, companyOrRole: string) => {
+  const url = CANDIDATE_SELECTED_WEBHOOK_URL;
+  if (!url) return;
 
   try {
-    // Note: The payload format might change based on Sir's sample JSON
     const payload = {
       phone: phone,
+      name: name,
+      company: companyOrRole,
+      role: companyOrRole,
       parameters: {
         One: name,
-        Two: role
+        Two: companyOrRole
       }
     };
 
     const config = {
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': WHATSAPP_API_KEY ? `Bearer ${WHATSAPP_API_KEY}` : ''
+        ...(WHATSAPP_API_KEY ? { 'Authorization': `Bearer ${WHATSAPP_API_KEY}` } : {})
       }
     };
 
-    await axios.post(SHORTLIST_WEBHOOK_URL, payload, config);
-    console.log(`[WhatsApp] Shortlist message sent successfully to ${phone}`);
+    await axios.post(url, payload, config);
+    console.log(`[WhatsApp] Candidate Selected notification sent to ${phone} for ${companyOrRole}`);
   } catch (error: any) {
-    console.error(`[WhatsApp Error] Failed to send shortlist message to ${phone}:`, error.message);
+    console.error(`[WhatsApp Error] Selection message to ${phone}:`, error.message);
   }
 };
+
+export const sendShortlistedWhatsApp = sendCandidateSelectedWhatsApp;
