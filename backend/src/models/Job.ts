@@ -12,6 +12,8 @@ export interface IJob extends Document {
   responsibilities: string[];
   isHot: boolean;
   postedBy?: mongoose.Types.ObjectId; // Reference to Employer model later
+  targetEmployers?: mongoose.Types.ObjectId[]; // Employers/Companies who receive access to this job & applicants
+  sharedHrEmails?: string[]; // Extra HR emails shared
   createdAt: Date;
   updatedAt: Date;
 }
@@ -29,6 +31,8 @@ const JobSchema: Schema = new Schema(
     responsibilities: [{ type: String }],
     isHot: { type: Boolean, default: false },
     postedBy: { type: Schema.Types.ObjectId, ref: 'User' }, 
+    targetEmployers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    sharedHrEmails: [{ type: String }],
   },
   { timestamps: true }
 );

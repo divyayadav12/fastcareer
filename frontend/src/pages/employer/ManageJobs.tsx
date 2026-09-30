@@ -2,7 +2,7 @@ import toast from 'react-hot-toast';
 import React, { useState, useEffect } from 'react';
 import { EmployerLayout } from '../../layouts/EmployerLayout';
 import { AdminLayout } from '../../layouts/AdminLayout';
-import { PlusCircle, Briefcase, X, MapPin, Building, DollarSign, Trash2 } from 'lucide-react';
+import { PlusCircle, Briefcase, X, MapPin, Building, DollarSign, Trash2, Search, Check, Users } from 'lucide-react';
 import { Button } from '../../components/Button';
 import api from '../../services/api';
 import { useSelector } from 'react-redux';
@@ -12,6 +12,9 @@ export const ManageJobs = () => {
   const { user } = useSelector((state: any) => state.auth);
   const Layout = user?.role === 'admin' ? AdminLayout : EmployerLayout;
   const [jobs, setJobs] = useState<any[]>([]);
+  const [employers, setEmployers] = useState<any[]>([]);
+  const [selectedEmployerIds, setSelectedEmployerIds] = useState<string[]>([]);
+  const [employerSearchTerm, setEmployerSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
@@ -27,6 +30,15 @@ export const ManageJobs = () => {
     responsibilities: ''
   });
 
+  const fetchEmployers = async () => {
+    try {
+      const res = await api.get('/users/employers');
+      setEmployers(res.data || []);
+    } catch (err) {
+      console.error('Error fetching employers:', err);
+    }
+  };
+
   const fetchJobs = async () => {
     try {
       const { data } = await api.get('/jobs/employer');
@@ -41,8 +53,33 @@ export const ManageJobs = () => {
   useEffect(() => {
     if (user?.token) {
       fetchJobs();
+      if (user?.role === 'admin') {
+        fetchEmployers();
+      }
     }
   }, [user]);
+
+  const toggleEmployerSelection = (empId: string) => {
+    setSelectedEmployerIds(prev => 
+      prev.includes(empId) ? prev.filter(id => id !== empId) : [...prev, empId]
+    );
+  };
+
+  const selectAllEmployers = () => {
+    setSelectedEmployerIds(employers.map(e => e._id));
+  };
+
+  const clearAllEmployers = () => {
+    setSelectedEmployerIds([]);
+  };
+
+  const filteredEmployers = employers.filter(emp => {
+    const q = employerSearchTerm.toLowerCase();
+    const company = (emp.companyName || '').toLowerCase();
+    const name = `${emp.firstName || ''} ${emp.lastName || ''}`.toLowerCase();
+    const email = (emp.email || '').toLowerCase();
+    return company.includes(q) || name.includes(q) || email.includes(q);
+  });
 
   const handleDeleteJob = async (jobId: string, jobTitle: string) => {
     if (!window.confirm(`Are you sure you want to delete "${jobTitle}"? All associated applications will also be removed.`)) {
@@ -67,13 +104,16 @@ export const ManageJobs = () => {
     try {
       const payload = {
         ...formData,
+        targetEmployers: selectedEmployerIds,
         requirements: formData.requirements.split('\n').filter(r => r.trim()),
         responsibilities: formData.responsibilities.split('\n').filter(r => r.trim())
       };
       
       await api.post('/jobs', payload);
+      toast.success('Job posted successfully and shared with selected companies!');
       
       setShowModal(false);
+      setSelectedEmployerIds([]);
       setFormData({
         title: '',
         company: user?.companyName || '',
@@ -123,6 +163,16 @@ export const ManageJobs = () => {
                   <span className="flex items-center gap-1"><MapPin size={14}/> {job.location}</span>
                   <span className="flex items-center gap-1"><DollarSign size={14}/> {job.salaryRange || 'Not Disclosed'}</span>
                 </div>
+                {job.targetEmployers && job.targetEmployers.length > 0 && (
+                  <div className="mt-2.5 flex flex-wrap items-center gap-1.5 text-xs">
+                    <span className="font-semibold text-slate-500">Shared with HR Portal:</span>
+                    {job.targetEmployers.map((emp: any) => (
+                      <span key={emp._id || emp} className="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-md border border-indigo-100 font-medium">
+                        🏢 {emp.companyName || `${emp.firstName || ''} ${emp.lastName || ''}`} ({emp.email || 'HR Email'})
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
               <div className="flex items-center gap-3 self-end sm:self-center">
                 <div className="flex flex-col items-end gap-1">
@@ -207,6 +257,112 @@ export const ManageJobs = () => {
                     </select>
                   </div>
                 </div>
+
+                {/* SHARE JOB & APPLICANTS WITH REGISTERED COMPANIES / HRs (MULTI-SELECT) */}
+                {user?.role === 'admin' && (
+                  <div className="bg-slate-50 p-4.5 rounded-xl border border-slate-200 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <label className="block text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                          <Building size={16} className="text-indigo-600" /> Share Job & Applicants with Companies / HR Emails (Multi-Select)
+                        </label>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          Select 1 or multiple companies/HRs. Job details and candidates who apply will automatically be shared with their HR portal & emails.
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={selectAllEmployers}
+                          className="text-xs text-indigo-600 font-semibold hover:underline cursor-pointer"
+                        >
+                          Select All
+                        </button>
+                        <span className="text-slate-300">|</span>
+                        <button
+                          type="button"
+                          onClick={clearAllEmployers}
+                          className="text-xs text-rose-600 font-semibold hover:underline cursor-pointer"
+                        >
+                          Clear All
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Filter Input */}
+                    <div className="relative">
+                      <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <input
+                        type="text"
+                        placeholder="Filter registered companies by company name, HR name, or HR email..."
+                        value={employerSearchTerm}
+                        onChange={e => setEmployerSearchTerm(e.target.value)}
+                        className="w-full pl-9 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500/20 bg-white"
+                      />
+                    </div>
+
+                    {/* Selected Badges */}
+                    {selectedEmployerIds.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 pt-1">
+                        {selectedEmployerIds.map(empId => {
+                          const emp = employers.find(e => e._id === empId);
+                          if (!emp) return null;
+                          return (
+                            <span
+                              key={empId}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-100 text-indigo-800 rounded-lg text-xs font-medium border border-indigo-200"
+                            >
+                              🏢 {emp.companyName || `${emp.firstName} ${emp.lastName || ''}`} ({emp.email})
+                              <button
+                                type="button"
+                                onClick={() => toggleEmployerSelection(empId)}
+                                className="hover:text-indigo-950 font-bold ml-1 cursor-pointer"
+                              >
+                                <X size={12} />
+                              </button>
+                            </span>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* Checkable List */}
+                    <div className="max-h-40 overflow-y-auto space-y-1 bg-white p-2 rounded-lg border border-slate-200">
+                      {filteredEmployers.length === 0 ? (
+                        <p className="text-xs text-slate-400 text-center py-3">No matching registered companies found.</p>
+                      ) : (
+                        filteredEmployers.map(emp => {
+                          const isSelected = selectedEmployerIds.includes(emp._id);
+                          return (
+                            <div
+                              key={emp._id}
+                              onClick={() => toggleEmployerSelection(emp._id)}
+                              className={`flex items-center justify-between p-2 rounded-lg border text-xs cursor-pointer transition-colors ${
+                                isSelected 
+                                  ? 'bg-indigo-50/80 border-indigo-300 text-indigo-900 font-semibold' 
+                                  : 'bg-white border-slate-100 hover:bg-slate-50 text-slate-700'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2 overflow-hidden">
+                                <input
+                                  type="checkbox"
+                                  checked={isSelected}
+                                  onChange={() => {}} // Handled by parent container click
+                                  className="rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                                />
+                                <span className="truncate">
+                                  <strong className="text-slate-900">{emp.companyName || `${emp.firstName} ${emp.lastName || ''}`}</strong>
+                                  <span className="text-slate-500 text-[11px] ml-1.5">({emp.firstName} — {emp.email})</span>
+                                </span>
+                              </div>
+                              {isSelected && <span className="text-[10px] bg-indigo-600 text-white font-bold px-1.5 py-0.5 rounded shrink-0">Selected</span>}
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Job Description *</label>

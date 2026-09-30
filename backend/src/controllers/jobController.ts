@@ -17,14 +17,32 @@ export const getJobs = async (req: Request, res: Response) => {
   }
 };
 
-// @desc    Get logged in employer's jobs
+// @desc    Get logged in employer's jobs (or all jobs for admin)
 // @route   GET /api/jobs/employer
-// @access  Private/Employer
+// @access  Private/Employer/Admin
 export const getEmployerJobs = async (req: any, res: Response) => {
   try {
-    const jobs = await Job.find({ postedBy: req.user._id }).sort({ createdAt: -1 });
+    const user = req.user;
+    let query: any = {};
+    
+    if (user?.role === 'admin') {
+      query = {};
+    } else {
+      query = {
+        $or: [
+          { postedBy: user._id },
+          { targetEmployers: user._id },
+          { sharedHrEmails: user.email }
+        ]
+      };
+    }
+
+    const jobs = await Job.find(query)
+      .populate('targetEmployers', 'companyName firstName lastName email')
+      .sort({ createdAt: -1 });
     res.json(jobs);
   } catch (error) {
+    console.error('Error fetching employer jobs:', error);
     res.status(500).json({ message: 'Server Error' });
   }
 };
@@ -34,7 +52,7 @@ export const getEmployerJobs = async (req: any, res: Response) => {
 // @access  Public
 export const getJobById = async (req: Request, res: Response) => {
   try {
-    const job = await Job.findById(req.params.id);
+    const job = await Job.findById(req.params.id).populate('targetEmployers', 'companyName firstName lastName email');
     if (job) {
       res.json(job);
     } else {
@@ -50,7 +68,7 @@ export const getJobById = async (req: Request, res: Response) => {
 // @access  Private/Employer
 export const createJob = async (req: any, res: Response) => {
   try {
-    const { location } = req.body;
+    const { location, targetEmployers, sharedHrEmails } = req.body;
     
     if (location && !isValidCity(location)) {
       res.status(400).json({ message: 'Invalid location. Please select a valid city from the list.' });
@@ -59,12 +77,16 @@ export const createJob = async (req: any, res: Response) => {
 
     const job = new Job({
       ...req.body,
+      targetEmployers: targetEmployers || [],
+      sharedHrEmails: sharedHrEmails || [],
       postedBy: req.user._id 
     });
 
     const createdJob = await job.save();
-    res.status(201).json(createdJob);
+    const populatedJob = await Job.findById(createdJob._id).populate('targetEmployers', 'companyName firstName lastName email');
+    res.status(201).json(populatedJob || createdJob);
   } catch (error) {
+    console.error('Error creating job:', error);
     res.status(400).json({ message: 'Invalid job data' });
   }
 };

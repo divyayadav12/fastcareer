@@ -39,13 +39,24 @@ export const applyForJob = async (req: Request, res: Response) => {
       return;
     }
 
+    // Auto-share if job has target employers
+    const hasTargetEmployers = Boolean(job.targetEmployers && job.targetEmployers.length > 0);
+
     const application = await Application.create({
       job: new mongoose.Types.ObjectId(jobId as string),
       candidate: new mongoose.Types.ObjectId(candidateId as string),
       resumeUrl,
       coverLetter: coverLetter || '',
-      status: 'applied'
+      status: 'applied',
+      sharedWithEmployer: hasTargetEmployers ? true : false,
     });
+
+    // Auto-assign candidate to target employers of this job so target HRs see applicant details
+    if (hasTargetEmployers && job.targetEmployers) {
+      await User.findByIdAndUpdate(candidateId, {
+        $addToSet: { assignedEmployers: { $each: job.targetEmployers } }
+      });
+    }
 
     // If a new resume was uploaded, update the candidate's profile
     if (req.file) {
