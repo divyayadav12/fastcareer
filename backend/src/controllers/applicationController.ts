@@ -39,8 +39,11 @@ export const applyForJob = async (req: Request, res: Response) => {
       return;
     }
 
-    // Auto-share if job has target employers
-    const hasTargetEmployers = Boolean(job.targetEmployers && job.targetEmployers.length > 0);
+    // Auto-share if job has target employers or shared HR emails
+    const hasTargetEmployers = Boolean(
+      (job.targetEmployers && job.targetEmployers.length > 0) ||
+      (job.sharedHrEmails && job.sharedHrEmails.length > 0)
+    );
 
     const application = await Application.create({
       job: new mongoose.Types.ObjectId(jobId as string),
@@ -52,10 +55,22 @@ export const applyForJob = async (req: Request, res: Response) => {
     });
 
     // Auto-assign candidate to target employers of this job so target HRs see applicant details
-    if (hasTargetEmployers && job.targetEmployers) {
+    if (job.targetEmployers && job.targetEmployers.length > 0) {
       await User.findByIdAndUpdate(candidateId, {
         $addToSet: { assignedEmployers: { $each: job.targetEmployers } }
       });
+    }
+
+    if (job.sharedHrEmails && job.sharedHrEmails.length > 0) {
+      const matchingEmployers = await User.find({
+        email: { $in: job.sharedHrEmails.map((e: string) => new RegExp(`^${e.trim()}$`, 'i')) }
+      }).select('_id');
+      if (matchingEmployers.length > 0) {
+        const empIds = matchingEmployers.map(e => e._id);
+        await User.findByIdAndUpdate(candidateId, {
+          $addToSet: { assignedEmployers: { $each: empIds } }
+        });
+      }
     }
 
     // If a new resume was uploaded, update the candidate's profile
@@ -167,17 +182,31 @@ export const getEmployerApplications = async (req: Request, res: Response) => {
       // Admin has full platform visibility
       query = {};
     } else {
-      // Employer: Check if employer posted specific jobs
-      const myJobs = await Job.find({ postedBy: user?._id });
+      // Employer: Check if employer posted specific jobs or was targeted in job creation
+      const myJobs = await Job.find({
+        $or: [
+          { postedBy: user?._id },
+          { targetEmployers: user?._id },
+          { sharedHrEmails: user?.email }
+        ]
+      });
       const myJobIds = myJobs.map(j => j._id);
 
+      const assignedCandidates = await User.find({ role: 'candidate', assignedEmployers: user?._id }).select('_id');
+      const candidateIds = assignedCandidates.map(c => c._id);
+
+      const orConditions: any[] = [];
       if (myJobIds.length > 0) {
-        query = { job: { $in: myJobIds }, sharedWithEmployer: true };
+        orConditions.push({ job: { $in: myJobIds }, sharedWithEmployer: true });
+      }
+      if (candidateIds.length > 0) {
+        orConditions.push({ candidate: { $in: candidateIds }, sharedWithEmployer: true });
+      }
+
+      if (orConditions.length > 0) {
+        query = { $or: orConditions };
       } else {
-        // Show ONLY applications of candidates who are explicitly assigned to this employer by Admin
-        const assignedCandidates = await User.find({ role: 'candidate', assignedEmployers: user?._id }).select('_id');
-        const candidateIds = assignedCandidates.map(c => c._id);
-        query = { candidate: { $in: candidateIds }, sharedWithEmployer: true };
+        query = { _id: null }; // Unselected employer gets zero applications
       }
     }
     

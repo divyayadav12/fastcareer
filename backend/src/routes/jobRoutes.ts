@@ -3,6 +3,7 @@ import {
   getJobs, 
   getJobById, 
   createJob, 
+  updateJob,
   getJobMatchScore, 
   getEmployerJobs,
   deleteJob,
@@ -15,7 +16,7 @@ const router = express.Router();
 router.route('/cleanup-test-jobs').post(protect, employerOrAdmin, cleanupTestJobs);
 router.route('/').get(getJobs).post(protect, employerOrAdmin, createJob);
 router.route('/employer').get(protect, employerOrAdmin, getEmployerJobs);
-router.route('/:id').get(getJobById).delete(protect, employerOrAdmin, deleteJob);
+router.route('/:id').get(getJobById).put(protect, employerOrAdmin, updateJob).delete(protect, employerOrAdmin, deleteJob);
 router.route('/:id/match/:userId').get(protect, getJobMatchScore);
 
 export default router;

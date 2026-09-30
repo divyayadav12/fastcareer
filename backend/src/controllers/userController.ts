@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
 import User from '../models/User';
+import Job from '../models/Job';
+import Application from '../models/Application';
 import bcrypt from 'bcrypt';
 import generateToken from '../utils/generateToken';
 
@@ -300,9 +302,23 @@ export const getCandidates = async (req: Request, res: Response) => {
     const user = (req as any).user;
     let query: any = { role: 'candidate' };
 
-    // If logged in as an Employer, ONLY return candidates explicitly assigned by Admin
+    // If logged in as an Employer, ONLY return candidates explicitly assigned or associated with jobs shared with/posted by this employer
     if (user?.role === 'employer') {
-      query.assignedEmployers = user._id;
+      const myJobs = await Job.find({
+        $or: [
+          { postedBy: user._id },
+          { targetEmployers: user._id },
+          { sharedHrEmails: user.email }
+        ]
+      }).select('_id');
+      const myJobIds = myJobs.map((j: any) => j._id);
+
+      const applicantCandidateIds = await Application.distinct('candidate', { job: { $in: myJobIds } });
+
+      query.$or = [
+        { assignedEmployers: user._id },
+        { _id: { $in: applicantCandidateIds } }
+      ];
     }
 
     const candidates = await User.find(query)
@@ -428,12 +444,32 @@ export const matchCandidatesFromExcel = async (req: Request, res: Response) => {
     }
 
     // Query database with case-insensitive regex for all candidates
-    const regexQueries = uniqueEmails.map(email => new RegExp(`^${email.replace(/[.*+?^${}()|[\]\\]/g, '\$&')}$`, 'i'));
+    const regexQueries = uniqueEmails.map(email => new RegExp(`^${email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i'));
 
-    const matchedCandidatesList = await User.find({
+    const user = (req as any).user;
+    let excelCandidateQuery: any = {
       role: 'candidate',
       email: { $in: regexQueries },
-    }).select('-password');
+    };
+
+    if (user?.role === 'employer') {
+      const myJobs = await Job.find({
+        $or: [
+          { postedBy: user._id },
+          { targetEmployers: user._id },
+          { sharedHrEmails: user.email }
+        ]
+      }).select('_id');
+      const myJobIds = myJobs.map((j: any) => j._id);
+      const applicantCandidateIds = await Application.distinct('candidate', { job: { $in: myJobIds } });
+
+      excelCandidateQuery.$or = [
+        { assignedEmployers: user._id },
+        { _id: { $in: applicantCandidateIds } }
+      ];
+    }
+
+    const matchedCandidatesList = await User.find(excelCandidateQuery).select('-password');
 
     // Calculate match statistics - all matched candidates have resumes (either uploaded or generated on-the-fly)
     const totalEmails = uniqueEmails.length;
@@ -478,11 +514,31 @@ export const downloadCandidateResumesZip = async (req: Request, res: Response) =
       return;
     }
 
-    // Verify candidates from database
-    const candidates = await User.find({
+    const user = (req as any).user;
+    let zipCandidateQuery: any = {
       _id: { $in: candidateIds },
       role: 'candidate',
-    }).select('-password');
+    };
+
+    if (user?.role === 'employer') {
+      const myJobs = await Job.find({
+        $or: [
+          { postedBy: user._id },
+          { targetEmployers: user._id },
+          { sharedHrEmails: user.email }
+        ]
+      }).select('_id');
+      const myJobIds = myJobs.map((j: any) => j._id);
+      const applicantCandidateIds = await Application.distinct('candidate', { job: { $in: myJobIds } });
+
+      zipCandidateQuery.$or = [
+        { assignedEmployers: user._id },
+        { _id: { $in: applicantCandidateIds } }
+      ];
+    }
+
+    // Verify candidates from database
+    const candidates = await User.find(zipCandidateQuery).select('-password');
 
     if (candidates.length === 0) {
       res.status(400).json({ message: 'No valid candidates found for the selected IDs.' });

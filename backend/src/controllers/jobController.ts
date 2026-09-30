@@ -75,9 +75,22 @@ export const createJob = async (req: any, res: Response) => {
       return;
     }
 
+    let resolvedTargetEmployers: string[] = Array.isArray(targetEmployers) ? [...targetEmployers] : [];
+    if (Array.isArray(sharedHrEmails) && sharedHrEmails.length > 0) {
+      const hrUsers = await User.find({
+        email: { $in: sharedHrEmails.map((e: string) => new RegExp(`^${e.trim()}$`, 'i')) }
+      }).select('_id');
+      const hrUserIds = hrUsers.map(u => u._id.toString());
+      for (const uid of hrUserIds) {
+        if (!resolvedTargetEmployers.includes(uid)) {
+          resolvedTargetEmployers.push(uid);
+        }
+      }
+    }
+
     const job = new Job({
       ...req.body,
-      targetEmployers: targetEmployers || [],
+      targetEmployers: resolvedTargetEmployers,
       sharedHrEmails: sharedHrEmails || [],
       postedBy: req.user._id 
     });
@@ -88,6 +101,65 @@ export const createJob = async (req: any, res: Response) => {
   } catch (error) {
     console.error('Error creating job:', error);
     res.status(400).json({ message: 'Invalid job data' });
+  }
+};
+
+// @desc    Update a job
+// @route   PUT /api/jobs/:id
+// @access  Private/Employer/Admin
+export const updateJob = async (req: any, res: Response) => {
+  try {
+    const { location, targetEmployers, sharedHrEmails } = req.body;
+    
+    if (location && !isValidCity(location)) {
+      res.status(400).json({ message: 'Invalid location. Please select a valid city from the list.' });
+      return;
+    }
+
+    let resolvedTargetEmployers: string[] = Array.isArray(targetEmployers) ? [...targetEmployers] : [];
+    if (Array.isArray(sharedHrEmails) && sharedHrEmails.length > 0) {
+      const hrUsers = await User.find({
+        email: { $in: sharedHrEmails.map((e: string) => new RegExp(`^${e.trim()}$`, 'i')) }
+      }).select('_id');
+      const hrUserIds = hrUsers.map(u => u._id.toString());
+      for (const uid of hrUserIds) {
+        if (!resolvedTargetEmployers.includes(uid)) {
+          resolvedTargetEmployers.push(uid);
+        }
+      }
+    }
+
+    const updatedJob = await Job.findByIdAndUpdate(
+      req.params.id,
+      {
+        ...req.body,
+        targetEmployers: resolvedTargetEmployers,
+        sharedHrEmails: sharedHrEmails || [],
+      },
+      { new: true }
+    ).populate('targetEmployers', 'companyName firstName lastName email');
+
+    if (!updatedJob) {
+      res.status(404).json({ message: 'Job not found' });
+      return;
+    }
+
+    // Sync target employers to candidates who applied to this job
+    if (resolvedTargetEmployers.length > 0) {
+      const applications = await Application.find({ job: updatedJob._id }).select('candidate');
+      const candidateIds = applications.map(a => a.candidate);
+      if (candidateIds.length > 0) {
+        await User.updateMany(
+          { _id: { $in: candidateIds } },
+          { $addToSet: { assignedEmployers: { $each: resolvedTargetEmployers } } }
+        );
+      }
+    }
+
+    res.json(updatedJob);
+  } catch (error) {
+    console.error('Error updating job:', error);
+    res.status(400).json({ message: 'Error updating job' });
   }
 };
 
