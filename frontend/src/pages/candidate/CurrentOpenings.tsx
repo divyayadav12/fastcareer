@@ -4,7 +4,7 @@ import { Search, MapPin, Briefcase, IndianRupee, Clock, Building, CheckCircle2 }
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
-import axios from 'axios';
+import api from '../../services/api';
 
 interface Job {
   _id: string;
@@ -29,19 +29,14 @@ export const CurrentOpenings = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-        
         // 1. Fetch all jobs
-        const res = await axios.get(`${apiUrl}/api/jobs`);
+        const res = await api.get('/jobs');
         setJobs(res.data || []);
 
         // 2. Fetch logged in candidate's applications
-        const token = localStorage.getItem('token') || (user as any)?.token;
-        if (token) {
+        if (user) {
           try {
-            const appRes = await axios.get(`${apiUrl}/api/applications/my`, {
-              headers: { Authorization: `Bearer ${token}` }
-            });
+            const appRes = await api.get('/applications/my');
             if (Array.isArray(appRes.data)) {
               const ids = appRes.data
                 .map((app: any) => {

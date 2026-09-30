@@ -46,6 +46,9 @@ const register = async (userData: RegisterData): Promise<UserResponse> => {
   const response = await api.post('/users', userData);
   if (response.data) {
     localStorage.setItem('user', JSON.stringify(response.data));
+    if (response.data.token) {
+      localStorage.setItem('token', response.data.token);
+    }
   }
   return response.data;
 };
@@ -55,6 +58,9 @@ const login = async (userData: LoginData): Promise<UserResponse> => {
   const response = await api.post('/users/login', userData);
   if (response.data) {
     localStorage.setItem('user', JSON.stringify(response.data));
+    if (response.data.token) {
+      localStorage.setItem('token', response.data.token);
+    }
   }
   return response.data;
 };
@@ -62,6 +68,7 @@ const login = async (userData: LoginData): Promise<UserResponse> => {
 // Logout user
 const logout = () => {
   localStorage.removeItem('user');
+  localStorage.removeItem('token');
 };
 
 const authService = {

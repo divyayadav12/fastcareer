@@ -1,25 +1,23 @@
 import toast from 'react-hot-toast';
 import React, { useState, useRef, useEffect } from 'react';
-import axios from 'axios';
+import api from '../services/api';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../store';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { MapPin, Briefcase, IndianRupee, Clock, ArrowLeft, Share2, Bookmark, CheckCircle2, X, Upload } from 'lucide-react';
+import { MapPin, Briefcase, IndianRupee, Clock, ArrowLeft, Share2, Bookmark, CheckCircle2, X, Upload, FileText } from 'lucide-react';
 import { Button } from '../components/Button';
 import { mockJobs } from '../data/mockJobs';
 
-export 
-  const getFileNameFromUrl = (url) => {
-    if (!url) return '';
-    const parts = url.split('/');
-    const fullName = parts[parts.length - 1];
-    // Optional: remove timestamp prefix if exists (e.g. 163234234-resume.pdf)
-    const nameParts = fullName.split('-');
-    if (nameParts.length > 1 && !isNaN(nameParts[0])) {
-      return nameParts.slice(1).join('-');
-    }
-    return fullName;
-  };
+export const getFileNameFromUrl = (url: string) => {
+  if (!url) return '';
+  const parts = url.split('/');
+  const fullName = parts[parts.length - 1];
+  const nameParts = fullName.split('-');
+  if (nameParts.length > 1 && !isNaN(Number(nameParts[0]))) {
+    return nameParts.slice(1).join('-');
+  }
+  return fullName;
+};
 
 export const JobDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -39,10 +37,7 @@ export const JobDetails = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const token = localStorage.getItem('token') || (user as any)?.token;
-        const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/users/profile`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const res = await api.get('/users/profile');
         setProfileData(res.data);
       } catch (err) {
         console.error('Failed to fetch profile', err);
@@ -53,12 +48,9 @@ export const JobDetails = () => {
 
   useEffect(() => {
     const checkAppliedStatus = async () => {
-      const token = localStorage.getItem('token') || (user as any)?.token;
-      if (!token || !id) return;
+      if (!user || !id) return;
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/applications/my`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const res = await api.get('/applications/my');
         if (Array.isArray(res.data)) {
           const hasApplied = res.data.some((app: any) => {
             const jobId = typeof app.job === 'object' && app.job ? app.job._id : app.job;
@@ -76,7 +68,7 @@ export const JobDetails = () => {
   useEffect(() => {
     const fetchJob = async () => {
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/jobs/${id}`);
+        const res = await api.get(`/jobs/${id}`);
         setJob(res.data);
       } catch (err) {
         console.error("Failed to fetch job", err);
@@ -88,7 +80,7 @@ export const JobDetails = () => {
   }, [id]);
 
   if (loading) {
-    return <div className="min-h-[60vh] flex flex-col items-center justify-center">Loading job details...</div>;
+    return <div className="min-h-[60vh] flex flex-col items-center justify-center font-medium text-slate-600">Loading job details...</div>;
   }
 
   if (!job) {
@@ -101,6 +93,8 @@ export const JobDetails = () => {
     );
   }
 
+  const existingResume = profileData?.resumeUrl || (user as any)?.resumeUrl;
+
   const handleApply = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
@@ -108,7 +102,7 @@ export const JobDetails = () => {
       navigate('/login');
       return;
     }
-    if (!resumeFile && !profileData?.resumeUrl) {
+    if (!resumeFile && !existingResume) {
       toast.error('Please upload a resume.');
       return;
     }
@@ -118,18 +112,16 @@ export const JobDetails = () => {
       const formData = new FormData();
       if (resumeFile) {
         formData.append('resume', resumeFile);
-      } else if (profileData?.resumeUrl) {
-        formData.append('existingResumeUrl', profileData.resumeUrl);
+      } else if (existingResume) {
+        formData.append('existingResumeUrl', existingResume);
       }
       if (coverLetter) {
         formData.append('coverLetter', coverLetter);
       }
 
-      const token = localStorage.getItem('token') || (user as any).token;
-      await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/applications/${id}`, formData, {
+      await api.post(`/applications/${id}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${token}`
         }
       });
       
@@ -261,10 +253,26 @@ export const JobDetails = () => {
               <div className="space-y-5">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Resume / CV *</label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-primary transition-colors cursor-pointer bg-gray-50" onClick={() => fileInputRef.current?.click()}>
-                    <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                    {resumeFile ? <p className="text-sm font-medium text-primary">{resumeFile.name}</p> : profileData?.resumeUrl ? <p className="text-sm font-medium text-primary">Using: {getFileNameFromUrl(profileData.resumeUrl)} (Click to change)</p> : <p className="text-sm font-medium text-gray-700">Click to upload or drag and drop</p>}
-                    <p className="text-xs text-gray-500 mt-1">PDF, DOCX up to 5MB</p>
+                  <div className="border-2 border-dashed border-indigo-200 rounded-2xl p-6 text-center hover:border-indigo-500 transition-colors cursor-pointer bg-indigo-50/30" onClick={() => fileInputRef.current?.click()}>
+                    <Upload className="w-8 h-8 text-indigo-500 mx-auto mb-2" />
+                    {resumeFile ? (
+                      <p className="text-sm font-semibold text-emerald-600 flex items-center justify-center gap-1.5">
+                        <CheckCircle2 size={16} /> {resumeFile.name}
+                      </p>
+                    ) : existingResume ? (
+                      <div className="space-y-1">
+                        <p className="text-sm font-bold text-indigo-800 flex items-center justify-center gap-1.5">
+                          <CheckCircle2 size={16} className="text-emerald-500" /> {getFileNameFromUrl(existingResume)}
+                        </p>
+                        <span className="inline-block text-[11px] font-medium bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md">
+                          ✓ Auto-fetched from Profile
+                        </span>
+                        <p className="text-xs text-slate-500 mt-1">(Click here if you want to upload a different resume file)</p>
+                      </div>
+                    ) : (
+                      <p className="text-sm font-medium text-slate-700">Click to upload your resume (PDF/DOCX)</p>
+                    )}
+                    <p className="text-xs text-slate-400 mt-2">PDF, DOCX up to 5MB</p>
                     <input type="file" className="hidden" accept=".pdf,.doc,.docx" ref={fileInputRef} onChange={(e) => setResumeFile(e.target.files ? e.target.files[0] : null)} />
                   </div>
                 </div>
