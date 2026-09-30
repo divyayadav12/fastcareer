@@ -2,7 +2,7 @@ import toast from 'react-hot-toast';
 import React, { useState, useEffect } from 'react';
 import { EmployerLayout } from '../../layouts/EmployerLayout';
 import { AdminLayout } from '../../layouts/AdminLayout';
-import { PlusCircle, Briefcase, X, MapPin, Building, DollarSign, Trash2, Search, Check, Users } from 'lucide-react';
+import { PlusCircle, Briefcase, X, MapPin, Building, DollarSign, Trash2, Search, Check, Users, User, Mail } from 'lucide-react';
 import { Button } from '../../components/Button';
 import api from '../../services/api';
 import { useSelector } from 'react-redux';
@@ -14,7 +14,7 @@ export const ManageJobs = () => {
   const [jobs, setJobs] = useState<any[]>([]);
   const [employers, setEmployers] = useState<any[]>([]);
   const [selectedEmployerIds, setSelectedEmployerIds] = useState<string[]>([]);
-  const [employerSearchTerm, setEmployerSearchTerm] = useState('');
+  const [activeDropdownEmployerId, setActiveDropdownEmployerId] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
@@ -33,7 +33,12 @@ export const ManageJobs = () => {
   const fetchEmployers = async () => {
     try {
       const res = await api.get('/users/employers');
-      setEmployers(res.data || []);
+      const empList = res.data || [];
+      setEmployers(empList);
+      if (empList.length > 0 && !activeDropdownEmployerId) {
+        setActiveDropdownEmployerId(empList[0]._id);
+        setSelectedEmployerIds([empList[0]._id]);
+      }
     } catch (err) {
       console.error('Error fetching employers:', err);
     }
@@ -58,6 +63,13 @@ export const ManageJobs = () => {
       }
     }
   }, [user]);
+
+  const handleSelectEmployerFromDropdown = (empId: string) => {
+    setActiveDropdownEmployerId(empId);
+    if (empId && !selectedEmployerIds.includes(empId)) {
+      setSelectedEmployerIds(prev => [...prev, empId]);
+    }
+  };
 
   const toggleEmployerSelection = (empId: string) => {
     setSelectedEmployerIds(prev => 
@@ -258,109 +270,119 @@ export const ManageJobs = () => {
                   </div>
                 </div>
 
-                {/* SHARE JOB & APPLICANTS WITH REGISTERED COMPANIES / HRs (MULTI-SELECT) */}
+                {/* SHARE JOB & APPLICANTS WITH REGISTERED COMPANIES (3 SYNCED DROPDOWNS) */}
                 {user?.role === 'admin' && (
-                  <div className="bg-slate-50 p-4.5 rounded-xl border border-slate-200 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <label className="block text-sm font-bold text-slate-900 flex items-center gap-1.5">
-                          <Building size={16} className="text-indigo-600" /> Share Job & Applicants with Companies / HR Emails (Multi-Select)
-                        </label>
-                        <p className="text-xs text-slate-500 mt-0.5">
-                          Select 1 or multiple companies/HRs. Job details and candidates who apply will automatically be shared with their HR portal & emails.
-                        </p>
-                      </div>
+                  <div className="bg-slate-900 text-white p-4.5 rounded-xl shadow-md border border-slate-800 space-y-3">
+                    <div className="flex items-center justify-between border-b border-slate-800 pb-2">
                       <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={selectAllEmployers}
-                          className="text-xs text-indigo-600 font-semibold hover:underline cursor-pointer"
-                        >
-                          Select All
-                        </button>
-                        <span className="text-slate-300">|</span>
-                        <button
-                          type="button"
-                          onClick={clearAllEmployers}
-                          className="text-xs text-rose-600 font-semibold hover:underline cursor-pointer"
-                        >
-                          Clear All
-                        </button>
+                        <Building size={16} className="text-indigo-400" />
+                        <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+                          Share Job Details & Applicant Applications
+                        </h3>
                       </div>
-                    </div>
-
-                    {/* Filter Input */}
-                    <div className="relative">
-                      <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                      <input
-                        type="text"
-                        placeholder="Filter registered companies by company name, HR name, or HR email..."
-                        value={employerSearchTerm}
-                        onChange={e => setEmployerSearchTerm(e.target.value)}
-                        className="w-full pl-9 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500/20 bg-white"
-                      />
-                    </div>
-
-                    {/* Selected Badges */}
-                    {selectedEmployerIds.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 pt-1">
-                        {selectedEmployerIds.map(empId => {
-                          const emp = employers.find(e => e._id === empId);
-                          if (!emp) return null;
-                          return (
-                            <span
-                              key={empId}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-100 text-indigo-800 rounded-lg text-xs font-medium border border-indigo-200"
-                            >
-                              🏢 {emp.companyName || `${emp.firstName} ${emp.lastName || ''}`} ({emp.email})
-                              <button
-                                type="button"
-                                onClick={() => toggleEmployerSelection(empId)}
-                                className="hover:text-indigo-950 font-bold ml-1 cursor-pointer"
-                              >
-                                <X size={12} />
-                              </button>
-                            </span>
-                          );
-                        })}
-                      </div>
-                    )}
-
-                    {/* Checkable List */}
-                    <div className="max-h-40 overflow-y-auto space-y-1 bg-white p-2 rounded-lg border border-slate-200">
-                      {filteredEmployers.length === 0 ? (
-                        <p className="text-xs text-slate-400 text-center py-3">No matching registered companies found.</p>
-                      ) : (
-                        filteredEmployers.map(emp => {
-                          const isSelected = selectedEmployerIds.includes(emp._id);
-                          return (
-                            <div
-                              key={emp._id}
-                              onClick={() => toggleEmployerSelection(emp._id)}
-                              className={`flex items-center justify-between p-2 rounded-lg border text-xs cursor-pointer transition-colors ${
-                                isSelected 
-                                  ? 'bg-indigo-50/80 border-indigo-300 text-indigo-900 font-semibold' 
-                                  : 'bg-white border-slate-100 hover:bg-slate-50 text-slate-700'
-                              }`}
-                            >
-                              <div className="flex items-center gap-2 overflow-hidden">
-                                <input
-                                  type="checkbox"
-                                  checked={isSelected}
-                                  onChange={() => {}} // Handled by parent container click
-                                  className="rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer"
-                                />
-                                <span className="truncate">
-                                  <strong className="text-slate-900">{emp.companyName || `${emp.firstName} ${emp.lastName || ''}`}</strong>
-                                  <span className="text-slate-500 text-[11px] ml-1.5">({emp.firstName} — {emp.email})</span>
-                                </span>
-                              </div>
-                              {isSelected && <span className="text-[10px] bg-indigo-600 text-white font-bold px-1.5 py-0.5 rounded shrink-0">Selected</span>}
-                            </div>
-                          );
-                        })
+                      {selectedEmployerIds.length > 0 && (
+                        <span className="text-[11px] font-semibold px-2.5 py-0.5 bg-indigo-500/20 text-indigo-300 rounded-md">
+                          {selectedEmployerIds.length} Company Selected
+                        </span>
                       )}
                     </div>
+
+                    {/* 3 LINKED DROPDOWNS OF REGISTERED COMPANIES */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      {/* Dropdown 1: Registered Company Name */}
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center gap-1">
+                          <Building size={13} className="text-indigo-400" /> 1. Registered Company Name
+                        </label>
+                        <select
+                          value={activeDropdownEmployerId}
+                          onChange={(e) => handleSelectEmployerFromDropdown(e.target.value)}
+                          className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-xs font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
+                        >
+                          {employers.length === 0 ? (
+                            <option value="">No Companies Registered Yet</option>
+                          ) : (
+                            employers.map(emp => (
+                              <option key={emp._id} value={emp._id}>
+                                {emp.companyName || emp.firstName}
+                              </option>
+                            ))
+                          )}
+                        </select>
+                      </div>
+
+                      {/* Dropdown 2: HR Representative */}
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center gap-1">
+                          <User size={13} className="text-indigo-400" /> 2. HR Representative
+                        </label>
+                        <select
+                          value={activeDropdownEmployerId}
+                          onChange={(e) => handleSelectEmployerFromDropdown(e.target.value)}
+                          className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-xs font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
+                        >
+                          {employers.length === 0 ? (
+                            <option value="">No HR Registered</option>
+                          ) : (
+                            employers.map(emp => (
+                              <option key={emp._id} value={emp._id}>
+                                {emp.firstName} {emp.lastName || ''} (Company)
+                              </option>
+                            ))
+                          )}
+                        </select>
+                      </div>
+
+                      {/* Dropdown 3: Company Email */}
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center gap-1">
+                          <Mail size={13} className="text-indigo-400" /> 3. Company Email
+                        </label>
+                        <select
+                          value={activeDropdownEmployerId}
+                          onChange={(e) => handleSelectEmployerFromDropdown(e.target.value)}
+                          className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-xs font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
+                        >
+                          {employers.length === 0 ? (
+                            <option value="">No Company Email</option>
+                          ) : (
+                            employers.map(emp => (
+                              <option key={emp._id} value={emp._id}>
+                                {emp.email}
+                              </option>
+                            ))
+                          )}
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Selected Companies List / Badges */}
+                    {selectedEmployerIds.length > 0 && (
+                      <div className="pt-2 border-t border-slate-800">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <span className="text-[11px] font-semibold text-slate-400 mr-1">Selected:</span>
+                          {selectedEmployerIds.map(empId => {
+                            const emp = employers.find(e => e._id === empId);
+                            if (!emp) return null;
+                            return (
+                              <span
+                                key={empId}
+                                className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-indigo-900/60 text-indigo-200 border border-indigo-700/50 rounded-md text-xs font-medium"
+                              >
+                                🏢 {emp.companyName || emp.firstName} ({emp.email})
+                                <button
+                                  type="button"
+                                  onClick={() => toggleEmployerSelection(empId)}
+                                  className="hover:text-white font-bold ml-1 cursor-pointer"
+                                >
+                                  <X size={12} />
+                                </button>
+                              </span>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
