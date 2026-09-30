@@ -3,6 +3,7 @@ import {
   applyForJob, 
   getJobApplications, 
   updateApplicationStatus, 
+  updateCandidateStatus,
   getEmployerApplications,
   getAllApplications,
   getCandidateApplications,
@@ -21,6 +22,7 @@ router.post('/:jobId', protect, upload.single('resume'), applyForJob);
 router.get('/job/:jobId', protect, employerOrAdmin, getJobApplications);
 router.get('/employer', protect, employerOrAdmin, getEmployerApplications);
 router.put('/share', protect, admin, shareApplications);
+router.put('/candidate-status', protect, employerOrAdmin, updateCandidateStatus);
 router.get('/', protect, employerOrAdmin, getAllApplications);
 router.route('/:id').delete(protect, employerOrAdmin, deleteApplication);
 router.put('/:id/status', protect, employerOrAdmin, updateApplicationStatus);

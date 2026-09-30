@@ -326,7 +326,27 @@ export const getCandidates = async (req: Request, res: Response) => {
       .populate('assignedEmployers', 'companyName firstName lastName email')
       .sort({ createdAt: -1 })
       .select('-password');
-    res.json(candidates);
+
+    // Enrich candidates with application status for employer review
+    const enrichedCandidates = await Promise.all(
+      candidates.map(async (c) => {
+        const plain: any = c.toObject();
+        const app = await Application.findOne({ candidate: c._id })
+          .populate('job', 'title company')
+          .sort({ createdAt: -1 });
+
+        if (app) {
+          plain.applicationId = app._id;
+          plain.applicationStatus = app.status || 'applied';
+          plain.appliedJobTitle = (app.job as any)?.title || '';
+        } else {
+          plain.applicationStatus = 'applied'; // Default: Pending Review
+        }
+        return plain;
+      })
+    );
+
+    res.json(enrichedCandidates);
   } catch (error) {
     console.error('Error fetching candidates:', error);
     res.status(500).json({ message: 'Server error' });

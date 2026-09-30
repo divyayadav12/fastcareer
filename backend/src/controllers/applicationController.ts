@@ -286,3 +286,71 @@ export const shareApplications = async (req: Request, res: Response) => {
   }
 };
 
+// @desc    Update candidate application status (by application ID or candidate ID)
+// @route   PUT /api/applications/candidate-status
+// @access  Private (Employer/Admin)
+export const updateCandidateStatus = async (req: Request, res: Response) => {
+  try {
+    const { candidateId, applicationId, status } = req.body;
+    const validStatuses = ['applied', 'reviewing', 'shortlisted', 'interviewed', 'rejected', 'hired'];
+
+    if (!status || !validStatuses.includes(status)) {
+      res.status(400).json({ message: 'Invalid status value' });
+      return;
+    }
+
+    let application = null;
+
+    if (applicationId && mongoose.Types.ObjectId.isValid(applicationId as string)) {
+      application = await Application.findById(applicationId);
+    }
+
+    if (!application && candidateId && mongoose.Types.ObjectId.isValid(candidateId as string)) {
+      application = await Application.findOne({ candidate: candidateId }).sort({ createdAt: -1 });
+    }
+
+    if (!application && candidateId && mongoose.Types.ObjectId.isValid(candidateId as string)) {
+      const user = (req as any).user;
+      let job = await Job.findOne({ $or: [{ postedBy: user?._id }, { targetEmployers: user?._id }] });
+      if (!job) {
+        job = await Job.findOne({});
+      }
+      if (job) {
+        application = await Application.create({
+          job: job._id,
+          candidate: candidateId,
+          resumeUrl: 'uploads/default_resume.pdf',
+          status: status,
+          sharedWithEmployer: true
+        });
+      }
+    }
+
+    if (application) {
+      application.status = status;
+      await application.save();
+
+      // Trigger WhatsApp Notification for Shortlist/Selection
+      if (status === 'shortlisted' || status === 'hired') {
+        const candidateObj: any = await User.findById(application.candidate);
+        const jobObj: any = await Job.findById(application.job);
+        if (candidateObj?.personalDetails?.phone || candidateObj?.phone) {
+          const phoneNum = candidateObj.personalDetails?.phone || candidateObj.phone;
+          sendShortlistedWhatsApp(
+            phoneNum,
+            candidateObj.firstName || 'Candidate',
+            jobObj?.title || 'CA Candidate Profile'
+          );
+        }
+      }
+
+      res.json({ success: true, message: `Status updated to ${status}`, application });
+    } else {
+      res.status(404).json({ message: 'Candidate application record not found' });
+    }
+  } catch (error) {
+    console.error('Error updating candidate status:', error);
+    res.status(500).json({ message: 'Server error updating candidate status' });
+  }
+};
+

@@ -17,6 +17,9 @@ interface AssignedCandidate {
   email: string;
   phone?: string;
   resumeUrl?: string;
+  applicationId?: string;
+  applicationStatus?: string;
+  appliedJobTitle?: string;
   personalDetails?: {
     currentCity?: string;
     currentState?: string;
@@ -54,7 +57,6 @@ export const EmployerDashboard = () => {
   const fetchAssignedCandidates = async () => {
     try {
       setLoading(true);
-      // Backend strictly returns only candidates where assignedEmployers contains user._id
       const res = await api.get('/users/candidates');
       if (Array.isArray(res.data)) {
         setCandidates(res.data);
@@ -66,6 +68,37 @@ export const EmployerDashboard = () => {
       setCandidates([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleStatusChange = async (candidateId: string, applicationId: string | undefined, newStatus: string) => {
+    try {
+      setCandidates(prev => prev.map(c => {
+        if (c._id === candidateId) {
+          return { ...c, applicationStatus: newStatus };
+        }
+        return c;
+      }));
+
+      await api.put('/applications/candidate-status', {
+        candidateId,
+        applicationId,
+        status: newStatus
+      });
+
+      const statusLabels: Record<string, string> = {
+        applied: 'Pending Review',
+        reviewing: 'Under Review',
+        shortlisted: 'Shortlisted',
+        interviewed: 'Interview Scheduled',
+        hired: 'Selected / Hired',
+        rejected: 'Rejected'
+      };
+
+      toast.success(`Candidate status updated to "${statusLabels[newStatus] || newStatus}"`);
+    } catch (err: any) {
+      toast.error('Failed to update candidate status');
+      fetchAssignedCandidates();
     }
   };
 
@@ -143,11 +176,13 @@ export const EmployerDashboard = () => {
 
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs flex flex-col justify-between">
           <div className="flex justify-between items-start mb-3">
-            <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider">Access Status</p>
-            <div className="bg-emerald-50 text-emerald-600 p-2.5 rounded-xl"><ShieldCheck size={20} /></div>
+            <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider">Shortlisted Candidates</p>
+            <div className="bg-emerald-50 text-emerald-600 p-2.5 rounded-xl"><CheckCircle2 size={20} /></div>
           </div>
-          <h3 className="text-2xl font-bold text-emerald-700">Verified & Active</h3>
-          <p className="text-xs text-gray-400 mt-2">Authorized company account</p>
+          <h3 className="text-3xl font-extrabold text-emerald-700">
+            {safeCandidates.filter(c => c.applicationStatus === 'shortlisted' || c.applicationStatus === 'hired').length}
+          </h3>
+          <p className="text-xs text-gray-400 mt-2">Shortlisted or hired by your company</p>
         </div>
       </div>
 
@@ -193,19 +228,20 @@ export const EmployerDashboard = () => {
                 <th className="px-6 py-4 font-semibold">Candidate Info</th>
                 <th className="px-6 py-4 font-semibold">Location</th>
                 <th className="px-6 py-4 font-semibold">Education / Profile</th>
+                <th className="px-6 py-4 font-semibold">Review / Selection Status</th>
                 <th className="px-6 py-4 font-semibold text-right">Resume / CV</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-sm">
               {loading ? (
                 <tr>
-                  <td colSpan={4} className="py-12 text-center text-gray-500">
+                  <td colSpan={5} className="py-12 text-center text-gray-500">
                     Loading permitted candidate profiles...
                   </td>
                 </tr>
               ) : filteredCandidates.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="py-16 text-center">
+                  <td colSpan={5} className="py-16 text-center">
                     <div className="flex flex-col items-center justify-center space-y-3">
                       <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-gray-400">
                         <Users size={24} />
@@ -254,6 +290,32 @@ export const EmployerDashboard = () => {
                       ) : (
                         <span className="text-gray-400 italic">Profile on record</span>
                       )}
+                    </td>
+                    <td className="px-6 py-4">
+                      <select
+                        value={candidate.applicationStatus || 'applied'}
+                        onChange={(e) => handleStatusChange(candidate._id, candidate.applicationId, e.target.value)}
+                        className={`px-3 py-1.5 text-xs font-semibold rounded-lg border outline-none cursor-pointer transition-all shadow-2xs ${
+                          (candidate.applicationStatus || 'applied') === 'shortlisted'
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200 focus:ring-emerald-300'
+                            : (candidate.applicationStatus || 'applied') === 'hired'
+                            ? 'bg-green-100 text-green-800 border-green-300 font-bold focus:ring-green-400'
+                            : (candidate.applicationStatus || 'applied') === 'reviewing'
+                            ? 'bg-blue-50 text-blue-700 border-blue-200 focus:ring-blue-300'
+                            : (candidate.applicationStatus || 'applied') === 'interviewed'
+                            ? 'bg-purple-50 text-purple-700 border-purple-200 focus:ring-purple-300'
+                            : (candidate.applicationStatus || 'applied') === 'rejected'
+                            ? 'bg-rose-50 text-rose-700 border-rose-200 focus:ring-rose-300'
+                            : 'bg-amber-50 text-amber-700 border-amber-200 focus:ring-amber-300'
+                        }`}
+                      >
+                        <option value="applied">⏳ Pending Review</option>
+                        <option value="reviewing">🔍 Under Review</option>
+                        <option value="shortlisted">⭐ Shortlisted</option>
+                        <option value="interviewed">📅 Interview Scheduled</option>
+                        <option value="hired">🎉 Selected / Hired</option>
+                        <option value="rejected">❌ Rejected</option>
+                      </select>
                     </td>
                     <td className="px-6 py-4 text-right">
                       {candidate.resumeUrl ? (
