@@ -42,13 +42,12 @@ api.interceptors.response.use(
     if (error.response && error.response.status === 401) {
       console.warn('Received 401 Unauthorized. Clearing stale authentication tokens.');
       localStorage.removeItem('token');
-      const userStr = localStorage.getItem('user');
-      if (userStr) {
-        try {
-          const userObj = JSON.parse(userStr);
-          delete userObj.token;
-          localStorage.setItem('user', JSON.stringify(userObj));
-        } catch (e) {}
+      localStorage.removeItem('user');
+      if (typeof window !== 'undefined') {
+        const path = window.location.pathname;
+        if ((path.includes('/admin') || path.includes('/employer') || path.includes('/candidate')) && !path.includes('/login')) {
+          window.location.href = '/login';
+        }
       }
     }
     return Promise.reject(error);

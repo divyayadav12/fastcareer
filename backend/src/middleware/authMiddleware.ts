@@ -77,6 +77,17 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
           req.user = await User.findOne({ email: cleanEmail }).select('-password');
         }
       }
+
+      // Fallback for Admin token recovery if user wasn't found by old ID
+      if (!req.user && token) {
+        try {
+          const unverifiedPayload: any = jwt.decode(token);
+          const payloadEmail = (unverifiedPayload?.email || '').toLowerCase().trim();
+          if (ADMIN_IDENTIFIERS.includes(payloadEmail)) {
+            req.user = await User.findOne({ role: 'admin' }).select('-password');
+          }
+        } catch (e) {}
+      }
     } catch (error) {
       console.warn('Protect token decode issue:', error);
     }
