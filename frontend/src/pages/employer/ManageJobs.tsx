@@ -85,14 +85,6 @@ export const ManageJobs = () => {
     setSelectedEmployerIds([]);
   };
 
-  const filteredEmployers = employers.filter(emp => {
-    const q = employerSearchTerm.toLowerCase();
-    const company = (emp.companyName || '').toLowerCase();
-    const name = `${emp.firstName || ''} ${emp.lastName || ''}`.toLowerCase();
-    const email = (emp.email || '').toLowerCase();
-    return company.includes(q) || name.includes(q) || email.includes(q);
-  });
-
   const handleDeleteJob = async (jobId: string, jobTitle: string) => {
     if (!window.confirm(`Are you sure you want to delete "${jobTitle}"? All associated applications will also be removed.`)) {
       return;
