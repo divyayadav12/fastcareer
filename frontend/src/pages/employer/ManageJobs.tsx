@@ -264,32 +264,34 @@ export const ManageJobs = () => {
 
                 {/* SHARE JOB & APPLICANTS WITH REGISTERED COMPANIES (3 SYNCED DROPDOWNS) */}
                 {user?.role === 'admin' && (
-                  <div className="bg-slate-900 text-white p-4.5 rounded-xl shadow-md border border-slate-800 space-y-3">
-                    <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-                      <div className="flex items-center gap-2">
-                        <Building size={16} className="text-indigo-400" />
-                        <h3 className="text-xs font-bold text-white uppercase tracking-wider">
-                          Share Job Details & Applicant Applications
-                        </h3>
+                  <div className="bg-indigo-50/40 p-5 rounded-xl border border-indigo-100/80 space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-indigo-100">
+                      <div>
+                        <label className="block text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                          <Building size={16} className="text-indigo-600" /> Share Job & Applicants with Companies (3 Synced Dropdowns)
+                        </label>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          Select company by Company Name, HR Name, or Email. Job & applicant details will auto-share with selected HRs.
+                        </p>
                       </div>
                       {selectedEmployerIds.length > 0 && (
-                        <span className="text-[11px] font-semibold px-2.5 py-0.5 bg-indigo-500/20 text-indigo-300 rounded-md">
+                        <span className="self-start sm:self-auto text-xs font-semibold px-2.5 py-1 bg-indigo-100 text-indigo-700 rounded-lg border border-indigo-200 shrink-0">
                           {selectedEmployerIds.length} Company Selected
                         </span>
                       )}
                     </div>
 
                     {/* 3 LINKED DROPDOWNS OF REGISTERED COMPANIES */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
                       {/* Dropdown 1: Registered Company Name */}
                       <div>
-                        <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center gap-1">
-                          <Building size={13} className="text-indigo-400" /> 1. Registered Company Name
+                        <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1">
+                          <Building size={13} className="text-indigo-600" /> 1. Registered Company Name
                         </label>
                         <select
                           value={activeDropdownEmployerId}
                           onChange={(e) => handleSelectEmployerFromDropdown(e.target.value)}
-                          className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-xs font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
+                          className="w-full bg-white border border-slate-200 text-slate-900 rounded-lg px-3 py-2 text-xs font-medium focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none shadow-2xs"
                         >
                           {employers.length === 0 ? (
                             <option value="">No Companies Registered Yet</option>
@@ -305,13 +307,13 @@ export const ManageJobs = () => {
 
                       {/* Dropdown 2: HR Representative */}
                       <div>
-                        <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center gap-1">
-                          <User size={13} className="text-indigo-400" /> 2. HR Representative
+                        <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1">
+                          <User size={13} className="text-indigo-600" /> 2. HR Representative
                         </label>
                         <select
                           value={activeDropdownEmployerId}
                           onChange={(e) => handleSelectEmployerFromDropdown(e.target.value)}
-                          className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-xs font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
+                          className="w-full bg-white border border-slate-200 text-slate-900 rounded-lg px-3 py-2 text-xs font-medium focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none shadow-2xs"
                         >
                           {employers.length === 0 ? (
                             <option value="">No HR Registered</option>
@@ -327,13 +329,13 @@ export const ManageJobs = () => {
 
                       {/* Dropdown 3: Company Email */}
                       <div>
-                        <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center gap-1">
-                          <Mail size={13} className="text-indigo-400" /> 3. Company Email
+                        <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1">
+                          <Mail size={13} className="text-indigo-600" /> 3. Company Email
                         </label>
                         <select
                           value={activeDropdownEmployerId}
                           onChange={(e) => handleSelectEmployerFromDropdown(e.target.value)}
-                          className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-xs font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
+                          className="w-full bg-white border border-slate-200 text-slate-900 rounded-lg px-3 py-2 text-xs font-medium focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none shadow-2xs"
                         >
                           {employers.length === 0 ? (
                             <option value="">No Company Email</option>
@@ -348,26 +350,27 @@ export const ManageJobs = () => {
                       </div>
                     </div>
 
-                    {/* Selected Companies List / Badges */}
+                    {/* Selected Companies Badges */}
                     {selectedEmployerIds.length > 0 && (
-                      <div className="pt-2 border-t border-slate-800">
+                      <div className="pt-2 border-t border-indigo-100/80">
                         <div className="flex flex-wrap items-center gap-1.5">
-                          <span className="text-[11px] font-semibold text-slate-400 mr-1">Selected:</span>
+                          <span className="text-xs font-bold text-slate-600 mr-1">Selected Target HRs:</span>
                           {selectedEmployerIds.map(empId => {
                             const emp = employers.find(e => e._id === empId);
                             if (!emp) return null;
                             return (
                               <span
                                 key={empId}
-                                className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-indigo-900/60 text-indigo-200 border border-indigo-700/50 rounded-md text-xs font-medium"
+                                className="inline-flex items-center gap-1.5 px-3 py-1 bg-white text-indigo-900 border border-indigo-200 rounded-lg text-xs font-semibold shadow-2xs"
                               >
                                 🏢 {emp.companyName || emp.firstName} ({emp.email})
                                 <button
                                   type="button"
                                   onClick={() => toggleEmployerSelection(empId)}
-                                  className="hover:text-white font-bold ml-1 cursor-pointer"
+                                  className="hover:text-rose-600 text-slate-400 font-bold ml-1 cursor-pointer transition-colors"
+                                  title="Remove company"
                                 >
-                                  <X size={12} />
+                                  <X size={13} />
                                 </button>
                               </span>
                             );
