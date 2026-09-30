@@ -31,17 +31,19 @@ const CompaniesRegistered = lazy(() => import('./pages/candidate/CompaniesRegist
 const WantToChangeJob = lazy(() => import('./pages/candidate/WantToChangeJob').then(m => ({ default: m.WantToChangeJob })));
 const PlacementHistory = lazy(() => import('./pages/candidate/PlacementHistory').then(m => ({ default: m.PlacementHistory })));
 const ShareJob = lazy(() => import('./pages/candidate/ShareJob').then(m => ({ default: m.ShareJob })));
-const EmployerDashboard = lazy(() => import('./pages/employer/Dashboard').then(m => ({ default: m.EmployerDashboard })));
-const EmployerApplications = lazy(() => import('./pages/employer/Applications').then(m => ({ default: m.EmployerApplications })));
-const ManageJobs = lazy(() => import('./pages/employer/ManageJobs').then(m => ({ default: m.ManageJobs })));
-const EmployerCandidates = lazy(() => import('./pages/employer/Candidates').then(m => ({ default: m.EmployerCandidates })));
-const EmployerBilling = lazy(() => import('./pages/employer/Billing').then(m => ({ default: m.EmployerBilling })));
-const CompanyProfile = lazy(() => import('./pages/employer/CompanyProfile').then(m => ({ default: m.CompanyProfile })));
-const PlatformData = lazy(() => import('./pages/employer/PlatformData').then(m => ({ default: m.PlatformData })));
-const AdminDashboard = lazy(() => import('./pages/admin/Dashboard').then(m => ({ default: m.AdminDashboard })));
-const AddCompany = lazy(() => import('./pages/admin/AddCompany').then(m => ({ default: m.AddCompany })));
 const FastSelectionTest = lazy(() => import('./pages/candidate/FastSelectionTest').then(m => ({ default: m.FastSelectionTest })));
-const CandidateTestResults = lazy(() => import('./pages/admin/CandidateTestResults').then(m => ({ default: m.CandidateTestResults })));
+// Core Dashboard Pages (Direct Import for Instant Sidebar Navigation)
+import { EmployerDashboard } from './pages/employer/Dashboard';
+import { EmployerApplications } from './pages/employer/Applications';
+import { ManageJobs } from './pages/employer/ManageJobs';
+import { EmployerCandidates } from './pages/employer/Candidates';
+import { EmployerBilling } from './pages/employer/Billing';
+import { CompanyProfile } from './pages/employer/CompanyProfile';
+import { PlatformData } from './pages/employer/PlatformData';
+
+import { AdminDashboard } from './pages/admin/Dashboard';
+import { AddCompany } from './pages/admin/AddCompany';
+import { CandidateTestResults } from './pages/admin/CandidateTestResults';
 
 function App() {
   return (
