@@ -484,7 +484,7 @@ export const AdminDashboard = () => {
                           {employers.map(emp => (
                             <tr key={emp._id} className="hover:bg-slate-50/50">
                               <td className="py-3 font-semibold text-slate-900">
-                                {emp.companyName || 'Not Set'}
+                                {emp.companyName || (emp.firstName ? `${emp.firstName} ${emp.lastName || ''}`.trim() : 'Registered Company')}
                               </td>
                               <td className="py-3 text-slate-600">{emp.firstName} {emp.lastName || ''}</td>
                               <td className="py-3 text-slate-500 font-mono text-xs">{emp.email}</td>

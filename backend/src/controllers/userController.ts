@@ -79,7 +79,7 @@ import { sendRegistrationWhatsApp } from '../utils/whatsappService';
 // @route   POST /api/users
 // @access  Public
 export const registerUser = async (req: Request, res: Response) => {
-  const { firstName, lastName, email, password, role, phone, currentCity, dateOfBirth, isFresherCA, resumeUrl, linkedinUrl, caFinal, caInter } = req.body;
+  const { firstName, lastName, companyName, email, password, role, phone, currentCity, dateOfBirth, isFresherCA, resumeUrl, linkedinUrl, caFinal, caInter } = req.body;
 
   try {
     const trimmedEmail = (email || '').toLowerCase().trim();
@@ -101,6 +101,7 @@ export const registerUser = async (req: Request, res: Response) => {
     const user = await User.create({
       firstName: firstName?.trim(),
       lastName: lastName?.trim(),
+      companyName: companyName?.trim() || (role === 'employer' ? (`${firstName || ''} ${lastName || ''}`.trim()) : ''),
       email: trimmedEmail,
       password,
       role: role || 'candidate',
@@ -783,7 +784,15 @@ export const cleanupDbAndFixResumes = async (req: Request, res: Response) => {
 export const getEmployers = async (req: Request, res: Response) => {
   try {
     const employers = await User.find({ role: 'employer' }).select('-password');
-    res.json(employers);
+    const formattedEmployers = employers.map((emp: any) => {
+      const plain = emp.toObject();
+      if (!plain.companyName || plain.companyName.trim() === '') {
+        const hrName = `${plain.firstName || ''} ${plain.lastName || ''}`.trim();
+        plain.companyName = hrName ? hrName : 'Registered Company';
+      }
+      return plain;
+    });
+    res.json(formattedEmployers);
   } catch (error) {
     res.status(500).json({ message: 'Server Error' });
   }

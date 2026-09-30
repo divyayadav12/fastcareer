@@ -114,10 +114,10 @@ export const AddCompany = () => {
                 companies.map((company, idx) => (
                   <tr key={idx} className="hover:bg-slate-50 transition-colors">
                     <td className="px-6 py-4 font-medium text-slate-900 flex items-center gap-3">
-                      <div className="w-8 h-8 rounded bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold">
-                        {company.companyName?.charAt(0) || company.firstName?.charAt(0)}
+                      <div className="w-8 h-8 rounded bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold uppercase">
+                        {(company.companyName || company.firstName || 'C').charAt(0)}
                       </div>
-                      {company.companyName || 'Not Set'}
+                      {company.companyName || (company.firstName ? `${company.firstName} ${company.lastName || ''}`.trim() : 'Registered Company')}
                     </td>
                     <td className="px-6 py-4">{company.firstName} {company.lastName}</td>
                     <td className="px-6 py-4">{company.email}</td>
