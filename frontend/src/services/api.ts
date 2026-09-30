@@ -35,4 +35,24 @@ api.interceptors.request.use(
   }
 );
 
+// Response interceptor to clear invalid/expired token on 401
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      console.warn('Received 401 Unauthorized. Clearing stale authentication tokens.');
+      localStorage.removeItem('token');
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        try {
+          const userObj = JSON.parse(userStr);
+          delete userObj.token;
+          localStorage.setItem('user', JSON.stringify(userObj));
+        } catch (e) {}
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default api;

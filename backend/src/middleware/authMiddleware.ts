@@ -68,8 +68,14 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
         } catch (e) {}
       }
 
-      if (decoded && decoded.id) {
-        req.user = await User.findById(decoded.id).select('-password');
+      if (decoded && (decoded.id || (decoded as any).email)) {
+        if (decoded.id) {
+          req.user = await User.findById(decoded.id).select('-password');
+        }
+        if (!req.user && (decoded as any).email) {
+          const cleanEmail = String((decoded as any).email).toLowerCase().trim();
+          req.user = await User.findOne({ email: cleanEmail }).select('-password');
+        }
       }
     } catch (error) {
       console.warn('Protect token decode issue:', error);

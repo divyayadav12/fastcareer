@@ -42,7 +42,7 @@ export const authUser = async (req: Request, res: Response) => {
         lastName: user.lastName || 'Admin',
         email: user.email,
         role: 'admin',
-        token: generateToken(user._id.toString()),
+        token: generateToken(user._id.toString(), user.email),
       });
       return;
     }
@@ -62,7 +62,7 @@ export const authUser = async (req: Request, res: Response) => {
         lastName: user.lastName,
         email: user.email,
         role: user.role,
-        token: generateToken(user._id.toString()),
+        token: generateToken(user._id.toString(), user.email),
       });
     } else {
       res.status(401).json({ message: 'Invalid email or password' });
@@ -138,7 +138,7 @@ export const registerUser = async (req: Request, res: Response) => {
         profileCompleted: user.profileCompleted,
         personalDetails: user.personalDetails,
         caPortfolio: user.caPortfolio,
-        token: generateToken(user._id.toString()),
+        token: generateToken(user._id.toString(), user.email),
       });
     } else {
       res.status(400).json({ message: 'Invalid user data provided.' });
@@ -232,7 +232,7 @@ export const updateUserProfile = async (req: Request, res: Response) => {
       
       res.json({
         ...userResponse,
-        token: generateToken(updatedUser._id.toString()),
+        token: generateToken(updatedUser._id.toString(), updatedUser.email),
       });
     } else {
       res.status(404).json({ message: 'User not found. Please log in again.' });
