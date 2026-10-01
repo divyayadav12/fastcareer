@@ -47,6 +47,9 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
             <Link to="/admin/dashboard" className={getLinkClass('/admin/dashboard')}>
               <Users size={18} /> Candidates Database
             </Link>
+            <Link to="/admin/applications" className={getLinkClass('/admin/applications')}>
+              <ClipboardList size={18} className="text-blue-600" /> Job Applications (Applied Candidates)
+            </Link>
             <Link to="/admin/candidates" className={getLinkClass('/admin/candidates')}>
               <Search size={18} className="text-indigo-600" /> Search Candidates (Excel & ZIP)
             </Link>
@@ -66,9 +69,6 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
               </>
             )}
 
-            <Link to="/admin/applications" className={getLinkClass('/admin/applications')}>
-              <ClipboardList size={18} /> Shared Applications
-            </Link>
             <Link to="/admin/jobs" className={getLinkClass('/admin/jobs')}>
               <Briefcase size={18} /> Manage Jobs
             </Link>

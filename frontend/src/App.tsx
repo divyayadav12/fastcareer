@@ -135,6 +135,7 @@ function App() {
             <Route path="/admin/add-company" element={<AddCompany />} />
             <Route path="/admin/add-employee" element={<AddEmployee />} />
             <Route path="/admin/applications" element={<EmployerApplications />} />
+            <Route path="/admin/job-applications" element={<EmployerApplications />} />
             <Route path="/admin/test-results" element={<CandidateTestResults />} />
             <Route path="/admin/jobs" element={<ManageJobs />} />
             <Route path="/admin/platform-data" element={<PlatformData />} />

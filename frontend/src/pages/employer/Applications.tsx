@@ -404,11 +404,11 @@ export const EmployerApplications = () => {
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900 flex items-center gap-2">
             <FileText className="text-indigo-600" /> 
-            {user?.role === 'admin' ? 'Shared Applications & Candidate Portal' : 'Forwarded Candidate Applications'}
+            {user?.role === 'admin' || user?.role === 'employee' ? 'Job Applications & Applied Candidates' : 'Forwarded Candidate Applications'}
           </h1>
           <p className="text-slate-500 text-sm mt-1">
-            {user?.role === 'admin' 
-              ? 'Filter candidate applications, select candidates, and grant access to registered companies.' 
+            {user?.role === 'admin' || user?.role === 'employee' 
+              ? 'Full roster of candidates who applied for jobs. Review details, filter by job/location/CA status, match Excel sheets, and forward profiles to registered companies.' 
               : 'Review candidates shared with your company and update hiring statuses.'}
           </p>
         </div>
