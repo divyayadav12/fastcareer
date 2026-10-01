@@ -823,17 +823,25 @@ export const cleanupDbAndFixResumes = async (req: Request, res: Response) => {
 
 export const getEmployers = async (req: Request, res: Response) => {
   try {
-    const employers = await User.find({ role: 'employer' }).select('-password');
+    const employers = await User.find({
+      $or: [
+        { role: { $regex: /^employer$/i } },
+        { role: { $regex: /^company$/i } },
+        { companyName: { $exists: true, $ne: '' } }
+      ]
+    }).select('-password').sort({ companyName: 1, firstName: 1 });
+
     const formattedEmployers = employers.map((emp: any) => {
       const plain = emp.toObject();
       if (!plain.companyName || plain.companyName.trim() === '') {
         const hrName = `${plain.firstName || ''} ${plain.lastName || ''}`.trim();
-        plain.companyName = hrName ? hrName : 'Registered Company';
+        plain.companyName = hrName ? hrName : (plain.email ? plain.email : 'Registered Company');
       }
       return plain;
     });
     res.json(formattedEmployers);
   } catch (error) {
+    console.error('Error in getEmployers:', error);
     res.status(500).json({ message: 'Server Error' });
   }
 };

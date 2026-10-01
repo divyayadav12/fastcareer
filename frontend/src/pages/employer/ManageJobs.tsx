@@ -43,18 +43,21 @@ export const ManageJobs = () => {
     return (emp.email || '').trim();
   };
 
-  // Unique company names for Dropdown 1
+  // Unique company names for Dropdown 1 (combining employers DB + companies from posted jobs)
   const uniqueCompanyNames = Array.from(
-    new Set(
-      employers
-        .map(emp => getEmpCompanyName(emp))
-        .filter(Boolean)
-    )
+    new Set([
+      ...employers.map(emp => getEmpCompanyName(emp)),
+      ...jobs.map(j => (j.company || '').trim())
+    ].filter(Boolean))
   ).sort();
 
   // Filter employers for Dropdowns 2 & 3 based on selected company name
   const filteredHRsForCompany = selectedCompanyName
-    ? employers.filter(emp => getEmpCompanyName(emp).toLowerCase() === selectedCompanyName.toLowerCase())
+    ? (
+        employers.filter(emp => getEmpCompanyName(emp).toLowerCase() === selectedCompanyName.toLowerCase()).length > 0
+          ? employers.filter(emp => getEmpCompanyName(emp).toLowerCase() === selectedCompanyName.toLowerCase())
+          : employers
+      )
     : employers;
 
   const handleSelectCompanyName = (cName: string) => {
@@ -88,7 +91,7 @@ export const ManageJobs = () => {
   const fetchEmployers = async () => {
     try {
       const res = await api.get('/users/employers');
-      const empList = res.data || [];
+      const empList = Array.isArray(res.data) ? res.data : [];
       setEmployers(empList);
       if (empList.length > 0 && !activeDropdownEmployerId) {
         setActiveDropdownEmployerId(empList[0]._id);
@@ -102,7 +105,7 @@ export const ManageJobs = () => {
   const fetchJobs = async () => {
     try {
       const { data } = await api.get('/jobs/employer');
-      setJobs(data);
+      setJobs(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching jobs:', error);
     } finally {
@@ -112,16 +115,12 @@ export const ManageJobs = () => {
 
   useEffect(() => {
     fetchJobs();
-    if (isAdminOrStaff) {
-      fetchEmployers();
-    }
-  }, [user, isAdminOrStaff]);
+    fetchEmployers();
+  }, [user]);
 
   const handleOpenModal = () => {
     setShowModal(true);
-    if (isAdminOrStaff) {
-      fetchEmployers();
-    }
+    fetchEmployers();
   };
 
   const handleSelectEmployerFromDropdown = (empId: string) => {
