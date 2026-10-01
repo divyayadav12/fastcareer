@@ -80,7 +80,7 @@ export const Navbar = () => {
             {user ? (
               <>
                 <Link 
-                  to={`/${user.role}/dashboard`} 
+                  to={user.role === 'candidate' ? '/candidate/openings' : `/${user.role}/dashboard`} 
                   className="flex items-center gap-1.5 text-sm font-bold text-slate-800 hover:text-blue-600 transition-colors px-2 py-1.5"
                 >
                   <LayoutDashboard size={17} className="text-blue-600" />
@@ -150,7 +150,7 @@ export const Navbar = () => {
             {user ? (
               <>
                 <Link 
-                  to={`/${user.role}/dashboard`} 
+                  to={user.role === 'candidate' ? '/candidate/openings' : `/${user.role}/dashboard`} 
                   onClick={() => setMobileMenuOpen(false)} 
                   className="flex items-center justify-center gap-2 text-sm font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-xl py-2.5"
                 >

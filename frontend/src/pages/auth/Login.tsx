@@ -41,7 +41,7 @@ export const Login = () => {
 
     if (isSuccess || user) {
       if (user?.role === 'candidate') {
-        navigate('/candidate/dashboard');
+        navigate('/candidate/openings');
       } else if (user?.role === 'employer') {
         navigate('/employer/dashboard');
       } else if (user?.role === 'admin' || user?.role === 'employee') {

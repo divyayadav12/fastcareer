@@ -41,17 +41,17 @@ export const CandidateLayout = ({ children }: CandidateLayoutProps) => {
 
           <nav className="space-y-1">
             <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 mt-4 px-4">Profile & Jobs</div>
-            <Link to="/candidate/dashboard" className={getLinkClass('/candidate/dashboard')}>
-              <User size={18} /> Update Profile
+            <Link to="/candidate/openings" className={getLinkClass('/candidate/openings')}>
+              <Briefcase size={18} /> Current Openings
             </Link>
             <Link to="/candidate/fast-selection" className={getLinkClass('/candidate/fast-selection')}>
               <Zap size={18} className="text-amber-500 fill-amber-400" /> Fast Selection Test
             </Link>
+            <Link to="/candidate/dashboard" className={getLinkClass('/candidate/dashboard')}>
+              <User size={18} /> Update Profile
+            </Link>
             <Link to="/candidate/job-fair" className={getLinkClass('/candidate/job-fair')}>
               <Building size={18} /> Job Fair Available
-            </Link>
-            <Link to="/candidate/openings" className={getLinkClass('/candidate/openings')}>
-              <Briefcase size={18} /> Current Openings
             </Link>
             
             <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 mt-6 px-4">Resume & Downloads</div>
