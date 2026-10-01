@@ -375,19 +375,27 @@ export const CandidateDashboard = () => {
     }
   };
 
-  const steps = ['Personal & Address', 'Articleship', 'Education', 'Experience', 'Review Profile'];
+  const isExperienced = Boolean(experienceInfo.isExperienced);
+
+  const steps = isExperienced
+    ? ['Personal & Address', 'Education', 'Experience', 'Articleship (Optional)', 'Review Profile']
+    : ['Personal & Address', 'Articleship', 'Education', 'Experience', 'Review Profile'];
 
   const calculateProfileCompletion = () => {
     let score = 0;
-    let total = 6;
+    let total = isExperienced ? 5 : 6;
     if (user?.firstName && user?.lastName) score += 1;
     if (personal.phone) score += 1;
     if (personal.currentCity) score += 1;
     if (resumeUrl) score += 1;
-    if (caPortfolio.caFinal?.group1Attempts || caPortfolio.caInter?.group1Attempts) score += 1;
-    if (caPortfolio.articleships?.[0]?.firmName) score += 1;
+    if (isExperienced) {
+      if (experienceInfo.currentCompanyName || experienceInfo.experienceYears) score += 1;
+    } else {
+      if (caPortfolio.caFinal?.group1Attempts || caPortfolio.caInter?.group1Attempts) score += 1;
+      if (caPortfolio.articleships?.[0]?.firmName) score += 1;
+    }
     
-    return Math.round((score / total) * 100);
+    return Math.min(100, Math.round((score / total) * 100));
   };
   
   const completionPercentage = calculateProfileCompletion();
@@ -425,9 +433,27 @@ export const CandidateDashboard = () => {
               scanningResume={scanningResume}
             />
           )}
-          {step === 2 && <Step3Articleship caPortfolio={caPortfolio} setCaPortfolio={setCaPortfolio} />}
-          {step === 3 && <Step4Education qualifications={qualifications} setQualifications={setQualifications} />}
-          {step === 4 && <Step5Experience experienceInfo={experienceInfo} setExperienceInfo={setExperienceInfo} personal={personal} setPersonal={setPersonal} />}
+          {step === 2 && (
+            isExperienced ? (
+              <Step4Education qualifications={qualifications} setQualifications={setQualifications} />
+            ) : (
+              <Step3Articleship caPortfolio={caPortfolio} setCaPortfolio={setCaPortfolio} isOptional={false} />
+            )
+          )}
+          {step === 3 && (
+            isExperienced ? (
+              <Step5Experience experienceInfo={experienceInfo} setExperienceInfo={setExperienceInfo} personal={personal} setPersonal={setPersonal} />
+            ) : (
+              <Step4Education qualifications={qualifications} setQualifications={setQualifications} />
+            )
+          )}
+          {step === 4 && (
+            isExperienced ? (
+              <Step3Articleship caPortfolio={caPortfolio} setCaPortfolio={setCaPortfolio} isOptional={true} />
+            ) : (
+              <Step5Experience experienceInfo={experienceInfo} setExperienceInfo={setExperienceInfo} personal={personal} setPersonal={setPersonal} />
+            )
+          )}
           {step === 5 && (
             <Step6Review
               personal={personal}

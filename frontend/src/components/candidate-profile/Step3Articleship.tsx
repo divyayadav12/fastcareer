@@ -1,8 +1,8 @@
-﻿import React from 'react';
+import React from 'react';
 import { Plus, Trash2, Calendar, Building } from 'lucide-react';
 import { ARTICLESHIP_TYPES, CA_FIRMS, ALL_CITIES, MONTHS, YEARS, NATURE_OF_WORK } from '../../utils/constants';
 
-export const Step3Articleship = ({ caPortfolio, setCaPortfolio }) => {
+export const Step3Articleship = ({ caPortfolio, setCaPortfolio, isOptional = false }: any) => {
   const addFirm = () => {
     setCaPortfolio({
       ...caPortfolio,
@@ -10,32 +10,32 @@ export const Step3Articleship = ({ caPortfolio, setCaPortfolio }) => {
     });
   };
 
-  const removeFirm = (index) => {
+  const removeFirm = (index: number) => {
     const newArticleships = [...caPortfolio.articleships];
     newArticleships.splice(index, 1);
     setCaPortfolio({ ...caPortfolio, articleships: newArticleships });
   };
 
-  const updateFirm = (index, field, value) => {
+  const updateFirm = (index: number, field: string, value: any) => {
     const newArticleships = [...caPortfolio.articleships];
     newArticleships[index][field] = value;
     setCaPortfolio({ ...caPortfolio, articleships: newArticleships });
   };
 
-  const totalMonths = caPortfolio.articleships.reduce((acc, curr) => acc + (parseInt(curr.noOfMonths) || 0), 0);
+  const totalMonths = caPortfolio.articleships.reduce((acc: number, curr: any) => acc + (parseInt(curr.noOfMonths) || 0), 0);
 
-  const toggleNatureOfWork = (work) => {
-    let currentWorks = caPortfolio.natureOfWork ? caPortfolio.natureOfWork.split(',').map(w => w.trim()).filter(Boolean) : [];
+  const toggleNatureOfWork = (work: string) => {
+    let currentWorks = caPortfolio.natureOfWork ? caPortfolio.natureOfWork.split(',').map((w: string) => w.trim()).filter(Boolean) : [];
     if (currentWorks.includes(work)) {
-      currentWorks = currentWorks.filter(w => w !== work);
+      currentWorks = currentWorks.filter((w: string) => w !== work);
     } else {
       currentWorks.push(work);
     }
     setCaPortfolio({ ...caPortfolio, natureOfWork: currentWorks.join(', ') });
   };
 
-  const isWorkSelected = (work) => {
-    const currentWorks = caPortfolio.natureOfWork ? caPortfolio.natureOfWork.split(',').map(w => w.trim()).filter(Boolean) : [];
+  const isWorkSelected = (work: string) => {
+    const currentWorks = caPortfolio.natureOfWork ? caPortfolio.natureOfWork.split(',').map((w: string) => w.trim()).filter(Boolean) : [];
     return currentWorks.includes(work);
   };
 
@@ -48,8 +48,19 @@ export const Step3Articleship = ({ caPortfolio, setCaPortfolio }) => {
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {isOptional && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center justify-between shadow-2xs">
+          <div className="flex items-center gap-2 text-amber-900 text-xs sm:text-sm font-semibold">
+            <span>⭐ <strong>Notice:</strong> Articleship & Training details are <strong>OPTIONAL</strong> for experienced candidates. You may complete or skip this step.</span>
+          </div>
+          <span className="px-2.5 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-full border border-amber-200 shrink-0">
+            Optional Step
+          </span>
+        </div>
+      )}
+
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Articleship & Training</h2>
+        <h2 className="text-2xl font-bold text-gray-900">Articleship & Training {isOptional && <span className="text-sm font-normal text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 ml-2">(Optional)</span>}</h2>
         <p className="text-gray-500 text-sm mt-1">Detail your articleship experience, firm details, and nature of work.</p>
       </div>
 
