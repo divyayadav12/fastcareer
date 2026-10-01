@@ -45,7 +45,7 @@ export const CandidateLayout = ({ children }: CandidateLayoutProps) => {
               <Briefcase size={18} /> Current Openings
             </Link>
             <Link to="/candidate/fast-selection" className={getLinkClass('/candidate/fast-selection')}>
-              <Zap size={18} className="text-amber-500 fill-amber-400" /> Fast Selection Test
+              <Zap size={18} className="text-amber-500 fill-amber-400" /> Take Fast Assessment Form
             </Link>
             <Link to="/candidate/dashboard" className={getLinkClass('/candidate/dashboard')}>
               <User size={18} /> Update Profile
