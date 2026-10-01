@@ -7,7 +7,9 @@ export const Step1Personal = ({ personal, setPersonal, user, resumeUrl, handleFi
     setPersonal((prev: any) => {
       const newState = { ...prev, permanentAddressSameAsCurrent: isChecked };
       if (isChecked) {
-        newState.permanentAddress = prev.currentAddress;
+        newState.permanentAddress = prev.currentAddress || '';
+        newState.permanentState = prev.currentState || '';
+        newState.permanentCity = prev.currentCity || '';
       }
       return newState;
     });
@@ -115,8 +117,15 @@ export const Step1Personal = ({ personal, setPersonal, user, resumeUrl, handleFi
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">State <span className="text-red-500">*</span></label>
                 <select value={personal.currentState} onChange={(e) => {
-                  setPersonal({...personal, currentState: e.target.value, currentCity: ''});
-                  
+                  const val = e.target.value;
+                  setPersonal((prev: any) => {
+                    const next = { ...prev, currentState: val, currentCity: '' };
+                    if (prev.permanentAddressSameAsCurrent) {
+                      next.permanentState = val;
+                      next.permanentCity = '';
+                    }
+                    return next;
+                  });
                 }} className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20">
                   <option value="">Select State</option>
                   {STATES.map(s => <option key={s} value={s}>{s}</option>)}
@@ -125,8 +134,14 @@ export const Step1Personal = ({ personal, setPersonal, user, resumeUrl, handleFi
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">City <span className="text-red-500">*</span></label>
                 <select value={personal.currentCity} onChange={(e) => {
-                  setPersonal({...personal, currentCity: e.target.value});
-                  
+                  const val = e.target.value;
+                  setPersonal((prev: any) => {
+                    const next = { ...prev, currentCity: val };
+                    if (prev.permanentAddressSameAsCurrent) {
+                      next.permanentCity = val;
+                    }
+                    return next;
+                  });
                 }} disabled={!personal.currentState} className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 disabled:bg-gray-50">
                   <option value="">Select City</option>
                   {(STATE_CITY_MAP[personal.currentState] || []).map(c => <option key={c} value={c}>{c}</option>)}
@@ -151,14 +166,14 @@ export const Step1Personal = ({ personal, setPersonal, user, resumeUrl, handleFi
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">State <span className="text-red-500">*</span></label>
-                <select value={personal.permanentState} onChange={(e) => setPersonal({...personal, permanentState: e.target.value, permanentCity: ''})} className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 disabled:bg-gray-50 disabled:text-gray-500">
+                <select value={personal.permanentState} onChange={(e) => setPersonal({...personal, permanentState: e.target.value, permanentCity: ''})} disabled={personal.permanentAddressSameAsCurrent} className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 disabled:bg-gray-50 disabled:text-gray-500">
                   <option value="">Select State</option>
                   {STATES.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">City <span className="text-red-500">*</span></label>
-                <select value={personal.permanentCity} onChange={(e) => setPersonal({...personal, permanentCity: e.target.value})} disabled={!personal.permanentState} className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 disabled:bg-gray-50 disabled:text-gray-500">
+                <select value={personal.permanentCity} onChange={(e) => setPersonal({...personal, permanentCity: e.target.value})} disabled={personal.permanentAddressSameAsCurrent || !personal.permanentState} className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 disabled:bg-gray-50 disabled:text-gray-500">
                   <option value="">Select City</option>
                   {(STATE_CITY_MAP[personal.permanentState] || []).map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
