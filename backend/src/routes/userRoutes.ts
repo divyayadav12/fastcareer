@@ -7,6 +7,9 @@ import {
   getCandidates,
   assignCandidatesToCompany,
   getEmployers,
+  createEmployee,
+  getEmployees,
+  deleteEmployee,
   matchCandidatesFromExcel,
   downloadCandidateResumesZip,
   seedLiveCandidates, seed50Candidates, cleanupDbAndFixResumes, seed10CandidatesController,
@@ -34,6 +37,11 @@ router.route('/profile').get(protect, getUserProfile).put(protect, updateUserPro
 router.route('/candidates').get(protect, employerOrAdmin, getCandidates);
 router.put('/candidates/assign-company', protect, admin, assignCandidatesToCompany);
 router.route('/employers').get(protect, admin, getEmployers);
+router.route('/employees')
+  .post(protect, admin, createEmployee)
+  .get(protect, admin, getEmployees);
+router.route('/employees/:id')
+  .delete(protect, admin, deleteEmployee);
 router.get('/candidates/:id/resume', getCandidateResume);
 router.get('/resume/:id', getCandidateResume);
 router.post('/candidates/match-excel', protect, employerOrAdmin, excelUpload.single('file'), matchCandidatesFromExcel);

@@ -44,7 +44,7 @@ export const Login = () => {
         navigate('/candidate/dashboard');
       } else if (user?.role === 'employer') {
         navigate('/employer/dashboard');
-      } else if (user?.role === 'admin') {
+      } else if (user?.role === 'admin' || user?.role === 'employee') {
         navigate('/admin/dashboard');
       } else {
         navigate('/');

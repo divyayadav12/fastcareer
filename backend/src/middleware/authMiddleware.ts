@@ -117,9 +117,16 @@ export const admin = (req: Request, res: Response, next: NextFunction) => {
   return res.status(403).json({ message: 'Not authorized as an admin' });
 };
 
-export const employerOrAdmin = (req: Request, res: Response, next: NextFunction) => {
-  if (req.user && (req.user.role === 'employer' || req.user.role === 'admin')) {
+export const adminOrEmployee = (req: Request, res: Response, next: NextFunction) => {
+  if (req.user && (req.user.role === 'admin' || req.user.role === 'employee')) {
     return next();
   }
-  return res.status(403).json({ message: 'Employer or Admin access required' });
+  return res.status(403).json({ message: 'Admin or Employee access required' });
+};
+
+export const employerOrAdmin = (req: Request, res: Response, next: NextFunction) => {
+  if (req.user && (req.user.role === 'employer' || req.user.role === 'admin' || req.user.role === 'employee')) {
+    return next();
+  }
+  return res.status(403).json({ message: 'Employer, Admin or Employee access required' });
 };

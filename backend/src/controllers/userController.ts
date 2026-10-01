@@ -837,3 +837,80 @@ export const getEmployers = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Server Error' });
   }
 };
+
+// @desc    Register a new internal employee (Admin only)
+// @route   POST /api/users/employees
+// @access  Private/Admin
+export const createEmployee = async (req: Request, res: Response) => {
+  const { firstName, lastName, email, password, phone, designation } = req.body;
+
+  try {
+    const trimmedEmail = (email || '').toLowerCase().trim();
+
+    if (!trimmedEmail || !password || !firstName) {
+      res.status(400).json({ message: 'First name, email address, and password are required.' });
+      return;
+    }
+
+    const userExists = await User.findOne({ email: trimmedEmail });
+    if (userExists) {
+      res.status(400).json({ message: `The email "${trimmedEmail}" is already registered.` });
+      return;
+    }
+
+    const employee = await User.create({
+      firstName: firstName.trim(),
+      lastName: (lastName || '').trim(),
+      email: trimmedEmail,
+      password,
+      role: 'employee',
+      phone: phone || '',
+      headline: designation || 'Staff Member',
+      profileCompleted: true
+    });
+
+    res.status(201).json({
+      _id: employee._id,
+      firstName: employee.firstName,
+      lastName: employee.lastName,
+      email: employee.email,
+      role: employee.role,
+      phone: employee.phone,
+      headline: employee.headline,
+      createdAt: (employee as any).createdAt
+    });
+  } catch (error: any) {
+    console.error('Error creating employee:', error);
+    res.status(500).json({ message: error.message || 'Server error creating employee' });
+  }
+};
+
+// @desc    Get all registered internal employees (Admin only)
+// @route   GET /api/users/employees
+// @access  Private/Admin
+export const getEmployees = async (req: Request, res: Response) => {
+  try {
+    const employees = await User.find({ role: 'employee' }).select('-password').sort({ createdAt: -1 });
+    res.json(employees);
+  } catch (error) {
+    console.error('Error fetching employees:', error);
+    res.status(500).json({ message: 'Server Error fetching employees' });
+  }
+};
+
+// @desc    Delete an internal employee (Admin only)
+// @route   DELETE /api/users/employees/:id
+// @access  Private/Admin
+export const deleteEmployee = async (req: Request, res: Response) => {
+  try {
+    const employee = await User.findOneAndDelete({ _id: req.params.id, role: 'employee' });
+    if (!employee) {
+      res.status(404).json({ message: 'Employee account not found' });
+      return;
+    }
+    res.json({ message: 'Employee account removed successfully' });
+  } catch (error) {
+    console.error('Error deleting employee:', error);
+    res.status(500).json({ message: 'Server error deleting employee' });
+  }
+};

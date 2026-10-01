@@ -1,5 +1,5 @@
 import React from 'react';
-import { Building, Users, FileText, Settings, Briefcase, BarChart2, Database, ClipboardList, Award, Shield, Search } from 'lucide-react';
+import { Building, Users, FileText, Settings, Briefcase, BarChart2, Database, ClipboardList, Award, Shield, Search, UserCheck } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../store';
@@ -11,6 +11,8 @@ interface AdminLayoutProps {
 export const AdminLayout = ({ children }: AdminLayoutProps) => {
   const { user } = useSelector((state: RootState) => state.auth);
   const location = useLocation();
+
+  const isEmployee = user?.role === 'employee';
 
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -35,9 +37,9 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
             </div>
             <div className="overflow-hidden">
               <h3 className="font-bold text-slate-900 truncate">
-                {user?.firstName ? `${user.firstName} (Admin)` : 'FAST Admin'}
+                {user?.firstName ? `${user.firstName} (${isEmployee ? 'Employee' : 'Admin'})` : (isEmployee ? 'Employee' : 'FAST Admin')}
               </h3>
-              <p className="text-xs text-indigo-600 font-medium">Administrator</p>
+              <p className="text-xs text-indigo-600 font-medium">{isEmployee ? 'Internal Staff' : 'Administrator'}</p>
             </div>
           </div>
 
@@ -51,9 +53,19 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
             <Link to="/admin/test-results" className={getLinkClass('/admin/test-results')}>
               <Award size={18} className="text-amber-500" /> Assessment Results
             </Link>
-            <Link to="/admin/add-company" className={getLinkClass('/admin/add-company')}>
-              <Building size={18} /> Manage Companies
-            </Link>
+
+            {/* Admin ONLY pages: Hidden for Employees */}
+            {!isEmployee && (
+              <>
+                <Link to="/admin/add-company" className={getLinkClass('/admin/add-company')}>
+                  <Building size={18} /> Manage Companies
+                </Link>
+                <Link to="/admin/add-employee" className={getLinkClass('/admin/add-employee')}>
+                  <UserCheck size={18} className="text-blue-600" /> Manage Employees
+                </Link>
+              </>
+            )}
+
             <Link to="/admin/applications" className={getLinkClass('/admin/applications')}>
               <ClipboardList size={18} /> Shared Applications
             </Link>

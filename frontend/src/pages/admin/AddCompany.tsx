@@ -5,9 +5,11 @@ import toast from 'react-hot-toast';
 import api from '../../services/api';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
+import { useNavigate } from 'react-router-dom';
 
 export const AddCompany = () => {
   const { user } = useSelector((state: RootState) => state.auth);
+  const navigate = useNavigate();
   const [companies, setCompanies] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -21,6 +23,14 @@ export const AddCompany = () => {
     password: '',
   });
 
+  // Guard: Redirect employees if they try to access company management
+  useEffect(() => {
+    if (user && user.role === 'employee') {
+      toast.error('Employee accounts do not have permission to manage companies.');
+      navigate('/admin/dashboard');
+    }
+  }, [user, navigate]);
+
   const fetchCompanies = async () => {
     try {
       const res = await api.get('/users/employers');
@@ -33,8 +43,10 @@ export const AddCompany = () => {
   };
 
   useEffect(() => {
-    fetchCompanies();
-  }, []);
+    if (user?.role === 'admin') {
+      fetchCompanies();
+    }
+  }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

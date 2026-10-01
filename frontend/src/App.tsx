@@ -43,6 +43,7 @@ import { PlatformData } from './pages/employer/PlatformData';
 
 import { AdminDashboard } from './pages/admin/Dashboard';
 import { AddCompany } from './pages/admin/AddCompany';
+import { AddEmployee } from './pages/admin/AddEmployee';
 import { CandidateTestResults } from './pages/admin/CandidateTestResults';
 
 function App() {
@@ -132,6 +133,7 @@ function App() {
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/candidates" element={<EmployerCandidates />} />
             <Route path="/admin/add-company" element={<AddCompany />} />
+            <Route path="/admin/add-employee" element={<AddEmployee />} />
             <Route path="/admin/applications" element={<EmployerApplications />} />
             <Route path="/admin/test-results" element={<CandidateTestResults />} />
             <Route path="/admin/jobs" element={<ManageJobs />} />
