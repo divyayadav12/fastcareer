@@ -33,31 +33,35 @@ export const ManageJobs = () => {
     shareShortlistedCandidates: true
   });
 
+  // Helper function to safely extract company display name
+  const getEmpCompanyName = (emp: any): string => {
+    if (!emp) return '';
+    const cName = (emp.companyName || '').trim();
+    if (cName) return cName;
+    const fullName = `${emp.firstName || ''} ${emp.lastName || ''}`.trim();
+    if (fullName) return fullName;
+    return (emp.email || '').trim();
+  };
+
   // Unique company names for Dropdown 1
   const uniqueCompanyNames = Array.from(
     new Set(
       employers
-        .map(emp => (emp.companyName || `${emp.firstName || ''} ${emp.lastName || ''}`).trim())
+        .map(emp => getEmpCompanyName(emp))
         .filter(Boolean)
     )
   ).sort();
 
   // Filter employers for Dropdowns 2 & 3 based on selected company name
   const filteredHRsForCompany = selectedCompanyName
-    ? employers.filter(emp => {
-        const cName = (emp.companyName || `${emp.firstName || ''} ${emp.lastName || ''}`).trim();
-        return cName.toLowerCase() === selectedCompanyName.toLowerCase();
-      })
+    ? employers.filter(emp => getEmpCompanyName(emp).toLowerCase() === selectedCompanyName.toLowerCase())
     : employers;
 
   const handleSelectCompanyName = (cName: string) => {
     setSelectedCompanyName(cName);
     if (!cName) return;
 
-    const matchingEmps = employers.filter(emp => {
-      const name = (emp.companyName || `${emp.firstName || ''} ${emp.lastName || ''}`).trim();
-      return name.toLowerCase() === cName.toLowerCase();
-    });
+    const matchingEmps = employers.filter(emp => getEmpCompanyName(emp).toLowerCase() === cName.toLowerCase());
 
     if (matchingEmps.length > 0) {
       const firstEmp = matchingEmps[0];
@@ -73,7 +77,7 @@ export const ManageJobs = () => {
     setActiveDropdownEmployerId(empId);
     const emp = employers.find(e => e._id === empId);
     if (emp) {
-      const cName = (emp.companyName || `${emp.firstName || ''} ${emp.lastName || ''}`).trim();
+      const cName = getEmpCompanyName(emp);
       setSelectedCompanyName(cName);
       if (!selectedEmployerIds.includes(emp._id)) {
         setSelectedEmployerIds(prev => [...prev, emp._id]);
@@ -107,13 +111,18 @@ export const ManageJobs = () => {
   };
 
   useEffect(() => {
-    if (user?.token) {
-      fetchJobs();
-      if (isAdminOrStaff) {
-        fetchEmployers();
-      }
+    fetchJobs();
+    if (isAdminOrStaff) {
+      fetchEmployers();
     }
-  }, [user]);
+  }, [user, isAdminOrStaff]);
+
+  const handleOpenModal = () => {
+    setShowModal(true);
+    if (isAdminOrStaff) {
+      fetchEmployers();
+    }
+  };
 
   const handleSelectEmployerFromDropdown = (empId: string) => {
     setActiveDropdownEmployerId(empId);
@@ -191,7 +200,7 @@ export const ManageJobs = () => {
     <Layout>
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold text-text">Manage Jobs</h1>
-        <Button onClick={() => setShowModal(true)} className="flex items-center gap-2">
+        <Button onClick={handleOpenModal} className="flex items-center gap-2">
           <PlusCircle size={18} /> Post a New Job
         </Button>
       </div>
@@ -205,7 +214,7 @@ export const ManageJobs = () => {
           </div>
           <h2 className="text-lg font-bold text-text mb-2">No jobs posted yet</h2>
           <p className="text-gray-500 max-w-md mx-auto mb-6">You haven't posted any jobs. Start posting jobs to find the right candidates for your company.</p>
-          <Button onClick={() => setShowModal(true)}>Post Your First Job</Button>
+          <Button onClick={handleOpenModal}>Post Your First Job</Button>
         </div>
       ) : (
         <div className="grid gap-4">
