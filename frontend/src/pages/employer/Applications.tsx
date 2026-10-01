@@ -56,7 +56,49 @@ export const EmployerApplications = () => {
   // Admin Sharing & Multi-select State
   const [selectedAppIds, setSelectedAppIds] = useState<string[]>([]);
   const [selectedEmployerId, setSelectedEmployerId] = useState<string>('');
+  const [selectedCompanyName, setSelectedCompanyName] = useState<string>('');
   const [sharing, setSharing] = useState(false);
+
+  // Unique company names for Dropdown 1
+  const uniqueCompanyNames = Array.from(
+    new Set(
+      employers
+        .map(emp => (emp.companyName || `${emp.firstName || ''} ${emp.lastName || ''}`).trim())
+        .filter(Boolean)
+    )
+  ).sort();
+
+  // Filter employers for Dropdowns 2 & 3 based on selected company name
+  const filteredHRsForCompany = selectedCompanyName
+    ? employers.filter(emp => {
+        const cName = (emp.companyName || `${emp.firstName || ''} ${emp.lastName || ''}`).trim();
+        return cName.toLowerCase() === selectedCompanyName.toLowerCase();
+      })
+    : employers;
+
+  const handleSelectCompanyName = (cName: string) => {
+    setSelectedCompanyName(cName);
+    if (!cName) return;
+
+    const matchingEmps = employers.filter(emp => {
+      const name = (emp.companyName || `${emp.firstName || ''} ${emp.lastName || ''}`).trim();
+      return name.toLowerCase() === cName.toLowerCase();
+    });
+
+    if (matchingEmps.length > 0) {
+      setSelectedEmployerId(matchingEmps[0]._id);
+    }
+  };
+
+  const handleSelectHROrEmail = (empId: string) => {
+    if (!empId) return;
+    setSelectedEmployerId(empId);
+    const emp = employers.find(e => e._id === empId);
+    if (emp) {
+      const cName = (emp.companyName || `${emp.firstName || ''} ${emp.lastName || ''}`).trim();
+      setSelectedCompanyName(cName);
+    }
+  };
 
   // Excel Matching States
   const [isExcelMode, setIsExcelMode] = useState(false);
@@ -526,19 +568,16 @@ export const EmployerApplications = () => {
                 <Building size={14} className="text-indigo-400" /> 1. Registered Company Name
               </label>
               <select
-                value={selectedEmployerId}
-                onChange={(e) => setSelectedEmployerId(e.target.value)}
+                value={selectedCompanyName}
+                onChange={(e) => handleSelectCompanyName(e.target.value)}
                 className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3.5 py-2.5 text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
               >
-                {employers.length === 0 ? (
-                  <option value="">No Companies Registered Yet</option>
-                ) : (
-                  employers.map(emp => (
-                    <option key={emp._id} value={emp._id}>
-                      {emp.companyName || emp.firstName}
-                    </option>
-                  ))
-                )}
+                <option value="">-- Select Company Name --</option>
+                {uniqueCompanyNames.map(cName => (
+                  <option key={cName} value={cName}>
+                    {cName}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -549,18 +588,17 @@ export const EmployerApplications = () => {
               </label>
               <select
                 value={selectedEmployerId}
-                onChange={(e) => setSelectedEmployerId(e.target.value)}
+                onChange={(e) => handleSelectHROrEmail(e.target.value)}
                 className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3.5 py-2.5 text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
               >
-                {employers.length === 0 ? (
-                  <option value="">No HR Registered</option>
-                ) : (
-                  employers.map(emp => (
-                    <option key={emp._id} value={emp._id}>
-                      {emp.firstName} {emp.lastName || ''} ({emp.companyName || 'Company'})
-                    </option>
-                  ))
-                )}
+                <option value="">
+                  {selectedCompanyName ? `-- HRs of ${selectedCompanyName} --` : '-- Select HR Representative --'}
+                </option>
+                {filteredHRsForCompany.map(emp => (
+                  <option key={emp._id} value={emp._id}>
+                    {emp.firstName} {emp.lastName || ''} ({emp.companyName || 'Company'})
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -571,18 +609,17 @@ export const EmployerApplications = () => {
               </label>
               <select
                 value={selectedEmployerId}
-                onChange={(e) => setSelectedEmployerId(e.target.value)}
+                onChange={(e) => handleSelectHROrEmail(e.target.value)}
                 className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3.5 py-2.5 text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
               >
-                {employers.length === 0 ? (
-                  <option value="">No Email Registered</option>
-                ) : (
-                  employers.map(emp => (
-                    <option key={emp._id} value={emp._id}>
-                      {emp.email}
-                    </option>
-                  ))
-                )}
+                <option value="">
+                  {selectedCompanyName ? `-- Emails of ${selectedCompanyName} --` : '-- Select Company Email --'}
+                </option>
+                {filteredHRsForCompany.map(emp => (
+                  <option key={emp._id} value={emp._id}>
+                    {emp.email}
+                  </option>
+                ))}
               </select>
             </div>
           </div>

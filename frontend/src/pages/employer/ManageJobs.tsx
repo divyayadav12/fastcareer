@@ -16,6 +16,7 @@ export const ManageJobs = () => {
   const [employers, setEmployers] = useState<any[]>([]);
   const [selectedEmployerIds, setSelectedEmployerIds] = useState<string[]>([]);
   const [activeDropdownEmployerId, setActiveDropdownEmployerId] = useState<string>('');
+  const [selectedCompanyName, setSelectedCompanyName] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
@@ -28,8 +29,57 @@ export const ManageJobs = () => {
     salaryRange: '',
     description: '',
     requirements: '',
-    responsibilities: ''
+    responsibilities: '',
+    shareShortlistedCandidates: true
   });
+
+  // Unique company names for Dropdown 1
+  const uniqueCompanyNames = Array.from(
+    new Set(
+      employers
+        .map(emp => (emp.companyName || `${emp.firstName || ''} ${emp.lastName || ''}`).trim())
+        .filter(Boolean)
+    )
+  ).sort();
+
+  // Filter employers for Dropdowns 2 & 3 based on selected company name
+  const filteredHRsForCompany = selectedCompanyName
+    ? employers.filter(emp => {
+        const cName = (emp.companyName || `${emp.firstName || ''} ${emp.lastName || ''}`).trim();
+        return cName.toLowerCase() === selectedCompanyName.toLowerCase();
+      })
+    : employers;
+
+  const handleSelectCompanyName = (cName: string) => {
+    setSelectedCompanyName(cName);
+    if (!cName) return;
+
+    const matchingEmps = employers.filter(emp => {
+      const name = (emp.companyName || `${emp.firstName || ''} ${emp.lastName || ''}`).trim();
+      return name.toLowerCase() === cName.toLowerCase();
+    });
+
+    if (matchingEmps.length > 0) {
+      const firstEmp = matchingEmps[0];
+      setActiveDropdownEmployerId(firstEmp._id);
+      if (!selectedEmployerIds.includes(firstEmp._id)) {
+        setSelectedEmployerIds(prev => [...prev, firstEmp._id]);
+      }
+    }
+  };
+
+  const handleSelectHROrEmail = (empId: string) => {
+    if (!empId) return;
+    setActiveDropdownEmployerId(empId);
+    const emp = employers.find(e => e._id === empId);
+    if (emp) {
+      const cName = (emp.companyName || `${emp.firstName || ''} ${emp.lastName || ''}`).trim();
+      setSelectedCompanyName(cName);
+      if (!selectedEmployerIds.includes(emp._id)) {
+        setSelectedEmployerIds(prev => [...prev, emp._id]);
+      }
+    }
+  };
 
   const fetchEmployers = async () => {
     try {
@@ -282,71 +332,87 @@ export const ManageJobs = () => {
                       )}
                     </div>
 
+                    {/* OPTION: SHARE SHORTLISTED CANDIDATES TOGGLE */}
+                    <div className="flex items-start gap-3 p-3 bg-white rounded-xl border border-indigo-100 shadow-2xs">
+                      <input
+                        type="checkbox"
+                        id="shareShortlistedCandidates"
+                        checked={formData.shareShortlistedCandidates}
+                        onChange={(e) => setFormData({ ...formData, shareShortlistedCandidates: e.target.checked })}
+                        className="mt-0.5 w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500 cursor-pointer"
+                      />
+                      <div>
+                        <label htmlFor="shareShortlistedCandidates" className="text-xs font-bold text-slate-800 cursor-pointer flex items-center gap-1">
+                          ⭐ Share Shortlisted Candidate Profiles with Target Companies
+                        </label>
+                        <p className="text-[11px] text-slate-500 font-normal mt-0.5">
+                          {formData.shareShortlistedCandidates
+                            ? '✓ Enabled: Shortlisted candidates for this job will be visible to target companies.'
+                            : '❌ Disabled: Candidate details for this job will NOT be shared with target companies.'}
+                        </p>
+                      </div>
+                    </div>
+
                     {/* 3 LINKED DROPDOWNS OF REGISTERED COMPANIES */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
                       {/* Dropdown 1: Registered Company Name */}
                       <div>
                         <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1">
-                          <Building size={13} className="text-indigo-600" /> 1. Registered Company Name
+                          <Building size={13} className="text-indigo-600" /> 1. Company Name
                         </label>
                         <select
-                          value={activeDropdownEmployerId}
-                          onChange={(e) => handleSelectEmployerFromDropdown(e.target.value)}
+                          value={selectedCompanyName}
+                          onChange={(e) => handleSelectCompanyName(e.target.value)}
                           className="w-full bg-white border border-slate-200 text-slate-900 rounded-lg px-3 py-2 text-xs font-medium focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none shadow-2xs"
                         >
-                          {employers.length === 0 ? (
-                            <option value="">No Companies Registered Yet</option>
-                          ) : (
-                            employers.map(emp => (
-                              <option key={emp._id} value={emp._id}>
-                                {emp.companyName || emp.firstName}
-                              </option>
-                            ))
-                          )}
+                          <option value="">-- Select Company Name --</option>
+                          {uniqueCompanyNames.map(cName => (
+                            <option key={cName} value={cName}>
+                              {cName}
+                            </option>
+                          ))}
                         </select>
                       </div>
 
-                      {/* Dropdown 2: HR Representative */}
+                      {/* Dropdown 2: HR Representative (Filtered by Selected Company) */}
                       <div>
                         <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1">
                           <User size={13} className="text-indigo-600" /> 2. HR Representative
                         </label>
                         <select
                           value={activeDropdownEmployerId}
-                          onChange={(e) => handleSelectEmployerFromDropdown(e.target.value)}
+                          onChange={(e) => handleSelectHROrEmail(e.target.value)}
                           className="w-full bg-white border border-slate-200 text-slate-900 rounded-lg px-3 py-2 text-xs font-medium focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none shadow-2xs"
                         >
-                          {employers.length === 0 ? (
-                            <option value="">No HR Registered</option>
-                          ) : (
-                            employers.map(emp => (
-                              <option key={emp._id} value={emp._id}>
-                                {emp.firstName} {emp.lastName || ''} (Company)
-                              </option>
-                            ))
-                          )}
+                          <option value="">
+                            {selectedCompanyName ? `-- HRs of ${selectedCompanyName} --` : '-- Select HR Representative --'}
+                          </option>
+                          {filteredHRsForCompany.map(emp => (
+                            <option key={emp._id} value={emp._id}>
+                              {emp.firstName} {emp.lastName || ''} ({emp.companyName || 'Company'})
+                            </option>
+                          ))}
                         </select>
                       </div>
 
-                      {/* Dropdown 3: Company Email */}
+                      {/* Dropdown 3: Company Email (Filtered by Selected Company) */}
                       <div>
                         <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1">
                           <Mail size={13} className="text-indigo-600" /> 3. Company Email
                         </label>
                         <select
                           value={activeDropdownEmployerId}
-                          onChange={(e) => handleSelectEmployerFromDropdown(e.target.value)}
+                          onChange={(e) => handleSelectHROrEmail(e.target.value)}
                           className="w-full bg-white border border-slate-200 text-slate-900 rounded-lg px-3 py-2 text-xs font-medium focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none shadow-2xs"
                         >
-                          {employers.length === 0 ? (
-                            <option value="">No Company Email</option>
-                          ) : (
-                            employers.map(emp => (
-                              <option key={emp._id} value={emp._id}>
-                                {emp.email}
-                              </option>
-                            ))
-                          )}
+                          <option value="">
+                            {selectedCompanyName ? `-- Emails of ${selectedCompanyName} --` : '-- Select Company Email --'}
+                          </option>
+                          {filteredHRsForCompany.map(emp => (
+                            <option key={emp._id} value={emp._id}>
+                              {emp.email}
+                            </option>
+                          ))}
                         </select>
                       </div>
                     </div>

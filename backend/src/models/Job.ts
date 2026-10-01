@@ -14,6 +14,7 @@ export interface IJob extends Document {
   postedBy?: mongoose.Types.ObjectId; // Reference to Employer model later
   targetEmployers?: mongoose.Types.ObjectId[]; // Employers/Companies who receive access to this job & applicants
   sharedHrEmails?: string[]; // Extra HR emails shared
+  shareShortlistedCandidates?: boolean; // Whether to share shortlisted candidates with target companies
   createdAt: Date;
   updatedAt: Date;
 }
@@ -33,6 +34,7 @@ const JobSchema: Schema = new Schema(
     postedBy: { type: Schema.Types.ObjectId, ref: 'User' }, 
     targetEmployers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     sharedHrEmails: [{ type: String }],
+    shareShortlistedCandidates: { type: Boolean, default: true },
   },
   { timestamps: true }
 );

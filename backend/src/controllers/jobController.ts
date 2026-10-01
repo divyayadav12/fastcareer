@@ -92,6 +92,7 @@ export const createJob = async (req: any, res: Response) => {
       ...req.body,
       targetEmployers: resolvedTargetEmployers,
       sharedHrEmails: sharedHrEmails || [],
+      shareShortlistedCandidates: req.body.shareShortlistedCandidates !== false,
       postedBy: req.user._id 
     });
 
@@ -109,7 +110,7 @@ export const createJob = async (req: any, res: Response) => {
 // @access  Private/Employer/Admin
 export const updateJob = async (req: any, res: Response) => {
   try {
-    const { location, targetEmployers, sharedHrEmails } = req.body;
+    const { location, targetEmployers, sharedHrEmails, shareShortlistedCandidates } = req.body;
     
     if (location && !isValidCity(location)) {
       res.status(400).json({ message: 'Invalid location. Please select a valid city from the list.' });
@@ -135,6 +136,7 @@ export const updateJob = async (req: any, res: Response) => {
         ...req.body,
         targetEmployers: resolvedTargetEmployers,
         sharedHrEmails: sharedHrEmails || [],
+        shareShortlistedCandidates: shareShortlistedCandidates !== false,
       },
       { new: true }
     ).populate('targetEmployers', 'companyName firstName lastName email');
