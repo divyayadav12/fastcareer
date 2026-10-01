@@ -1,9 +1,10 @@
 import toast from 'react-hot-toast';
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { AdminLayout } from '../../layouts/AdminLayout';
 import { 
   Users, Building2, Download, MapPin, GraduationCap, 
-  FileText, Search, PlusCircle, X, Building, Mail, User
+  FileText, Search, PlusCircle, X, Building, Mail, User, UserCheck
 } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
@@ -206,16 +207,27 @@ export const AdminDashboard = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-3 w-full md:w-auto">
-          <button
-            onClick={() => {
-              setActiveModalTab('register');
-              setIsCompanyModalOpen(true);
-            }}
-            className="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-xs transition-colors cursor-pointer"
-          >
-            <Building2 size={16} /> Register New Company
-          </button>
+        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+          {user?.role !== 'employee' && (
+            <>
+              <button
+                onClick={() => {
+                  setActiveModalTab('register');
+                  setIsCompanyModalOpen(true);
+                }}
+                className="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-xs transition-colors cursor-pointer"
+              >
+                <Building2 size={16} /> Register New Company
+              </button>
+
+              <Link
+                to="/admin/add-employee"
+                className="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-xs transition-colors cursor-pointer"
+              >
+                <UserCheck size={16} /> Manage Employees
+              </Link>
+            </>
+          )}
 
           <button 
             onClick={handleBulkDownload}

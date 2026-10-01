@@ -12,7 +12,17 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
   const { user } = useSelector((state: RootState) => state.auth);
   const location = useLocation();
 
-  const isEmployee = user?.role === 'employee';
+  const userEmail = (user?.email || '').toLowerCase().trim();
+  const adminEmails = [
+    'admin@fastcareers.in',
+    'divyayadav141203@gmail.com',
+    'divyanshyadav10270@gmail.com',
+    'admin@coachingfast.in',
+    'admin@fastcareer.in'
+  ];
+
+  const isAdmin = user?.role === 'admin' || adminEmails.includes(userEmail) || (!user?.role && userEmail.includes('admin'));
+  const isEmployee = user?.role === 'employee' && !adminEmails.includes(userEmail);
 
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -37,9 +47,9 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
             </div>
             <div className="overflow-hidden">
               <h3 className="font-bold text-slate-900 truncate">
-                {user?.firstName ? `${user.firstName} (${isEmployee ? 'Employee' : 'Admin'})` : (isEmployee ? 'Employee' : 'FAST Admin')}
+                {user?.firstName ? `${user.firstName} (${isAdmin ? 'Admin' : 'Employee'})` : (isAdmin ? 'FAST Admin' : 'Employee')}
               </h3>
-              <p className="text-xs text-indigo-600 font-medium">{isEmployee ? 'Internal Staff' : 'Administrator'}</p>
+              <p className="text-xs text-indigo-600 font-medium">{isAdmin ? 'Administrator' : 'Internal Staff'}</p>
             </div>
           </div>
 
@@ -57,14 +67,14 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
               <Award size={18} className="text-amber-500" /> Assessment Results
             </Link>
 
-            {/* Admin ONLY pages: Hidden for Employees */}
-            {!isEmployee && (
+            {/* Admin ONLY pages */}
+            {isAdmin && (
               <>
                 <Link to="/admin/add-company" className={getLinkClass('/admin/add-company')}>
                   <Building size={18} /> Manage Companies
                 </Link>
                 <Link to="/admin/add-employee" className={getLinkClass('/admin/add-employee')}>
-                  <UserCheck size={18} className="text-blue-600" /> Manage Employees
+                  <UserCheck size={18} className="text-blue-600 font-bold" /> Manage Employees
                 </Link>
               </>
             )}
