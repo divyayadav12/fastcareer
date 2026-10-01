@@ -71,7 +71,7 @@ interface Candidate {
 
 export const EmployerCandidates = () => {
   const { user } = useSelector((state: any) => state.auth);
-  const Layout = user?.role === 'admin' ? AdminLayout : EmployerLayout;
+  const Layout = (user?.role === 'admin' || user?.role === 'employee') ? AdminLayout : EmployerLayout;
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [loading, setLoading] = useState(true);
   

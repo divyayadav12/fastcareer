@@ -36,7 +36,7 @@ router.post('/upload-resume', upload.single('resume'), (req, res) => {
 router.route('/profile').get(protect, getUserProfile).put(protect, updateUserProfile);
 router.route('/candidates').get(protect, employerOrAdmin, getCandidates);
 router.put('/candidates/assign-company', protect, admin, assignCandidatesToCompany);
-router.route('/employers').get(protect, admin, getEmployers);
+router.route('/employers').get(protect, employerOrAdmin, getEmployers);
 router.route('/employees')
   .post(protect, admin, createEmployee)
   .get(protect, admin, getEmployees);

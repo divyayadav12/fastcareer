@@ -9,7 +9,7 @@ import { getResumeUrl } from '../../utils/urlHelper';
 
 export const PlatformData = () => {
   const { user } = useSelector((state: RootState) => state.auth);
-  const Layout = user?.role === 'admin' ? AdminLayout : EmployerLayout;
+  const Layout = (user?.role === 'admin' || user?.role === 'employee') ? AdminLayout : EmployerLayout;
   const [activeTab, setActiveTab] = useState<'feedbacks' | 'referrals' | 'jobchanges' | 'sharedjobs'>('feedbacks');
   
   const [data, setData] = useState({

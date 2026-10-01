@@ -8,7 +8,7 @@ import type { RootState } from '../../store';
 
 export const EmployerBilling = () => {
   const { user } = useSelector((state: RootState) => state.auth);
-  const Layout = user?.role === 'admin' ? AdminLayout : EmployerLayout;
+  const Layout = (user?.role === 'admin' || user?.role === 'employee') ? AdminLayout : EmployerLayout;
 
   return (
     <Layout>

@@ -174,9 +174,11 @@ export const EmployerApplications = () => {
     }
   };
 
+  const isAdminOrStaff = user?.role === 'admin' || user?.role === 'employee';
+
   useEffect(() => {
     fetchApplications();
-    if (user?.role === 'admin') {
+    if (isAdminOrStaff) {
       fetchEmployers();
     }
   }, [user]);
@@ -388,7 +390,7 @@ export const EmployerApplications = () => {
     return matchesSearch && matchesStatus && matchesCity && matchesCA && matchesDate && matchesExcel;
   });
 
-  const Layout = user?.role === 'admin' ? AdminLayout : EmployerLayout;
+  const Layout = isAdminOrStaff ? AdminLayout : EmployerLayout;
 
   return (
     <Layout>
@@ -404,10 +406,10 @@ export const EmployerApplications = () => {
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900 flex items-center gap-2">
             <FileText className="text-indigo-600" /> 
-            {user?.role === 'admin' || user?.role === 'employee' ? 'Job Applications & Applied Candidates' : 'Forwarded Candidate Applications'}
+            {isAdminOrStaff ? 'Job Applications & Applied Candidates' : 'Forwarded Candidate Applications'}
           </h1>
           <p className="text-slate-500 text-sm mt-1">
-            {user?.role === 'admin' || user?.role === 'employee' 
+            {isAdminOrStaff 
               ? 'Full roster of candidates who applied for jobs. Review details, filter by job/location/CA status, match Excel sheets, and forward profiles to registered companies.' 
               : 'Review candidates shared with your company and update hiring statuses.'}
           </p>
@@ -423,7 +425,7 @@ export const EmployerApplications = () => {
             <UploadCloud size={14} /> {isProcessingExcel ? (processingStep || 'Processing...') : 'Upload Excel Match'}
           </button>
 
-          {user?.role === 'admin' && (
+          {isAdminOrStaff && (
             <>
               <button
                 onClick={handleCleanupTestJobs}
@@ -496,7 +498,7 @@ export const EmployerApplications = () => {
       )}
 
       {/* ADMIN CONTROL PANEL: 3 Linked Dropdowns to Share Candidates with Registered Companies */}
-      {user?.role === 'admin' && (
+      {isAdminOrStaff && (
         <div className="bg-slate-900 text-white p-5 rounded-2xl shadow-md mb-6 border border-slate-800">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 pb-3 border-b border-slate-800">
             <div className="flex items-center gap-2.5">
@@ -701,7 +703,7 @@ export const EmployerApplications = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500">
-                {user?.role === 'admin' && (
+                {isAdminOrStaff && (
                   <th className="px-4 py-4 w-12 text-center">
                     <button onClick={toggleSelectAll} className="cursor-pointer text-slate-400 hover:text-slate-600">
                       {selectedAppIds.length > 0 && selectedAppIds.length === filteredApplications.length ? (
@@ -716,7 +718,7 @@ export const EmployerApplications = () => {
                 <th className="px-6 py-4 font-semibold">Job / Position</th>
                 <th className="px-6 py-4 font-semibold">City & Qualification</th>
                 <th className="px-6 py-4 font-semibold">Applied Date</th>
-                {user?.role === 'admin' && <th className="px-6 py-4 font-semibold">Permitted Companies</th>}
+                {isAdminOrStaff && <th className="px-6 py-4 font-semibold">Permitted Companies</th>}
                 <th className="px-6 py-4 font-semibold">Status</th>
                 <th className="px-6 py-4 font-semibold text-right">Actions</th>
               </tr>
@@ -748,7 +750,7 @@ export const EmployerApplications = () => {
                       key={app._id} 
                       className={`hover:bg-slate-50/70 transition-colors ${isSelected ? 'bg-indigo-50/40' : ''}`}
                     >
-                      {user?.role === 'admin' && (
+                      {isAdminOrStaff && (
                         <td className="px-4 py-4 text-center">
                           <button
                             onClick={() => toggleSelectApp(app._id)}
@@ -798,7 +800,7 @@ export const EmployerApplications = () => {
                           day: 'numeric'
                         })}
                       </td>
-                      {user?.role === 'admin' && (
+                      {isAdminOrStaff && (
                         <td className="px-6 py-4">
                           {assignedList.length === 0 ? (
                             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-500">
@@ -855,7 +857,7 @@ export const EmployerApplications = () => {
                               <MessageSquare size={13} /> Letter
                             </button>
                           )}
-                          {user?.role === 'admin' && (
+                          {isAdminOrStaff && (
                             <button
                               onClick={() => handleDeleteApplication(app._id, `${candidate?.firstName || ''} ${candidate?.lastName || ''}`)}
                               disabled={deletingId === app._id}

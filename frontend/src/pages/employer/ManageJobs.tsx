@@ -10,7 +10,8 @@ import { ALL_CITIES } from '../../utils/constants';
 
 export const ManageJobs = () => {
   const { user } = useSelector((state: any) => state.auth);
-  const Layout = user?.role === 'admin' ? AdminLayout : EmployerLayout;
+  const isAdminOrStaff = user?.role === 'admin' || user?.role === 'employee';
+  const Layout = isAdminOrStaff ? AdminLayout : EmployerLayout;
   const [jobs, setJobs] = useState<any[]>([]);
   const [employers, setEmployers] = useState<any[]>([]);
   const [selectedEmployerIds, setSelectedEmployerIds] = useState<string[]>([]);
@@ -58,7 +59,7 @@ export const ManageJobs = () => {
   useEffect(() => {
     if (user?.token) {
       fetchJobs();
-      if (user?.role === 'admin') {
+      if (isAdminOrStaff) {
         fetchEmployers();
       }
     }
@@ -263,7 +264,7 @@ export const ManageJobs = () => {
                 </div>
 
                 {/* SHARE JOB & APPLICANTS WITH REGISTERED COMPANIES (3 SYNCED DROPDOWNS) */}
-                {user?.role === 'admin' && (
+                {isAdminOrStaff && (
                   <div className="bg-indigo-50/40 p-5 rounded-xl border border-indigo-100/80 space-y-4">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-indigo-100">
                       <div>
