@@ -1,5 +1,5 @@
-﻿import React from 'react';
-import { PREFERRED_CAMPUS_CITIES, ALL_CITIES } from '../../utils/constants';
+import React from 'react';
+import { PREFERRED_CAMPUS_CITIES, ALL_CITIES, YEARS_1970 } from '../../utils/constants';
 
 export const Step5Experience = ({ experienceInfo, setExperienceInfo, personal, setPersonal }) => {
   return (
@@ -21,8 +21,26 @@ export const Step5Experience = ({ experienceInfo, setExperienceInfo, personal, s
         {experienceInfo.isExperienced && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in slide-in-from-top-2 duration-300">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Total Experience (Years/Months)</label>
-              <input type="text" value={experienceInfo.experienceYears} onChange={(e) => setExperienceInfo({...experienceInfo, experienceYears: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 text-sm" placeholder="e.g. 2.5 years" />
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Which CA Final Year Completed? <span className="text-red-500">*</span>
+              </label>
+              <select
+                required={experienceInfo.isExperienced}
+                value={experienceInfo.caFinalCompletionYear || ''}
+                onChange={(e) => setExperienceInfo({...experienceInfo, caFinalCompletionYear: e.target.value})}
+                className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 text-sm bg-white cursor-pointer font-medium"
+              >
+                <option value="">-- Select CA Final Year (1970 to Present) --</option>
+                {YEARS_1970.map(y => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Total Experience (Years/Months) <span className="text-red-500">*</span>
+              </label>
+              <input type="text" required={experienceInfo.isExperienced} value={experienceInfo.experienceYears} onChange={(e) => setExperienceInfo({...experienceInfo, experienceYears: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 text-sm" placeholder="e.g. 2.5 years" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Current Company</label>

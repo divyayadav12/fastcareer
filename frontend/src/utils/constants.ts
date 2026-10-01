@@ -4,6 +4,16 @@ export { STATE_CITY_MAP };
 export const STATES = Object.keys(STATE_CITY_MAP);
 export const ALL_CITIES = Array.from(new Set(Object.values(STATE_CITY_MAP).flat())).sort();
 export const YEARS = Array.from({length: 30}, (_, i) => String(new Date().getFullYear() - i));
+export const YEARS_1970 = Array.from({length: new Date().getFullYear() - 1970 + 1}, (_, i) => String(new Date().getFullYear() - i));
+export const EXPERIENCE_YEARS_OPTIONS = [
+  '0-1 Year',
+  '1-2 Years',
+  '2-3 Years',
+  '3-5 Years',
+  '5-7 Years',
+  '7-10 Years',
+  '10+ Years'
+];
 export const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 export const BOARDS = ['CBSE', 'ICSE', 'State Board'];
 export const ATTEMPT_YEARS = ['Sept\'25', 'Jan\'26', 'May\'25', 'Nov\'24', 'May\'24', 'Nov\'23', 'May\'23', 'Nov\'22', 'May\'22', 'Nov\'21', 'May\'21', 'Nov\'20', 'May\'20'];

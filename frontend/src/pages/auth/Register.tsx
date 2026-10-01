@@ -27,7 +27,7 @@ import {
 import { register, reset } from '../../store/authSlice';
 import type { AppDispatch, RootState } from '../../store';
 import api from '../../services/api';
-import { ALL_CITIES, ATTEMPTS, CA_EXAM_MONTHS, YEARS } from '../../utils/constants';
+import { ALL_CITIES, ATTEMPTS, CA_EXAM_MONTHS, YEARS, YEARS_1970, EXPERIENCE_YEARS_OPTIONS } from '../../utils/constants';
 import { parseResumeFile } from '../../utils/resumeParser';
 
 const POPULAR_CITIES = [
@@ -48,6 +48,8 @@ export const Register = () => {
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [currentCity, setCurrentCity] = useState('');
   const [workStatus, setWorkStatus] = useState<'fresher' | 'experienced'>('experienced');
+  const [experienceYears, setExperienceYears] = useState('1-2 Years');
+  const [caFinalCompletionYear, setCaFinalCompletionYear] = useState('2023');
   const [linkedinUrl, setLinkedinUrl] = useState('');
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -237,9 +239,18 @@ export const Register = () => {
         setLinkedinUrl(parsed.linkedinUrl);
         extracted.push('LinkedIn');
       }
-      if (parsed.workStatus) {
-        setWorkStatus(parsed.workStatus);
+      if (parsed.workStatus || parsed.isExperienced) {
+        setWorkStatus('experienced');
+        if (parsed.experienceYears) {
+          setExperienceYears(parsed.experienceYears);
+        }
         extracted.push('Experience Stage');
+      }
+      if (parsed.caFinalCompletionYear || parsed.caFinalYear) {
+        const yearVal = parsed.caFinalCompletionYear || parsed.caFinalYear;
+        if (yearVal) {
+          setCaFinalCompletionYear(yearVal);
+        }
       }
       if (parsed.caInterBothGroups1stAttempt !== undefined || parsed.caInterGroup1Year || parsed.caInterYear) {
         setCaInter(prev => {
@@ -274,7 +285,10 @@ export const Register = () => {
           if (parsed.caFinalGroup2Year) next.group2Year = parsed.caFinalGroup2Year;
           if (parsed.caFinalRanker) next.ranker = parsed.caFinalRanker;
           if (parsed.caFinalCompletionMonth) next.completionSessionMonth = parsed.caFinalCompletionMonth;
-          if (parsed.caFinalCompletionYear) next.completionSessionYear = parsed.caFinalCompletionYear;
+          if (parsed.caFinalCompletionYear) {
+            next.completionSessionYear = parsed.caFinalCompletionYear;
+            setCaFinalCompletionYear(parsed.caFinalCompletionYear);
+          }
           return next;
         });
         extracted.push('CA Final Details');
@@ -356,6 +370,21 @@ export const Register = () => {
         return;
       }
 
+      if (workStatus === 'experienced') {
+        if (!experienceYears) {
+          const err = 'Please select your Total Work Experience (Mandatory for experienced candidates).';
+          setFormError(err);
+          toast.error(err);
+          return;
+        }
+        if (!caFinalCompletionYear) {
+          const err = 'Please select Which CA Final Year Completed (1970 to Present) (Mandatory for experienced candidates).';
+          setFormError(err);
+          toast.error(err);
+          return;
+        }
+      }
+
       if (
         !caInter.group1Attempts ||
         !caInter.group1Month ||
@@ -427,6 +456,10 @@ export const Register = () => {
         dateOfBirth,
         isFresherCA: workStatus === 'fresher',
         resumeUrl: uploadedResumeUrl,
+        experienceInfo: {
+          isExperienced: workStatus === 'experienced',
+          experienceYears: experienceYears || '0-1 Year',
+        },
         caInter: {
           bothGroups1stAttempt: caInter.bothGroups1stAttempt,
           group1Attempts: caInter.group1Attempts || '1',
@@ -449,7 +482,7 @@ export const Register = () => {
           group2Year: caFinal.group2Year || '2023',
           ranker: caFinal.ranker || 'No',
           completionSessionMonth: caFinal.completionSessionMonth || 'May',
-          completionSessionYear: caFinal.completionSessionYear || '2023',
+          completionSessionYear: caFinalCompletionYear || caFinal.completionSessionYear || '2023',
         },
       }),
     };
@@ -990,6 +1023,64 @@ export const Register = () => {
                           </div>
                         </div>
                       </div>
+
+                      {/* Experienced Candidate Mandatory Details */}
+                      {workStatus === 'experienced' && (
+                        <div className="mt-3.5 bg-blue-50/80 border border-blue-200/90 rounded-2xl p-4 sm:p-5 space-y-4 animate-in fade-in duration-200">
+                          <div className="flex items-center gap-2 border-b border-blue-200/80 pb-3">
+                            <Briefcase className="w-5 h-5 text-blue-600" />
+                            <div>
+                              <h3 className="text-sm sm:text-base font-bold text-slate-900">
+                                Experienced CA Mandatory Details <span className="text-red-500">*</span>
+                              </h3>
+                              <p className="text-[11px] text-slate-500 mt-0.5">
+                                Specify your CA Final completion year (1970 - Present) & total experience
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {/* CA Final Year Dropdown (1970 to Present) */}
+                            <div>
+                              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                                Which CA Final Year Completed? <span className="text-red-500">*</span>
+                              </label>
+                              <select
+                                required={workStatus === 'experienced'}
+                                value={caFinalCompletionYear}
+                                onChange={(e) => {
+                                  setCaFinalCompletionYear(e.target.value);
+                                  setCaFinal(prev => ({ ...prev, completionSessionYear: e.target.value }));
+                                }}
+                                className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white font-medium cursor-pointer"
+                              >
+                                <option value="">-- Select Year (1970 to Present) --</option>
+                                {YEARS_1970.map(y => (
+                                  <option key={y} value={y}>{y}</option>
+                                ))}
+                              </select>
+                            </div>
+
+                            {/* Total Experience Years */}
+                            <div>
+                              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                                Total Work Experience <span className="text-red-500">*</span>
+                              </label>
+                              <select
+                                required={workStatus === 'experienced'}
+                                value={experienceYears}
+                                onChange={(e) => setExperienceYears(e.target.value)}
+                                className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white font-medium cursor-pointer"
+                              >
+                                <option value="">-- Select Total Experience --</option>
+                                {EXPERIENCE_YEARS_OPTIONS.map(opt => (
+                                  <option key={opt} value={opt}>{opt}</option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* CA Intermediate Qualification Card */}

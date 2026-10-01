@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { STATES, STATE_CITY_MAP, ALL_CITIES, YEARS, MONTHS, BOARDS, ATTEMPTS, CA_EXAM_MONTHS, NATURE_OF_WORK, COLLEGES, PREFERRED_CAMPUS_CITIES, ARTICLESHIP_TYPES } from '../utils/constants';
+import { STATES, STATE_CITY_MAP, ALL_CITIES, YEARS, YEARS_1970, EXPERIENCE_YEARS_OPTIONS, MONTHS, BOARDS, ATTEMPTS, CA_EXAM_MONTHS, NATURE_OF_WORK, COLLEGES, PREFERRED_CAMPUS_CITIES, ARTICLESHIP_TYPES } from '../utils/constants';
 import { DatePicker } from '../components/DatePicker';
 
 export const PlacementDriveForm = () => {
@@ -23,6 +23,7 @@ export const PlacementDriveForm = () => {
     resumeUrl: '',
     currentCity: '',
     caStatus: '',
+    experienceYears: '',
     grad_completed: '',
     caInter_bothGroups1stAttempt: false,
     articleshipFirmName: '',
@@ -160,6 +161,18 @@ export const PlacementDriveForm = () => {
     }
     
     if (step === 2) {
+      if (formData.caStatus === 'CA Experienced') {
+        if (!formData.caFinal_completionSessionYear) {
+          setError("Please select Which CA Final Year Completed (1970 to Present).");
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          return false;
+        }
+        if (!formData.experienceYears) {
+          setError("Please select your Total Work Experience.");
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          return false;
+        }
+      }
       const percentages = [
         formData.caInter_percentage, formData.caFinal_percentage
       ];
@@ -413,6 +426,45 @@ export const PlacementDriveForm = () => {
                       <option value="No">No</option>
                     </select>
                   </div>
+
+                  {formData.caStatus === 'CA Experienced' && (
+                    <div className="md:col-span-2 bg-blue-50/80 p-4 rounded-xl border border-blue-200 grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-gray-800 mb-1">
+                          Which CA Final Year Completed? <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                          name="caFinal_completionSessionYear"
+                          required
+                          value={formData.caFinal_completionSessionYear}
+                          onChange={handleChange}
+                          className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white font-medium"
+                        >
+                          <option value="">-- Select CA Final Year (1970 to Present) --</option>
+                          {YEARS_1970.map(y => (
+                            <option key={y} value={y}>{y}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-800 mb-1">
+                          Total Work Experience <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                          name="experienceYears"
+                          required
+                          value={formData.experienceYears}
+                          onChange={handleChange}
+                          className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white font-medium"
+                        >
+                          <option value="">-- Select Total Experience --</option>
+                          {EXPERIENCE_YEARS_OPTIONS.map(opt => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="md:col-span-2">
                     <h4 className="text-md font-semibold text-gray-800 mt-4 mb-2">CA Inter Details</h4>
