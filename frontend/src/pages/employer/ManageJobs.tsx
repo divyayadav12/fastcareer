@@ -43,28 +43,73 @@ export const ManageJobs = () => {
     return (emp.email || '').trim();
   };
 
-  // Unique company names for Dropdown 1 (combining employers DB + companies from posted jobs)
+  // Helper function to safely extract HR Representative full name
+  const getHRFullName = (emp: any): string => {
+    if (!emp) return 'HR Representative';
+    const fullName = `${emp.firstName || ''} ${emp.lastName || ''}`.trim();
+    if (fullName) return fullName;
+    const cName = (emp.companyName || '').trim();
+    if (cName) return `${cName} HR`;
+    return (emp.email || '').split('@')[0] || 'HR Representative';
+  };
+
+  // Combine DB employers with fallback company entries from posted jobs
+  const allEmployersList = Array.from(
+    (() => {
+      const list = [...employers];
+      const existingCNames = new Set(list.map(e => getEmpCompanyName(e).toLowerCase()));
+
+      jobs.forEach(j => {
+        const cName = (j.company || '').trim();
+        if (cName && !existingCNames.has(cName.toLowerCase())) {
+          existingCNames.add(cName.toLowerCase());
+          const cleanSlug = cName.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+          list.push({
+            _id: `job-company-${cleanSlug}`,
+            companyName: cName,
+            firstName: cName,
+            lastName: 'Representative',
+            email: `hr@${cleanSlug || 'company'}.com`
+          });
+        }
+      });
+      return list;
+    })()
+  );
+
+  // Unique company names for Dropdown 1
   const uniqueCompanyNames = Array.from(
-    new Set([
-      ...employers.map(emp => getEmpCompanyName(emp)),
-      ...jobs.map(j => (j.company || '').trim())
-    ].filter(Boolean))
+    new Set(allEmployersList.map(emp => getEmpCompanyName(emp)).filter(Boolean))
   ).sort();
 
   // Filter employers for Dropdowns 2 & 3 based on selected company name
   const filteredHRsForCompany = selectedCompanyName
     ? (
-        employers.filter(emp => getEmpCompanyName(emp).toLowerCase() === selectedCompanyName.toLowerCase()).length > 0
-          ? employers.filter(emp => getEmpCompanyName(emp).toLowerCase() === selectedCompanyName.toLowerCase())
-          : employers
+        (() => {
+          const selLower = selectedCompanyName.toLowerCase().trim();
+          const exact = allEmployersList.filter(emp => getEmpCompanyName(emp).toLowerCase() === selLower);
+          if (exact.length > 0) return exact;
+
+          const partial = allEmployersList.filter(emp => {
+            const cName = getEmpCompanyName(emp).toLowerCase();
+            return cName.includes(selLower) || selLower.includes(cName);
+          });
+          if (partial.length > 0) return partial;
+
+          return allEmployersList;
+        })()
       )
-    : employers;
+    : allEmployersList;
 
   const handleSelectCompanyName = (cName: string) => {
     setSelectedCompanyName(cName);
     if (!cName) return;
 
-    const matchingEmps = employers.filter(emp => getEmpCompanyName(emp).toLowerCase() === cName.toLowerCase());
+    const selLower = cName.toLowerCase().trim();
+    const matchingEmps = allEmployersList.filter(emp => {
+      const empCName = getEmpCompanyName(emp).toLowerCase();
+      return empCName === selLower || empCName.includes(selLower) || selLower.includes(empCName);
+    });
 
     if (matchingEmps.length > 0) {
       const firstEmp = matchingEmps[0];
@@ -78,7 +123,7 @@ export const ManageJobs = () => {
   const handleSelectHROrEmail = (empId: string) => {
     if (!empId) return;
     setActiveDropdownEmployerId(empId);
-    const emp = employers.find(e => e._id === empId);
+    const emp = allEmployersList.find(e => e._id === empId);
     if (emp) {
       const cName = getEmpCompanyName(emp);
       setSelectedCompanyName(cName);
@@ -393,11 +438,13 @@ export const ManageJobs = () => {
                           className="w-full bg-white border border-slate-200 text-slate-900 rounded-lg px-3 py-2 text-xs font-medium focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none shadow-2xs"
                         >
                           <option value="">
-                            {selectedCompanyName ? `-- HRs of ${selectedCompanyName} --` : '-- Select HR Representative --'}
+                            {selectedCompanyName
+                              ? `-- Select HR of ${selectedCompanyName} (${filteredHRsForCompany.length}) --`
+                              : '-- Select HR Representative --'}
                           </option>
                           {filteredHRsForCompany.map(emp => (
                             <option key={emp._id} value={emp._id}>
-                              {emp.firstName} {emp.lastName || ''} ({emp.companyName || 'Company'})
+                              {getHRFullName(emp)} ({getEmpCompanyName(emp)} - {emp.email})
                             </option>
                           ))}
                         </select>
@@ -414,11 +461,13 @@ export const ManageJobs = () => {
                           className="w-full bg-white border border-slate-200 text-slate-900 rounded-lg px-3 py-2 text-xs font-medium focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none shadow-2xs"
                         >
                           <option value="">
-                            {selectedCompanyName ? `-- Emails of ${selectedCompanyName} --` : '-- Select Company Email --'}
+                            {selectedCompanyName
+                              ? `-- Select Email of ${selectedCompanyName} (${filteredHRsForCompany.length}) --`
+                              : '-- Select Company Email --'}
                           </option>
                           {filteredHRsForCompany.map(emp => (
                             <option key={emp._id} value={emp._id}>
-                              {emp.email}
+                              {emp.email} ({getHRFullName(emp)} - {getEmpCompanyName(emp)})
                             </option>
                           ))}
                         </select>
