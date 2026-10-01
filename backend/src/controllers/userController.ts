@@ -302,6 +302,7 @@ export const getCandidates = async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
     let query: any = { role: 'candidate' };
+    let myJobIds: any[] = [];
 
     // If logged in as an Employer, ONLY return candidates explicitly assigned or associated with jobs shared with/posted by this employer
     if (user?.role === 'employer') {
@@ -312,7 +313,7 @@ export const getCandidates = async (req: Request, res: Response) => {
           { sharedHrEmails: user.email }
         ]
       }).select('_id');
-      const myJobIds = myJobs.map((j: any) => j._id);
+      myJobIds = myJobs.map((j: any) => j._id);
 
       const applicantCandidateIds = await Application.distinct('candidate', { job: { $in: myJobIds } });
 
@@ -331,9 +332,28 @@ export const getCandidates = async (req: Request, res: Response) => {
     const enrichedCandidates = await Promise.all(
       candidates.map(async (c) => {
         const plain: any = c.toObject();
-        const app = await Application.findOne({ candidate: c._id })
-          .populate('job', 'title company')
-          .sort({ createdAt: -1 });
+        let app = null;
+
+        if (user?.role === 'employer' && myJobIds.length > 0) {
+          app = await Application.findOne({ candidate: c._id, job: { $in: myJobIds } })
+            .populate('job', 'title company')
+            .sort({ updatedAt: -1 });
+        }
+
+        if (!app) {
+          app = await Application.findOne({ candidate: c._id })
+            .populate('job', 'title company')
+            .sort({ updatedAt: -1 });
+          
+          // For employers, if candidate was assigned by admin and has no application for employer's specific job,
+          // default status MUST be 'applied' (Pending Review) because admin forwarded them, admin didn't shortlist on company's behalf
+          if (user?.role === 'employer') {
+            plain.applicationId = app?._id;
+            plain.applicationStatus = 'applied'; // Default: Pending Review
+            plain.appliedJobTitle = (app?.job as any)?.title || '';
+            return plain;
+          }
+        }
 
         if (app) {
           plain.applicationId = app._id;

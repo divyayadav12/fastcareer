@@ -292,11 +292,24 @@ export const shareApplications = async (req: Request, res: Response) => {
 export const updateCandidateStatus = async (req: Request, res: Response) => {
   try {
     const { candidateId, applicationId, status } = req.body;
+    const user = (req as any).user;
     const validStatuses = ['applied', 'reviewing', 'shortlisted', 'interviewed', 'rejected', 'hired'];
 
     if (!status || !validStatuses.includes(status)) {
       res.status(400).json({ message: 'Invalid status value' });
       return;
+    }
+
+    let myJobIds: any[] = [];
+    if (user?.role === 'employer') {
+      const myJobs = await Job.find({
+        $or: [
+          { postedBy: user._id },
+          { targetEmployers: user._id },
+          { sharedHrEmails: user.email }
+        ]
+      }).select('_id');
+      myJobIds = myJobs.map(j => j._id);
     }
 
     let application = null;
@@ -306,11 +319,15 @@ export const updateCandidateStatus = async (req: Request, res: Response) => {
     }
 
     if (!application && candidateId && mongoose.Types.ObjectId.isValid(candidateId as string)) {
-      application = await Application.findOne({ candidate: candidateId }).sort({ createdAt: -1 });
+      if (myJobIds.length > 0) {
+        application = await Application.findOne({ candidate: candidateId, job: { $in: myJobIds } }).sort({ createdAt: -1 });
+      }
+      if (!application) {
+        application = await Application.findOne({ candidate: candidateId }).sort({ createdAt: -1 });
+      }
     }
 
     if (!application && candidateId && mongoose.Types.ObjectId.isValid(candidateId as string)) {
-      const user = (req as any).user;
       let job = await Job.findOne({ $or: [{ postedBy: user?._id }, { targetEmployers: user?._id }] });
       if (!job) {
         job = await Job.findOne({});
@@ -327,6 +344,9 @@ export const updateCandidateStatus = async (req: Request, res: Response) => {
     }
 
     if (application) {
+      if (user?.role === 'employer' && myJobIds.length > 0 && !myJobIds.some(id => id.toString() === application.job.toString())) {
+        application.job = myJobIds[0];
+      }
       application.status = status;
       await application.save();
 
