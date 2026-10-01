@@ -374,3 +374,61 @@ export const updateCandidateStatus = async (req: Request, res: Response) => {
   }
 };
 
+// @desc    Update company-specific status for an application
+// @route   PUT /api/applications/company-status
+// @access  Private (Employer/Admin)
+export const updateCompanyStatus = async (req: Request, res: Response) => {
+  try {
+    const { candidateId, applicationId, companyStatus } = req.body;
+    const validStatuses = [
+      'Pending Review',
+      'CV View',
+      'CV Rejected',
+      'Shortlisted for Round 1',
+      'Shortlisted for Round 2',
+      'Shortlisted for Round 3',
+      'Selected',
+      'Rejected'
+    ];
+
+    if (!companyStatus || !validStatuses.includes(companyStatus)) {
+      res.status(400).json({ message: 'Invalid company status value' });
+      return;
+    }
+
+    let application = null;
+    if (applicationId && mongoose.Types.ObjectId.isValid(applicationId as string)) {
+      application = await Application.findById(applicationId);
+    }
+    if (!application && candidateId && mongoose.Types.ObjectId.isValid(candidateId as string)) {
+      application = await Application.findOne({ candidate: candidateId }).sort({ createdAt: -1 });
+    }
+
+    if (!application && candidateId && mongoose.Types.ObjectId.isValid(candidateId as string)) {
+      const defaultJob = await Job.findOne({});
+      if (defaultJob) {
+        application = await Application.create({
+          job: defaultJob._id,
+          candidate: candidateId,
+          resumeUrl: 'uploads/default_resume.pdf',
+          status: 'shortlisted',
+          companyStatus: companyStatus,
+          sharedWithEmployer: true
+        });
+      }
+    }
+
+    if (application) {
+      application.companyStatus = companyStatus;
+      await application.save();
+
+      res.json({ success: true, message: `Company status updated to ${companyStatus}`, application });
+    } else {
+      res.status(404).json({ message: 'Candidate application record not found' });
+    }
+  } catch (error) {
+    console.error('Error updating company status:', error);
+    res.status(500).json({ message: 'Server error updating company status' });
+  }
+};
+

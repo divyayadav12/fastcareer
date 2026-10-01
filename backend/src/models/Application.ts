@@ -6,6 +6,7 @@ export interface IApplication extends Document {
   resumeUrl: string;
   coverLetter?: string;
   status: 'applied' | 'reviewing' | 'shortlisted' | 'interviewed' | 'rejected' | 'hired';
+  companyStatus?: 'Pending Review' | 'CV View' | 'CV Rejected' | 'Shortlisted for Round 1' | 'Shortlisted for Round 2' | 'Shortlisted for Round 3' | 'Selected' | 'Rejected';
   sharedWithEmployer: boolean;
   appliedAt: Date;
   updatedAt: Date;
@@ -21,6 +22,20 @@ const ApplicationSchema: Schema = new Schema(
       type: String, 
       enum: ['applied', 'reviewing', 'shortlisted', 'interviewed', 'rejected', 'hired'], 
       default: 'applied' 
+    },
+    companyStatus: {
+      type: String,
+      enum: [
+        'Pending Review',
+        'CV View',
+        'CV Rejected',
+        'Shortlisted for Round 1',
+        'Shortlisted for Round 2',
+        'Shortlisted for Round 3',
+        'Selected',
+        'Rejected'
+      ],
+      default: 'Pending Review'
     },
     sharedWithEmployer: { type: Boolean, default: false },
   },

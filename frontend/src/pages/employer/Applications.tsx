@@ -242,6 +242,24 @@ export const EmployerApplications = () => {
     }
   };
 
+  const handleCompanyStatusChange = async (appId: string, candidateId: string, newCompanyStatus: string) => {
+    setUpdatingId(appId);
+    try {
+      await api.put('/applications/company-status', {
+        applicationId: appId,
+        candidateId: candidateId,
+        companyStatus: newCompanyStatus
+      });
+      setApplications(prev => prev.map(app => app._id === appId ? { ...app, companyStatus: newCompanyStatus } : app));
+      toast.success(`Company status updated to "${newCompanyStatus}"!`);
+    } catch (err) {
+      console.error('Failed to update company status:', err);
+      toast.error('Failed to update company status.');
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
   const handleDeleteApplication = async (appId: string, applicantName: string) => {
     if (!window.confirm(`Are you sure you want to delete the application from ${applicantName}?`)) {
       return;
@@ -756,20 +774,27 @@ export const EmployerApplications = () => {
                 <th className="px-6 py-4 font-semibold">City & Qualification</th>
                 <th className="px-6 py-4 font-semibold">Applied Date</th>
                 {isAdminOrStaff && <th className="px-6 py-4 font-semibold">Permitted Companies</th>}
-                <th className="px-6 py-4 font-semibold">Status</th>
+                {isAdminOrStaff ? (
+                  <>
+                    <th className="px-6 py-4 font-semibold">Admin Status</th>
+                    <th className="px-6 py-4 font-semibold">Company Status</th>
+                  </>
+                ) : (
+                  <th className="px-6 py-4 font-semibold">Company Status</th>
+                )}
                 <th className="px-6 py-4 font-semibold text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-sm">
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center text-slate-500">
+                  <td colSpan={isAdminOrStaff ? 9 : 6} className="px-6 py-12 text-center text-slate-500">
                     Loading applications...
                   </td>
                 </tr>
               ) : filteredApplications.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-16 text-center text-slate-500">
+                  <td colSpan={isAdminOrStaff ? 9 : 6} className="px-6 py-16 text-center text-slate-500">
                     No candidate applications match the selected filters.
                   </td>
                 </tr>
@@ -858,22 +883,50 @@ export const EmployerApplications = () => {
                           )}
                         </td>
                       )}
+                      {isAdminOrStaff && (
+                        <td className="px-6 py-4">
+                          <select
+                            value={app.status || 'applied'}
+                            disabled={updatingId === app._id}
+                            onChange={(e) => handleStatusChange(app._id, e.target.value)}
+                            className={`text-xs font-semibold px-2.5 py-1 rounded-full outline-none border cursor-pointer ${
+                              app.status === 'shortlisted' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                              app.status === 'hired' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' :
+                              app.status === 'rejected' ? 'bg-rose-50 text-rose-700 border-rose-200' :
+                              'bg-amber-50 text-amber-700 border-amber-200'
+                            }`}
+                          >
+                            <option value="applied">Applied / Pending</option>
+                            <option value="shortlisted">Shortlisted</option>
+                            <option value="hired">Hired</option>
+                            <option value="rejected">Rejected</option>
+                          </select>
+                        </td>
+                      )}
                       <td className="px-6 py-4">
                         <select
-                          value={app.status || 'applied'}
+                          value={app.companyStatus || 'Pending Review'}
                           disabled={updatingId === app._id}
-                          onChange={(e) => handleStatusChange(app._id, e.target.value)}
-                          className={`text-xs font-semibold px-2.5 py-1 rounded-full outline-none border cursor-pointer ${
-                            app.status === 'shortlisted' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                            app.status === 'hired' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' :
-                            app.status === 'rejected' ? 'bg-rose-50 text-rose-700 border-rose-200' :
-                            'bg-amber-50 text-amber-700 border-amber-200'
+                          onChange={(e) => handleCompanyStatusChange(app._id, candidate?._id, e.target.value)}
+                          className={`text-xs font-semibold px-2.5 py-1 rounded-lg outline-none border cursor-pointer ${
+                            app.companyStatus === 'CV View' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                            app.companyStatus === 'CV Rejected' ? 'bg-rose-50 text-rose-700 border-rose-200' :
+                            app.companyStatus === 'Shortlisted for Round 1' ? 'bg-amber-50 text-amber-800 border-amber-200' :
+                            app.companyStatus === 'Shortlisted for Round 2' ? 'bg-purple-50 text-purple-800 border-purple-200' :
+                            app.companyStatus === 'Shortlisted for Round 3' ? 'bg-indigo-50 text-indigo-800 border-indigo-200' :
+                            app.companyStatus === 'Selected' ? 'bg-emerald-50 text-emerald-800 border-emerald-200 font-bold' :
+                            app.companyStatus === 'Rejected' ? 'bg-red-50 text-red-800 border-red-200' :
+                            'bg-slate-100 text-slate-700 border-slate-200'
                           }`}
                         >
-                          <option value="applied">Applied / Pending</option>
-                          <option value="shortlisted">Shortlisted</option>
-                          <option value="hired">Hired</option>
-                          <option value="rejected">Rejected</option>
+                          <option value="Pending Review">-- Pending Review --</option>
+                          <option value="CV View">👁️ CV View</option>
+                          <option value="CV Rejected">❌ CV Rejected</option>
+                          <option value="Shortlisted for Round 1">⭐ Shortlisted for Round 1</option>
+                          <option value="Shortlisted for Round 2">⭐⭐ Shortlisted for Round 2</option>
+                          <option value="Shortlisted for Round 3">🌟 Shortlisted for Round 3</option>
+                          <option value="Selected">🎉 Selected</option>
+                          <option value="Rejected">🚫 Rejected</option>
                         </select>
                       </td>
                       <td className="px-6 py-4 text-right">

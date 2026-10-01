@@ -75,29 +75,21 @@ export const EmployerDashboard = () => {
     try {
       setCandidates(prev => prev.map(c => {
         if (c._id === candidateId) {
-          return { ...c, applicationStatus: newStatus };
+          return { ...c, companyStatus: newStatus, applicationStatus: newStatus };
         }
         return c;
       }));
 
-      await api.put('/applications/candidate-status', {
+      await api.put('/applications/company-status', {
         candidateId,
         applicationId,
-        status: newStatus
+        companyStatus: newStatus
       });
 
-      const statusLabels: Record<string, string> = {
-        applied: 'Pending Review',
-        reviewing: 'Under Review',
-        shortlisted: 'Shortlisted',
-        interviewed: 'Interview Scheduled',
-        hired: 'Selected / Hired',
-        rejected: 'Rejected'
-      };
-
-      toast.success(`Candidate status updated to "${statusLabels[newStatus] || newStatus}"`);
+      toast.success(`Company status updated to "${newStatus}"`);
     } catch (err: any) {
-      toast.error('Failed to update candidate status');
+      console.error('Error updating company status:', err);
+      toast.error('Failed to update company status');
       fetchAssignedCandidates();
     }
   };
@@ -293,28 +285,27 @@ export const EmployerDashboard = () => {
                     </td>
                     <td className="px-6 py-4">
                       <select
-                        value={candidate.applicationStatus || 'applied'}
+                        value={candidate.companyStatus || 'Pending Review'}
                         onChange={(e) => handleStatusChange(candidate._id, candidate.applicationId, e.target.value)}
                         className={`px-3 py-1.5 text-xs font-semibold rounded-lg border outline-none cursor-pointer transition-all shadow-2xs ${
-                          (candidate.applicationStatus || 'applied') === 'shortlisted'
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200 focus:ring-emerald-300'
-                            : (candidate.applicationStatus || 'applied') === 'hired'
-                            ? 'bg-green-100 text-green-800 border-green-300 font-bold focus:ring-green-400'
-                            : (candidate.applicationStatus || 'applied') === 'reviewing'
-                            ? 'bg-blue-50 text-blue-700 border-blue-200 focus:ring-blue-300'
-                            : (candidate.applicationStatus || 'applied') === 'interviewed'
-                            ? 'bg-purple-50 text-purple-700 border-purple-200 focus:ring-purple-300'
-                            : (candidate.applicationStatus || 'applied') === 'rejected'
-                            ? 'bg-rose-50 text-rose-700 border-rose-200 focus:ring-rose-300'
-                            : 'bg-amber-50 text-amber-700 border-amber-200 focus:ring-amber-300'
+                          candidate.companyStatus === 'CV View' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                          candidate.companyStatus === 'CV Rejected' ? 'bg-rose-50 text-rose-700 border-rose-200' :
+                          candidate.companyStatus === 'Shortlisted for Round 1' ? 'bg-amber-50 text-amber-800 border-amber-200' :
+                          candidate.companyStatus === 'Shortlisted for Round 2' ? 'bg-purple-50 text-purple-800 border-purple-200' :
+                          candidate.companyStatus === 'Shortlisted for Round 3' ? 'bg-indigo-50 text-indigo-800 border-indigo-200' :
+                          candidate.companyStatus === 'Selected' ? 'bg-emerald-50 text-emerald-800 border-emerald-200 font-bold' :
+                          candidate.companyStatus === 'Rejected' ? 'bg-red-50 text-red-800 border-red-200' :
+                          'bg-slate-100 text-slate-700 border-slate-200'
                         }`}
                       >
-                        <option value="applied">⏳ Pending Review</option>
-                        <option value="reviewing">🔍 Under Review</option>
-                        <option value="shortlisted">⭐ Shortlisted</option>
-                        <option value="interviewed">📅 Interview Scheduled</option>
-                        <option value="hired">🎉 Selected / Hired</option>
-                        <option value="rejected">❌ Rejected</option>
+                        <option value="Pending Review">-- Pending Review --</option>
+                        <option value="CV View">👁️ CV View</option>
+                        <option value="CV Rejected">❌ CV Rejected</option>
+                        <option value="Shortlisted for Round 1">⭐ Shortlisted for Round 1</option>
+                        <option value="Shortlisted for Round 2">⭐⭐ Shortlisted for Round 2</option>
+                        <option value="Shortlisted for Round 3">🌟 Shortlisted for Round 3</option>
+                        <option value="Selected">🎉 Selected</option>
+                        <option value="Rejected">🚫 Rejected</option>
                       </select>
                     </td>
                     <td className="px-6 py-4 text-right">
