@@ -114,16 +114,40 @@ export const updateApplicationStatus = async (req: Request, res: Response) => {
       application.status = status;
       const updatedApplication = await application.save();
 
-      // Trigger WhatsApp Notification for Shortlist/Selection
+      // Trigger WhatsApp & Email Notification for Shortlist/Selection
       if (status === 'shortlisted' || status === 'accepted') {
         const candidate: any = application.candidate;
         const job: any = application.job;
-        if (candidate?.personalDetails?.phone) {
+        if (candidate?.personalDetails?.phone || candidate?.phone) {
           sendShortlistedWhatsApp(
-            candidate.personalDetails.phone,
+            candidate.personalDetails?.phone || candidate.phone,
             candidate.firstName || 'Candidate',
             job?.title || 'a role'
           );
+        }
+
+        // Notify assigned HRs by Email
+        try {
+          const fullCandidate = await User.findById(candidate._id || candidate);
+          if (fullCandidate && fullCandidate.assignedEmployers && fullCandidate.assignedEmployers.length > 0) {
+            for (const empId of fullCandidate.assignedEmployers) {
+              const employer = await User.findById(empId);
+              if (employer && employer.email) {
+                const companyTitle = employer.companyName || `${employer.firstName || ''} ${employer.lastName || ''}`.trim() || 'Company';
+                sendCandidateSharedEmail(employer.email, employer.firstName || companyTitle, companyTitle, [{
+                  firstName: fullCandidate.firstName,
+                  lastName: fullCandidate.lastName,
+                  email: fullCandidate.email,
+                  phone: fullCandidate.phone || fullCandidate.personalDetails?.phone,
+                  currentCity: fullCandidate.personalDetails?.currentCity,
+                  caQualification: 'Shortlisted Candidate',
+                  jobTitle: job?.title || 'Applied Position'
+                }]);
+              }
+            }
+          }
+        } catch (emailErr) {
+          console.error('Error sending HR email notification on status update:', emailErr);
         }
       }
 
@@ -267,6 +291,8 @@ export const getCandidateApplications = async (req: Request, res: Response) => {
 // @desc    Share applications with employer
 // @route   PUT /api/applications/share
 // @access  Private (Admin)
+import { sendCandidateSharedEmail, SharedCandidateInfo } from '../utils/emailService';
+
 export const shareApplications = async (req: Request, res: Response) => {
   const { applicationIds } = req.body;
   
@@ -280,6 +306,59 @@ export const shareApplications = async (req: Request, res: Response) => {
       { _id: { $in: applicationIds } },
       { $set: { sharedWithEmployer: true } }
     );
+
+    // Fetch shared applications with full candidate & job info to notify HR
+    try {
+      const sharedApps = await Application.find({ _id: { $in: applicationIds } })
+        .populate('candidate')
+        .populate('job');
+
+      // Group candidate info by assigned employer
+      const employerCandidateMap = new Map<string, SharedCandidateInfo[]>();
+
+      for (const app of sharedApps) {
+        const candidate: any = app.candidate;
+        const job: any = app.job;
+        if (!candidate) continue;
+
+        const qual = (candidate.caPortfolio?.caFinal?.group1Year || candidate.caPortfolio?.caFinal?.bothGroups1stAttempt)
+          ? 'CA Final'
+          : (candidate.caPortfolio?.caInter?.group1Year || candidate.caPortfolio?.caInter?.bothGroups1stAttempt)
+          ? 'CA Inter'
+          : 'Graduate Candidate';
+
+        const info: SharedCandidateInfo = {
+          firstName: candidate.firstName,
+          lastName: candidate.lastName,
+          email: candidate.email,
+          phone: candidate.phone || candidate.personalDetails?.phone,
+          currentCity: candidate.personalDetails?.currentCity,
+          caQualification: qual,
+          jobTitle: job?.title || candidate.headline || 'Shortlisted Role',
+        };
+
+        const assignedEmployersList = candidate.assignedEmployers || [];
+        for (const empId of assignedEmployersList) {
+          const empStr = empId.toString();
+          if (!employerCandidateMap.has(empStr)) {
+            employerCandidateMap.set(empStr, []);
+          }
+          employerCandidateMap.get(empStr)!.push(info);
+        }
+      }
+
+      // Send email to each employer
+      for (const [empId, cList] of employerCandidateMap.entries()) {
+        const employer = await User.findById(empId);
+        if (employer && employer.email) {
+          const companyTitle = employer.companyName || `${employer.firstName || ''} ${employer.lastName || ''}`.trim() || 'Company';
+          sendCandidateSharedEmail(employer.email, employer.firstName || companyTitle, companyTitle, cList);
+        }
+      }
+    } catch (emailErr) {
+      console.error('Error sending application share email notification:', emailErr);
+    }
+
     res.json({ message: 'Applications successfully shared with employer' });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });

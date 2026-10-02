@@ -373,6 +373,8 @@ export const getCandidates = async (req: Request, res: Response) => {
   }
 };
 
+import { sendCandidateSharedEmail, SharedCandidateInfo } from '../utils/emailService';
+
 // @desc    Assign or unassign candidates to a company
 // @route   PUT /api/users/candidates/assign-company
 // @access  Private/Admin
@@ -394,6 +396,36 @@ export const assignCandidatesToCompany = async (req: Request, res: Response) => 
         { _id: { $in: candidateIds }, role: 'candidate' },
         { $addToSet: { assignedEmployers: employerId } }
       );
+
+      // Trigger Email Notification to Company HR
+      try {
+        const employer = await User.findById(employerId);
+        if (employer && employer.email) {
+          const candidates = await User.find({ _id: { $in: candidateIds } });
+          const formattedCandidates: SharedCandidateInfo[] = candidates.map(c => {
+            const qual = (c.caPortfolio?.caFinal?.group1Year || c.caPortfolio?.caFinal?.bothGroups1stAttempt)
+              ? 'CA Final'
+              : (c.caPortfolio?.caInter?.group1Year || c.caPortfolio?.caInter?.bothGroups1stAttempt)
+              ? 'CA Inter'
+              : 'Graduate Candidate';
+
+            return {
+              firstName: c.firstName,
+              lastName: c.lastName,
+              email: c.email,
+              phone: c.phone || c.personalDetails?.phone,
+              currentCity: c.personalDetails?.currentCity,
+              caQualification: qual,
+              jobTitle: c.headline || 'Chartered Accountant Candidate',
+            };
+          });
+
+          const companyTitle = employer.companyName || `${employer.firstName || ''} ${employer.lastName || ''}`.trim() || 'Company';
+          sendCandidateSharedEmail(employer.email, employer.firstName || companyTitle, companyTitle, formattedCandidates);
+        }
+      } catch (emailErr) {
+        console.error('Error sending email notification to HR:', emailErr);
+      }
     }
 
     res.json({ message: `Successfully ${action === 'unassign' ? 'unassigned' : 'assigned'} candidates.` });
