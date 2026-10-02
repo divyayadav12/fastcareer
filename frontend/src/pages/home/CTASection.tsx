@@ -111,11 +111,11 @@ export const CTASection = () => {
                 <TrendingUp size={70} strokeWidth={2.5} />
               </div>
 
-              {/* Corporate Professionals Photo Cutout */}
+              {/* Real FAST Careers Team Photo Cutout */}
               <img 
-                src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=500&auto=format&fit=crop&q=80" 
-                alt="Corporate Professionals" 
-                className="relative z-10 w-60 sm:w-64 h-auto object-cover rounded-2xl shadow-md border-2 border-white"
+                src="/team_photos/team_photo_9.jpg" 
+                alt="FAST Careers Executive Team" 
+                className="relative z-10 w-64 sm:w-72 h-44 sm:h-48 object-cover rounded-2xl shadow-lg border-2 border-white"
               />
 
               {/* Cursive "Your Career, Our Priority" annotation */}
