@@ -118,19 +118,6 @@ export const CTASection = () => {
                 className="relative z-10 w-64 sm:w-72 h-44 sm:h-48 object-cover rounded-2xl shadow-lg border-2 border-white"
               />
 
-              {/* Cursive "Your Career, Our Priority" annotation */}
-              <div className="absolute -right-2 top-10 sm:top-12 z-20 flex flex-col items-center rotate-[10deg]">
-                <span className="text-[#1E40AF] font-bold text-sm sm:text-base font-serif italic tracking-wide whitespace-nowrap">
-                  Your Career,
-                </span>
-                <span className="text-[#2563EB] font-black text-base sm:text-lg font-serif italic tracking-tight whitespace-nowrap -mt-1">
-                  Our Priority
-                </span>
-                <svg viewBox="0 0 60 10" className="w-16 h-2 text-[#2563EB]">
-                  <path d="M 2 7 Q 30 1 58 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                </svg>
-              </div>
-
             </div>
           </motion.div>
 
