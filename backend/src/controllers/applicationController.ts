@@ -511,3 +511,59 @@ export const updateCompanyStatus = async (req: Request, res: Response) => {
   }
 };
 
+// @desc    Bulk update status or companyStatus for multiple applications at once
+// @route   PUT /api/applications/bulk-status
+// @access  Private (Employer/Admin)
+export const bulkUpdateApplicationStatus = async (req: Request, res: Response) => {
+  try {
+    const { applicationIds, status, companyStatus } = req.body;
+    if (!applicationIds || !Array.isArray(applicationIds) || applicationIds.length === 0) {
+      res.status(400).json({ message: 'applicationIds array is required' });
+      return;
+    }
+
+    const updateFields: any = {};
+    if (status) updateFields.status = status;
+    if (companyStatus) updateFields.companyStatus = companyStatus;
+
+    if (Object.keys(updateFields).length === 0) {
+      res.status(400).json({ message: 'Either status or companyStatus must be provided' });
+      return;
+    }
+
+    const result = await Application.updateMany(
+      { _id: { $in: applicationIds } },
+      { $set: updateFields }
+    );
+
+    // If status is shortlisted, trigger WhatsApp notifications in background
+    if (status === 'shortlisted' || status === 'hired') {
+      try {
+        const apps = await Application.find({ _id: { $in: applicationIds } }).populate('candidate').populate('job');
+        for (const app of apps) {
+          const candidate: any = app.candidate;
+          const job: any = app.job;
+          if (candidate?.personalDetails?.phone || candidate?.phone) {
+            sendShortlistedWhatsApp(
+              candidate.personalDetails?.phone || candidate.phone,
+              candidate.firstName || 'Candidate',
+              job?.title || 'CA Candidate Profile'
+            );
+          }
+        }
+      } catch (notifyErr) {
+        console.error('Error sending bulk shortlist notifications:', notifyErr);
+      }
+    }
+
+    res.json({
+      success: true,
+      message: `Successfully updated status for ${result.modifiedCount || applicationIds.length} candidates!`,
+      modifiedCount: result.modifiedCount
+    });
+  } catch (error: any) {
+    console.error('Error in bulkUpdateApplicationStatus:', error);
+    res.status(500).json({ message: 'Server error updating bulk status' });
+  }
+};
+

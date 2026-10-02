@@ -30,7 +30,10 @@ import {
   Award,
   Filter,
   UploadCloud,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Star,
+  Users,
+  CheckCheck
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getResumeUrl } from '../../utils/urlHelper';
@@ -58,6 +61,7 @@ export const EmployerApplications = () => {
   const [selectedEmployerId, setSelectedEmployerId] = useState<string>('');
   const [selectedCompanyName, setSelectedCompanyName] = useState<string>('');
   const [sharing, setSharing] = useState(false);
+  const [bulkUpdating, setBulkUpdating] = useState(false);
 
   // Unique company names for Dropdown 1
   const uniqueCompanyNames = Array.from(
@@ -348,6 +352,69 @@ export const EmployerApplications = () => {
       setSelectedAppIds([]);
     } else {
       setSelectedAppIds(filteredApplications.map(a => a._id));
+    }
+  };
+
+  const selectTop20 = () => {
+    const top20Ids = filteredApplications.slice(0, 20).map(a => a._id);
+    setSelectedAppIds(top20Ids);
+    toast.success(`Selected top ${top20Ids.length} candidate application(s)!`);
+  };
+
+  const selectAllFiltered = () => {
+    const allIds = filteredApplications.map(a => a._id);
+    setSelectedAppIds(allIds);
+    toast.success(`Selected all ${allIds.length} candidate application(s)!`);
+  };
+
+  const clearSelection = () => {
+    setSelectedAppIds([]);
+    toast.success('Selection cleared.');
+  };
+
+  const handleBulkStatusChange = async (newStatus: string) => {
+    if (selectedAppIds.length === 0) {
+      toast.error('Please select candidate applications using checkboxes or quick selection first.');
+      return;
+    }
+    setBulkUpdating(true);
+    try {
+      const res = await api.put('/applications/bulk-status', {
+        applicationIds: selectedAppIds,
+        status: newStatus
+      });
+      setApplications(prev => prev.map(app => 
+        selectedAppIds.includes(app._id) ? { ...app, status: newStatus } : app
+      ));
+      toast.success(res.data?.message || `Updated Admin Status to "${newStatus}" for ${selectedAppIds.length} candidate(s)!`);
+    } catch (err: any) {
+      console.error('Failed to bulk update status:', err);
+      toast.error(err.response?.data?.message || 'Failed to update candidate statuses.');
+    } finally {
+      setBulkUpdating(false);
+    }
+  };
+
+  const handleBulkCompanyStatusChange = async (newCompanyStatus: string) => {
+    if (selectedAppIds.length === 0) {
+      toast.error('Please select candidate applications using checkboxes or quick selection first.');
+      return;
+    }
+    setBulkUpdating(true);
+    try {
+      const res = await api.put('/applications/bulk-status', {
+        applicationIds: selectedAppIds,
+        companyStatus: newCompanyStatus
+      });
+      setApplications(prev => prev.map(app => 
+        selectedAppIds.includes(app._id) ? { ...app, companyStatus: newCompanyStatus } : app
+      ));
+      toast.success(res.data?.message || `Updated Company Status to "${newCompanyStatus}" for ${selectedAppIds.length} candidate(s)!`);
+    } catch (err: any) {
+      console.error('Failed to bulk update company status:', err);
+      toast.error(err.response?.data?.message || 'Failed to update company statuses.');
+    } finally {
+      setBulkUpdating(false);
     }
   };
 
@@ -749,6 +816,94 @@ export const EmployerApplications = () => {
               <option value="rejected">Rejected</option>
             </select>
           </div>
+        </div>
+      </div>
+
+      {/* QUICK SELECTION & BULK ACTIONS TOOLBAR */}
+      <div className="bg-slate-900 text-white p-4 rounded-2xl shadow-md mb-6 border border-slate-800 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        {/* Left Side: Quick Select Helpers */}
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-400 mr-1 flex items-center gap-1">
+            <CheckCheck size={16} className="text-indigo-400" /> Quick Selection:
+          </span>
+          <button
+            onClick={selectTop20}
+            className="px-3.5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold rounded-xl text-xs transition-all cursor-pointer flex items-center gap-1.5 shadow-sm active:scale-95"
+            title="Select the first 20 candidates in current list"
+          >
+            ⚡ Select Top 20 Candidates
+          </button>
+          <button
+            onClick={selectAllFiltered}
+            className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded-xl text-xs transition-colors cursor-pointer"
+          >
+            Select All ({filteredApplications.length})
+          </button>
+          {selectedAppIds.length > 0 && (
+            <button
+              onClick={clearSelection}
+              className="px-3 py-2 bg-slate-800/80 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl text-xs transition-colors cursor-pointer"
+            >
+              Clear Selection ({selectedAppIds.length})
+            </button>
+          )}
+        </div>
+
+        {/* Right Side: Bulk Status Change Controls */}
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => handleBulkStatusChange('shortlisted')}
+            disabled={bulkUpdating || selectedAppIds.length === 0}
+            className={`px-4 py-2 font-extrabold text-xs rounded-xl transition-all flex items-center gap-1.5 shadow-sm cursor-pointer ${
+              selectedAppIds.length === 0
+                ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'
+                : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 active:scale-95'
+            }`}
+            title="Bulk shortlist all selected candidates with 1 click"
+          >
+            <Star size={15} className="fill-slate-950 text-slate-950" /> ⭐ Bulk Shortlist ({selectedAppIds.length})
+          </button>
+
+          {/* Bulk Admin Status Dropdown */}
+          {isAdminOrStaff && (
+            <select
+              disabled={bulkUpdating || selectedAppIds.length === 0}
+              onChange={(e) => {
+                if (e.target.value) {
+                  handleBulkStatusChange(e.target.value);
+                  e.target.value = '';
+                }
+              }}
+              className="bg-slate-800 border border-slate-700 text-white text-xs font-semibold rounded-xl px-3 py-2 outline-none cursor-pointer disabled:opacity-50"
+            >
+              <option value="">-- Bulk Admin Status ({selectedAppIds.length}) --</option>
+              <option value="applied">Applied / Pending</option>
+              <option value="shortlisted">⭐ Shortlisted</option>
+              <option value="hired">🎉 Hired</option>
+              <option value="rejected">🚫 Rejected</option>
+            </select>
+          )}
+
+          {/* Bulk Company Status Dropdown */}
+          <select
+            disabled={bulkUpdating || selectedAppIds.length === 0}
+            onChange={(e) => {
+              if (e.target.value) {
+                handleBulkCompanyStatusChange(e.target.value);
+                e.target.value = '';
+              }
+            }}
+            className="bg-slate-800 border border-slate-700 text-white text-xs font-semibold rounded-xl px-3 py-2 outline-none cursor-pointer disabled:opacity-50"
+          >
+            <option value="">-- Bulk Company Status ({selectedAppIds.length}) --</option>
+            <option value="CV View">👁️ CV View</option>
+            <option value="CV Rejected">❌ CV Rejected</option>
+            <option value="Shortlisted for Round 1">⭐ Shortlisted for Round 1</option>
+            <option value="Shortlisted for Round 2">⭐⭐ Shortlisted for Round 2</option>
+            <option value="Shortlisted for Round 3">🌟 Shortlisted for Round 3</option>
+            <option value="Selected">🎉 Selected</option>
+            <option value="Rejected">🚫 Rejected</option>
+          </select>
         </div>
       </div>
 

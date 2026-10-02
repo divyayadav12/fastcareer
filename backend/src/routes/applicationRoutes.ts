@@ -5,6 +5,7 @@ import {
   updateApplicationStatus, 
   updateCandidateStatus,
   updateCompanyStatus,
+  bulkUpdateApplicationStatus,
   getEmployerApplications,
   getAllApplications,
   getCandidateApplications,
@@ -23,6 +24,7 @@ router.post('/:jobId', protect, upload.single('resume'), applyForJob);
 router.get('/job/:jobId', protect, employerOrAdmin, getJobApplications);
 router.get('/employer', protect, employerOrAdmin, getEmployerApplications);
 router.put('/share', protect, admin, shareApplications);
+router.put('/bulk-status', protect, employerOrAdmin, bulkUpdateApplicationStatus);
 router.put('/candidate-status', protect, employerOrAdmin, updateCandidateStatus);
 router.put('/company-status', protect, employerOrAdmin, updateCompanyStatus);
 router.get('/', protect, employerOrAdmin, getAllApplications);
