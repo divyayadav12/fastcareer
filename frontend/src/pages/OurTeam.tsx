@@ -40,6 +40,73 @@ interface EventItem {
 }
 
 const eventsData: EventItem[] = [
+  // Real Team Photos Featured at Top
+  {
+    id: 101,
+    title: 'PHD Chamber Executive Leadership & Secretariat Conclave',
+    category: 'Placement Drives & Summits',
+    categoryIcon: '🏛️',
+    date: 'August 2026',
+    location: 'PHD Chamber of Commerce & Industry, New Delhi',
+    imageUrl: '/team_photos/team_photo_2.jpg',
+    shortDesc: 'Executive secretariat panel featuring Geeta Poduval (Secretary, IOA), S. Kapur, and industry leadership during corporate talent summit.',
+    fullDesc: 'High-level delegation and secretariat roundtable discussing CA placement policies, corporate partnerships, and industry skill alignment at the PHD Chamber of Commerce & Industry.',
+    participants: 'Senior Leadership & Secretariat Delegates',
+    highlights: ['Executive Secretariat Roundtable', 'Industry Policy Alignment', 'Corporate Partnership Mandates']
+  },
+  {
+    id: 102,
+    title: 'PHD Chamber National Recruitment & Career Presentation',
+    category: 'Placement Drives & Summits',
+    categoryIcon: '🏛️',
+    date: 'July 2026',
+    location: 'PHD Chamber Main Auditorium, New Delhi',
+    imageUrl: '/team_photos/team_photo_4.jpg',
+    shortDesc: 'Keynote presentation and corporate address to a packed house of finance professionals and CA candidates.',
+    fullDesc: 'Keynote presentation and interactive session at PHD Chamber auditorium explaining corporate placement roadmaps, financial advisory careers, and recruitment drives.',
+    participants: '300+ Industry Professionals & Candidates',
+    highlights: ['Corporate Offerings Presentation', 'Executive Panel Q&A', 'National Hiring Roadmap']
+  },
+  {
+    id: 103,
+    title: 'Candidate Orientation & Technical Grooming Assembly',
+    category: 'Learning & Masterclasses',
+    categoryIcon: '🎓',
+    date: 'June 2026',
+    location: 'FAST Careers Training Hall, New Delhi',
+    imageUrl: '/team_photos/team_photo_5.jpg',
+    shortDesc: 'Full auditorium of qualified CA candidates and finance professionals attending technical orientation and interview preparation.',
+    fullDesc: 'High-engagement training session where hundreds of CA finalists and young professionals gathered to learn interview strategies, technical standards, and corporate etiquette.',
+    participants: '250+ Qualified Candidates & Mentors',
+    highlights: ['Interactive Technical Grooming', 'Corporate Interview Strategies', '1-on-1 Profile Mentorship']
+  },
+  {
+    id: 104,
+    title: 'National Executive Boardroom & Circular Summit Hall',
+    category: 'Strategy & Innovation',
+    categoryIcon: '💡',
+    date: 'May 2026',
+    location: 'Executive Council Hall, New Delhi',
+    imageUrl: '/team_photos/team_photo_3.jpg',
+    shortDesc: 'State-of-the-art circular boardroom setup for corporate strategy sessions, candidate selection panels, and employer briefings.',
+    fullDesc: 'FAST Careers executive boardroom equipped with individual delegate microphones and documentation tables for high-stakes corporate hiring strategies.',
+    participants: 'Board Members & Executive Partners',
+    highlights: ['Circular Council Boardroom', 'Delegate Microphone System', 'Strategic Talent Sourcing Blueprint']
+  },
+  {
+    id: 105,
+    title: 'FAST Careers Corporate Event Hall & Reception Venue',
+    category: 'Placement Drives & Summits',
+    categoryIcon: '🏛️',
+    date: 'April 2026',
+    location: 'Corporate Convention Center, New Delhi',
+    imageUrl: '/team_photos/team_photo_1.jpg',
+    shortDesc: 'Banquet & reception setup for FAST Careers executive candidate registration and corporate employer briefing.',
+    fullDesc: 'Our venue setup team preparing the grand auditorium and registration counters for national employer-candidate networking events.',
+    participants: 'Operations & Event Coordination Team',
+    highlights: ['Executive Registration Counters', 'Grand Banquet Setup', 'Employer Networking Lounge']
+  },
+
   // 1. Learning, Masterclasses & CA Training
   {
     id: 1,
@@ -370,7 +437,7 @@ export const OurTeam: React.FC = () => {
   const [likedPhotos, setLikedPhotos] = useState<Record<number, boolean>>({});
 
   const categories = [
-    { id: 'All', label: 'All Moments (24)', icon: '🌟' },
+    { id: 'All', label: `All Moments (${eventsData.length})`, icon: '🌟' },
     { id: 'Learning & Masterclasses', label: 'Learning & Masterclasses', icon: '🎓' },
     { id: 'Festival Celebrations', label: 'Festival Celebrations', icon: '🪔' },
     { id: 'Placement Drives & Summits', label: 'Placement Drives & Summits', icon: '🏛️' },
