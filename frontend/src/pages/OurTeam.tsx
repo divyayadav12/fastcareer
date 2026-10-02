@@ -158,6 +158,45 @@ const eventsData: EventItem[] = [
     participants: 'Delegates & Sourcing Managers',
     highlights: ['Dossier Review Lounge', 'Interview Slot Scheduling', 'Executive Networking']
   },
+  {
+    id: 110,
+    title: 'Grand 5-Star Hotel Atrium CA Placement Drive',
+    category: 'Placement Drives & Summits',
+    categoryIcon: '🏛️',
+    date: 'October 2026',
+    location: '5-Star Hotel Atrium, New Delhi',
+    imageUrl: '/team_photos/team_photo_10.jpg',
+    shortDesc: 'Bird’s-eye view of our mega national placement drive hosted in a grand 5-star hotel atrium with 40+ corporate desks.',
+    fullDesc: 'A panoramic view of the 5-star convention atrium where hundreds of CA candidates and corporate HR teams gathered for on-the-spot interviews and employer networking.',
+    participants: '500+ Candidates & Corporate HRs',
+    highlights: ['Grand Hotel Atrium Venue', '40+ Corporate Desks', 'Live Candidate Networking']
+  },
+  {
+    id: 111,
+    title: 'Corporate Candidate Interview Queue & Networking Hall',
+    category: 'Placement Drives & Summits',
+    categoryIcon: '🏛️',
+    date: 'September 2026',
+    location: 'Convention Hall Corridor, New Delhi',
+    imageUrl: '/team_photos/team_photo_11.jpg',
+    shortDesc: 'Young CA finalists and corporate candidates lined up for Big 4 and Fortune 500 interview rounds.',
+    fullDesc: 'Candidates dressed in formal business attire preparing their resume dossiers and awaiting their scheduled interview turns with corporate hiring managers.',
+    participants: '300+ Qualified Candidates',
+    highlights: ['Formal Business Attire', 'Fast-Track Interview Lines', 'On-the-Spot Evaluation']
+  },
+  {
+    id: 112,
+    title: 'Grand Ballroom CA Finalist Masterclass Assembly',
+    category: 'Learning & Masterclasses',
+    categoryIcon: '🎓',
+    date: 'August 2026',
+    location: 'Grand Ballroom, New Delhi',
+    imageUrl: '/team_photos/team_photo_12.jpg',
+    shortDesc: 'Hundreds of CA candidates attending a high-impact technical masterclass on financial modeling and IND AS.',
+    fullDesc: 'Full ballroom audience of finance candidates attentively taking notes during the annual FAST Careers technical orientation and resume building session.',
+    participants: '400+ Candidates & Industry Experts',
+    highlights: ['Full Ballroom Assembly', 'Technical Lecture Notes', 'Career Mentorship']
+  },
 
   // 1. Learning, Masterclasses & CA Training
   {
