@@ -1004,26 +1004,28 @@ export const EmployerApplications = () => {
             </select>
           )}
 
-          {/* Bulk Company Status Dropdown */}
-          <select
-            disabled={bulkUpdating || selectedAppIds.length === 0}
-            onChange={(e) => {
-              if (e.target.value) {
-                handleBulkCompanyStatusChange(e.target.value);
-                e.target.value = '';
-              }
-            }}
-            className="bg-slate-800 border border-slate-700 text-white text-xs font-semibold rounded-xl px-3 py-2 outline-none cursor-pointer disabled:opacity-50"
-          >
-            <option value="">-- Bulk Company Status ({selectedAppIds.length}) --</option>
-            <option value="CV View">👁️ CV View</option>
-            <option value="CV Rejected">❌ CV Rejected</option>
-            <option value="Shortlisted for Round 1">⭐ Shortlisted for Round 1</option>
-            <option value="Shortlisted for Round 2">⭐⭐ Shortlisted for Round 2</option>
-            <option value="Shortlisted for Round 3">🌟 Shortlisted for Round 3</option>
-            <option value="Selected">🎉 Selected</option>
-            <option value="Rejected">🚫 Rejected</option>
-          </select>
+          {/* Bulk Company Status Dropdown (Visible only for Company/HR login) */}
+          {!isAdminOrStaff && (
+            <select
+              disabled={bulkUpdating || selectedAppIds.length === 0}
+              onChange={(e) => {
+                if (e.target.value) {
+                  handleBulkCompanyStatusChange(e.target.value);
+                  e.target.value = '';
+                }
+              }}
+              className="bg-slate-800 border border-slate-700 text-white text-xs font-semibold rounded-xl px-3 py-2 outline-none cursor-pointer disabled:opacity-50"
+            >
+              <option value="">-- Bulk Company Status ({selectedAppIds.length}) --</option>
+              <option value="CV View">👁️ CV View</option>
+              <option value="CV Rejected">❌ CV Rejected</option>
+              <option value="Shortlisted for Round 1">⭐ Shortlisted for Round 1</option>
+              <option value="Shortlisted for Round 2">⭐⭐ Shortlisted for Round 2</option>
+              <option value="Shortlisted for Round 3">🌟 Shortlisted for Round 3</option>
+              <option value="Selected">🎉 Selected</option>
+              <option value="Rejected">🚫 Rejected</option>
+            </select>
+          )}
         </div>
       </div>
 
@@ -1181,9 +1183,10 @@ export const EmployerApplications = () => {
                       <td className="px-6 py-4">
                         <select
                           value={app.companyStatus || 'Pending Review'}
-                          disabled={updatingId === app._id}
+                          disabled={updatingId === app._id || isAdminOrStaff}
+                          title={isAdminOrStaff ? "Company status can only be updated by company login" : "Change Company Status"}
                           onChange={(e) => handleCompanyStatusChange(app._id, candidate?._id, e.target.value)}
-                          className={`text-xs font-semibold px-2.5 py-1 rounded-lg outline-none border cursor-pointer ${
+                          className={`text-xs font-semibold px-2.5 py-1 rounded-lg outline-none border ${isAdminOrStaff ? 'cursor-not-allowed opacity-90' : 'cursor-pointer'} ${
                             app.companyStatus === 'CV View' ? 'bg-blue-50 text-blue-700 border-blue-200' :
                             app.companyStatus === 'CV Rejected' ? 'bg-rose-50 text-rose-700 border-rose-200' :
                             app.companyStatus === 'Shortlisted for Round 1' ? 'bg-amber-50 text-amber-800 border-amber-200' :
