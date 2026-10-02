@@ -33,11 +33,14 @@ import {
   FileSpreadsheet,
   Star,
   Users,
-  CheckCheck
+  CheckCheck,
+  DownloadCloud
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getResumeUrl } from '../../utils/urlHelper';
 import { fetchCandidateResumeBlob, viewCandidateResume } from '../../utils/clientPdfGenerator';
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
 
 interface Employer {
   _id: string;
@@ -171,8 +174,14 @@ export const EmployerApplications = () => {
       );
       setMatchedEmails(emailSet);
 
+      // Auto-select applications matching the uploaded Excel sheet
+      const matchedAppIds = applications
+        .filter(app => app.candidate?.email && emailSet.has(app.candidate.email.toLowerCase()))
+        .map(app => app._id);
+      setSelectedAppIds(matchedAppIds);
+
       toast.success(
-        `${data.matchedCandidates} candidates matched from Excel!`
+        `${data.matchedCandidates} candidate(s) matched from Excel! Auto-selected ${matchedAppIds.length} application(s).`
       );
     } catch (err: any) {
       console.error('Error matching Excel file:', err);
@@ -190,8 +199,96 @@ export const EmployerApplications = () => {
     setExcelFileName('');
     setExcelStats(null);
     setMatchedEmails(new Set());
+    setSelectedAppIds([]);
     if (fileInputRef.current) fileInputRef.current.value = '';
     toast.success('Returned to full applications list.');
+  };
+
+  const [isZipping, setIsZipping] = useState(false);
+  const [zipStep, setZipStep] = useState('');
+
+  const downloadSelectedResumesZip = async () => {
+    if (selectedAppIds.length === 0) {
+      toast.error('Please select at least one candidate application to download resumes.');
+      return;
+    }
+
+    const selectedApps = applications.filter(a => selectedAppIds.includes(a._id));
+    const selectedCandidates = selectedApps.map(a => a.candidate).filter(Boolean);
+
+    if (selectedCandidates.length === 0) {
+      toast.error('No candidate details found for selected applications.');
+      return;
+    }
+
+    setIsZipping(true);
+    setZipStep('Preparing ZIP...');
+
+    try {
+      const candidateIds = Array.from(new Set(selectedCandidates.map(c => c._id)));
+      setZipStep('Downloading from server...');
+
+      const response = await api.post(
+        '/users/candidates/download-resumes-zip',
+        { candidateIds },
+        { responseType: 'blob' }
+      );
+
+      if (response.data.type === 'application/json') {
+        const text = await response.data.text();
+        const errObj = JSON.parse(text);
+        throw new Error(errObj.message || 'Server returned error for ZIP download');
+      }
+
+      const blob = new Blob([response.data], { type: 'application/zip' });
+      saveAs(blob, `FAST_Careers_Resumes_${new Date().toISOString().split('T')[0]}.zip`);
+      toast.success(`${selectedCandidates.length} candidate resume(s) downloaded in ZIP!`);
+    } catch (backendError) {
+      console.warn('Backend ZIP download fallback to JSZip client package:', backendError);
+
+      try {
+        setZipStep('Packaging resumes...');
+        const zip = new JSZip();
+        const folder = zip.folder("candidate_resumes") || zip;
+        const nameTracker = new Map<string, number>();
+
+        const fetchPromises = selectedCandidates.map(async (candidate) => {
+          const sanitize = (s: string) => s.replace(/[/\\?%*:|"<>]/g, '').trim().replace(/\s+/g, '_');
+          let base = `${sanitize(candidate.firstName || 'Candidate')}_${sanitize(candidate.lastName || '')}`.replace(/_+$/, '');
+          if (!base) base = `Candidate_${candidate._id?.slice(-6) || 'Info'}`;
+
+          let fileName = '';
+          if (!nameTracker.has(base)) {
+            nameTracker.set(base, 1);
+            fileName = `${base}.pdf`;
+          } else {
+            const count = (nameTracker.get(base) || 1) + 1;
+            nameTracker.set(base, count);
+            fileName = `${base}_${count}.pdf`;
+          }
+
+          try {
+            const pdfBlob = await fetchCandidateResumeBlob(candidate);
+            const arrayBuffer = await pdfBlob.arrayBuffer();
+            folder.file(fileName, arrayBuffer);
+          } catch (e) {
+            console.error(`Failed to fetch resume for ${base}:`, e);
+          }
+        });
+
+        await Promise.all(fetchPromises);
+        setZipStep('Generating ZIP file...');
+        const content = await zip.generateAsync({ type: 'blob' });
+        saveAs(content, `FAST_Careers_Resumes_${new Date().toISOString().split('T')[0]}.zip`);
+        toast.success(`Resumes packaged and downloaded successfully!`);
+      } catch (clientErr) {
+        console.error('Client zip generation error:', clientErr);
+        toast.error('Failed to generate ZIP file.');
+      }
+    } finally {
+      setIsZipping(false);
+      setZipStep('');
+    }
   };
 
   const fetchApplications = async () => {
@@ -591,12 +688,22 @@ export const EmployerApplications = () => {
                 </p>
               </div>
             </div>
-            <button
-              onClick={clearExcelMode}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors self-start sm:self-auto cursor-pointer"
-            >
-              <X size={16} /> Reset / Show All Applications
-            </button>
+            <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+              <button
+                onClick={downloadSelectedResumesZip}
+                disabled={isZipping || selectedAppIds.length === 0}
+                className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold transition-colors shadow-xs cursor-pointer disabled:opacity-50"
+                title="Download resumes of selected candidates as a ZIP file"
+              >
+                <DownloadCloud size={15} /> {isZipping ? (zipStep || 'Zipping...') : `Download ZIP Resumes (${selectedAppIds.length})`}
+              </button>
+              <button
+                onClick={clearExcelMode}
+                className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors cursor-pointer"
+              >
+                <X size={16} /> Reset / Show All
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mt-4">
@@ -862,6 +969,19 @@ export const EmployerApplications = () => {
             title="Bulk shortlist all selected candidates with 1 click"
           >
             <Star size={15} className="fill-slate-950 text-slate-950" /> ⭐ Bulk Shortlist ({selectedAppIds.length})
+          </button>
+
+          <button
+            onClick={downloadSelectedResumesZip}
+            disabled={isZipping || selectedAppIds.length === 0}
+            className={`px-4 py-2 font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 shadow-sm cursor-pointer ${
+              selectedAppIds.length === 0
+                ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'
+                : 'bg-indigo-600 hover:bg-indigo-500 text-white active:scale-95'
+            }`}
+            title="Download resumes of selected candidates in a single ZIP file"
+          >
+            <DownloadCloud size={15} /> {isZipping ? (zipStep || 'Zipping...') : `Download ZIP (${selectedAppIds.length})`}
           </button>
 
           {/* Bulk Admin Status Dropdown */}
