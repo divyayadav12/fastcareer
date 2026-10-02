@@ -122,32 +122,31 @@ export const CurrentOpenings = () => {
                   isApplied ? 'border-emerald-200/80 bg-gradient-to-b from-emerald-50/20 to-white' : 'border-gray-100'
                 }`}
               >
-                {/* Top Badge if already applied */}
-                {isApplied && (
-                  <div className="absolute top-4 right-4">
-                    <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-xs">
-                      <CheckCircle2 size={13} className="text-emerald-600" />
-                      Already Applied
-                    </span>
-                  </div>
-                )}
-
-                <div className="flex items-start gap-4 mb-4 pr-16">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center border shrink-0 transition-colors ${
-                    isApplied 
-                      ? 'bg-emerald-50 border-emerald-200 text-emerald-600' 
-                      : 'bg-gray-50 border-gray-100 text-gray-400 group-hover:border-primary/20 group-hover:text-primary'
-                  }`}>
-                    <Building size={24} />
-                  </div>
-                  <div>
-                    <h3 className={`font-bold transition-colors line-clamp-1 ${
-                      isApplied ? 'text-gray-900 group-hover:text-emerald-700' : 'text-text group-hover:text-primary'
+                <div className="flex items-start justify-between gap-3 mb-4">
+                  <div className="flex items-start gap-3 min-w-0">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center border shrink-0 transition-colors ${
+                      isApplied 
+                        ? 'bg-emerald-50 border-emerald-200 text-emerald-600' 
+                        : 'bg-gray-50 border-gray-100 text-gray-400 group-hover:border-primary/20 group-hover:text-primary'
                     }`}>
-                      {job.title}
-                    </h3>
-                    <p className="text-sm text-gray-500">{job.company}</p>
+                      <Building size={24} />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className={`font-bold transition-colors truncate ${
+                        isApplied ? 'text-gray-900 group-hover:text-emerald-700' : 'text-text group-hover:text-primary'
+                      }`}>
+                        {job.title}
+                      </h3>
+                      <p className="text-sm text-gray-500 truncate">{job.company}</p>
+                    </div>
                   </div>
+
+                  {isApplied && (
+                    <span className="shrink-0 inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                      <CheckCircle2 size={12} className="text-emerald-600" />
+                      Applied
+                    </span>
+                  )}
                 </div>
 
                 <div className="space-y-2 mb-6 flex-grow">

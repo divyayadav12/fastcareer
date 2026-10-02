@@ -17,11 +17,13 @@ const isCloudinaryConfigured = !!(
   process.env.CLOUDINARY_API_SECRET
 );
 
-// Answer key for auto-grading MCQs
-const MCQ_ANSWER_KEYS: Record<number, string> = {
-  1: 'When performance obligation is satisfied and control is transferred to the customer',
-  2: '20th of the succeeding month'
-};
+// Answer key for auto-grading MCQs (both Fresher and Experienced forms)
+const MCQ_CORRECT_ANSWERS = [
+  'when performance obligation is satisfied and control is transferred to the customer',
+  '20th of the succeeding month',
+  'amortised cost',
+  '25.168%'
+];
 
 const getBaseUrl = (req: Request) => {
   const host = req.get('host') || 'fastcareer.onrender.com';
@@ -171,8 +173,9 @@ export const submitAssessment = async (req: Request, res: Response) => {
     const processedAnswers = answers.map((ans: any) => {
       let isCorrect: boolean | undefined = undefined;
       if (ans.type === 'mcq') {
-        const expected = MCQ_ANSWER_KEYS[ans.questionId];
-        if (expected && ans.candidateAnswer && ans.candidateAnswer.trim().toLowerCase() === expected.trim().toLowerCase()) {
+        const candidateAnsNorm = (ans.candidateAnswer || '').trim().toLowerCase();
+        const isMatch = MCQ_CORRECT_ANSWERS.some(correct => candidateAnsNorm === correct || candidateAnsNorm.includes(correct));
+        if (isMatch) {
           isCorrect = true;
           mcqScore += 1;
         } else {

@@ -33,11 +33,11 @@ interface QuestionDef {
   placeholder?: string;
 }
 
-const QUESTIONS: QuestionDef[] = [
+const FRESHER_QUESTIONS: QuestionDef[] = [
   {
     id: 1,
     type: 'mcq',
-    category: 'Core Accounting & Ind AS',
+    category: 'Core Accounting & Ind AS (Fresher)',
     title: 'Under Ind AS 115 / AS 9, when should revenue from contracts with customers be recognized?',
     options: [
       'When the commercial sales invoice is raised',
@@ -49,7 +49,7 @@ const QUESTIONS: QuestionDef[] = [
   {
     id: 2,
     type: 'mcq',
-    category: 'Taxation & Statutory Compliance',
+    category: 'Taxation & Statutory Compliance (Fresher)',
     title: 'Under GST Law, what is the statutory due date for filing monthly return GSTR-3B for regular taxpayers having aggregate turnover above ₹5 Crores?',
     options: [
       '10th of the succeeding month',
@@ -61,29 +61,84 @@ const QUESTIONS: QuestionDef[] = [
   {
     id: 3,
     type: 'typing',
-    category: 'Audit & Assurance (Written)',
-    title: 'Briefly outline the key substantive audit procedures you would perform to verify the existence, completeness, and valuation of year-end closing inventory.',
-    placeholder: 'Explain physical stock count attendance, cut-off testing, comparing cost vs NRV (lower of cost and net realizable value), checking slow-moving or damaged goods provisions...'
+    category: 'Audit & Assurance (Articleship & Fresher)',
+    title: 'Briefly outline the key substantive audit procedures you performed during articleship to verify year-end closing inventory or bank reconciliations.',
+    placeholder: 'Explain physical stock count attendance, cut-off testing, comparing cost vs NRV (lower of cost and net realizable value), checking bank confirmation statements...'
   },
   {
     id: 4,
     type: 'typing',
-    category: 'Articleship & Work Experience (Written)',
-    title: 'Describe a challenging situation in your articleship or professional work (e.g., tight statutory audit deadline, tax reconciliation variance, or handling an issue with a senior/client) and how you handled it.',
-    placeholder: 'Detail the problem, your analysis, the collaborative steps you took, and the positive outcome achieved...'
+    category: 'Work & Articleship Experience (Fresher)',
+    title: 'Describe a challenging situation in your articleship training (e.g., tight statutory audit deadline, tax reconciliation variance) and how you handled it.',
+    placeholder: 'Detail the problem, your analysis, the collaborative steps you took with your senior, and the positive outcome achieved...'
   },
   {
     id: 5,
     type: 'video',
-    category: 'Personal Introduction & Pitch (Live Video Recording - Max 3 Mins)',
-    title: 'Please record your video answer introducing yourself, summarizing your CA journey/attempts, key strengths in Finance & Audit, and why you are the best fit for top tier roles.',
+    category: 'Fresher Self Introduction & Pitch (Live Video Recording - Max 3 Mins)',
+    title: 'Please record your video answer introducing yourself as a Fresher CA, summarizing your attempt history/ranks, articleship exposure, core strengths, and why top companies should hire you.',
     subtitle: 'Camera will turn on. Speak directly to the camera. You have up to 3 minutes. You can stop early or it will automatically stop at 3:00.'
   },
   {
     id: 6,
     type: 'video',
-    category: 'Technical Articulation (Live Video Recording - Max 3 Mins)',
-    title: 'Explain in your own words the concept and impact of Deferred Tax Asset (DTA) vs Deferred Tax Liability (DTL) on financial statements, OR explain any recent significant amendment in the Income Tax Act / GST that you find important.',
+    category: 'Technical Concept Articulation (Live Video Recording - Max 3 Mins)',
+    title: 'Explain in simple terms on camera the concept of Deferred Tax Asset (DTA) vs Deferred Tax Liability (DTL), OR explain key changes in Input Tax Credit (ITC) under GST.',
+    subtitle: 'Present your technical explanation on camera clearly. Max duration: 3 minutes.'
+  }
+];
+
+const EXPERIENCED_QUESTIONS: QuestionDef[] = [
+  {
+    id: 1,
+    type: 'mcq',
+    category: 'Advanced Financial Reporting (Experienced)',
+    title: 'Under Ind AS 109 (Financial Instruments), how should an entity classify debt instruments whose contractual cash flows represent solely payments of principal and interest (SPPI) and the business model is to collect contractual cash flows?',
+    options: [
+      'Fair Value Through Profit or Loss (FVTPL)',
+      'Amortised Cost',
+      'Fair Value Through Other Comprehensive Income (FVTOCI)',
+      'Historical Cost Method'
+    ]
+  },
+  {
+    id: 2,
+    type: 'mcq',
+    category: 'Corporate Strategy & Advanced Taxation (Experienced)',
+    title: 'Under Section 115BAA of the Income Tax Act, 1961, what is the effective corporate tax rate (including 10% surcharge & 4% cess) for eligible domestic companies opting for the concessional tax regime?',
+    options: [
+      '30.9%',
+      '25.168%',
+      '22.0%',
+      '17.16%'
+    ]
+  },
+  {
+    id: 3,
+    type: 'typing',
+    category: 'Financial Leadership & Controls (Experienced)',
+    title: 'Detail your approach to designing Internal Financial Controls (IFC), managing budget vs actual variance analysis, or driving tax optimization strategies.',
+    placeholder: 'Describe control risk matrices, key financial KPIs, cash flow forecasting, and automated ERP reporting implementations...'
+  },
+  {
+    id: 4,
+    type: 'typing',
+    category: 'Team Management & Conflict Resolution (Experienced)',
+    title: 'Describe a complex financial audit, M&A due diligence, or cross-functional team management conflict you resolved in your post-qualification experience.',
+    placeholder: 'Explain the team size, complexity of financial issues, stakeholder management approach, resolution, and measurable business impact...'
+  },
+  {
+    id: 5,
+    type: 'video',
+    category: 'Executive Introduction & Leadership Pitch (Live Video Recording - Max 3 Mins)',
+    title: 'Record a 3-minute video highlighting your post-qualification work experience, key financial milestones, team management capabilities, and why you are suitable for senior finance roles.',
+    subtitle: 'Camera will turn on. Speak directly to the camera. You have up to 3 minutes. You can stop early or it will automatically stop at 3:00.'
+  },
+  {
+    id: 6,
+    type: 'video',
+    category: 'Strategic Technical & Problem Solving (Live Video Recording - Max 3 Mins)',
+    title: 'Present on camera a strategic financial initiative or complex Ind AS / Income Tax / GST issue you handled in your past organization, detailing the technical analysis and financial outcome.',
     subtitle: 'Present your technical explanation on camera clearly. Max duration: 3 minutes.'
   }
 ];
@@ -92,6 +147,9 @@ export const FastSelectionTest = () => {
   const { user } = useSelector((state: RootState) => state.auth);
   const [existingAssessment, setExistingAssessment] = useState<any>(null);
   const [loadingExisting, setLoadingExisting] = useState(true);
+  const [formType, setFormType] = useState<'fresher' | 'experienced'>('fresher');
+
+  const questions = formType === 'fresher' ? FRESHER_QUESTIONS : EXPERIENCED_QUESTIONS;
 
   // Form State for the 6 answers
   const [answers, setAnswers] = useState<Record<number, string>>({
@@ -148,11 +206,30 @@ export const FastSelectionTest = () => {
     }
   };
 
-  // Fetch candidate's previous submission if any
+  // Fetch candidate's profile to auto-map form and check previous submission if any
   useEffect(() => {
-    const fetchMyAssessment = async () => {
+    const initData = async () => {
       setLoadingExisting(true);
       try {
+        // Fetch candidate profile to auto-detect Fresher vs Experienced
+        try {
+          const profileRes = await api.get('/users/profile');
+          if (profileRes.data) {
+            const p = profileRes.data;
+            const isFresher = p.caPortfolio?.isFresherCA === true || p.isFresherCA === true || p.workExperience?.isExperienced === false;
+            if (isFresher) {
+              setFormType('fresher');
+            } else {
+              setFormType('experienced');
+            }
+          }
+        } catch (pErr) {
+          if (user?.isFresherCA === false) {
+            setFormType('experienced');
+          }
+        }
+
+        // Fetch existing assessment
         const res = await api.get('/assessments/my');
         if (res.data) {
           setExistingAssessment(res.data);
@@ -163,8 +240,9 @@ export const FastSelectionTest = () => {
         setLoadingExisting(false);
       }
     };
+
     if (user) {
-      fetchMyAssessment();
+      initData();
     }
   }, [user]);
 
@@ -401,38 +479,38 @@ export const FastSelectionTest = () => {
       const payloadAnswers = [
         {
           questionId: 1,
-          questionText: QUESTIONS[0].title,
+          questionText: questions[0].title,
           type: 'mcq',
           candidateAnswer: answers[1]
         },
         {
           questionId: 2,
-          questionText: QUESTIONS[1].title,
+          questionText: questions[1].title,
           type: 'mcq',
           candidateAnswer: answers[2]
         },
         {
           questionId: 3,
-          questionText: QUESTIONS[2].title,
+          questionText: questions[2].title,
           type: 'typing',
           candidateAnswer: answers[3]
         },
         {
           questionId: 4,
-          questionText: QUESTIONS[3].title,
+          questionText: questions[3].title,
           type: 'typing',
           candidateAnswer: answers[4]
         },
         {
           questionId: 5,
-          questionText: QUESTIONS[4].title,
+          questionText: questions[4].title,
           type: 'video',
           candidateAnswer: q5VideoUrl,
           videoDurationSeconds: videoDurations[5] || 0
         },
         {
           questionId: 6,
-          questionText: QUESTIONS[5].title,
+          questionText: questions[5].title,
           type: 'video',
           candidateAnswer: q6VideoUrl,
           videoDurationSeconds: videoDurations[6] || 0
@@ -478,6 +556,57 @@ export const FastSelectionTest = () => {
               <div className="text-2xl font-black text-white mt-1">6 Questions</div>
               <div className="text-xs text-blue-200 mt-1">2 MCQ • 2 Text • 2 Video</div>
             </div>
+          </div>
+        </div>
+
+        {/* Mapped Assessment Form Switcher */}
+        <div className="bg-slate-900 text-white p-4 sm:p-5 rounded-2xl shadow-md border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className={`p-2.5 rounded-xl font-bold ${formType === 'fresher' ? 'bg-indigo-500/20 text-indigo-400' : 'bg-amber-500/20 text-amber-400'}`}>
+              <Sparkles size={22} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-slate-400 uppercase tracking-wider font-semibold">Mapped Assessment Form</span>
+                <span className="px-2 py-0.5 text-[10px] font-extrabold rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
+                  Auto-mapped from Candidate Profile
+                </span>
+              </div>
+              <h3 className="text-base font-extrabold text-white mt-0.5 flex items-center gap-2">
+                {formType === 'fresher' ? '🎓 Fresher CA Assessment Form' : '💼 Experienced CA Assessment Form'}
+              </h3>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 bg-slate-800 p-1.5 rounded-xl border border-slate-700 self-stretch sm:self-auto justify-center">
+            <button
+              type="button"
+              onClick={() => {
+                setFormType('fresher');
+                toast.success('Switched to Fresher CA Assessment Form');
+              }}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                formType === 'fresher'
+                  ? 'bg-indigo-600 text-white shadow-xs'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              🎓 Fresher Form
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setFormType('experienced');
+                toast.success('Switched to Experienced CA Assessment Form');
+              }}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                formType === 'experienced'
+                  ? 'bg-amber-500 text-slate-950 shadow-xs'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              💼 Experienced Form
+            </button>
           </div>
         </div>
 
@@ -533,7 +662,7 @@ export const FastSelectionTest = () => {
               </div>
 
               <div className="space-y-8">
-                {QUESTIONS.slice(0, 2).map((q) => (
+                {questions.slice(0, 2).map((q) => (
                   <div key={q.id} className="space-y-3">
                     <div className="flex items-start gap-2.5">
                       <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
@@ -584,7 +713,7 @@ export const FastSelectionTest = () => {
               </div>
 
               <div className="space-y-8">
-                {QUESTIONS.slice(2, 4).map((q) => (
+                {questions.slice(2, 4).map((q) => (
                   <div key={q.id} className="space-y-3">
                     <div className="flex items-start gap-2.5">
                       <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
@@ -627,7 +756,7 @@ export const FastSelectionTest = () => {
               </div>
 
               <div className="space-y-8">
-                {QUESTIONS.slice(4, 6).map((q) => {
+                {questions.slice(4, 6).map((q) => {
                   const isRecordingThis = recordingForQ === q.id;
                   const hasRecorded = !!videoUrls[q.id];
 
