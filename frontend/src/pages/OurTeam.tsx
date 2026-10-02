@@ -106,6 +106,58 @@ const eventsData: EventItem[] = [
     participants: 'Operations & Event Coordination Team',
     highlights: ['Executive Registration Counters', 'Grand Banquet Setup', 'Employer Networking Lounge']
   },
+  {
+    id: 106,
+    title: 'FAST Careers Recruitment Team & Celebration Assembly',
+    category: 'Annual Milestones & Awards',
+    categoryIcon: '🏆',
+    date: 'September 2026',
+    location: 'FAST Careers Headquarters, New Delhi',
+    imageUrl: '/team_photos/team_photo_9.jpg',
+    shortDesc: 'Joyous gathering of FAST Careers recruitment leads, headcount strategists, and executive mentors celebrating candidate success.',
+    fullDesc: 'Group photograph of our core talent recruitment specialists and executive partners celebrating high candidate placement volume and team milestone successes.',
+    participants: 'Entire Recruitment & Leadership Team',
+    highlights: ['Team Excellence Celebration', 'Recruitment Leads Assembly', 'Placement Victory Moment']
+  },
+  {
+    id: 107,
+    title: 'Tiered Executive Auditorium Masterclass & Case Study Session',
+    category: 'Learning & Masterclasses',
+    categoryIcon: '🎓',
+    date: 'August 2026',
+    location: 'Management Institute Hall, New Delhi',
+    imageUrl: '/team_photos/team_photo_6.jpg',
+    shortDesc: 'Intensive case study presentation and corporate finance breakdown in a tiered executive auditorium.',
+    fullDesc: 'Young finance aspirants seated in tiered auditorium desks participating in technical lectures, statutory audit case files, and corporate policy discussions.',
+    participants: '150+ CA Candidates & Instructors',
+    highlights: ['Tiered Auditorium Masterclass', 'Corporate Finance Case Studies', 'Interactive Lecture Modules']
+  },
+  {
+    id: 108,
+    title: 'National Finance Candidates Interactive Seminar & Q&A',
+    category: 'Learning & Masterclasses',
+    categoryIcon: '🎓',
+    date: 'July 2026',
+    location: 'Corporate Learning Center, New Delhi',
+    imageUrl: '/team_photos/team_photo_7.jpg',
+    shortDesc: 'Interactive Q&A session with candidates evaluating IND AS financial reporting standards and mock interview preparations.',
+    fullDesc: 'An interactive classroom seminar where candidates engage directly with senior faculty on career guidance, technical evaluation, and corporate interview prep.',
+    participants: '180+ Candidates & Mentors',
+    highlights: ['IND AS Standards Seminar', 'Mock Interview Prep', 'Live Q&A Forum']
+  },
+  {
+    id: 109,
+    title: 'Delegate Registration & Executive Networking Corridor',
+    category: 'Placement Drives & Summits',
+    categoryIcon: '🏛️',
+    date: 'June 2026',
+    location: 'Grand Convention Corridor, New Delhi',
+    imageUrl: '/team_photos/team_photo_8.jpg',
+    shortDesc: 'Candidates and talent leads reviewing candidate dossiers and scheduling interview slots in the convention corridor.',
+    fullDesc: 'Networking and profile verification corridor where candidates and corporate recruiters discuss interview schedules and document evaluation.',
+    participants: 'Delegates & Sourcing Managers',
+    highlights: ['Dossier Review Lounge', 'Interview Slot Scheduling', 'Executive Networking']
+  },
 
   // 1. Learning, Masterclasses & CA Training
   {
