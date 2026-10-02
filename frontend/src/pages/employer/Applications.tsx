@@ -733,36 +733,40 @@ export const EmployerApplications = () => {
 
       {/* ADMIN CONTROL PANEL: 3 Linked Dropdowns to Share Candidates with Registered Companies */}
       {isAdminOrStaff && (
-        <div className="bg-slate-900 text-white p-5 rounded-2xl shadow-md mb-6 border border-slate-800">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 pb-3 border-b border-slate-800">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-xs">
-                <Building size={18} />
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 mb-6 hover:border-indigo-200/80 transition-all">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-5 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center font-bold">
+                <Building size={20} />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-white">Share Selected Candidates with Registered Company</h3>
-                <p className="text-xs text-slate-400">Select candidate applications below and grant access to a company</p>
+                <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                  Share Candidate Profiles with Registered Company
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Select candidate applications below and grant or revoke viewing access for companies
+                </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold px-2.5 py-1 bg-indigo-500/20 text-indigo-300 rounded-lg">
+            <div className="flex items-center gap-2 self-start sm:self-auto">
+              <span className="text-xs font-bold px-3 py-1 bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-full">
                 {selectedAppIds.length} Application(s) Selected
               </span>
             </div>
           </div>
 
           {/* 3 Linked Dropdowns of Registered Companies from Database */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
             {/* Dropdown 1: Registered Company Name */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1">
-                <Building size={14} className="text-indigo-400" /> 1. Registered Company Name
+              <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
+                <Building size={14} className="text-indigo-600" /> 1. Registered Company Name
               </label>
               <select
                 value={selectedCompanyName}
                 onChange={(e) => handleSelectCompanyName(e.target.value)}
-                className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3.5 py-2.5 text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
+                className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3.5 py-2.5 text-xs font-semibold focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all cursor-pointer"
               >
                 <option value="">-- Select Company Name --</option>
                 {uniqueCompanyNames.map(cName => (
@@ -775,13 +779,13 @@ export const EmployerApplications = () => {
 
             {/* Dropdown 2: HR Representative Name */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1">
-                <User size={14} className="text-indigo-400" /> 2. HR Representative
+              <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
+                <User size={14} className="text-indigo-600" /> 2. HR Representative
               </label>
               <select
                 value={selectedEmployerId}
                 onChange={(e) => handleSelectHROrEmail(e.target.value)}
-                className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3.5 py-2.5 text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
+                className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3.5 py-2.5 text-xs font-semibold focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all cursor-pointer"
               >
                 <option value="">
                   {selectedCompanyName ? `-- HRs of ${selectedCompanyName} --` : '-- Select HR Representative --'}
@@ -796,13 +800,13 @@ export const EmployerApplications = () => {
 
             {/* Dropdown 3: Company Login Email */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1">
-                <Mail size={14} className="text-indigo-400" /> 3. Company Email
+              <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
+                <Mail size={14} className="text-indigo-600" /> 3. Company Email
               </label>
               <select
                 value={selectedEmployerId}
                 onChange={(e) => handleSelectHROrEmail(e.target.value)}
-                className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3.5 py-2.5 text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
+                className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3.5 py-2.5 text-xs font-semibold focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all cursor-pointer"
               >
                 <option value="">
                   {selectedCompanyName ? `-- Emails of ${selectedCompanyName} --` : '-- Select Company Email --'}
@@ -817,17 +821,17 @@ export const EmployerApplications = () => {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-800">
-            <div className="text-xs text-slate-400">
-              Selected Target Company: <span className="font-bold text-white">{selectedEmployer?.companyName || selectedEmployer?.firstName || 'None'}</span> ({selectedEmployer?.email || 'N/A'})
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-4 border-t border-slate-100">
+            <div className="text-xs text-slate-500">
+              Selected Target Company: <span className="font-bold text-slate-900">{selectedEmployer?.companyName || selectedEmployer?.firstName || 'None'}</span> <span className="text-slate-400">({selectedEmployer?.email || 'N/A'})</span>
             </div>
 
             <div className="flex items-center gap-2.5">
               <button
                 onClick={() => handleShareWithCompany('assign')}
                 disabled={sharing || selectedAppIds.length === 0}
-                className={`px-5 py-2.5 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 shadow-xs cursor-pointer ${
-                  selectedAppIds.length === 0 ? 'bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-500'
+                className={`px-5 py-2.5 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 shadow-sm cursor-pointer ${
+                  selectedAppIds.length === 0 ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700 active:scale-95'
                 }`}
               >
                 <Check size={16} /> Grant Access ({selectedAppIds.length})
@@ -836,8 +840,8 @@ export const EmployerApplications = () => {
               <button
                 onClick={() => handleShareWithCompany('unassign')}
                 disabled={sharing || selectedAppIds.length === 0}
-                className={`px-4 py-2.5 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer ${
-                  selectedAppIds.length === 0 ? 'bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-rose-600/80 hover:bg-rose-600'
+                className={`px-4 py-2.5 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer ${
+                  selectedAppIds.length === 0 ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed' : 'bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 active:scale-95'
                 }`}
               >
                 <X size={16} /> Revoke Access
@@ -848,9 +852,9 @@ export const EmployerApplications = () => {
       )}
 
       {/* RICH FILTERS BAR */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs mb-6 space-y-3">
-        <div className="flex items-center gap-2 pb-2 border-b border-slate-100 text-xs font-bold text-slate-600 uppercase tracking-wider">
-          <Filter size={14} className="text-indigo-600" /> Advanced Candidate Filters
+      <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm mb-6 space-y-3">
+        <div className="flex items-center gap-2 pb-3 border-b border-slate-100 text-xs font-extrabold text-slate-700 uppercase tracking-wider">
+          <Filter size={15} className="text-indigo-600" /> Advanced Candidate Filters
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
@@ -862,7 +866,7 @@ export const EmployerApplications = () => {
               placeholder="Search candidate, email, phone..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 pr-3 py-2 w-full border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
+              className="pl-9 pr-3 py-2 w-full border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50/70 focus:bg-white text-slate-800 font-medium transition-all"
             />
           </div>
 
@@ -871,7 +875,7 @@ export const EmployerApplications = () => {
             <select
               value={cityFilter}
               onChange={(e) => setCityFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none bg-white text-slate-700"
+              className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50/70 focus:bg-white text-slate-700 font-medium cursor-pointer transition-all"
             >
               <option value="all">All Cities / Locations ({uniqueCities.length})</option>
               {uniqueCities.map(city => (
@@ -885,7 +889,7 @@ export const EmployerApplications = () => {
             <select
               value={caQualificationFilter}
               onChange={(e) => setCaQualificationFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none bg-white text-slate-700 font-medium"
+              className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50/70 focus:bg-white text-slate-700 font-medium cursor-pointer transition-all"
             >
               <option value="all">All CA Qualifications</option>
               <option value="ca_final">CA Final</option>
@@ -900,7 +904,7 @@ export const EmployerApplications = () => {
             <select
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none bg-white text-slate-700"
+              className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50/70 focus:bg-white text-slate-700 font-medium cursor-pointer transition-all"
             >
               <option value="all">All Dates</option>
               <option value="today">Today</option>
@@ -914,7 +918,7 @@ export const EmployerApplications = () => {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none bg-white text-slate-700 font-medium"
+              className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50/70 focus:bg-white text-slate-700 font-medium cursor-pointer transition-all"
             >
               <option value="all">All Statuses</option>
               <option value="applied">Applied / Pending</option>
@@ -927,31 +931,31 @@ export const EmployerApplications = () => {
       </div>
 
       {/* QUICK SELECTION & BULK ACTIONS TOOLBAR */}
-      <div className="bg-slate-900 text-white p-4 rounded-2xl shadow-md mb-6 border border-slate-800 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div className="bg-gradient-to-r from-slate-50 via-white to-indigo-50/30 rounded-2xl border border-slate-200 p-4 shadow-sm mb-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         {/* Left Side: Quick Select Helpers */}
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-400 mr-1 flex items-center gap-1">
-            <CheckCheck size={16} className="text-indigo-400" /> Quick Selection:
+          <span className="text-xs font-extrabold uppercase tracking-wider text-slate-600 mr-1 flex items-center gap-1.5">
+            <CheckCheck size={16} className="text-indigo-600" /> Quick Selection:
           </span>
           <button
             onClick={selectTop20}
-            className="px-3.5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold rounded-xl text-xs transition-all cursor-pointer flex items-center gap-1.5 shadow-sm active:scale-95"
+            className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition-all cursor-pointer flex items-center gap-1.5 shadow-xs active:scale-95"
             title="Select the first 20 candidates in current list"
           >
-            ⚡ Select Top 20 Candidates
+            <Zap size={14} className="fill-white text-white" /> Select Top 20 Candidates
           </button>
           <button
             onClick={selectAllFiltered}
-            className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded-xl text-xs transition-colors cursor-pointer"
+            className="px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 font-semibold rounded-xl text-xs transition-colors cursor-pointer"
           >
             Select All ({filteredApplications.length})
           </button>
           {selectedAppIds.length > 0 && (
             <button
               onClick={clearSelection}
-              className="px-3 py-2 bg-slate-800/80 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl text-xs transition-colors cursor-pointer"
+              className="px-3 py-2 text-slate-500 hover:text-slate-800 font-medium rounded-xl text-xs transition-colors cursor-pointer"
             >
-              Clear Selection ({selectedAppIds.length})
+              Clear ({selectedAppIds.length})
             </button>
           )}
         </div>
@@ -961,27 +965,27 @@ export const EmployerApplications = () => {
           <button
             onClick={() => handleBulkStatusChange('shortlisted')}
             disabled={bulkUpdating || selectedAppIds.length === 0}
-            className={`px-4 py-2 font-extrabold text-xs rounded-xl transition-all flex items-center gap-1.5 shadow-sm cursor-pointer ${
+            className={`px-3.5 py-2 font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 shadow-xs cursor-pointer ${
               selectedAppIds.length === 0
-                ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'
-                : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 active:scale-95'
+                ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
+                : 'bg-emerald-600 hover:bg-emerald-700 text-white active:scale-95'
             }`}
-            title="Bulk shortlist all selected candidates with 1 click"
+            title="Bulk shortlist all selected candidates"
           >
-            <Star size={15} className="fill-slate-950 text-slate-950" /> ⭐ Bulk Shortlist ({selectedAppIds.length})
+            <Star size={14} className="fill-white text-white" /> Bulk Shortlist ({selectedAppIds.length})
           </button>
 
           <button
             onClick={downloadSelectedResumesZip}
             disabled={isZipping || selectedAppIds.length === 0}
-            className={`px-4 py-2 font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 shadow-sm cursor-pointer ${
+            className={`px-3.5 py-2 font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 cursor-pointer ${
               selectedAppIds.length === 0
-                ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'
-                : 'bg-indigo-600 hover:bg-indigo-500 text-white active:scale-95'
+                ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
+                : 'bg-slate-900 hover:bg-slate-800 text-white shadow-xs active:scale-95'
             }`}
             title="Download resumes of selected candidates in a single ZIP file"
           >
-            <DownloadCloud size={15} /> {isZipping ? (zipStep || 'Zipping...') : `Download ZIP (${selectedAppIds.length})`}
+            <DownloadCloud size={14} /> {isZipping ? (zipStep || 'Zipping...') : `Download ZIP (${selectedAppIds.length})`}
           </button>
 
           {/* Bulk Admin Status Dropdown */}
@@ -994,13 +998,13 @@ export const EmployerApplications = () => {
                   e.target.value = '';
                 }
               }}
-              className="bg-slate-800 border border-slate-700 text-white text-xs font-semibold rounded-xl px-3 py-2 outline-none cursor-pointer disabled:opacity-50"
+              className="bg-white border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-2 outline-none cursor-pointer disabled:opacity-50 shadow-2xs focus:ring-2 focus:ring-indigo-500"
             >
-              <option value="">-- Bulk Admin Status ({selectedAppIds.length}) --</option>
+              <option value="">Bulk Admin Status ({selectedAppIds.length})</option>
               <option value="applied">Applied / Pending</option>
-              <option value="shortlisted">⭐ Shortlisted</option>
-              <option value="hired">🎉 Hired</option>
-              <option value="rejected">🚫 Rejected</option>
+              <option value="shortlisted">Shortlisted</option>
+              <option value="hired">Hired</option>
+              <option value="rejected">Rejected</option>
             </select>
           )}
 
@@ -1014,16 +1018,16 @@ export const EmployerApplications = () => {
                   e.target.value = '';
                 }
               }}
-              className="bg-slate-800 border border-slate-700 text-white text-xs font-semibold rounded-xl px-3 py-2 outline-none cursor-pointer disabled:opacity-50"
+              className="bg-white border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-2 outline-none cursor-pointer disabled:opacity-50 shadow-2xs focus:ring-2 focus:ring-indigo-500"
             >
-              <option value="">-- Bulk Company Status ({selectedAppIds.length}) --</option>
-              <option value="CV View">👁️ CV View</option>
-              <option value="CV Rejected">❌ CV Rejected</option>
-              <option value="Shortlisted for Round 1">⭐ Shortlisted for Round 1</option>
-              <option value="Shortlisted for Round 2">⭐⭐ Shortlisted for Round 2</option>
-              <option value="Shortlisted for Round 3">🌟 Shortlisted for Round 3</option>
-              <option value="Selected">🎉 Selected</option>
-              <option value="Rejected">🚫 Rejected</option>
+              <option value="">Bulk Company Status ({selectedAppIds.length})</option>
+              <option value="CV View">CV View</option>
+              <option value="CV Rejected">CV Rejected</option>
+              <option value="Shortlisted for Round 1">Shortlisted (Round 1)</option>
+              <option value="Shortlisted for Round 2">Shortlisted (Round 2)</option>
+              <option value="Shortlisted for Round 3">Shortlisted (Round 3)</option>
+              <option value="Selected">Selected</option>
+              <option value="Rejected">Rejected</option>
             </select>
           )}
         </div>
@@ -1197,14 +1201,14 @@ export const EmployerApplications = () => {
                             'bg-slate-100 text-slate-700 border-slate-200'
                           }`}
                         >
-                          <option value="Pending Review">-- Pending Review --</option>
-                          <option value="CV View">👁️ CV View</option>
-                          <option value="CV Rejected">❌ CV Rejected</option>
-                          <option value="Shortlisted for Round 1">⭐ Shortlisted for Round 1</option>
-                          <option value="Shortlisted for Round 2">⭐⭐ Shortlisted for Round 2</option>
-                          <option value="Shortlisted for Round 3">🌟 Shortlisted for Round 3</option>
-                          <option value="Selected">🎉 Selected</option>
-                          <option value="Rejected">🚫 Rejected</option>
+                          <option value="Pending Review">Pending Review</option>
+                          <option value="CV View">CV View</option>
+                          <option value="CV Rejected">CV Rejected</option>
+                          <option value="Shortlisted for Round 1">Shortlisted (Round 1)</option>
+                          <option value="Shortlisted for Round 2">Shortlisted (Round 2)</option>
+                          <option value="Shortlisted for Round 3">Shortlisted (Round 3)</option>
+                          <option value="Selected">Selected</option>
+                          <option value="Rejected">Rejected</option>
                         </select>
                       </td>
                       <td className="px-6 py-4 text-right">
