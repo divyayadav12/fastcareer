@@ -34,7 +34,8 @@ import {
   Star,
   Users,
   CheckCheck,
-  DownloadCloud
+  DownloadCloud,
+  Zap
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getResumeUrl } from '../../utils/urlHelper';
