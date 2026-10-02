@@ -91,10 +91,10 @@ export const CTASection = () => {
             transition={{ duration: 0.45 }}
             className="lg:col-span-5 flex justify-center lg:justify-end relative"
           >
-            <div className="relative w-full max-w-[380px] h-[280px] sm:h-[300px] flex items-center justify-center">
+            <div className="relative w-full max-w-[480px] sm:max-w-[520px] h-[320px] sm:h-[360px] flex items-center justify-center p-2">
               
               {/* Background Skyline Silhouette & Gradient Orb */}
-              <div className="absolute inset-0 bg-gradient-to-t from-blue-100/70 via-sky-50/50 to-transparent rounded-3xl" />
+              <div className="absolute inset-0 bg-gradient-to-t from-blue-100/80 via-sky-50/60 to-transparent rounded-3xl" />
               
               {/* Abstract Skyline Buildings Outline */}
               <svg viewBox="0 0 300 200" className="absolute bottom-0 w-full text-blue-200/60 fill-current opacity-60">
@@ -107,15 +107,15 @@ export const CTASection = () => {
               </svg>
 
               {/* Upward Growth Arrow in background */}
-              <div className="absolute top-6 right-8 text-blue-400/40 rotate-12">
-                <TrendingUp size={70} strokeWidth={2.5} />
+              <div className="absolute top-4 right-6 text-blue-400/40 rotate-12">
+                <TrendingUp size={90} strokeWidth={2.5} />
               </div>
 
               {/* Real FAST Careers Team Photo Cutout */}
               <img 
                 src="/team_photos/team_photo_9.jpg" 
                 alt="FAST Careers Executive Team" 
-                className="relative z-10 w-64 sm:w-72 h-44 sm:h-48 object-cover rounded-2xl shadow-lg border-2 border-white"
+                className="relative z-10 w-full max-w-[440px] sm:max-w-[480px] h-60 sm:h-72 object-cover rounded-2xl shadow-xl border-4 border-white transition-all hover:scale-[1.01]"
               />
 
             </div>
