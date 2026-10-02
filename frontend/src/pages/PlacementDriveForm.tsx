@@ -98,6 +98,25 @@ export const PlacementDriveForm = () => {
       if (name === 'permanentState') {
         newData.permanentCity = '';
       }
+      if (name === 'class10_year' && value) {
+        const c10 = parseInt(value, 10);
+        if (c10 && prev.class12_year && parseInt(prev.class12_year, 10) < c10) {
+          newData.class12_year = String(c10 + 2);
+          toast.error(`Class 12th Passing Year cannot be earlier than Class 10th Year (${value}). Auto-updated to ${c10 + 2}.`);
+        }
+        const minGrad = parseInt(newData.class12_year || value || '0', 10);
+        if (minGrad && prev.grad_yearOfCompletion && parseInt(prev.grad_yearOfCompletion, 10) < minGrad) {
+          newData.grad_yearOfCompletion = String(minGrad + 3);
+          toast.error(`Graduation Year cannot be earlier than High School Year. Auto-updated to ${minGrad + 3}.`);
+        }
+      }
+      if (name === 'class12_year' && value) {
+        const c12 = parseInt(value, 10);
+        if (c12 && prev.grad_yearOfCompletion && parseInt(prev.grad_yearOfCompletion, 10) < c12) {
+          newData.grad_yearOfCompletion = String(c12 + 3);
+          toast.error(`Graduation Year cannot be earlier than Class 12th Year (${value}). Auto-updated to ${c12 + 3}.`);
+        }
+      }
       return newData;
     });
   };
@@ -713,7 +732,10 @@ export const PlacementDriveForm = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-1">Graduation Year</label>
                     <select name="grad_yearOfCompletion" value={formData.grad_yearOfCompletion} onChange={handleChange} className="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
                       <option value="">Select Year...</option>
-                      {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+                      {YEARS.filter(y => {
+                        const minYear = parseInt(formData.class12_year || formData.class10_year || '0', 10);
+                        return !minYear || parseInt(y, 10) >= minYear;
+                      }).map(y => <option key={y} value={y}>{y}</option>)}
                     </select>
                   </div>
                   <div>
@@ -738,7 +760,7 @@ export const PlacementDriveForm = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-1">Class 12th Year</label>
                     <select name="class12_year" value={formData.class12_year} onChange={handleChange} className="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
                       <option value="">Select Year...</option>
-                      {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+                      {YEARS.filter(y => !formData.class10_year || parseInt(y, 10) >= parseInt(formData.class10_year, 10)).map(y => <option key={y} value={y}>{y}</option>)}
                     </select>
                   </div>
                   <div>
