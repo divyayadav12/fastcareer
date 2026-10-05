@@ -78,16 +78,15 @@ function App() {
         }}
       />
       <ScrollToTop />
-      <div className="flex flex-col min-h-screen">
+      <div className="flex flex-col min-h-screen bg-slate-50/30">
         <Navbar />
-        <main className="flex-grow">
-          
-            <Suspense fallback={
-              <div className="flex flex-col items-center justify-center min-h-[60vh]">
-                <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-700 rounded-full animate-spin"></div>
-                <p className="mt-4 text-sm font-semibold text-slate-500">Loading Fast Careers...</p>
-              </div>
-            }>
+        <main className="flex-grow flex flex-col min-h-[calc(100vh-80px)]">
+          <Suspense fallback={
+            <div className="flex-grow flex flex-col items-center justify-center min-h-[calc(100vh-140px)] w-full py-16 bg-white/60">
+              <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-700 rounded-full animate-spin"></div>
+              <p className="mt-4 text-sm font-semibold text-slate-500">Loading Fast Careers...</p>
+            </div>
+          }>
               <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
