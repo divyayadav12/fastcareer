@@ -954,3 +954,20 @@ export const deleteEmployee = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Server error deleting employee' });
   }
 };
+
+// @desc    Check if email already exists
+// @route   GET /api/users/check-email
+// @access  Public
+export const checkEmail = async (req: Request, res: Response) => {
+  try {
+    const email = ((req.query.email as string) || '').toLowerCase().trim();
+    if (!email) {
+      res.json({ exists: false });
+      return;
+    }
+    const userExists = await User.findOne({ email });
+    res.json({ exists: !!userExists });
+  } catch (error) {
+    res.status(500).json({ message: 'Error checking email' });
+  }
+};

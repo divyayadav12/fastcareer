@@ -161,8 +161,46 @@ export const Register = () => {
   }, [citySearchQuery]);
 
   const [formError, setFormError] = useState<string>('');
+  const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const checkEmailUnique = async (emailVal: string) => {
+    const trimmed = emailVal.toLowerCase().trim();
+    if (!trimmed) {
+      setFieldErrors(prev => ({ ...prev, email: 'Work / Personal Email is required.' }));
+      return false;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmed)) {
+      setFieldErrors(prev => ({ ...prev, email: 'Please enter a valid email address (e.g. rahul@ca.org.in).' }));
+      return false;
+    }
+    try {
+      setIsCheckingEmail(true);
+      const res = await api.get(`/users/check-email?email=${encodeURIComponent(trimmed)}`);
+      if (res.data.exists) {
+        setFieldErrors(prev => ({
+          ...prev,
+          email: `The email "${trimmed}" is already registered. Please enter a unique email address or sign in.`
+        }));
+        return false;
+      } else {
+        setFieldErrors(prev => {
+          const copy = { ...prev };
+          delete copy.email;
+          return copy;
+        });
+        return true;
+      }
+    } catch (error) {
+      console.error('Error checking email:', error);
+      return true;
+    } finally {
+      setIsCheckingEmail(false);
+    }
+  };
 
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
@@ -204,6 +242,7 @@ export const Register = () => {
     }
 
     setResumeFile(file);
+    setFieldErrors(prev => ({ ...prev, resumeFile: '' }));
     setIsScanningResume(true);
     setScannedFields([]);
 
@@ -324,123 +363,103 @@ export const Register = () => {
     e.preventDefault();
 
     setFormError('');
-    let uploadedResumeUrl = '';
+    const newErrors: { [key: string]: string } = {};
 
-    if (!firstName.trim() || !lastName.trim()) {
-      const err = 'Please enter your full name (First Name and Last Name are required).';
-      setFormError(err);
-      toast.error(err);
-      return;
+    if (!firstName.trim()) {
+      newErrors.firstName = 'First Name is required.';
     }
 
-    if (!email.trim()) {
-      const err = 'Please enter your work or personal email address.';
-      setFormError(err);
-      toast.error(err);
-      return;
+    if (!lastName.trim()) {
+      newErrors.lastName = 'Last Name is required.';
     }
 
-    if (!password || password.length < 6) {
-      const err = 'Please create a password with at least 6 characters.';
-      setFormError(err);
-      toast.error(err);
-      return;
+    const trimmedEmail = email.toLowerCase().trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!trimmedEmail) {
+      newErrors.email = 'Work / Personal Email is required.';
+    } else if (!emailRegex.test(trimmedEmail)) {
+      newErrors.email = 'Please enter a valid email address (e.g. rahul@ca.org.in).';
+    }
+
+    if (!password) {
+      newErrors.password = 'Create Password is required.';
+    } else if (password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters.';
     }
 
     if (role === 'candidate') {
       const cleanPhone = phone.replace(/\D/g, '');
       if (!cleanPhone || cleanPhone.length !== 10) {
-        const err = 'Please enter a valid 10-digit mobile number.';
-        setFormError(err);
-        toast.error(err);
-        return;
+        newErrors.phone = 'Please enter a valid 10-digit mobile number.';
       }
 
       if (!dateOfBirth) {
-        const err = 'Please select your Date of Birth (Mandatory).';
-        setFormError(err);
-        toast.error(err);
-        return;
+        newErrors.dateOfBirth = 'Date of Birth is required.';
       }
 
       if (!currentCity.trim()) {
-        const err = 'Please select your Current Location / City (Mandatory).';
-        setFormError(err);
-        toast.error(err);
-        return;
+        newErrors.currentCity = 'Current Location / City is required.';
       }
 
       if (workStatus === 'experienced') {
         if (!experienceYears) {
-          const err = 'Please select your Total Work Experience (Mandatory for experienced candidates).';
-          setFormError(err);
-          toast.error(err);
-          return;
+          newErrors.experienceYears = 'Total Work Experience is required for experienced candidates.';
         }
         if (!caFinalCompletionYear) {
-          const err = 'Please select Which CA Final Year Completed (1970 to Present) (Mandatory for experienced candidates).';
-          setFormError(err);
-          toast.error(err);
-          return;
+          newErrors.caFinalCompletionYear = 'CA Final completion year is required for experienced candidates.';
         }
-      }
-
-      if (
-        !caInter.group1Attempts ||
-        !caInter.group1Month ||
-        !caInter.group1Year ||
-        !caInter.group2Attempts ||
-        !caInter.group2Month ||
-        !caInter.group2Year ||
-        !caInter.completionSessionMonth ||
-        !caInter.completionSessionYear
-      ) {
-        const err = 'Please complete all mandatory CA Intermediate qualification details.';
-        setFormError(err);
-        toast.error(err);
-        return;
-      }
-
-      if (
-        !caFinal.group1Attempts ||
-        !caFinal.group1Month ||
-        !caFinal.group1Year ||
-        !caFinal.group2Attempts ||
-        !caFinal.group2Month ||
-        !caFinal.group2Year ||
-        !caFinal.completionSessionMonth ||
-        !caFinal.completionSessionYear
-      ) {
-        const err = 'Please complete all mandatory CA Final examination details.';
-        setFormError(err);
-        toast.error(err);
-        return;
       }
 
       if (!resumeFile) {
-        const err = 'Please upload your Resume / CV (PDF or DOCX) to proceed with registration.';
-        setFormError(err);
-        toast.error(err);
+        newErrors.resumeFile = 'Please upload your Resume / CV (PDF or DOCX).';
+      }
+    }
+
+    // Check email uniqueness from API if email format is valid
+    if (trimmedEmail && emailRegex.test(trimmedEmail) && !newErrors.email) {
+      try {
+        const res = await api.get(`/users/check-email?email=${encodeURIComponent(trimmedEmail)}`);
+        if (res.data.exists) {
+          newErrors.email = `The email "${trimmedEmail}" is already registered. Please sign in or enter a unique email address.`;
+        }
+      } catch (err) {
+        console.error('Error checking email uniqueness:', err);
+      }
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setFieldErrors(newErrors);
+      const firstErrorMsg = Object.values(newErrors)[0];
+      setFormError('Please fill in all required fields highlighted below before submitting.');
+      toast.error(firstErrorMsg || 'Please complete all mandatory fields.');
+
+      const firstKey = Object.keys(newErrors)[0];
+      const el = document.getElementById(firstKey) || document.querySelector(`[name="${firstKey}"]`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      return;
+    }
+
+    setFieldErrors({});
+    let uploadedResumeUrl = '';
+
+    if (role === 'candidate' && resumeFile) {
+      setIsUploading(true);
+      const formData = new FormData();
+      formData.append('resume', resumeFile);
+      try {
+        const res = await api.post('/upload', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        uploadedResumeUrl = res.data.url;
+      } catch (error) {
+        setFormError('Failed to upload resume. Please try again.');
+        toast.error('Failed to upload resume. Please try again.');
+        setIsUploading(false);
         return;
       }
-
-      if (resumeFile) {
-        setIsUploading(true);
-        const formData = new FormData();
-        formData.append('resume', resumeFile);
-        try {
-          const res = await api.post('/upload', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-          });
-          uploadedResumeUrl = res.data.url;
-        } catch (error) {
-          setFormError('Failed to upload resume. Please try again.');
-          toast.error('Failed to upload resume. Please try again.');
-          setIsUploading(false);
-          return;
-        }
-        setIsUploading(false);
-      }
+      setIsUploading(false);
     }
 
     const userData = {
@@ -632,10 +651,23 @@ export const Register = () => {
                       autoComplete="given-name"
                       required
                       value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
+                      onChange={(e) => {
+                        setFirstName(e.target.value);
+                        if (fieldErrors.firstName) setFieldErrors(prev => ({ ...prev, firstName: '' }));
+                      }}
                       placeholder="e.g. Rahul"
-                      className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                      className={`w-full px-3.5 py-2.5 border rounded-xl text-sm focus:outline-none transition-all ${
+                        fieldErrors.firstName
+                          ? 'border-rose-500 ring-2 ring-rose-500/20 bg-rose-50/20 focus:border-rose-600'
+                          : 'border-slate-200 focus:ring-2 focus:ring-primary/20 focus:border-primary'
+                      }`}
                     />
+                    {fieldErrors.firstName && (
+                      <p className="mt-1 text-xs font-semibold text-rose-600 flex items-center gap-1 animate-in fade-in slide-in-from-top-1">
+                        <AlertCircle size={13} className="shrink-0 text-rose-600" />
+                        <span>{fieldErrors.firstName}</span>
+                      </p>
+                    )}
                   </div>
                   <div>
                     <label htmlFor="lastName" className="block text-xs font-semibold text-slate-700 mb-1.5">Last Name *</label>
@@ -646,10 +678,23 @@ export const Register = () => {
                       autoComplete="family-name"
                       required
                       value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
+                      onChange={(e) => {
+                        setLastName(e.target.value);
+                        if (fieldErrors.lastName) setFieldErrors(prev => ({ ...prev, lastName: '' }));
+                      }}
                       placeholder="e.g. Verma"
-                      className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                      className={`w-full px-3.5 py-2.5 border rounded-xl text-sm focus:outline-none transition-all ${
+                        fieldErrors.lastName
+                          ? 'border-rose-500 ring-2 ring-rose-500/20 bg-rose-50/20 focus:border-rose-600'
+                          : 'border-slate-200 focus:ring-2 focus:ring-primary/20 focus:border-primary'
+                      }`}
                     />
+                    {fieldErrors.lastName && (
+                      <p className="mt-1 text-xs font-semibold text-rose-600 flex items-center gap-1 animate-in fade-in slide-in-from-top-1">
+                        <AlertCircle size={13} className="shrink-0 text-rose-600" />
+                        <span>{fieldErrors.lastName}</span>
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -666,11 +711,32 @@ export const Register = () => {
                         autoComplete="username email"
                         required
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        onChange={(e) => {
+                          setEmail(e.target.value);
+                          if (fieldErrors.email) setFieldErrors(prev => ({ ...prev, email: '' }));
+                        }}
+                        onBlur={() => checkEmailUnique(email)}
                         placeholder="rahul@ca.org.in"
-                        className="w-full pl-9 pr-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                        className={`w-full pl-9 pr-8 py-2.5 border rounded-xl text-sm focus:outline-none transition-all ${
+                          fieldErrors.email
+                            ? 'border-rose-500 ring-2 ring-rose-500/20 bg-rose-50/20 focus:border-rose-600'
+                            : 'border-slate-200 focus:ring-2 focus:ring-primary/20 focus:border-primary'
+                        }`}
                       />
+                      {isCheckingEmail && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                        </div>
+                      )}
                     </div>
+                    {fieldErrors.email ? (
+                      <p className="mt-1 text-xs font-semibold text-rose-600 flex items-center gap-1 animate-in fade-in slide-in-from-top-1">
+                        <AlertCircle size={13} className="shrink-0 text-rose-600" />
+                        <span>{fieldErrors.email}</span>
+                      </p>
+                    ) : (
+                      <p className="mt-1 text-[11px] text-slate-400">Must be a unique, active email address.</p>
+                    )}
                   </div>
 
                   <div>
@@ -686,12 +752,25 @@ export const Register = () => {
                         autoComplete="tel"
                         required={role === 'candidate'}
                         value={phone}
-                        onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                        onChange={(e) => {
+                          setPhone(e.target.value.replace(/\D/g, ''));
+                          if (fieldErrors.phone) setFieldErrors(prev => ({ ...prev, phone: '' }));
+                        }}
                         placeholder="98765 43210"
                         maxLength={10}
-                        className="w-full px-3.5 py-2.5 border border-slate-200 rounded-r-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                        className={`w-full px-3.5 py-2.5 border rounded-r-xl text-sm focus:outline-none transition-all ${
+                          fieldErrors.phone
+                            ? 'border-rose-500 ring-2 ring-rose-500/20 bg-rose-50/20 focus:border-rose-600'
+                            : 'border-slate-200 focus:ring-2 focus:ring-primary/20 focus:border-primary'
+                        }`}
                       />
                     </div>
+                    {fieldErrors.phone && (
+                      <p className="mt-1 text-xs font-semibold text-rose-600 flex items-center gap-1 animate-in fade-in slide-in-from-top-1">
+                        <AlertCircle size={13} className="shrink-0 text-rose-600" />
+                        <span>{fieldErrors.phone}</span>
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -707,10 +786,17 @@ export const Register = () => {
                         autoComplete="new-password"
                         required
                         value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        onChange={(e) => {
+                          setPassword(e.target.value);
+                          if (fieldErrors.password) setFieldErrors(prev => ({ ...prev, password: '' }));
+                        }}
                         placeholder="Min. 8 characters"
                         minLength={6}
-                        className="w-full pl-3.5 pr-9 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                        className={`w-full pl-3.5 pr-9 py-2.5 border rounded-xl text-sm focus:outline-none transition-all ${
+                          fieldErrors.password
+                            ? 'border-rose-500 ring-2 ring-rose-500/20 bg-rose-50/20 focus:border-rose-600'
+                            : 'border-slate-200 focus:ring-2 focus:ring-primary/20 focus:border-primary'
+                        }`}
                       />
                       <button
                         type="button"
@@ -720,21 +806,42 @@ export const Register = () => {
                         {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                       </button>
                     </div>
+                    {fieldErrors.password && (
+                      <p className="mt-1 text-xs font-semibold text-rose-600 flex items-center gap-1 animate-in fade-in slide-in-from-top-1">
+                        <AlertCircle size={13} className="shrink-0 text-rose-600" />
+                        <span>{fieldErrors.password}</span>
+                      </p>
+                    )}
                   </div>
 
                   {role === 'candidate' ? (
                     <div>
-                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      <label htmlFor="dateOfBirth" className="block text-xs font-semibold text-slate-700 mb-1.5">
                         Date of Birth <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="date"
+                        id="dateOfBirth"
+                        name="dateOfBirth"
                         required={role === 'candidate'}
                         value={dateOfBirth}
-                        onChange={(e) => setDateOfBirth(e.target.value)}
+                        onChange={(e) => {
+                          setDateOfBirth(e.target.value);
+                          if (fieldErrors.dateOfBirth) setFieldErrors(prev => ({ ...prev, dateOfBirth: '' }));
+                        }}
                         max={new Date().toISOString().split('T')[0]}
-                        className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-white text-slate-900 cursor-pointer"
+                        className={`w-full px-3.5 py-2.5 border rounded-xl text-sm focus:outline-none transition-all bg-white text-slate-900 cursor-pointer ${
+                          fieldErrors.dateOfBirth
+                            ? 'border-rose-500 ring-2 ring-rose-500/20 bg-rose-50/20 focus:border-rose-600'
+                            : 'border-slate-200 focus:ring-2 focus:ring-primary/20 focus:border-primary'
+                        }`}
                       />
+                      {fieldErrors.dateOfBirth && (
+                        <p className="mt-1 text-xs font-semibold text-rose-600 flex items-center gap-1 animate-in fade-in slide-in-from-top-1">
+                          <AlertCircle size={13} className="shrink-0 text-rose-600" />
+                          <span>{fieldErrors.dateOfBirth}</span>
+                        </p>
+                      )}
                     </div>
                   ) : (
                     /* Searchable City Location for Employer */
@@ -803,7 +910,11 @@ export const Register = () => {
                           setTimeout(() => cityInputRef.current?.focus(), 100);
                         }}
                         className={`w-full px-3.5 py-2.5 border rounded-xl flex items-center justify-between cursor-pointer bg-white transition-all shadow-2xs ${
-                          cityDropdownOpen ? 'border-primary ring-2 ring-primary/20' : 'border-slate-200 hover:border-slate-300'
+                          fieldErrors.currentCity
+                            ? 'border-rose-500 ring-2 ring-rose-500/20 bg-rose-50/20'
+                            : cityDropdownOpen
+                            ? 'border-primary ring-2 ring-primary/20'
+                            : 'border-slate-200 hover:border-slate-300'
                         }`}
                       >
                         <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -830,6 +941,13 @@ export const Register = () => {
                           <ChevronDown size={16} className={`text-slate-400 transition-transform duration-200 ${cityDropdownOpen ? 'rotate-180 text-primary' : ''}`} />
                         </div>
                       </div>
+
+                      {fieldErrors.currentCity && (
+                        <p className="mt-1 text-xs font-semibold text-rose-600 flex items-center gap-1 animate-in fade-in slide-in-from-top-1">
+                          <AlertCircle size={13} className="shrink-0 text-rose-600" />
+                          <span>{fieldErrors.currentCity}</span>
+                        </p>
+                      )}
 
                       {/* Hidden input for HTML5 form validation */}
                       <input
@@ -1061,19 +1179,32 @@ export const Register = () => {
                                 Which CA Final Year Completed? <span className="text-red-500">*</span>
                               </label>
                               <select
+                                id="caFinalCompletionYear"
+                                name="caFinalCompletionYear"
                                 required={workStatus === 'experienced'}
                                 value={caFinalCompletionYear}
                                 onChange={(e) => {
                                   setCaFinalCompletionYear(e.target.value);
                                   setCaFinal(prev => ({ ...prev, completionSessionYear: e.target.value }));
+                                  if (fieldErrors.caFinalCompletionYear) setFieldErrors(prev => ({ ...prev, caFinalCompletionYear: '' }));
                                 }}
-                                className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white font-medium cursor-pointer"
+                                className={`w-full px-3.5 py-2.5 border rounded-xl text-sm focus:outline-none bg-white font-medium cursor-pointer transition-all ${
+                                  fieldErrors.caFinalCompletionYear
+                                    ? 'border-rose-500 ring-2 ring-rose-500/20 bg-rose-50/20'
+                                    : 'border-slate-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500'
+                                }`}
                               >
                                 <option value="">-- Select Year (1970 to Present) --</option>
                                 {YEARS_1970.map(y => (
                                   <option key={y} value={y}>{y}</option>
                                 ))}
                               </select>
+                              {fieldErrors.caFinalCompletionYear && (
+                                <p className="mt-1 text-xs font-semibold text-rose-600 flex items-center gap-1 animate-in fade-in slide-in-from-top-1">
+                                  <AlertCircle size={13} className="shrink-0 text-rose-600" />
+                                  <span>{fieldErrors.caFinalCompletionYear}</span>
+                                </p>
+                              )}
                             </div>
 
                             {/* Total Experience Years */}
@@ -1082,16 +1213,31 @@ export const Register = () => {
                                 Total Work Experience <span className="text-red-500">*</span>
                               </label>
                               <select
+                                id="experienceYears"
+                                name="experienceYears"
                                 required={workStatus === 'experienced'}
                                 value={experienceYears}
-                                onChange={(e) => setExperienceYears(e.target.value)}
-                                className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white font-medium cursor-pointer"
+                                onChange={(e) => {
+                                  setExperienceYears(e.target.value);
+                                  if (fieldErrors.experienceYears) setFieldErrors(prev => ({ ...prev, experienceYears: '' }));
+                                }}
+                                className={`w-full px-3.5 py-2.5 border rounded-xl text-sm focus:outline-none bg-white font-medium cursor-pointer transition-all ${
+                                  fieldErrors.experienceYears
+                                    ? 'border-rose-500 ring-2 ring-rose-500/20 bg-rose-50/20'
+                                    : 'border-slate-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500'
+                                }`}
                               >
                                 <option value="">-- Select Total Experience --</option>
                                 {EXPERIENCE_YEARS_OPTIONS.map(opt => (
                                   <option key={opt} value={opt}>{opt}</option>
                                 ))}
                               </select>
+                              {fieldErrors.experienceYears && (
+                                <p className="mt-1 text-xs font-semibold text-rose-600 flex items-center gap-1 animate-in fade-in slide-in-from-top-1">
+                                  <AlertCircle size={13} className="shrink-0 text-rose-600" />
+                                  <span>{fieldErrors.experienceYears}</span>
+                                </p>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -1421,12 +1567,16 @@ export const Register = () => {
                       </div>
 
                       <div
+                        id="resumeFile"
+                        name="resumeFile"
                         onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
                         onDragLeave={() => setIsDragOver(false)}
                         onDrop={handleDrop}
                         onClick={() => fileInputRef.current?.click()}
                         className={`border-2 border-dashed rounded-2xl p-3.5 cursor-pointer flex items-center justify-between transition-all ${
-                          isDragOver
+                          fieldErrors.resumeFile
+                            ? 'border-rose-500 bg-rose-50/20 ring-2 ring-rose-500/20'
+                            : isDragOver
                             ? 'border-blue-500 bg-blue-50/70'
                             : resumeFile
                             ? 'border-emerald-300 bg-emerald-50/30'
@@ -1447,7 +1597,11 @@ export const Register = () => {
 
                         <div className="flex items-center gap-3 min-w-0">
                           <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                            resumeFile ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-50 text-blue-600'
+                            fieldErrors.resumeFile
+                              ? 'bg-rose-100 text-rose-700'
+                              : resumeFile
+                              ? 'bg-emerald-100 text-emerald-700'
+                              : 'bg-blue-50 text-blue-600'
                           }`}>
                             <FileText size={20} />
                           </div>
@@ -1474,6 +1628,12 @@ export const Register = () => {
                           {resumeFile ? 'Change' : 'Browse'}
                         </button>
                       </div>
+                      {fieldErrors.resumeFile && (
+                        <p className="mt-1 text-xs font-semibold text-rose-600 flex items-center gap-1 animate-in fade-in slide-in-from-top-1">
+                          <AlertCircle size={13} className="shrink-0 text-rose-600" />
+                          <span>{fieldErrors.resumeFile}</span>
+                        </p>
+                      )}
                     </div>
                   </>
                 )}

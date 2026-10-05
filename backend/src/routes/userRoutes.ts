@@ -13,7 +13,8 @@ import {
   matchCandidatesFromExcel,
   downloadCandidateResumesZip,
   seedLiveCandidates, seed50Candidates, cleanupDbAndFixResumes, seed10CandidatesController,
-  getCandidateResume
+  getCandidateResume,
+  checkEmail
 } from '../controllers/userController';
 import { protect, admin, employerOrAdmin } from '../middleware/authMiddleware';
 import excelUpload from '../middleware/excelUploadMiddleware';
@@ -22,6 +23,7 @@ import upload from '../middleware/uploadMiddleware';
 const router = express.Router();
 
 router.route('/').post(registerUser);
+router.get('/check-email', checkEmail);
 router.post('/login', authUser);
 router.post('/upload-resume', upload.single('resume'), (req, res) => {
   if (req.file) {
