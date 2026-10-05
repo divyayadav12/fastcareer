@@ -243,7 +243,7 @@ export const Login = () => {
                 
                 {/* Email input */}
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  <label htmlFor="login-email" className="block text-xs font-semibold text-slate-700 mb-1.5">
                     Email address <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
@@ -252,6 +252,9 @@ export const Login = () => {
                     </div>
                     <input
                       type="email"
+                      id="login-email"
+                      name="email"
+                      autoComplete="username email"
                       required
                       placeholder={activeRole === 'candidate' ? 'e.g. rahul@ca.org.in' : 'e.g. hr@company.com'}
                       value={email}
@@ -264,7 +267,7 @@ export const Login = () => {
                 {/* Password input */}
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="block text-xs font-semibold text-slate-700">
+                    <label htmlFor="login-password" className="block text-xs font-semibold text-slate-700">
                       Password <span className="text-red-500">*</span>
                     </label>
                   </div>
@@ -274,6 +277,9 @@ export const Login = () => {
                     </div>
                     <input
                       type={showPassword ? 'text' : 'password'}
+                      id="login-password"
+                      name="password"
+                      autoComplete="current-password"
                       required
                       placeholder="••••••••"
                       value={password}

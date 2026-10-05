@@ -624,9 +624,12 @@ export const Register = () => {
                 {/* Name row */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">First Name *</label>
+                    <label htmlFor="firstName" className="block text-xs font-semibold text-slate-700 mb-1.5">First Name *</label>
                     <input
                       type="text"
+                      id="firstName"
+                      name="firstName"
+                      autoComplete="given-name"
                       required
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
@@ -635,9 +638,12 @@ export const Register = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">Last Name *</label>
+                    <label htmlFor="lastName" className="block text-xs font-semibold text-slate-700 mb-1.5">Last Name *</label>
                     <input
                       type="text"
+                      id="lastName"
+                      name="lastName"
+                      autoComplete="family-name"
                       required
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
@@ -650,11 +656,14 @@ export const Register = () => {
                 {/* Email and Mobile row */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">Work / Personal Email *</label>
+                    <label htmlFor="email" className="block text-xs font-semibold text-slate-700 mb-1.5">Work / Personal Email *</label>
                     <div className="relative">
                       <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                       <input
                         type="email"
+                        id="email"
+                        name="email"
+                        autoComplete="username email"
                         required
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
@@ -665,13 +674,16 @@ export const Register = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">Mobile Number *</label>
+                    <label htmlFor="phone" className="block text-xs font-semibold text-slate-700 mb-1.5">Mobile Number *</label>
                     <div className="flex">
                       <span className="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-slate-200 bg-slate-50 text-slate-600 text-xs font-semibold">
                         +91
                       </span>
                       <input
                         type="tel"
+                        id="phone"
+                        name="phone"
+                        autoComplete="tel"
                         required={role === 'candidate'}
                         value={phone}
                         onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
@@ -686,10 +698,13 @@ export const Register = () => {
                 {/* Password and DOB / Location row */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">Create Password *</label>
+                    <label htmlFor="password" className="block text-xs font-semibold text-slate-700 mb-1.5">Create Password *</label>
                     <div className="relative">
                       <input
                         type={showPassword ? 'text' : 'password'}
+                        id="password"
+                        name="password"
+                        autoComplete="new-password"
                         required
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
