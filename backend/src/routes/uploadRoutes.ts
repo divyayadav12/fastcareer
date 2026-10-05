@@ -64,38 +64,34 @@ const saveBufferToLocal = (buffer: Buffer, originalname: string): string => {
   return `/uploads/${filename}`;
 };
 
-// Unified processor for Base64 payloads
+// Unified processor for Base64 payloads (Instant local save + async Cloudinary sync)
 async function handleBase64Upload(base64: string, filename?: string, mimeType?: string) {
   const cleanBase64 = base64.replace(/^data:[^;]+;base64,/, '');
   const buffer = Buffer.from(cleanBase64, 'base64');
   const originalName = filename || 'resume.pdf';
   const cleanMime = mimeType || 'application/pdf';
 
-  let parsedData: any = {};
-  try {
-    parsedData = await parseResumeBuffer(buffer, originalName);
-  } catch (parseErr) {
-    console.warn('Base64 resume parsing warning:', parseErr);
-  }
+  // 1. Instant local disk save (takes ~2ms)
+  const finalUrl = saveBufferToLocal(buffer, originalName);
 
-  let finalUrl = '';
-  try {
-    if (isCloudinaryConfigured) {
-      finalUrl = await uploadBufferToCloudinary(buffer, originalName, cleanMime);
-    }
-  } catch (cloudErr) {
-    console.warn('Cloudinary upload fallback:', cloudErr);
-  }
-
-  if (!finalUrl) {
-    finalUrl = saveBufferToLocal(buffer, originalName);
+  // 2. Non-blocking background sync to Cloudinary if configured
+  if (isCloudinaryConfigured) {
+    uploadBufferToCloudinary(buffer, originalName, cleanMime)
+      .then(cloudUrl => {
+        if (cloudUrl) {
+          console.log('[Async Upload] Cloudinary sync finished:', cloudUrl);
+        }
+      })
+      .catch(cloudErr => {
+        console.warn('[Async Upload] Cloudinary non-critical warning:', cloudErr);
+      });
   }
 
   return {
     success: true,
     url: finalUrl,
     resumeUrl: finalUrl,
-    parsedData,
+    parsedData: {},
   };
 }
 
@@ -142,35 +138,26 @@ router.post('/', async (req: any, res: any, next: any) => {
     const originalName = req.file.originalname || req.body?.originalname || 'resume.pdf';
     const mimeType = req.file.mimetype || 'application/pdf';
 
-    let finalUrl = '';
-    let parsedData: any = {};
+    // 1. Instant local disk save (takes ~2ms)
+    const finalUrl = saveBufferToLocal(req.file.buffer, originalName);
 
-    try {
-      parsedData = await parseResumeBuffer(req.file.buffer, originalName);
-    } catch (parseErr) {
-      console.warn('Server resume parsing non-critical warning:', parseErr);
-    }
-
-    try {
-      if (isCloudinaryConfigured) {
-        finalUrl = await uploadBufferToCloudinary(
-          req.file.buffer, 
-          originalName,
-          mimeType
-        );
-      }
-    } catch (cloudinaryErr) {
-      console.warn('Cloudinary upload fallback to disk storage:', cloudinaryErr);
-    }
-
-    if (!finalUrl) {
-      finalUrl = saveBufferToLocal(req.file.buffer, originalName);
+    // 2. Non-blocking background sync to Cloudinary if configured
+    if (isCloudinaryConfigured) {
+      uploadBufferToCloudinary(req.file.buffer, originalName, mimeType)
+        .then(cloudUrl => {
+          if (cloudUrl) {
+            console.log('[Async Upload] Cloudinary sync finished:', cloudUrl);
+          }
+        })
+        .catch(cloudinaryErr => {
+          console.warn('[Async Upload] Cloudinary non-critical warning:', cloudinaryErr);
+        });
     }
 
     return res.json({
       url: finalUrl,
       resumeUrl: finalUrl,
-      parsedData,
+      parsedData: {},
       success: true,
     });
   });
