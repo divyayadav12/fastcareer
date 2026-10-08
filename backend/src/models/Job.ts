@@ -27,7 +27,7 @@ const JobSchema: Schema = new Schema(
     type: { type: String, required: true },
     category: { type: String, required: true },
     salaryRange: { type: String, required: true },
-    description: { type: String, required: true },
+    description: { type: String, default: '' },
     requirements: [{ type: String }],
     responsibilities: [{ type: String }],
     isHot: { type: Boolean, default: false },

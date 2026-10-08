@@ -210,11 +210,28 @@ export const ManageJobs = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      if (!formData.title?.trim()) {
+        toast.error('Job Title is required');
+        return;
+      }
+      if (!formData.company?.trim()) {
+        toast.error('Company / Firm Name is required');
+        return;
+      }
+
+      const safeDesc = (formData.description || '').trim() || `${formData.title.trim()} opening at ${formData.company.trim()}${formData.location ? ` in ${formData.location.trim()}` : ''}. Type: ${formData.type || 'Full-time'}. Category: ${formData.category || 'Auditing'}. Salary/Stipend: ${formData.salaryRange || 'Competitive'}.`;
+      const safeReq = (formData.requirements || '').split('\n').map(r => r.trim()).filter(Boolean);
+      const safeResp = (formData.responsibilities || '').split('\n').map(r => r.trim()).filter(Boolean);
+
       const payload = {
         ...formData,
+        title: formData.title.trim(),
+        company: formData.company.trim(),
+        location: (formData.location || 'Pan India').trim(),
+        description: safeDesc,
+        requirements: safeReq.length > 0 ? safeReq : [`Relevant experience for ${formData.title.trim()}`],
+        responsibilities: safeResp.length > 0 ? safeResp : [`Key deliverables as ${formData.title.trim()}`],
         targetEmployers: selectedEmployerIds,
-        requirements: formData.requirements.split('\n').filter(r => r.trim()),
-        responsibilities: formData.responsibilities.split('\n').filter(r => r.trim())
       };
       
       await api.post('/jobs', payload);
@@ -234,9 +251,10 @@ export const ManageJobs = () => {
         responsibilities: ''
       });
       fetchJobs();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating job:', error);
-      toast.error('Error creating job. Please ensure all fields are filled properly.');
+      const msg = error.response?.data?.message || 'Error creating job. Please ensure all fields are filled properly.';
+      toast.error(msg);
     }
   };
 
@@ -506,18 +524,24 @@ export const ManageJobs = () => {
                 )}
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Job Description *</label>
-                  <textarea required value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} rows={4} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 outline-none" placeholder="Describe the role..."></textarea>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Job Description <span className="text-gray-400 font-normal text-xs">(Optional - auto-generated if left blank)</span>
+                  </label>
+                  <textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} rows={3} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 outline-none text-sm" placeholder="Describe the role or leave blank to auto-generate..."></textarea>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Requirements (One per line) *</label>
-                  <textarea required value={formData.requirements} onChange={e => setFormData({...formData, requirements: e.target.value})} rows={4} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 outline-none" placeholder="e.g. CA Inter Both Groups Cleared&#10;Good knowledge of Tally"></textarea>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Requirements <span className="text-gray-400 font-normal text-xs">(Optional - one per line)</span>
+                  </label>
+                  <textarea value={formData.requirements} onChange={e => setFormData({...formData, requirements: e.target.value})} rows={3} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 outline-none text-sm" placeholder="e.g. CA Inter Both Groups Cleared&#10;Good knowledge of Tally"></textarea>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Responsibilities (One per line) *</label>
-                  <textarea required value={formData.responsibilities} onChange={e => setFormData({...formData, responsibilities: e.target.value})} rows={4} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 outline-none" placeholder="e.g. Assisting in Statutory Audit&#10;Filing GST Returns"></textarea>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Responsibilities <span className="text-gray-400 font-normal text-xs">(Optional - one per line)</span>
+                  </label>
+                  <textarea value={formData.responsibilities} onChange={e => setFormData({...formData, responsibilities: e.target.value})} rows={3} className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 outline-none text-sm" placeholder="e.g. Assisting in Statutory Audit&#10;Filing GST Returns"></textarea>
                 </div>
               </form>
             </div>

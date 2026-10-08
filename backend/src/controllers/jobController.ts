@@ -68,12 +68,28 @@ export const getJobById = async (req: Request, res: Response) => {
 // @access  Private/Employer
 export const createJob = async (req: any, res: Response) => {
   try {
-    const { location, targetEmployers, sharedHrEmails } = req.body;
+    const { title, company, location, type, category, salaryRange, description, requirements, responsibilities, targetEmployers, sharedHrEmails } = req.body;
     
-    if (location && !isValidCity(location)) {
-      res.status(400).json({ message: 'Invalid location. Please select a valid city from the list.' });
+    if (!title || !title.trim()) {
+      res.status(400).json({ message: 'Job title is required.' });
       return;
     }
+    if (!company || !company.trim()) {
+      res.status(400).json({ message: 'Company name is required.' });
+      return;
+    }
+
+    const safeDesc = (description && description.trim())
+      ? description.trim()
+      : `${title.trim()} opening at ${company.trim()}${location ? ` in ${location.trim()}` : ''}. Type: ${type || 'Full-time'}. Category: ${category || 'Finance'}. Salary/Stipend: ${salaryRange || 'Competitive'}.`;
+
+    const safeReq = (Array.isArray(requirements) && requirements.length > 0)
+      ? requirements
+      : (typeof requirements === 'string' && requirements.trim() ? requirements.split('\n').filter(Boolean) : [`Relevant experience in ${category || 'Finance'}`]);
+
+    const safeResp = (Array.isArray(responsibilities) && responsibilities.length > 0)
+      ? responsibilities
+      : (typeof responsibilities === 'string' && responsibilities.trim() ? responsibilities.split('\n').filter(Boolean) : [`Core responsibilities as ${title.trim()}`]);
 
     let resolvedTargetEmployers: string[] = Array.isArray(targetEmployers) ? [...targetEmployers] : [];
     if (Array.isArray(sharedHrEmails) && sharedHrEmails.length > 0) {
@@ -90,18 +106,27 @@ export const createJob = async (req: any, res: Response) => {
 
     const job = new Job({
       ...req.body,
+      title: title.trim(),
+      company: company.trim(),
+      location: (location || 'Pan India').trim(),
+      type: type || 'Full-time',
+      category: category || 'Auditing',
+      salaryRange: salaryRange || 'Not Disclosed',
+      description: safeDesc,
+      requirements: safeReq,
+      responsibilities: safeResp,
       targetEmployers: resolvedTargetEmployers,
       sharedHrEmails: sharedHrEmails || [],
       shareShortlistedCandidates: req.body.shareShortlistedCandidates !== false,
-      postedBy: req.user._id 
+      postedBy: req.user?._id 
     });
 
     const createdJob = await job.save();
     const populatedJob = await Job.findById(createdJob._id).populate('targetEmployers', 'companyName firstName lastName email');
     res.status(201).json(populatedJob || createdJob);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating job:', error);
-    res.status(400).json({ message: 'Invalid job data' });
+    res.status(400).json({ message: error.message || 'Invalid job data' });
   }
 };
 
