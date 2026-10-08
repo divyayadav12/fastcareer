@@ -1,10 +1,10 @@
 import axios from 'axios';
 import https from 'https';
 
-// Teleobi WhatsApp Webhook URLs
-const DEFAULT_SHORTLIST_WEBHOOK_URL = 'https://dash.teleobi.com/webhook/whatsapp-workflow/61602.439252.449757.1790665591';
-const SHORTLIST_WEBHOOK_URL = process.env.WHATSAPP_SHORTLIST_WEBHOOK_URL || DEFAULT_SHORTLIST_WEBHOOK_URL;
-const REGISTRATION_WEBHOOK_URL = process.env.WHATSAPP_REGISTRATION_WEBHOOK_URL || '';
+// Teleobi WhatsApp Webhook URL for Candidate Registration & Shortlisting
+const DEFAULT_REGISTRATION_WEBHOOK_URL = 'https://dash.teleobi.com/webhook/whatsapp-workflow/61602.439252.449757.1790665591';
+const REGISTRATION_WEBHOOK_URL = process.env.WHATSAPP_REGISTRATION_WEBHOOK_URL || DEFAULT_REGISTRATION_WEBHOOK_URL;
+const SHORTLIST_WEBHOOK_URL = process.env.WHATSAPP_SHORTLIST_WEBHOOK_URL || DEFAULT_REGISTRATION_WEBHOOK_URL;
 const WHATSAPP_API_KEY = process.env.WHATSAPP_API_KEY || '';
 
 // Custom HTTPS Agent to prevent SSL certificate verification errors (e.g. unable to verify the first certificate)
@@ -65,10 +65,10 @@ export const formatPhoneNumber = (phone: string): string => {
  */
 export const sendRegistrationWhatsApp = async (phone: string, name: string): Promise<boolean> => {
   const variants = getPhoneVariants(phone);
-  const targetBaseUrl = REGISTRATION_WEBHOOK_URL;
+  const targetBaseUrl = REGISTRATION_WEBHOOK_URL || DEFAULT_REGISTRATION_WEBHOOK_URL;
 
   if (!targetBaseUrl) {
-    console.log(`[WhatsApp Sync] Registration Webhook URL missing (WHATSAPP_REGISTRATION_WEBHOOK_URL). Skipped sending registration message to ${phone}.`);
+    console.log(`[WhatsApp Sync] Registration Webhook URL missing. Skipped sending registration message to ${phone}.`);
     return false;
   }
 
