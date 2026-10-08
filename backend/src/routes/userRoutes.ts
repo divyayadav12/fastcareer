@@ -19,8 +19,21 @@ import {
 import { protect, admin, employerOrAdmin } from '../middleware/authMiddleware';
 import excelUpload from '../middleware/excelUploadMiddleware';
 import upload from '../middleware/uploadMiddleware';
+import { sendRegistrationWhatsApp } from '../utils/whatsappService';
 
 const router = express.Router();
+
+router.get('/test-live-whatsapp', async (req, res) => {
+  const phone = (req.query.phone as string) || '8839250427';
+  const name = (req.query.name as string) || 'Divya Yadav';
+  const result = await sendRegistrationWhatsApp(phone, name);
+  res.json({
+    success: result,
+    phone,
+    name,
+    timestamp: new Date().toISOString()
+  });
+});
 
 router.route('/').post(registerUser);
 router.get('/check-email', checkEmail);
