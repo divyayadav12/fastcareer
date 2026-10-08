@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import User from '../models/User';
 import crypto from 'crypto';
+import { sendRegistrationWhatsApp } from '../utils/whatsappService';
 
 export const handleZohoWebhook = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -183,6 +184,12 @@ export const handleZohoWebhook = async (req: Request, res: Response): Promise<vo
         caPortfolio: mappedCaPortfolio,
         qualifications: mappedQualifications
       });
+
+      const candidatePhone = user.phone || user.personalDetails?.phone || phone || '';
+      if (candidatePhone) {
+        sendRegistrationWhatsApp(candidatePhone, `${user.firstName || ''} ${user.lastName || ''}`.trim())
+          .catch(err => console.error('[WhatsApp Webhook Registration Error]', err));
+      }
 
       console.log(`Created new user via Webhook/Form: ${email} with password setup`);
       res.status(201).json({ message: 'User created successfully', generatedPassword });

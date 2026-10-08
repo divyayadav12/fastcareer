@@ -124,7 +124,8 @@ export const registerUser = async (req: Request, res: Response) => {
     if (user) {
       const candidatePhone = user.phone || user.personalDetails?.phone || phone || '';
       if (candidatePhone) {
-        sendRegistrationWhatsApp(candidatePhone, `${user.firstName || ''} ${user.lastName || ''}`.trim());
+        sendRegistrationWhatsApp(candidatePhone, `${user.firstName || ''} ${user.lastName || ''}`.trim())
+          .catch(err => console.error('[WhatsApp Registration Trigger Error]:', err));
       }
       res.status(201).json({
         _id: user._id,
