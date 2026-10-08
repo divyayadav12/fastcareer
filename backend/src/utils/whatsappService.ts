@@ -143,9 +143,8 @@ export const sendRegistrationWhatsApp = async (phone: string, name: string): Pro
       platform: 'Fast Careers'
     };
 
-    // Also attach query params to URL so Teleobi webhooks that read GET/query params also receive data
-    const separator = targetBaseUrl.includes('?') ? '&' : '?';
-    const finalUrl = `${targetBaseUrl}${separator}phone=${variants.formatted}&mobile=${variants.formatted}&rawPhone=${variants.raw10}&name=${encodeURIComponent(candidateName)}&company=Fast%20Careers&role=Chartered%20Accountant`;
+    // Post directly to target webhook URL with comprehensive payload
+    const targetUrl = targetBaseUrl;
 
     const config = {
       headers: {
@@ -157,9 +156,9 @@ export const sendRegistrationWhatsApp = async (phone: string, name: string): Pro
     };
 
     console.log(`[WhatsApp Sync] Triggering Teleobi registration webhook for ${variants.formatted} (${candidateName})...`);
-    console.log(`[WhatsApp Sync] Target Webhook URL: ${finalUrl}`);
+    console.log(`[WhatsApp Sync] Target Webhook URL: ${targetUrl}`);
     
-    const response = await axios.post(finalUrl, payload, config);
+    const response = await axios.post(targetUrl, payload, config);
     console.log(`[WhatsApp Success] Registration webhook fired successfully! Status: ${response.status}`);
     return true;
   } catch (error: any) {
@@ -205,8 +204,7 @@ export const sendShortlistedWhatsApp = async (phone: string, name: string, role:
       }
     };
 
-    const separator = SHORTLIST_WEBHOOK_URL.includes('?') ? '&' : '?';
-    const finalUrl = `${SHORTLIST_WEBHOOK_URL}${separator}phone=${variants.formatted}&mobile=${variants.formatted}&name=${encodeURIComponent(candidateName)}&role=${encodeURIComponent(role)}`;
+    const targetUrl = SHORTLIST_WEBHOOK_URL;
 
     const config = {
       headers: {
@@ -217,7 +215,7 @@ export const sendShortlistedWhatsApp = async (phone: string, name: string, role:
       timeout: 10000
     };
 
-    const response = await axios.post(finalUrl, payload, config);
+    const response = await axios.post(targetUrl, payload, config);
     console.log(`[WhatsApp Success] Shortlist message sent successfully to ${variants.formatted}. Status: ${response.status}`);
     return true;
   } catch (error: any) {
