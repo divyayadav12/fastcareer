@@ -79,23 +79,21 @@ export const sendRegistrationWhatsApp = async (phone: string, name: string): Pro
 
   try {
     const candidateName = (name || 'Candidate').trim();
+    const phoneWith91 = variants.formatted; // Strictly 91XXXXXXXXXX (e.g. 918839250427)
 
-    // Comprehensive payload format covering all Teleobi workflow triggers and variable mappings
+    // Comprehensive payload format covering all Teleobi workflow triggers with strict 91 prefix
     const payload = {
-      phone: variants.formatted,
-      mobile: variants.formatted,
-      number: variants.formatted,
-      phoneNumber: variants.formatted,
-      phone_number: variants.formatted,
-      to: variants.formatted,
-      destination: variants.formatted,
-      recipient: variants.formatted,
-      contact: variants.formatted,
-
-      rawPhone: variants.raw10,
-      phone10: variants.raw10,
-      mobile10: variants.raw10,
-      withPlus: variants.withPlus,
+      phone: phoneWith91,
+      mobile: phoneWith91,
+      number: phoneWith91,
+      phoneNumber: phoneWith91,
+      phone_number: phoneWith91,
+      to: phoneWith91,
+      destination: phoneWith91,
+      recipient: phoneWith91,
+      contact: phoneWith91,
+      country_code: '91',
+      countryCode: '91',
 
       name: candidateName,
       firstName: candidateName.split(' ')[0] || candidateName,
@@ -116,9 +114,9 @@ export const sendRegistrationWhatsApp = async (phone: string, name: string): Pro
         role: 'Chartered Accountant',
         portal: 'Fast Careers',
         platform: 'Fast Careers',
-        phone: variants.formatted,
-        mobile: variants.formatted,
-        rawPhone: variants.raw10
+        phone: phoneWith91,
+        mobile: phoneWith91,
+        number: phoneWith91
       },
       variables: {
         name: candidateName,
@@ -131,13 +129,13 @@ export const sendRegistrationWhatsApp = async (phone: string, name: string): Pro
         company: 'Fast Careers',
         role: 'Chartered Accountant',
         portal: 'Fast Careers',
-        phone: variants.formatted,
-        mobile: variants.formatted
+        phone: phoneWith91,
+        mobile: phoneWith91
       },
       data: {
         name: candidateName,
-        phone: variants.formatted,
-        mobile: variants.formatted,
+        phone: phoneWith91,
+        mobile: phoneWith91,
         company: 'Fast Careers',
         role: 'Chartered Accountant'
       },
@@ -188,23 +186,28 @@ export const sendShortlistedWhatsApp = async (phone: string, name: string, role:
 
   try {
     const candidateName = (name || 'Candidate').trim();
+    const phoneWith91 = variants.formatted; // Strictly 91XXXXXXXXXX
     const payload = {
-      phone: variants.formatted,
-      mobile: variants.formatted,
-      phoneNumber: variants.formatted,
-      rawPhone: variants.raw10,
-      withPlus: variants.withPlus,
+      phone: phoneWith91,
+      mobile: phoneWith91,
+      number: phoneWith91,
+      phoneNumber: phoneWith91,
+      country_code: '91',
+      countryCode: '91',
       name: candidateName,
       role: role,
       parameters: {
         One: candidateName,
         Two: role,
         name: candidateName,
-        role: role
+        role: role,
+        phone: phoneWith91,
+        mobile: phoneWith91
       },
       variables: {
         name: candidateName,
-        role: role
+        role: role,
+        phone: phoneWith91
       }
     };
 
