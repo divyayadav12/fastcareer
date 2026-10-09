@@ -5,10 +5,20 @@ import {
   ScrollView, KeyboardAvoidingView, Platform
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSelector } from 'react-redux';
 import api from '../services/api';
 
 export default function AdminCompaniesScreen({ navigation }: any) {
+  const { user } = useSelector((state: any) => state.auth);
   const [companies, setCompanies] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (user && user.role === 'employee') {
+      Alert.alert('Permission Notice', 'Employee accounts do not have permission to manage companies.', [
+        { text: 'OK', onPress: () => navigation.navigate('Dashboard') }
+      ]);
+    }
+  }, [user, navigation]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');

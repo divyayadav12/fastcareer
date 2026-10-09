@@ -106,7 +106,7 @@ export default function AdminDashboardScreen({ navigation }: any) {
                 <Text style={s.userName}>{user?.firstName || 'Admin'}</Text>
                 <Text style={s.waveEmoji}>👋</Text>
                 <View style={s.roleBadge}>
-                  <Text style={s.roleBadgeText}>Super Admin</Text>
+                  <Text style={s.roleBadgeText}>{user?.role === 'employee' ? 'Staff / Recruiter' : 'Super Admin'}</Text>
                 </View>
               </View>
               <Text style={s.greetingSub}>
@@ -177,43 +177,45 @@ export default function AdminDashboardScreen({ navigation }: any) {
           </TouchableOpacity>
         </View>
 
-        {/* ── Administration & Onboarding (Web parity) ── */}
-        <View style={s.section}>
-          <Text style={s.secTitle}>Administration & Onboarding</Text>
-          <View style={{ flexDirection: 'row', gap: 12 }}>
-            <TouchableOpacity
-              style={[s.statCard, { backgroundColor: '#ffffff' }]}
-              activeOpacity={0.85}
-              onPress={() => navigation.navigate('Companies')}
-            >
-              <View style={[s.statIconBox, { backgroundColor: '#e0e7ff', marginBottom: 10 }]}>
-                <Ionicons name="business-outline" size={20} color="#4338ca" />
-              </View>
-              <Text style={{ fontSize: 15, fontWeight: '700', color: '#0f172a' }}>Manage Companies</Text>
-              <Text style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>Register partner employers</Text>
-              <View style={[s.linkRow, { marginTop: 10 }]}>
-                <Text style={[s.statLinkText, { color: '#4338ca' }]}>Open portal</Text>
-                <Ionicons name="chevron-forward" size={12} color="#4338ca" />
-              </View>
-            </TouchableOpacity>
+        {/* ── Administration & Onboarding (Web parity: Admin only) ── */}
+        {user?.role !== 'employee' && (
+          <View style={s.section}>
+            <Text style={s.secTitle}>Administration & Onboarding</Text>
+            <View style={{ flexDirection: 'row', gap: 12 }}>
+              <TouchableOpacity
+                style={[s.statCard, { backgroundColor: '#ffffff' }]}
+                activeOpacity={0.85}
+                onPress={() => navigation.navigate('Companies')}
+              >
+                <View style={[s.statIconBox, { backgroundColor: '#e0e7ff', marginBottom: 10 }]}>
+                  <Ionicons name="business-outline" size={20} color="#4338ca" />
+                </View>
+                <Text style={{ fontSize: 15, fontWeight: '700', color: '#0f172a' }}>Manage Companies</Text>
+                <Text style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>Register partner employers</Text>
+                <View style={[s.linkRow, { marginTop: 10 }]}>
+                  <Text style={[s.statLinkText, { color: '#4338ca' }]}>Open portal</Text>
+                  <Ionicons name="chevron-forward" size={12} color="#4338ca" />
+                </View>
+              </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[s.statCard, { backgroundColor: '#ffffff' }]}
-              activeOpacity={0.85}
-              onPress={() => navigation.navigate('Employees')}
-            >
-              <View style={[s.statIconBox, { backgroundColor: '#fef3c7', marginBottom: 10 }]}>
-                <Ionicons name="person-add-outline" size={20} color="#d97706" />
-              </View>
-              <Text style={{ fontSize: 15, fontWeight: '700', color: '#0f172a' }}>Manage Staff</Text>
-              <Text style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>Internal employee roster</Text>
-              <View style={[s.linkRow, { marginTop: 10 }]}>
-                <Text style={[s.statLinkText, { color: '#d97706' }]}>Open roster</Text>
-                <Ionicons name="chevron-forward" size={12} color="#d97706" />
-              </View>
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={[s.statCard, { backgroundColor: '#ffffff' }]}
+                activeOpacity={0.85}
+                onPress={() => navigation.navigate('Employees')}
+              >
+                <View style={[s.statIconBox, { backgroundColor: '#fef3c7', marginBottom: 10 }]}>
+                  <Ionicons name="person-add-outline" size={20} color="#d97706" />
+                </View>
+                <Text style={{ fontSize: 15, fontWeight: '700', color: '#0f172a' }}>Manage Staff</Text>
+                <Text style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>Internal employee roster</Text>
+                <View style={[s.linkRow, { marginTop: 10 }]}>
+                  <Text style={[s.statLinkText, { color: '#d97706' }]}>Open roster</Text>
+                  <Ionicons name="chevron-forward" size={12} color="#d97706" />
+                </View>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
+        )}
 
         {/* ── Quick Actions (5 Cards in 1 Row) ── */}
         <View style={s.section}>

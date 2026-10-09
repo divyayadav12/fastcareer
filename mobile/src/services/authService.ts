@@ -39,7 +39,7 @@ export interface UserResponse {
   lastName: string;
   name?: string;
   email: string;
-  role: 'candidate' | 'employer' | 'admin';
+  role: 'candidate' | 'employer' | 'admin' | 'employee';
   token: string;
   phone?: string;
   city?: string;

@@ -44,7 +44,7 @@ function Navigation() {
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="Register" component={RegisterScreen} />
           </>
-        ) : user.role === 'admin' ? (
+        ) : (user.role === 'admin' || user.role === 'employee') ? (
           <Stack.Screen name="AdminMain" component={AdminTabNavigator} />
         ) : user.role === 'employer' ? (
           <Stack.Screen name="EmployerMain" component={EmployerTabNavigator} />
