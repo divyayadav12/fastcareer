@@ -132,6 +132,40 @@ export default function AdminSettingsScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* Organization & Team Management */}
+      <View style={styles.card}>
+        <Text style={styles.cardHeader}>Organization & Team Management</Text>
+        <TouchableOpacity
+          style={[styles.actionItem, { marginBottom: 12 }]}
+          onPress={() => (navigation as any)?.navigate('Companies')}
+          activeOpacity={0.8}
+        >
+          <View style={[styles.actionIconBox, { backgroundColor: '#e0e7ff' }]}>
+            <Ionicons name="business" size={20} color="#4338ca" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.actionTitle}>Manage Registered Companies</Text>
+            <Text style={styles.actionDesc}>Register and onboard partner employers</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={16} color="#cbd5e1" />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.actionItem}
+          onPress={() => (navigation as any)?.navigate('Employees')}
+          activeOpacity={0.8}
+        >
+          <View style={[styles.actionIconBox, { backgroundColor: '#fef3c7' }]}>
+            <Ionicons name="person-add" size={20} color="#d97706" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.actionTitle}>Manage Internal Staff</Text>
+            <Text style={styles.actionDesc}>Team credentials and recruiter permissions</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={16} color="#cbd5e1" />
+        </TouchableOpacity>
+      </View>
+
       {/* Account Actions */}
       <View style={styles.card}>
         <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout} activeOpacity={0.8}>

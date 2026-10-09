@@ -9,6 +9,8 @@ import AdminJobsScreen from '../screens/AdminJobsScreen';
 import AdminSettingsScreen from '../screens/AdminSettingsScreen';
 import AdminApplicationsScreen from '../screens/AdminApplicationsScreen';
 import AdminTestResultsScreen from '../screens/AdminTestResultsScreen';
+import AdminCompaniesScreen from '../screens/AdminCompaniesScreen';
+import AdminEmployeesScreen from '../screens/AdminEmployeesScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -66,6 +68,42 @@ export default function AdminTabNavigator() {
         name="TestResults" 
         component={AdminTestResultsScreen} 
         options={{ title: 'Test Results' }} 
+      />
+      <Tab.Screen 
+        name="Companies" 
+        component={AdminCompaniesScreen} 
+        options={({ navigation }) => ({
+          title: 'Manage Companies',
+          tabBarItemStyle: { display: 'none' },
+          tabBarButton: () => null,
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Dashboard')}
+              style={{ marginLeft: 16, padding: 4 }}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Ionicons name="arrow-back" size={24} color="#0f172a" />
+            </TouchableOpacity>
+          ),
+        })} 
+      />
+      <Tab.Screen 
+        name="Employees" 
+        component={AdminEmployeesScreen} 
+        options={({ navigation }) => ({
+          title: 'Manage Employees',
+          tabBarItemStyle: { display: 'none' },
+          tabBarButton: () => null,
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Dashboard')}
+              style={{ marginLeft: 16, padding: 4 }}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Ionicons name="arrow-back" size={24} color="#0f172a" />
+            </TouchableOpacity>
+          ),
+        })} 
       />
       <Tab.Screen name="Settings" component={AdminSettingsScreen} />
     </Tab.Navigator>

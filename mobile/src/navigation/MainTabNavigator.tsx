@@ -24,6 +24,7 @@ import ImpDownloadsScreen from '../screens/ImpDownloadsScreen';
 import ResumeDownloadsScreen from '../screens/ResumeDownloadsScreen';
 import ResumeViewScreen from '../screens/ResumeViewScreen';
 import FastSelectionTestScreen from '../screens/FastSelectionTestScreen';
+import PlacementResultsScreen from '../screens/PlacementResultsScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -72,6 +73,11 @@ function MenuStack() {
         name="JobFair" 
         component={JobFairScreen} 
         options={{ title: 'Job Fairs & Drives' }} 
+      />
+      <Stack.Screen 
+        name="PlacementResults" 
+        component={PlacementResultsScreen} 
+        options={{ title: 'Placement Drive Results' }} 
       />
       <Stack.Screen 
         name="Feedback" 

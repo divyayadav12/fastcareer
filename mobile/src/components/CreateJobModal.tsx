@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Modal, View, Text, TextInput, TouchableOpacity, StyleSheet,
   ActivityIndicator, Alert, Platform, FlatList, ScrollView
@@ -44,12 +44,29 @@ export default function CreateJobModal({ visible, onClose, onSuccess, initialCom
     salaryRange: '',
     description: '',
     requirements: '',
-    responsibilities: ''
+    responsibilities: '',
+    shareShortlistedCandidates: true,
   });
   const [loading, setLoading] = useState(false);
+  const [employers, setEmployers] = useState<any[]>([]);
+  const [selectedEmployerId, setSelectedEmployerId] = useState<string>('');
+  const [companyModalVisible, setCompanyModalVisible] = useState(false);
   const [cityModalVisible, setCityModalVisible] = useState(false);
   const [citySearchQuery, setCitySearchQuery] = useState('');
   const [salaryModalVisible, setSalaryModalVisible] = useState(false);
+
+  // Fetch registered employers when modal opens
+  useEffect(() => {
+    if (visible) {
+      api.get('/users/employers')
+        .then(res => {
+          if (Array.isArray(res.data)) {
+            setEmployers(res.data);
+          }
+        })
+        .catch(err => console.log('Error fetching employers for job modal:', err));
+    }
+  }, [visible]);
 
   // Filter cities based on search query
   const filteredCities = useMemo(() => {
@@ -64,22 +81,41 @@ export default function CreateJobModal({ visible, onClose, onSuccess, initialCom
     setCitySearchQuery('');
   };
 
+  const selectEmployer = (emp: any) => {
+    const cName = emp.companyName || (emp.firstName ? `${emp.firstName} ${emp.lastName || ''}`.trim() : emp.email);
+    setSelectedEmployerId(emp._id);
+    setFormData(prev => ({ ...prev, company: cName }));
+    setCompanyModalVisible(false);
+  };
+
   const handleSubmit = async () => {
-    if (!formData.title.trim() || !formData.company.trim() || !formData.location.trim() || !formData.description.trim()) {
-      Alert.alert('Error', 'Please fill in all required fields (Job Title, Company, Location, Description).');
+    if (!formData.title.trim() || !formData.company.trim()) {
+      Alert.alert('Error', 'Please fill in Job Title and Company.');
       return;
     }
 
     setLoading(true);
     try {
+      const safeTitle = formData.title.trim();
+      const safeCompany = formData.company.trim();
+      const safeLoc = (formData.location || 'Pan India').trim();
+      const safeDesc = formData.description.trim() || `${safeTitle} opening at ${safeCompany} in ${safeLoc}. Type: ${formData.type || 'Full-time'}. Category: ${formData.category || 'Finance'}. Salary/Stipend: ${formData.salaryRange || 'Competitive'}.`;
+      const safeReq = formData.requirements.trim() ? formData.requirements.split('\n').map(r => r.trim()).filter(Boolean) : [`Relevant experience and qualifications for ${safeTitle}`];
+      const safeResp = formData.responsibilities.trim() ? formData.responsibilities.split('\n').map(r => r.trim()).filter(Boolean) : [`Key deliverables and responsibilities as ${safeTitle}`];
+
       const payload = {
         ...formData,
-        requirements: formData.requirements ? formData.requirements.split('\n').map(r => r.trim()).filter(Boolean) : [],
-        responsibilities: formData.responsibilities ? formData.responsibilities.split('\n').map(r => r.trim()).filter(Boolean) : []
+        title: safeTitle,
+        company: safeCompany,
+        location: safeLoc,
+        description: safeDesc,
+        requirements: safeReq,
+        responsibilities: safeResp,
+        targetEmployers: selectedEmployerId ? [selectedEmployerId] : [],
       };
 
       await api.post('/jobs', payload);
-      Alert.alert('Success 🎉', 'Job created successfully!');
+      Alert.alert('Success 🎉', 'Job created successfully and registered in system!');
       onSuccess();
       onClose();
       setFormData({
@@ -91,8 +127,10 @@ export default function CreateJobModal({ visible, onClose, onSuccess, initialCom
         salaryRange: '',
         description: '',
         requirements: '',
-        responsibilities: ''
+        responsibilities: '',
+        shareShortlistedCandidates: true,
       });
+      setSelectedEmployerId('');
     } catch (error: any) {
       const msg = error.response?.data?.message || 'Could not create job. Please check all fields.';
       Alert.alert('Error', msg);
@@ -127,13 +165,24 @@ export default function CreateJobModal({ visible, onClose, onSuccess, initialCom
           placeholderTextColor="#94a3b8"
         />
 
-        {/* Company Name */}
-        <Text style={styles.label}>Company *</Text>
+        {/* Company Name with Registered Company Selector */}
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Text style={styles.label}>Company *</Text>
+          {employers.length > 0 && (
+            <TouchableOpacity onPress={() => setCompanyModalVisible(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <Ionicons name="business" size={13} color="#034b71" />
+              <Text style={{ fontSize: 12, color: '#034b71', fontWeight: 'bold' }}>Choose Partner ({employers.length})</Text>
+            </TouchableOpacity>
+          )}
+        </View>
         <TextInput
           style={styles.input}
           value={formData.company}
-          onChangeText={t => setFormData({ ...formData, company: t })}
-          placeholder="e.g. FAST Careers Ltd."
+          onChangeText={t => {
+            setSelectedEmployerId('');
+            setFormData({ ...formData, company: t });
+          }}
+          placeholder="e.g. FAST Careers Ltd. or choose partner"
           placeholderTextColor="#94a3b8"
         />
 
@@ -265,6 +314,38 @@ export default function CreateJobModal({ visible, onClose, onSuccess, initialCom
           numberOfLines={4}
           textAlignVertical="top"
         />
+
+        {/* Auto Share Candidates Toggle */}
+        <TouchableOpacity
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 10,
+            marginTop: 14,
+            marginBottom: 6,
+            backgroundColor: formData.shareShortlistedCandidates ? '#f0fdf4' : '#f8fafc',
+            padding: 12,
+            borderRadius: 10,
+            borderWidth: 1,
+            borderColor: formData.shareShortlistedCandidates ? '#bbf7d0' : '#e2e8f0',
+          }}
+          onPress={() => setFormData(p => ({ ...p, shareShortlistedCandidates: !p.shareShortlistedCandidates }))}
+          activeOpacity={0.8}
+        >
+          <Ionicons
+            name={formData.shareShortlistedCandidates ? "checkbox" : "square-outline"}
+            size={22}
+            color={formData.shareShortlistedCandidates ? "#16a34a" : "#94a3b8"}
+          />
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 13, fontWeight: '700', color: formData.shareShortlistedCandidates ? '#166534' : '#334155' }}>
+              Share Shortlisted Candidates
+            </Text>
+            <Text style={{ fontSize: 11, color: formData.shareShortlistedCandidates ? '#15803d' : '#64748b', marginTop: 1 }}>
+              Allow partner recruiters to view and match with qualified candidate profiles
+            </Text>
+          </View>
+        </TouchableOpacity>
 
         {/* Submit Button */}
         <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit} disabled={loading}>
@@ -431,6 +512,65 @@ export default function CreateJobModal({ visible, onClose, onSuccess, initialCom
                   </TouchableOpacity>
                 );
               })}
+            </ScrollView>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* ─── Company Selector Modal ─────────────────────────────── */}
+      <Modal
+        visible={companyModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setCompanyModalVisible(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setCompanyModalVisible(false)}
+        >
+          <View style={styles.salaryModalContent}>
+            <View style={styles.salaryModalHeader}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Ionicons name="business-outline" size={20} color="#034b71" />
+                <Text style={styles.salaryModalTitle}>Select Registered Partner Company</Text>
+              </View>
+              <TouchableOpacity onPress={() => setCompanyModalVisible(false)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                <Ionicons name="close" size={22} color="#64748b" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 400 }}>
+              {employers.length === 0 ? (
+                <View style={{ padding: 24, alignItems: 'center' }}>
+                  <Text style={{ color: '#64748b', fontSize: 13 }}>No partner companies registered yet.</Text>
+                </View>
+              ) : (
+                employers.map((emp) => {
+                  const cName = emp.companyName || (emp.firstName ? `${emp.firstName} ${emp.lastName || ''}`.trim() : emp.email);
+                  const isSelected = selectedEmployerId === emp._id || formData.company === cName;
+                  return (
+                    <TouchableOpacity
+                      key={emp._id}
+                      style={[styles.salaryOption, isSelected && styles.salaryOptionSelected]}
+                      onPress={() => selectEmployer(emp)}
+                      activeOpacity={0.7}
+                    >
+                      <View style={{ flex: 1, marginRight: 8 }}>
+                        <Text style={[styles.salaryOptionText, isSelected && styles.salaryOptionTextSelected]}>
+                          {cName}
+                        </Text>
+                        <Text style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>
+                          HR: {emp.firstName} {emp.lastName || ''} • {emp.email}
+                        </Text>
+                      </View>
+                      {isSelected && (
+                        <Ionicons name="checkmark-circle" size={20} color="#034b71" />
+                      )}
+                    </TouchableOpacity>
+                  );
+                })
+              )}
             </ScrollView>
           </View>
         </TouchableOpacity>
