@@ -28,6 +28,17 @@ export default function AdminApplicationsScreen() {
   const [selectedStatus, setSelectedStatus] = useState('All');
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
+  // Multi-Selection State
+  const [selectedAppIds, setSelectedAppIds] = useState<string[]>([]);
+
+  // Forward / Share with Company State
+  const [sharingModalVisible, setSharingModalVisible] = useState(false);
+  const [employers, setEmployers] = useState<any[]>([]);
+  const [loadingEmployers, setLoadingEmployers] = useState(false);
+  const [selectedEmployerId, setSelectedEmployerId] = useState<string>('');
+  const [employerSearch, setEmployerSearch] = useState('');
+  const [sharing, setSharing] = useState(false);
+
   // Status Change Modal
   const [statusModalVisible, setStatusModalVisible] = useState(false);
   const [selectedApp, setSelectedApp] = useState<any>(null);
@@ -48,6 +59,18 @@ export default function AdminApplicationsScreen() {
       setRefreshing(false);
     }
   }, []);
+
+  const fetchEmployers = async () => {
+    setLoadingEmployers(true);
+    try {
+      const res = await api.get('/users/employers');
+      setEmployers(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      console.error('Error fetching employers:', err);
+    } finally {
+      setLoadingEmployers(false);
+    }
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -77,6 +100,12 @@ export default function AdminApplicationsScreen() {
     }
   };
 
+  const toggleSelectApp = (id: string) => {
+    setSelectedAppIds(prev =>
+      prev.includes(id) ? prev.filter(appId => appId !== id) : [...prev, id]
+    );
+  };
+
   const filteredApps = useMemo(() => {
     return apps.filter(app => {
       const candidate = app.candidate || {};
@@ -102,7 +131,83 @@ export default function AdminApplicationsScreen() {
     });
   }, [apps, searchQuery, selectedStatus]);
 
+  const toggleSelectAll = () => {
+    if (selectedAppIds.length === filteredApps.length && filteredApps.length > 0) {
+      setSelectedAppIds([]);
+    } else {
+      setSelectedAppIds(filteredApps.map(a => a._id));
+    }
+  };
+
+  const openShareModal = (specificAppId?: string) => {
+    if (specificAppId) {
+      setSelectedAppIds([specificAppId]);
+    }
+    fetchEmployers();
+    setSharingModalVisible(true);
+  };
+
+  const handleShareWithCompany = async (action: 'assign' | 'unassign') => {
+    if (selectedAppIds.length === 0) {
+      Alert.alert('Selection Required', 'Please select at least one application.');
+      return;
+    }
+    if (!selectedEmployerId) {
+      Alert.alert('Company Required', 'Please select a registered company from the list.');
+      return;
+    }
+
+    const selectedEmp = employers.find(e => e._id === selectedEmployerId);
+    const companyTitle = selectedEmp?.companyName || selectedEmp?.firstName || 'Company';
+
+    setSharing(true);
+    try {
+      const selectedApps = apps.filter(a => selectedAppIds.includes(a._id));
+      const candidateIds = Array.from(
+        new Set(selectedApps.map(a => a.candidate?._id).filter(Boolean))
+      );
+
+      if (candidateIds.length > 0) {
+        await api.put('/users/candidates/assign-company', {
+          candidateIds,
+          employerId: selectedEmployerId,
+          action,
+        });
+      }
+
+      await api.put('/applications/share', {
+        applicationIds: selectedAppIds,
+      });
+
+      Alert.alert(
+        'Success',
+        action === 'assign'
+          ? `Successfully shared ${selectedAppIds.length} candidate application(s) with ${companyTitle}!`
+          : `Removed access for ${selectedAppIds.length} candidate(s) from ${companyTitle}.`
+      );
+
+      setSelectedAppIds([]);
+      setSharingModalVisible(false);
+      fetchApps();
+    } catch (err: any) {
+      Alert.alert('Error', err.response?.data?.message || 'Failed to share applications.');
+    } finally {
+      setSharing(false);
+    }
+  };
+
+  const filteredEmployers = useMemo(() => {
+    if (!employerSearch.trim()) return employers;
+    const q = employerSearch.toLowerCase().trim();
+    return employers.filter(emp =>
+      (emp.companyName || '').toLowerCase().includes(q) ||
+      (emp.firstName || '').toLowerCase().includes(q) ||
+      (emp.email || '').toLowerCase().includes(q)
+    );
+  }, [employers, employerSearch]);
+
   const renderApp = ({ item }: { item: any }) => {
+    const isSelected = selectedAppIds.includes(item._id);
     const candidate = item.candidate || {};
     const job = item.job || {};
     const candidateName = `${candidate.firstName || 'Candidate'} ${candidate.lastName || ''}`.trim();
@@ -117,9 +222,21 @@ export default function AdminApplicationsScreen() {
     };
 
     return (
-      <View style={styles.card}>
-        {/* Top Header: Job Title & Status */}
+      <View style={[styles.card, isSelected && styles.cardSelected]}>
+        {/* Top Header: Checkbox + Job Title & Status */}
         <View style={styles.cardHeader}>
+          <TouchableOpacity
+            style={styles.checkboxTouch}
+            onPress={() => toggleSelectApp(item._id)}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Ionicons
+              name={isSelected ? 'checkbox' : 'square-outline'}
+              size={22}
+              color={isSelected ? '#034b71' : '#94a3b8'}
+            />
+          </TouchableOpacity>
+
           <View style={{ flex: 1, marginRight: 8 }}>
             <Text style={styles.jobTitle} numberOfLines={1}>{job.title || 'Untitled Job'}</Text>
             <Text style={styles.companyName}>
@@ -127,6 +244,7 @@ export default function AdminApplicationsScreen() {
               {job.location ? ` • ${job.location}` : ''}
             </Text>
           </View>
+
           <TouchableOpacity
             style={[styles.statusBadge, { backgroundColor: statusCfg.bg }]}
             onPress={() => {
@@ -140,6 +258,16 @@ export default function AdminApplicationsScreen() {
             <Ionicons name="pencil" size={10} color={statusCfg.color} style={{ marginLeft: 4 }} />
           </TouchableOpacity>
         </View>
+
+        {/* Shared Badge */}
+        {item.sharedWithEmployer ? (
+          <View style={styles.sharedBadgeRow}>
+            <View style={styles.sharedBadge}>
+              <Ionicons name="share-social" size={12} color="#059669" style={{ marginRight: 4 }} />
+              <Text style={styles.sharedBadgeText}>Forwarded to Company</Text>
+            </View>
+          </View>
+        ) : null}
 
         {/* Candidate Info Box */}
         <TouchableOpacity
@@ -231,6 +359,16 @@ export default function AdminApplicationsScreen() {
               </Text>
             </TouchableOpacity>
 
+            {/* Forward to Company Button */}
+            <TouchableOpacity
+              style={[styles.actionBtn, styles.shareBtn]}
+              onPress={() => openShareModal(item._id)}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="share-social-outline" size={14} color="#0284c7" />
+              <Text style={[styles.actionBtnText, { color: '#0284c7' }]} numberOfLines={1}>Share</Text>
+            </TouchableOpacity>
+
             {/* Status Change */}
             <TouchableOpacity
               style={[styles.actionBtn, styles.statusBtn]}
@@ -248,6 +386,8 @@ export default function AdminApplicationsScreen() {
       </View>
     );
   };
+
+  const allFilteredSelected = filteredApps.length > 0 && selectedAppIds.length === filteredApps.length;
 
   return (
     <View style={styles.container}>
@@ -289,11 +429,42 @@ export default function AdminApplicationsScreen() {
         </ScrollView>
       </View>
 
-      {/* Results Counter */}
-      <View style={styles.counterRow}>
-        <Text style={styles.counterText}>
-          {filteredApps.length} {filteredApps.length === 1 ? 'Application' : 'Applications'} Found
-        </Text>
+      {/* Multi-Selection Control Bar */}
+      <View style={styles.selectionBar}>
+        <TouchableOpacity style={styles.selectAllBtn} onPress={toggleSelectAll}>
+          <Ionicons
+            name={allFilteredSelected ? 'checkbox' : 'square-outline'}
+            size={20}
+            color="#034b71"
+          />
+          <Text style={styles.selectAllText}>
+            {allFilteredSelected ? 'Deselect All' : `Select All (${filteredApps.length})`}
+          </Text>
+        </TouchableOpacity>
+
+        {selectedAppIds.length > 0 ? (
+          <View style={styles.bulkActionRight}>
+            <TouchableOpacity
+              style={styles.forwardBulkBtn}
+              onPress={() => openShareModal()}
+            >
+              <Ionicons name="share-social" size={15} color="#ffffff" style={{ marginRight: 6 }} />
+              <Text style={styles.forwardBulkText}>
+                Share ({selectedAppIds.length})
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.clearSelectionBtn}
+              onPress={() => setSelectedAppIds([])}
+            >
+              <Ionicons name="close" size={16} color="#64748b" />
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <Text style={styles.counterText}>
+            {filteredApps.length} {filteredApps.length === 1 ? 'Application' : 'Applications'}
+          </Text>
+        )}
       </View>
 
       {/* Main List */}
@@ -321,6 +492,123 @@ export default function AdminApplicationsScreen() {
           }
         />
       )}
+
+      {/* Forward / Share with Company Modal */}
+      <Modal
+        visible={sharingModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setSharingModalVisible(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setSharingModalVisible(false)}
+        >
+          <View style={styles.shareModalCard} onStartShouldSetResponder={() => true}>
+            <View style={styles.modalHeader}>
+              <View>
+                <Text style={styles.modalTitle}>Share with Registered Company</Text>
+                <Text style={styles.modalSubtitle}>
+                  Forwarding {selectedAppIds.length} candidate application(s)
+                </Text>
+              </View>
+              <TouchableOpacity onPress={() => setSharingModalVisible(false)}>
+                <Ionicons name="close" size={24} color="#64748b" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Employer Search Box */}
+            <View style={styles.empSearchBox}>
+              <Ionicons name="search" size={16} color="#94a3b8" style={{ marginRight: 6 }} />
+              <TextInput
+                style={styles.empSearchInput}
+                placeholder="Search registered company by name..."
+                placeholderTextColor="#94a3b8"
+                value={employerSearch}
+                onChangeText={setEmployerSearch}
+              />
+              {employerSearch ? (
+                <TouchableOpacity onPress={() => setEmployerSearch('')}>
+                  <Ionicons name="close-circle" size={16} color="#94a3b8" />
+                </TouchableOpacity>
+              ) : null}
+            </View>
+
+            {/* Company List */}
+            {loadingEmployers ? (
+              <ActivityIndicator size="large" color="#034b71" style={{ marginVertical: 30 }} />
+            ) : (
+              <ScrollView style={{ maxHeight: 280, marginVertical: 10 }}>
+                {filteredEmployers.length === 0 ? (
+                  <Text style={styles.noEmployersText}>No registered companies found.</Text>
+                ) : (
+                  filteredEmployers.map(emp => {
+                    const isPicked = selectedEmployerId === emp._id;
+                    const cTitle = emp.companyName || `${emp.firstName || ''} ${emp.lastName || ''}`.trim() || 'Company';
+                    return (
+                      <TouchableOpacity
+                        key={emp._id}
+                        style={[styles.empOptionRow, isPicked && styles.empOptionRowPicked]}
+                        onPress={() => setSelectedEmployerId(emp._id)}
+                      >
+                        <View style={styles.empIconBox}>
+                          <Ionicons
+                            name="business"
+                            size={18}
+                            color={isPicked ? '#034b71' : '#64748b'}
+                          />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                          <Text style={[styles.empNameText, isPicked && { color: '#034b71', fontWeight: 'bold' }]}>
+                            {cTitle}
+                          </Text>
+                          <Text style={styles.empEmailText}>{emp.email}</Text>
+                        </View>
+                        {isPicked && (
+                          <Ionicons name="checkmark-circle" size={22} color="#034b71" />
+                        )}
+                      </TouchableOpacity>
+                    );
+                  })
+                )}
+              </ScrollView>
+            )}
+
+            {/* Share Actions */}
+            <View style={styles.shareActionButtons}>
+              <TouchableOpacity
+                style={[
+                  styles.primaryShareBtn,
+                  (!selectedEmployerId || sharing) && styles.disabledShareBtn
+                ]}
+                onPress={() => handleShareWithCompany('assign')}
+                disabled={!selectedEmployerId || sharing}
+              >
+                {sharing ? (
+                  <ActivityIndicator size="small" color="#ffffff" />
+                ) : (
+                  <>
+                    <Ionicons name="send" size={16} color="#ffffff" style={{ marginRight: 6 }} />
+                    <Text style={styles.primaryShareBtnText}>Forward & Assign Access</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.unassignBtn,
+                  (!selectedEmployerId || sharing) && styles.disabledShareBtn
+                ]}
+                onPress={() => handleShareWithCompany('unassign')}
+                disabled={!selectedEmployerId || sharing}
+              >
+                <Text style={styles.unassignBtnText}>Unassign Company Access</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </TouchableOpacity>
+      </Modal>
 
       {/* Status Change Modal */}
       <Modal
@@ -423,8 +711,54 @@ const styles = StyleSheet.create({
   statusPillText: { fontSize: 12, fontWeight: '600', color: '#64748b' },
   statusPillTextActive: { color: '#ffffff' },
 
-  counterRow: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 6 },
-  counterText: { fontSize: 13, fontWeight: '700', color: '#64748b' },
+  selectionBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+  selectAllBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  selectAllText: {
+    marginLeft: 8,
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#034b71',
+  },
+  counterText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#64748b',
+  },
+  bulkActionRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  forwardBulkBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#034b71',
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 8,
+    marginRight: 8,
+  },
+  forwardBulkText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  clearSelectionBtn: {
+    padding: 6,
+    backgroundColor: '#f1f5f9',
+    borderRadius: 6,
+  },
 
   list: { padding: 16, paddingBottom: 40 },
   card: {
@@ -439,7 +773,16 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 },
+  cardSelected: {
+    borderColor: '#034b71',
+    borderWidth: 2,
+    backgroundColor: '#f0f9ff',
+  },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 },
+  checkboxTouch: {
+    marginRight: 10,
+    marginTop: 2,
+  },
   jobTitle: { fontSize: 16, fontWeight: 'bold', color: '#0f172a' },
   companyName: { fontSize: 13, color: '#64748b', marginTop: 2 },
   statusBadge: {
@@ -449,102 +792,200 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 8,
   },
-  statusText: { fontSize: 10, fontWeight: 'bold' },
+  statusText: { fontSize: 11, fontWeight: '700' },
+
+  sharedBadgeRow: {
+    flexDirection: 'row',
+    marginBottom: 8,
+    marginLeft: 32,
+  },
+  sharedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#d1fae5',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  sharedBadgeText: {
+    fontSize: 11,
+    color: '#059669',
+    fontWeight: '700',
+  },
 
   candidateBox: {
     flexDirection: 'row',
     backgroundColor: '#f8fafc',
-    padding: 12,
     borderRadius: 10,
+    padding: 12,
     marginBottom: 12,
     borderWidth: 1,
     borderColor: '#f1f5f9',
   },
   avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#e6f0f6',
-    alignItems: 'center',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#034b71',
     justifyContent: 'center',
-    marginRight: 10,
-    borderWidth: 1,
-    borderColor: '#b2d1e5',
+    alignItems: 'center',
+    marginRight: 12,
   },
-  avatarText: { fontSize: 14, fontWeight: 'bold', color: '#034b71' },
-  candidateName: { fontSize: 14, fontWeight: 'bold', color: '#1e293b' },
-  profileBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#e6f0f6', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8 },
-  profileBadgeText: { fontSize: 10, fontWeight: '700', color: '#034b71', marginRight: 2 },
-  infoRow: { flexDirection: 'row', alignItems: 'center', marginTop: 2 },
-  infoText: { fontSize: 12, color: '#64748b' },
-
-  cardFooter: {
-    borderTopWidth: 1,
-    borderTopColor: '#f1f5f9',
-    paddingTop: 10,
-    marginTop: 10,
-  },
-  dateRow: {
+  avatarText: { color: '#ffffff', fontSize: 15, fontWeight: 'bold' },
+  candidateName: { fontSize: 15, fontWeight: '700', color: '#0f172a' },
+  profileBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
-    gap: 4,
+    backgroundColor: '#e6f0f6',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
   },
-  dateText: { fontSize: 11, color: '#94a3b8', fontWeight: '500' },
-  actionButtons: { flexDirection: 'row', gap: 8 },
+  profileBadgeText: { fontSize: 10, fontWeight: 'bold', color: '#034b71' },
+  infoRow: { flexDirection: 'row', alignItems: 'center', marginTop: 3 },
+  infoText: { fontSize: 12, color: '#64748b' },
+
+  cardFooter: { borderTopWidth: 1, borderTopColor: '#f1f5f9', paddingTop: 10, marginTop: 4 },
+  dateRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
+  dateText: { fontSize: 11, color: '#94a3b8', marginLeft: 4 },
+  actionButtons: { flexDirection: 'row', gap: 6 },
   actionBtn: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 4,
     paddingVertical: 7,
+    paddingHorizontal: 4,
     borderRadius: 8,
-    backgroundColor: '#e6f0f6',
-    borderWidth: 1,
-    borderColor: '#b2d1e5',
-    gap: 4,
+    backgroundColor: '#f1f5f9',
   },
-  actionBtnDisabled: { backgroundColor: '#f1f5f9', borderColor: '#e2e8f0' },
-  actionBtnText: { fontSize: 12, fontWeight: '700', color: '#034b71' },
-  downloadBtn: { backgroundColor: '#ecfdf5', borderColor: '#a7f3d0' },
-  statusBtn: { backgroundColor: '#f5f3ff', borderColor: '#ddd6fe' },
+  actionBtnDisabled: { opacity: 0.4 },
+  downloadBtn: { backgroundColor: '#ecfdf5' },
+  shareBtn: { backgroundColor: '#e0f2fe' },
+  statusBtn: { backgroundColor: '#faf5ff' },
+  actionBtnText: { fontSize: 11, fontWeight: '600', color: '#034b71', marginLeft: 3 },
 
-  emptyBox: { alignItems: 'center', marginTop: 60, paddingHorizontal: 24 },
-  emptyTitle: { fontSize: 16, fontWeight: 'bold', color: '#1e293b', marginBottom: 4 },
-  emptySubtitle: { fontSize: 13, color: '#64748b', textAlign: 'center' },
+  emptyBox: { alignItems: 'center', marginTop: 60, paddingHorizontal: 32 },
+  emptyTitle: { fontSize: 17, fontWeight: 'bold', color: '#334155', marginBottom: 6 },
+  emptySubtitle: { fontSize: 13, color: '#94a3b8', textAlign: 'center', lineHeight: 18 },
 
-  // Modal
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.45)',
     justifyContent: 'center',
-    padding: 20,
+    alignItems: 'center',
+    padding: 16,
   },
   modalCard: {
     backgroundColor: '#ffffff',
     borderRadius: 16,
     padding: 20,
-    shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 5,
+    width: '100%',
+    maxWidth: 400,
   },
-  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
-  modalTitle: { fontSize: 17, fontWeight: 'bold', color: '#0f172a' },
-  modalJobInfo: { fontSize: 13, color: '#64748b', marginBottom: 16 },
-  statusOptions: { gap: 8 },
-  statusOptionBtn: {
+  shareModalCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 20,
+    width: '100%',
+    maxWidth: 420,
+    maxHeight: '85%',
+  },
+  modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  modalTitle: { fontSize: 17, fontWeight: 'bold', color: '#0f172a' },
+  modalSubtitle: { fontSize: 13, color: '#64748b', marginTop: 2 },
+  empSearchBox: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
+    backgroundColor: '#f8fafc',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    marginBottom: 10,
+  },
+  empSearchInput: { flex: 1, fontSize: 13, color: '#0f172a' },
+  noEmployersText: { textAlign: 'center', color: '#94a3b8', paddingVertical: 20, fontSize: 13 },
+  empOptionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 6,
+    backgroundColor: '#f8fafc',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  empOptionRowPicked: {
+    backgroundColor: '#f0f9ff',
+    borderColor: '#034b71',
+  },
+  empIconBox: {
+    width: 32,
+    height: 32,
+    borderRadius: 6,
+    backgroundColor: '#e2e8f0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+  },
+  empNameText: { fontSize: 14, fontWeight: '600', color: '#1e293b' },
+  empEmailText: { fontSize: 12, color: '#64748b', marginTop: 1 },
+
+  shareActionButtons: {
+    marginTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+    paddingTop: 12,
+  },
+  primaryShareBtn: {
+    flexDirection: 'row',
+    backgroundColor: '#034b71',
     paddingVertical: 12,
     borderRadius: 10,
-    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  primaryShareBtnText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  unassignBtn: {
+    paddingVertical: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fee2e2',
+  },
+  unassignBtnText: {
+    color: '#dc2626',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  disabledShareBtn: {
+    opacity: 0.5,
+  },
+
+  modalJobInfo: { fontSize: 13, color: '#64748b', marginBottom: 16 },
+  statusOptions: { gap: 10 },
+  statusOptionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 12,
+    borderRadius: 10,
+    borderWidth: 1.5,
     borderColor: '#e2e8f0',
     backgroundColor: '#f8fafc',
   },
   statusDot: { width: 10, height: 10, borderRadius: 5, marginRight: 10 },
-  statusOptionText: { fontSize: 14, fontWeight: '600', color: '#334155' },
+  statusOptionText: { fontSize: 14, color: '#334155' },
 });
