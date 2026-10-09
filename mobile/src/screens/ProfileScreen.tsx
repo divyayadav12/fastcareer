@@ -10,6 +10,7 @@ import { Step4EducationExperience } from '../components/candidate-profile/Step4E
 import { Step5Review } from '../components/candidate-profile/Step5Review';
 import api, { uploadFileApi } from '../services/api';
 import { updateUser } from '../store/authSlice';
+import { parseResumeDocument } from '../utils/resumeParser';
 
 export default function ProfileScreen({ navigation }: any) {
   const dispatch = useDispatch<AppDispatch>();
@@ -99,12 +100,95 @@ export default function ProfileScreen({ navigation }: any) {
 
   const handleFileUpload = async (file: any) => {
     setUploading(true);
+    const extractedFields: string[] = [];
     try {
+      // 1. In-app local document parsing
+      try {
+        const parsed = await parseResumeDocument(file);
+        if (parsed.phone) {
+          setPersonal((prev: any) => ({ ...prev, phone: parsed.phone }));
+          extractedFields.push('Phone');
+        }
+        if (parsed.city) {
+          setPersonal((prev: any) => ({ ...prev, currentCity: parsed.city }));
+          extractedFields.push('City');
+        }
+        if (parsed.dateOfBirth) {
+          setPersonal((prev: any) => ({ ...prev, dateOfBirth: parsed.dateOfBirth }));
+          extractedFields.push('Date of Birth');
+        }
+        if (parsed.linkedinUrl) {
+          setPersonal((prev: any) => ({ ...prev, linkedinUrl: parsed.linkedinUrl }));
+          extractedFields.push('LinkedIn');
+        }
+        if (parsed.workStatus) {
+          const isExp = parsed.workStatus === 'experienced';
+          setExperienceInfo((prev: any) => ({ ...prev, isExperienced: isExp }));
+          extractedFields.push('Experience Stage');
+        }
+
+        // CA Inter details
+        if (parsed.caInterBothGroups1stAttempt !== undefined || parsed.caInterCompletionYear) {
+          setCaPortfolio((prev: any) => ({
+            ...prev,
+            caInter: {
+              ...(prev.caInter || {}),
+              ...(parsed.caInterBothGroups1stAttempt !== undefined ? { bothGroups1stAttempt: parsed.caInterBothGroups1stAttempt } : {}),
+              ...(parsed.caInterCompletionMonth ? { completionSessionMonth: parsed.caInterCompletionMonth } : {}),
+              ...(parsed.caInterCompletionYear ? { completionSessionYear: parsed.caInterCompletionYear } : {}),
+            }
+          }));
+          extractedFields.push('CA Inter');
+        }
+
+        // CA Final details
+        if (parsed.bothGroups1stAttempt !== undefined || parsed.completionSessionYear) {
+          setCaPortfolio((prev: any) => ({
+            ...prev,
+            caFinal: {
+              ...(prev.caFinal || {}),
+              ...(parsed.bothGroups1stAttempt !== undefined ? { bothGroups1stAttempt: parsed.bothGroups1stAttempt } : {}),
+              ...(parsed.completionSessionMonth ? { completionSessionMonth: parsed.completionSessionMonth } : {}),
+              ...(parsed.completionSessionYear ? { completionSessionYear: parsed.completionSessionYear } : {}),
+            }
+          }));
+          extractedFields.push('CA Final');
+        }
+      } catch (parseErr) {
+        console.warn('Local parser warning in ProfileScreen:', parseErr);
+      }
+
+      // 2. Cloud file upload and server-side extraction
       const uploadRes = await uploadFileApi(file, 'resume');
       if (uploadRes && (uploadRes.url || uploadRes.resumeUrl)) {
         const fileUrl = uploadRes.url || uploadRes.resumeUrl;
         setResumeUrl(fileUrl);
-        Alert.alert('Success 🎉', 'Resume uploaded successfully!');
+
+        // Server parsed data fallback
+        if (uploadRes.parsedData) {
+          const sp = uploadRes.parsedData;
+          if (sp.phone && !extractedFields.includes('Phone')) {
+            setPersonal((prev: any) => ({ ...prev, phone: sp.phone }));
+            extractedFields.push('Phone');
+          }
+          if (sp.city && !extractedFields.includes('City')) {
+            setPersonal((prev: any) => ({ ...prev, currentCity: sp.city }));
+            extractedFields.push('City');
+          }
+          if (sp.dateOfBirth && !extractedFields.includes('Date of Birth')) {
+            setPersonal((prev: any) => ({ ...prev, dateOfBirth: sp.dateOfBirth }));
+            extractedFields.push('Date of Birth');
+          }
+        }
+
+        if (extractedFields.length > 0) {
+          Alert.alert(
+            'Resume Scanned ⚡',
+            `Resume uploaded and details auto-filled: ${extractedFields.join(', ')}. You can review and edit them in each step!`
+          );
+        } else {
+          Alert.alert('Success 🎉', 'Resume uploaded successfully! Please proceed to complete the steps.');
+        }
       } else {
         Alert.alert('Upload Error', 'Could not upload resume. Please try again.');
       }
