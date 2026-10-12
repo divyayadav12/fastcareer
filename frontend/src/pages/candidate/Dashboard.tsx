@@ -362,7 +362,7 @@ export const CandidateDashboard = () => {
         return;
       }
 
-      if (goToNext && step < 5) {
+      if (goToNext && step < 4) {
         setStep(step + 1);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
@@ -378,12 +378,12 @@ export const CandidateDashboard = () => {
   const isExperienced = Boolean(experienceInfo.isExperienced);
 
   const steps = isExperienced
-    ? ['Personal & Address', 'Education', 'Experience', 'Articleship (Optional)', 'Review Profile']
-    : ['Personal & Address', 'Articleship', 'Education', 'Experience', 'Review Profile'];
+    ? ['Personal Details', 'Education Qualifications', 'Work Experience', 'Review & Submit']
+    : ['Personal Details', 'Articleship & Training', 'Education Qualifications', 'Review & Submit'];
 
   const calculateProfileCompletion = () => {
     let score = 0;
-    let total = isExperienced ? 5 : 6;
+    let total = 5;
     if (user?.firstName && user?.lastName) score += 1;
     if (personal.phone) score += 1;
     if (personal.currentCity) score += 1;
@@ -391,8 +391,7 @@ export const CandidateDashboard = () => {
     if (isExperienced) {
       if (experienceInfo.currentCompanyName || experienceInfo.experienceYears) score += 1;
     } else {
-      if (caPortfolio.caFinal?.group1Attempts || caPortfolio.caInter?.group1Attempts) score += 1;
-      if (caPortfolio.articleships?.[0]?.firmName) score += 1;
+      if (caPortfolio.articleships?.[0]?.firmName || caPortfolio.natureOfWork) score += 1;
     }
     
     return Math.min(100, Math.round((score / total) * 100));
@@ -417,7 +416,7 @@ export const CandidateDashboard = () => {
           </p>
         </div>
 
-          <Stepper currentStep={step} totalSteps={5} steps={steps} onStepClick={setStep} />
+          <Stepper currentStep={step} totalSteps={4} steps={steps} onStepClick={setStep} />
 
         <div className="relative">
           {step === 1 && (
@@ -448,13 +447,6 @@ export const CandidateDashboard = () => {
             )
           )}
           {step === 4 && (
-            isExperienced ? (
-              <Step3Articleship caPortfolio={caPortfolio} setCaPortfolio={setCaPortfolio} isOptional={true} />
-            ) : (
-              <Step5Experience experienceInfo={experienceInfo} setExperienceInfo={setExperienceInfo} personal={personal} setPersonal={setPersonal} />
-            )
-          )}
-          {step === 5 && (
             <Step6Review
               personal={personal}
               setPersonal={setPersonal}
@@ -489,7 +481,7 @@ export const CandidateDashboard = () => {
               <Save size={18} /> Save Draft
             </Button>
             
-            {step < 5 ? (
+            {step < 4 ? (
               <Button onClick={() => handleSaveProgress(true)} disabled={savingProfile || uploading} className="gap-2 min-w-[140px] justify-center bg-primary hover:bg-blue-700 text-white shadow-lg shadow-primary/30">
                 {savingProfile ? 'Saving...' : 'Save & Continue'} <ArrowRight size={18} />
               </Button>

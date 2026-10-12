@@ -116,6 +116,11 @@ export const Register = () => {
   const [workStatus, setWorkStatus] = useState<'fresher' | 'experienced'>('experienced');
   const [experienceYears, setExperienceYears] = useState('1-2 Years');
   const [caFinalCompletionYear, setCaFinalCompletionYear] = useState('2023');
+  const [currentCompanyName, setCurrentCompanyName] = useState('');
+  const [currentDesignation, setCurrentDesignation] = useState('');
+  const [currentCTC, setCurrentCTC] = useState('');
+  const [expectedCTC, setExpectedCTC] = useState('');
+  const [workProfile, setWorkProfile] = useState('');
   const [linkedinUrl, setLinkedinUrl] = useState('');
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -384,6 +389,18 @@ export const Register = () => {
         if (parsed.experienceYears) {
           setExperienceYears(parsed.experienceYears);
         }
+        if (parsed.currentCompanyName) {
+          setCurrentCompanyName(parsed.currentCompanyName);
+          extracted.push('Company');
+        }
+        if (parsed.currentDesignation) {
+          setCurrentDesignation(parsed.currentDesignation);
+          extracted.push('Designation');
+        }
+        if (parsed.workProfile) {
+          setWorkProfile(parsed.workProfile);
+          extracted.push('Work Profile');
+        }
         extracted.push('Experience Stage');
       }
       if (parsed.caFinalCompletionYear || parsed.caFinalYear) {
@@ -511,6 +528,12 @@ export const Register = () => {
         if (!caFinalCompletionYear) {
           newErrors.caFinalCompletionYear = 'Please fill this field: Which CA Final Year Completed?';
         }
+        if (!currentCompanyName.trim()) {
+          newErrors.currentCompanyName = 'Please fill this field: Current / Most Recent Company Name';
+        }
+        if (!currentDesignation.trim()) {
+          newErrors.currentDesignation = 'Please fill this field: Current Designation';
+        }
       }
 
       if (!resumeFile) {
@@ -585,6 +608,12 @@ export const Register = () => {
         experienceInfo: {
           isExperienced: workStatus === 'experienced',
           experienceYears: experienceYears || '0-1 Year',
+          currentCompanyName: currentCompanyName.trim(),
+          currentDesignation: currentDesignation.trim(),
+          currentCTC: currentCTC.trim(),
+          expectedCTC: expectedCTC.trim(),
+          workProfile: workProfile.trim(),
+          caFinalCompletionYear: caFinalCompletionYear || '',
         },
         caInter: {
           bothGroups1stAttempt: caInter.bothGroups1stAttempt,
@@ -1382,6 +1411,8 @@ export const Register = () => {
                               const copy = { ...prev };
                               delete copy.caFinalCompletionYear;
                               delete copy.experienceYears;
+                              delete copy.currentCompanyName;
+                              delete copy.currentDesignation;
                               return copy;
                             });
                           }}
@@ -1419,10 +1450,10 @@ export const Register = () => {
                             <Briefcase className="w-5 h-5 text-blue-600" />
                             <div>
                               <h3 className="text-sm sm:text-base font-bold text-slate-900">
-                                Experienced CA Mandatory Details <span className="text-red-500">*</span>
+                                Experienced CA Employment Details <span className="text-red-500">*</span>
                               </h3>
                               <p className="text-[11px] text-slate-500 mt-0.5">
-                                Specify your CA Final completion year (1970 - Present) & total experience
+                                Enter your current company, designation, experience & salary package
                               </p>
                             </div>
                           </div>
@@ -1439,7 +1470,7 @@ export const Register = () => {
                                 required={workStatus === 'experienced'}
                                 value={caFinalCompletionYear}
                                 onChange={(e) => {
-                                  setCaFinalCompletionYear(e.target.value);
+                                   setCaFinalCompletionYear(e.target.value);
                                   setCaFinal(prev => ({ ...prev, completionSessionYear: e.target.value }));
                                   if (fieldErrors.caFinalCompletionYear) setFieldErrors(prev => ({ ...prev, caFinalCompletionYear: '' }));
                                 }}
@@ -1503,6 +1534,130 @@ export const Register = () => {
                                   <span>{fieldErrors.experienceYears}</span>
                                 </p>
                               )}
+                            </div>
+
+                            {/* Current Company Name */}
+                            <div>
+                              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                                Current / Most Recent Company <span className="text-red-500">*</span>
+                              </label>
+                              <div className="relative">
+                                <Building2 size={16} className="absolute left-3 top-3 text-slate-400" />
+                                <input
+                                  type="text"
+                                  id="currentCompanyName"
+                                  name="currentCompanyName"
+                                  required={workStatus === 'experienced'}
+                                  value={currentCompanyName}
+                                  onChange={(e) => {
+                                    setCurrentCompanyName(e.target.value);
+                                    if (fieldErrors.currentCompanyName) setFieldErrors(prev => ({ ...prev, currentCompanyName: '' }));
+                                  }}
+                                  onBlur={() => {
+                                    if (workStatus === 'experienced' && !currentCompanyName.trim()) {
+                                      setFieldErrors(prev => ({ ...prev, currentCompanyName: 'Please fill this field: Current / Most Recent Company Name' }));
+                                    }
+                                  }}
+                                  placeholder="e.g. PwC, Infosys, Deloitte, Reliance"
+                                  className={`w-full pl-9 pr-3.5 py-2.5 border rounded-xl text-sm focus:outline-none bg-white font-medium transition-all ${
+                                    fieldErrors.currentCompanyName
+                                      ? 'border-rose-500 ring-2 ring-rose-500/20 bg-rose-50/20'
+                                      : 'border-slate-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500'
+                                  }`}
+                                />
+                              </div>
+                              {fieldErrors.currentCompanyName && (
+                                <p className="mt-1 text-xs font-semibold text-rose-600 flex items-center gap-1 animate-in fade-in slide-in-from-top-1">
+                                  <AlertCircle size={13} className="shrink-0 text-rose-600" />
+                                  <span>{fieldErrors.currentCompanyName}</span>
+                                </p>
+                              )}
+                            </div>
+
+                            {/* Current Designation */}
+                            <div>
+                              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                                Current Designation / Role <span className="text-red-500">*</span>
+                              </label>
+                              <div className="relative">
+                                <Briefcase size={16} className="absolute left-3 top-3 text-slate-400" />
+                                <input
+                                  type="text"
+                                  id="currentDesignation"
+                                  name="currentDesignation"
+                                  required={workStatus === 'experienced'}
+                                  value={currentDesignation}
+                                  onChange={(e) => {
+                                    setCurrentDesignation(e.target.value);
+                                    if (fieldErrors.currentDesignation) setFieldErrors(prev => ({ ...prev, currentDesignation: '' }));
+                                  }}
+                                  onBlur={() => {
+                                    if (workStatus === 'experienced' && !currentDesignation.trim()) {
+                                      setFieldErrors(prev => ({ ...prev, currentDesignation: 'Please fill this field: Current Designation' }));
+                                    }
+                                  }}
+                                  placeholder="e.g. Manager, Senior Associate, Financial Analyst"
+                                  className={`w-full pl-9 pr-3.5 py-2.5 border rounded-xl text-sm focus:outline-none bg-white font-medium transition-all ${
+                                    fieldErrors.currentDesignation
+                                      ? 'border-rose-500 ring-2 ring-rose-500/20 bg-rose-50/20'
+                                      : 'border-slate-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500'
+                                  }`}
+                                />
+                              </div>
+                              {fieldErrors.currentDesignation && (
+                                <p className="mt-1 text-xs font-semibold text-rose-600 flex items-center gap-1 animate-in fade-in slide-in-from-top-1">
+                                  <AlertCircle size={13} className="shrink-0 text-rose-600" />
+                                  <span>{fieldErrors.currentDesignation}</span>
+                                </p>
+                              )}
+                            </div>
+
+                            {/* Work Profile / Domain */}
+                            <div>
+                              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                                Work Profile / Domain
+                              </label>
+                              <input
+                                type="text"
+                                id="workProfile"
+                                name="workProfile"
+                                value={workProfile}
+                                onChange={(e) => setWorkProfile(e.target.value)}
+                                placeholder="e.g. Statutory Audit, Indirect Tax, FP&A"
+                                className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white font-medium transition-all"
+                              />
+                            </div>
+
+                            {/* CTC Grid (Current CTC & Expected CTC) */}
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                                  Current CTC (LPA)
+                                </label>
+                                <input
+                                  type="text"
+                                  id="currentCTC"
+                                  name="currentCTC"
+                                  value={currentCTC}
+                                  onChange={(e) => setCurrentCTC(e.target.value)}
+                                  placeholder="e.g. 12 LPA"
+                                  className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white font-medium transition-all"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                                  Expected CTC (LPA)
+                                </label>
+                                <input
+                                  type="text"
+                                  id="expectedCTC"
+                                  name="expectedCTC"
+                                  value={expectedCTC}
+                                  onChange={(e) => setExpectedCTC(e.target.value)}
+                                  placeholder="e.g. 16 LPA"
+                                  className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white font-medium transition-all"
+                                />
+                              </div>
                             </div>
                           </div>
                         </div>

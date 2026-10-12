@@ -205,8 +205,7 @@ export const Step6Review: React.FC<Step6ReviewProps> = ({
 
       {/* 2. CA Qualification Section */}
       <Section title="CA Qualification" icon={FileText} onEdit={openCaModal}>
-        <DataItem label="Fresher CA" value={caPortfolio.isFresherCA ? 'Yes (Fresher)' : 'No (Experienced)'} />
-        <div className="col-span-1 md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+        <div className="col-span-1 md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 mt-1">
           {/* CA Inter Card */}
           <div className="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 space-y-2">
             <div className="flex items-center justify-between border-b border-indigo-100 pb-2">
@@ -245,32 +244,43 @@ export const Step6Review: React.FC<Step6ReviewProps> = ({
         </div>
       </Section>
 
-      {/* 3. Articleship Section */}
-      <Section title="Articleship" icon={Building} step={2}>
-        <DataItem label="Total Experience" value={`${caPortfolio.articleships?.reduce((acc: number, curr: any) => acc + (parseInt(curr.noOfMonths) || 0), 0) || 0} Months`} />
-        <DataItem label="Completion Date" value={`${caPortfolio.articleshipCompletionDateMonth || ''} ${caPortfolio.articleshipCompletionDateYear || ''}`} />
-        <div className="col-span-1 md:col-span-2">
-          <DataItem label="Nature of Work" value={caPortfolio.natureOfWork} />
-        </div>
-      </Section>
+      {/* 3. Articleship Section (Only for Fresher candidates) */}
+      {!experienceInfo?.isExperienced && (
+        <Section title="Articleship" icon={Building} step={2}>
+          <DataItem label="Total Experience" value={`${caPortfolio.articleships?.reduce((acc: number, curr: any) => acc + (parseInt(curr.noOfMonths) || 0), 0) || 0} Months`} />
+          <DataItem label="Completion Date" value={`${caPortfolio.articleshipCompletionDateMonth || ''} ${caPortfolio.articleshipCompletionDateYear || ''}`} />
+          <div className="col-span-1 md:col-span-2">
+            <DataItem label="Nature of Work" value={caPortfolio.natureOfWork} />
+          </div>
+        </Section>
+      )}
 
       {/* 4. Education Section */}
-      <Section title="Education" icon={GraduationCap} step={3}>
+      <Section title="Education" icon={GraduationCap} step={experienceInfo?.isExperienced ? 2 : 3}>
         <DataItem label="Graduation" value={`${qualifications.graduation?.type || ''} - ${qualifications.graduation?.college || ''} (${qualifications.graduation?.percentage || ''}%)`} />
         <DataItem label="Class XII" value={`${qualifications.class12?.percentage || ''}% (${qualifications.class12?.year || ''})`} />
       </Section>
 
-      {/* 5. Experience Section */}
-      <Section title="Experience" icon={Briefcase} step={4}>
-        <DataItem label="Experienced Candidate" value={experienceInfo.isExperienced ? 'Yes' : 'No'} />
-        {experienceInfo.isExperienced && (
-          <>
-            <DataItem label="Current Company" value={experienceInfo.currentCompanyName} />
-            <DataItem label="Designation" value={experienceInfo.currentDesignation} />
+      {/* 5. Work Experience Section (Only for Experienced candidates) */}
+      {experienceInfo?.isExperienced && (
+        <Section title="Corporate Work Experience" icon={Briefcase} step={3}>
+          <DataItem label="Total Experience" value={experienceInfo.experienceYears} />
+          {experienceInfo.caFinalCompletionYear && (
+            <DataItem label="CA Final Year" value={experienceInfo.caFinalCompletionYear} />
+          )}
+          <DataItem label="Current Company" value={experienceInfo.currentCompanyName} />
+          <DataItem label="Designation" value={experienceInfo.currentDesignation} />
+          {experienceInfo.workProfile && (
+            <DataItem label="Work Profile" value={experienceInfo.workProfile} />
+          )}
+          {experienceInfo.currentCTC && (
             <DataItem label="Current CTC" value={experienceInfo.currentCTC} />
-          </>
-        )}
-      </Section>
+          )}
+          {experienceInfo.expectedCTC && (
+            <DataItem label="Expected CTC" value={experienceInfo.expectedCTC} />
+          )}
+        </Section>
+      )}
 
       {/* ═══════════════ EDIT PERSONAL DETAILS MODAL ═══════════════ */}
       {editPersonalModal && (

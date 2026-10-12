@@ -11,7 +11,7 @@ import { register, reset } from '../store/authSlice';
 import type { AppDispatch, RootState } from '../store';
 import * as DocumentPicker from 'expo-document-picker';
 import api, { API_BASE_URL, uploadFileApi } from '../services/api';
-import { ALL_CITIES, RANKER_OPTIONS, getLaterExamSession } from '../utils/constants';
+import { ALL_CITIES, RANKER_OPTIONS, getLaterExamSession, YEARS_1970, EXPERIENCE_YEARS_OPTIONS } from '../utils/constants';
 import { parseResumeDocument } from '../utils/resumeParser';
 
 const MONTHS = ['Jan', 'May', 'Sep', 'Nov'];
@@ -31,7 +31,14 @@ export default function RegisterScreen({ navigation }: any) {
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [currentCity, setCurrentCity] = useState('');
   const [linkedinUrl, setLinkedinUrl] = useState('');
-  const [workStatus, setWorkStatus] = useState<'fresher' | 'experienced'>('fresher');
+  const [workStatus, setWorkStatus] = useState<'fresher' | 'experienced'>('experienced');
+  const [experienceYears, setExperienceYears] = useState('1-2 Years');
+  const [caFinalCompletionYear, setCaFinalCompletionYear] = useState('2023');
+  const [currentCompanyName, setCurrentCompanyName] = useState('');
+  const [currentDesignation, setCurrentDesignation] = useState('');
+  const [currentCTC, setCurrentCTC] = useState('');
+  const [expectedCTC, setExpectedCTC] = useState('');
+  const [workProfile, setWorkProfile] = useState('');
   const [resumeFile, setResumeFile] = useState<any>(null);
   const [uploadedResumeUrl, setUploadedResumeUrl] = useState('');
   const [isScanning, setIsScanning] = useState(false);
@@ -225,7 +232,14 @@ export default function RegisterScreen({ navigation }: any) {
             setLinkedinUrl(parsed.linkedinUrl);
             extractedList.push('LinkedIn');
           }
-          if (parsed.workStatus) {
+          if (parsed.workStatus === 'experienced' || parsed.isExperienced) {
+            setWorkStatus('experienced');
+            if (parsed.experienceYears) setExperienceYears(parsed.experienceYears);
+            if (parsed.currentCompanyName) setCurrentCompanyName(parsed.currentCompanyName);
+            if (parsed.currentDesignation) setCurrentDesignation(parsed.currentDesignation);
+            if (parsed.workProfile) setWorkProfile(parsed.workProfile);
+            extractedList.push('Work Status & Experience');
+          } else if (parsed.workStatus) {
             setWorkStatus(parsed.workStatus);
             extractedList.push('Work Status');
           }
@@ -353,6 +367,16 @@ export default function RegisterScreen({ navigation }: any) {
         Alert.alert('City Location Required', 'Please select your Current City.');
         return;
       }
+      if (workStatus === 'experienced') {
+        if (!currentCompanyName.trim()) {
+          Alert.alert('Company Name Required', 'Please enter your current or most recent company name.');
+          return;
+        }
+        if (!currentDesignation.trim()) {
+          Alert.alert('Designation Required', 'Please enter your current designation / role.');
+          return;
+        }
+      }
     }
 
     let finalResumeUrl = uploadedResumeUrl;
@@ -384,6 +408,16 @@ export default function RegisterScreen({ navigation }: any) {
           dateOfBirth,
           isFresherCA: workStatus === 'fresher',
           resumeUrl: finalResumeUrl,
+          experienceInfo: {
+            isExperienced: workStatus === 'experienced',
+            experienceYears: experienceYears || '1-2 Years',
+            currentCompanyName: currentCompanyName.trim(),
+            currentDesignation: currentDesignation.trim(),
+            currentCTC: currentCTC.trim(),
+            expectedCTC: expectedCTC.trim(),
+            workProfile: workProfile.trim(),
+            caFinalCompletionYear: caFinalCompletionYear || '',
+          },
           caInter: {
             bothGroups1stAttempt: caInter.bothGroups1stAttempt,
             group1Attempts: caInter.group1Attempts || '1',
@@ -688,6 +722,106 @@ export default function RegisterScreen({ navigation }: any) {
               </TouchableOpacity>
             </View>
           </View>
+
+          {/* Experienced Candidate Employment Details */}
+          {workStatus === 'experienced' && (
+            <View style={[styles.caCard, { marginBottom: 16, borderColor: '#bfdbfe', backgroundColor: '#eff6ff' }]}>
+              <View style={[styles.caCardHeader, { borderBottomColor: '#dbeafe' }]}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Ionicons name="briefcase-outline" size={20} color="#034b71" style={{ marginRight: 6 }} />
+                  <Text style={[styles.caCardTitle, { color: '#034b71' }]}>Experienced CA Employment Details *</Text>
+                </View>
+              </View>
+
+              {/* CA Final Year & Total Experience */}
+              <View style={styles.caSelectRow}>
+                <View style={{ flex: 1, marginRight: 8 }}>
+                  <Text style={styles.subFieldLabel}>CA Final Year *</Text>
+                  <TouchableOpacity
+                    style={styles.dropdownBtn}
+                    onPress={() => openPicker('CA Final Year', YEARS_1970, (v) => {
+                      setCaFinalCompletionYear(v);
+                      handleCaFinalChange('completionSessionYear', v);
+                    })}
+                  >
+                    <Text style={styles.dropdownBtnText}>{caFinalCompletionYear}</Text>
+                    <Ionicons name="chevron-down" size={14} color="#64748b" />
+                  </TouchableOpacity>
+                </View>
+
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.subFieldLabel}>Total Experience *</Text>
+                  <TouchableOpacity
+                    style={styles.dropdownBtn}
+                    onPress={() => openPicker('Total Experience', EXPERIENCE_YEARS_OPTIONS, (v) => setExperienceYears(v))}
+                  >
+                    <Text style={styles.dropdownBtnText}>{experienceYears}</Text>
+                    <Ionicons name="chevron-down" size={14} color="#64748b" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Company Name */}
+              <View style={{ marginTop: 10 }}>
+                <Text style={styles.subFieldLabel}>Current / Recent Company *</Text>
+                <TextInput
+                  style={[styles.input, { backgroundColor: '#ffffff', height: 44, borderRadius: 10, borderWidth: 1, borderColor: '#cbd5e1', paddingHorizontal: 12 }]}
+                  value={currentCompanyName}
+                  onChangeText={setCurrentCompanyName}
+                  placeholder="e.g. PwC, Infosys, Deloitte"
+                  placeholderTextColor="#94a3b8"
+                />
+              </View>
+
+              {/* Designation */}
+              <View style={{ marginTop: 10 }}>
+                <Text style={styles.subFieldLabel}>Current Designation *</Text>
+                <TextInput
+                  style={[styles.input, { backgroundColor: '#ffffff', height: 44, borderRadius: 10, borderWidth: 1, borderColor: '#cbd5e1', paddingHorizontal: 12 }]}
+                  value={currentDesignation}
+                  onChangeText={setCurrentDesignation}
+                  placeholder="e.g. Manager, Senior Associate"
+                  placeholderTextColor="#94a3b8"
+                />
+              </View>
+
+              {/* Work Profile */}
+              <View style={{ marginTop: 10 }}>
+                <Text style={styles.subFieldLabel}>Work Profile / Domain</Text>
+                <TextInput
+                  style={[styles.input, { backgroundColor: '#ffffff', height: 44, borderRadius: 10, borderWidth: 1, borderColor: '#cbd5e1', paddingHorizontal: 12 }]}
+                  value={workProfile}
+                  onChangeText={setWorkProfile}
+                  placeholder="e.g. Statutory Audit, FP&A"
+                  placeholderTextColor="#94a3b8"
+                />
+              </View>
+
+              {/* CTC Row */}
+              <View style={[styles.caSelectRow, { marginTop: 10 }]}>
+                <View style={{ flex: 1, marginRight: 8 }}>
+                  <Text style={styles.subFieldLabel}>Current CTC</Text>
+                  <TextInput
+                    style={[styles.input, { backgroundColor: '#ffffff', height: 44, borderRadius: 10, borderWidth: 1, borderColor: '#cbd5e1', paddingHorizontal: 12 }]}
+                    value={currentCTC}
+                    onChangeText={setCurrentCTC}
+                    placeholder="e.g. 12 LPA"
+                    placeholderTextColor="#94a3b8"
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.subFieldLabel}>Expected CTC</Text>
+                  <TextInput
+                    style={[styles.input, { backgroundColor: '#ffffff', height: 44, borderRadius: 10, borderWidth: 1, borderColor: '#cbd5e1', paddingHorizontal: 12 }]}
+                    value={expectedCTC}
+                    onChangeText={setExpectedCTC}
+                    placeholder="e.g. 16 LPA"
+                    placeholderTextColor="#94a3b8"
+                  />
+                </View>
+              </View>
+            </View>
+          )}
 
           {/* ─── CA Intermediate Examination Details Card ───────────────────────── */}
           <View style={[styles.caCard, { marginBottom: 16 }]}>

@@ -28,6 +28,16 @@ export const ATTEMPT_YEARS = ['Sept\'25', 'Jan\'26', 'May\'25', 'Nov\'24', 'May\
 export const ATTEMPTS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10+'];
 export const CA_EXAM_MONTHS = ['Jan', 'May', 'Sep', 'Nov'];
 export const RANKER_OPTIONS = ['No', 'Rank 1-10', 'Rank 11-20', 'Rank 21-30', 'Rank 31-40', 'Rank 41-50'];
+export const YEARS_1970 = Array.from({ length: new Date().getFullYear() - 1970 + 1 }, (_, i) => String(new Date().getFullYear() - i));
+export const EXPERIENCE_YEARS_OPTIONS = [
+  '0-1 Year',
+  '1-2 Years',
+  '2-3 Years',
+  '3-5 Years',
+  '5-7 Years',
+  '7-10 Years',
+  '10+ Years',
+];
 export const NATURE_OF_WORK = [
   'Statutory Audit',
   'Internal Audit',

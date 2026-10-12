@@ -41,6 +41,11 @@ export interface ExtractedResumeData {
   caInterRanker?: string;
   caInterCompletionMonth?: string;
   caInterCompletionYear?: string;
+  isExperienced?: boolean;
+  experienceYears?: string;
+  currentCompanyName?: string;
+  currentDesignation?: string;
+  workProfile?: string;
 }
 
 const PDF_KEYWORDS_IGNORE = new Set([

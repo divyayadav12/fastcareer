@@ -17,8 +17,6 @@ export default function ProfileScreen({ navigation }: any) {
   const { user } = useSelector((state: RootState) => state.auth);
   const [step, setStep] = useState(1);
   const [uploading, setUploading] = useState(false);
-  const totalSteps = 5;
-  const steps = ['Personal Details', 'CA Qualification', 'Articleship', 'Education & Experience', 'Review'];
   const scrollLayoutRef = useRef<any>(null);
 
   const goToStep = (newStep: number) => {
@@ -239,6 +237,12 @@ export default function ProfileScreen({ navigation }: any) {
     }
   };
 
+  const isExperienced = Boolean((experienceInfo as any)?.isExperienced ?? user?.experienceInfo?.isExperienced);
+  const steps = isExperienced
+    ? ['Personal Details', 'CA Qualification', 'Education & Experience', 'Review']
+    : ['Personal Details', 'CA Qualification', 'Articleship', 'Education Qualifications', 'Review'];
+  const totalSteps = steps.length;
+
   return (
     <View style={styles.container}>
       <View style={styles.stepperContainer}>
@@ -293,16 +297,32 @@ export default function ProfileScreen({ navigation }: any) {
             <Step2CA caPortfolio={caPortfolio} setCaPortfolio={setCaPortfolio} />
           )}
           {step === 3 && (
-            <Step3Articleship caPortfolio={caPortfolio} setCaPortfolio={setCaPortfolio} />
+            isExperienced ? (
+              <Step4EducationExperience 
+                qualifications={qualifications} setQualifications={setQualifications}
+                experienceInfo={experienceInfo} setExperienceInfo={setExperienceInfo}
+                personal={personal} setPersonal={setPersonal}
+              />
+            ) : (
+              <Step3Articleship caPortfolio={caPortfolio} setCaPortfolio={setCaPortfolio} />
+            )
           )}
           {step === 4 && (
-            <Step4EducationExperience 
-              qualifications={qualifications} setQualifications={setQualifications}
-              experienceInfo={experienceInfo} setExperienceInfo={setExperienceInfo}
-              personal={personal} setPersonal={setPersonal}
-            />
+            isExperienced ? (
+              <Step5Review 
+                personal={personal} caPortfolio={caPortfolio}
+                qualifications={qualifications} experienceInfo={experienceInfo}
+                setStep={goToStep} user={user}
+              />
+            ) : (
+              <Step4EducationExperience 
+                qualifications={qualifications} setQualifications={setQualifications}
+                experienceInfo={experienceInfo} setExperienceInfo={setExperienceInfo}
+                personal={personal} setPersonal={setPersonal}
+              />
+            )
           )}
-          {step === 5 && (
+          {step === 5 && !isExperienced && (
             <Step5Review 
               personal={personal} caPortfolio={caPortfolio}
               qualifications={qualifications} experienceInfo={experienceInfo}

@@ -36,7 +36,6 @@ export const Step5Review = ({ personal, caPortfolio, qualifications, experienceI
       </Section>
 
       <Section title="CA Qualification" step={2}>
-        <DataItem label="Fresher CA" value={caPortfolio?.isFresherCA ? 'Yes' : 'No'} />
         <View style={styles.nestedCard}>
           <Text style={styles.nestedTitle}>CA Inter</Text>
           <Text style={styles.nestedText}>Group I: {caPortfolio?.caInter?.group1Month} {caPortfolio?.caInter?.group1Year}</Text>
@@ -49,25 +48,27 @@ export const Step5Review = ({ personal, caPortfolio, qualifications, experienceI
         </View>
       </Section>
 
-      <Section title="Articleship" step={3}>
-        <DataItem label="Completion Date" value={`${caPortfolio?.articleshipCompletionDateMonth} ${caPortfolio?.articleshipCompletionDateYear}`} />
-        <DataItem label="Nature of Work" value={caPortfolio?.natureOfWork} />
-      </Section>
+      {!experienceInfo?.isExperienced && (
+        <Section title="Articleship" step={3}>
+          <DataItem label="Completion Date" value={`${caPortfolio?.articleshipCompletionDateMonth || ''} ${caPortfolio?.articleshipCompletionDateYear || ''}`} />
+          <DataItem label="Nature of Work" value={caPortfolio?.natureOfWork} />
+        </Section>
+      )}
 
-      <Section title="Education & Experience" step={4}>
-        <DataItem label="Graduation" value={`${qualifications?.graduation?.type} - ${qualifications?.graduation?.college} (${qualifications?.graduation?.percentage}%)`} />
-        <DataItem label="Class XII" value={`${qualifications?.class12?.percentage}% (${qualifications?.class12?.year})`} />
+      <Section title={experienceInfo?.isExperienced ? "Education & Experience" : "Education Details"} step={experienceInfo?.isExperienced ? 3 : 4}>
+        <DataItem label="Graduation" value={`${qualifications?.graduation?.type || ''} - ${qualifications?.graduation?.college || ''} (${qualifications?.graduation?.percentage || ''}%)`} />
+        <DataItem label="Class XII" value={`${qualifications?.class12?.percentage || ''}% (${qualifications?.class12?.year || ''})`} />
         
-        <View style={{ marginTop: 12 }}>
-          <DataItem label="Experienced Candidate" value={experienceInfo?.isExperienced ? 'Yes' : 'No'} />
-          {experienceInfo?.isExperienced && (
-            <>
-              <DataItem label="Current Company" value={experienceInfo?.currentCompanyName} />
-              <DataItem label="Designation" value={experienceInfo?.currentDesignation} />
-              <DataItem label="Current CTC" value={experienceInfo?.currentCTC} />
-            </>
-          )}
-        </View>
+        {experienceInfo?.isExperienced && (
+          <View style={{ marginTop: 12, width: '100%', flexDirection: 'row', flexWrap: 'wrap' }}>
+            <DataItem label="Total Experience" value={experienceInfo?.experienceYears} />
+            <DataItem label="Current Company" value={experienceInfo?.currentCompanyName} />
+            <DataItem label="Designation" value={experienceInfo?.currentDesignation} />
+            <DataItem label="Work Profile" value={experienceInfo?.workProfile} />
+            <DataItem label="Current CTC" value={experienceInfo?.currentCTC} />
+            <DataItem label="Expected CTC" value={experienceInfo?.expectedCTC} />
+          </View>
+        )}
       </Section>
     </View>
   );
