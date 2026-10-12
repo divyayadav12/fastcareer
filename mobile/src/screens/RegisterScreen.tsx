@@ -13,6 +13,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import api, { API_BASE_URL, uploadFileApi } from '../services/api';
 import { ALL_CITIES } from '../utils/constants';
 import { parseResumeDocument } from '../utils/resumeParser';
+import { getLaterExamSession } from '../utils/constants';
 
 const MONTHS = ['Jan', 'May', 'Sep', 'Nov'];
 const YEARS = ['2026', '2025', '2024', '2023', '2022', '2021', '2020', '2019', '2018', '2017', '2016', '2015'];
@@ -63,8 +64,7 @@ export default function RegisterScreen({ navigation }: any) {
         if (next.group1Year) next.group2Year = next.group1Year;
         if (next.group1Month) next.completionSessionMonth = next.group1Month;
         if (next.group1Year) next.completionSessionYear = next.group1Year;
-      }
-      if (next.bothGroups1stAttempt) {
+      } else if (next.bothGroups1stAttempt) {
         if (field === 'group1Month') {
           next.group2Month = value;
           next.completionSessionMonth = value;
@@ -73,6 +73,21 @@ export default function RegisterScreen({ navigation }: any) {
           next.group2Year = value;
           next.completionSessionYear = value;
         }
+      } else if (
+        field === 'group1Month' ||
+        field === 'group1Year' ||
+        field === 'group2Month' ||
+        field === 'group2Year' ||
+        field === 'bothGroups1stAttempt'
+      ) {
+        const later = getLaterExamSession(
+          next.group1Month,
+          next.group1Year,
+          next.group2Month,
+          next.group2Year
+        );
+        if (later.month) next.completionSessionMonth = later.month;
+        if (later.year) next.completionSessionYear = later.year;
       }
       return next;
     });
@@ -102,8 +117,7 @@ export default function RegisterScreen({ navigation }: any) {
         if (next.group1Year) next.group2Year = next.group1Year;
         if (next.group1Month) next.completionSessionMonth = next.group1Month;
         if (next.group1Year) next.completionSessionYear = next.group1Year;
-      }
-      if (next.bothGroups1stAttempt) {
+      } else if (next.bothGroups1stAttempt) {
         if (field === 'group1Month') {
           next.group2Month = value;
           next.completionSessionMonth = value;
@@ -112,6 +126,21 @@ export default function RegisterScreen({ navigation }: any) {
           next.group2Year = value;
           next.completionSessionYear = value;
         }
+      } else if (
+        field === 'group1Month' ||
+        field === 'group1Year' ||
+        field === 'group2Month' ||
+        field === 'group2Year' ||
+        field === 'bothGroups1stAttempt'
+      ) {
+        const later = getLaterExamSession(
+          next.group1Month,
+          next.group1Year,
+          next.group2Month,
+          next.group2Year
+        );
+        if (later.month) next.completionSessionMonth = later.month;
+        if (later.year) next.completionSessionYear = later.year;
       }
       return next;
     });
@@ -787,16 +816,26 @@ export default function RegisterScreen({ navigation }: any) {
                 </TouchableOpacity>
               </View>
 
-              <View style={{ flex: 1 }}>
+              <View style={{ flex: 2 }}>
                 <Text style={styles.subFieldLabel}>Completion Session *</Text>
-                <TouchableOpacity
-                  style={[styles.dropdownBtn, caInter.bothGroups1stAttempt && styles.dropdownDisabled]}
-                  disabled={caInter.bothGroups1stAttempt}
-                  onPress={() => openPicker('Inter Completion Session Year', YEARS, (v) => handleCaInterChange('completionSessionYear', v))}
-                >
-                  <Text style={styles.dropdownBtnText}>{caInter.completionSessionMonth} {caInter.completionSessionYear}</Text>
-                  <Ionicons name="chevron-down" size={14} color="#64748b" />
-                </TouchableOpacity>
+                <View style={{ flexDirection: 'row', gap: 4 }}>
+                  <TouchableOpacity
+                    style={[styles.dropdownBtn, { flex: 1, paddingHorizontal: 6 }, caInter.bothGroups1stAttempt && styles.dropdownDisabled]}
+                    disabled={caInter.bothGroups1stAttempt}
+                    onPress={() => openPicker('Inter Completion Month', MONTHS, (v) => handleCaInterChange('completionSessionMonth', v))}
+                  >
+                    <Text style={styles.dropdownBtnText} numberOfLines={1}>{caInter.completionSessionMonth || 'Month'}</Text>
+                    <Ionicons name="chevron-down" size={12} color="#64748b" />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.dropdownBtn, { flex: 1, paddingHorizontal: 6 }, caInter.bothGroups1stAttempt && styles.dropdownDisabled]}
+                    disabled={caInter.bothGroups1stAttempt}
+                    onPress={() => openPicker('Inter Completion Year', YEARS, (v) => handleCaInterChange('completionSessionYear', v))}
+                  >
+                    <Text style={styles.dropdownBtnText} numberOfLines={1}>{caInter.completionSessionYear || 'Year'}</Text>
+                    <Ionicons name="chevron-down" size={12} color="#64748b" />
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
           </View>
@@ -926,15 +965,26 @@ export default function RegisterScreen({ navigation }: any) {
                 </TouchableOpacity>
               </View>
 
-              <View style={{ flex: 1 }}>
+              <View style={{ flex: 2 }}>
                 <Text style={styles.subFieldLabel}>Completion Session *</Text>
-                <TouchableOpacity
-                  style={styles.dropdownBtn}
-                  onPress={() => openPicker('Completion Session Year', YEARS, (v) => handleCaFinalChange('completionSessionYear', v))}
-                >
-                  <Text style={styles.dropdownBtnText}>{caFinal.completionSessionMonth} {caFinal.completionSessionYear}</Text>
-                  <Ionicons name="chevron-down" size={14} color="#64748b" />
-                </TouchableOpacity>
+                <View style={{ flexDirection: 'row', gap: 4 }}>
+                  <TouchableOpacity
+                    style={[styles.dropdownBtn, { flex: 1, paddingHorizontal: 6 }, caFinal.bothGroups1stAttempt && styles.dropdownDisabled]}
+                    disabled={caFinal.bothGroups1stAttempt}
+                    onPress={() => openPicker('Final Completion Month', MONTHS, (v) => handleCaFinalChange('completionSessionMonth', v))}
+                  >
+                    <Text style={styles.dropdownBtnText} numberOfLines={1}>{caFinal.completionSessionMonth || 'Month'}</Text>
+                    <Ionicons name="chevron-down" size={12} color="#64748b" />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.dropdownBtn, { flex: 1, paddingHorizontal: 6 }, caFinal.bothGroups1stAttempt && styles.dropdownDisabled]}
+                    disabled={caFinal.bothGroups1stAttempt}
+                    onPress={() => openPicker('Final Completion Year', YEARS, (v) => handleCaFinalChange('completionSessionYear', v))}
+                  >
+                    <Text style={styles.dropdownBtnText} numberOfLines={1}>{caFinal.completionSessionYear || 'Year'}</Text>
+                    <Ionicons name="chevron-down" size={12} color="#64748b" />
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
           </View>

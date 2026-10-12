@@ -27,7 +27,7 @@ import {
 import { register, reset } from '../../store/authSlice';
 import type { AppDispatch, RootState } from '../../store';
 import api from '../../services/api';
-import { ALL_CITIES, ATTEMPTS, CA_EXAM_MONTHS, YEARS, YEARS_1970, EXPERIENCE_YEARS_OPTIONS } from '../../utils/constants';
+import { ALL_CITIES, ATTEMPTS, CA_EXAM_MONTHS, YEARS, YEARS_1970, EXPERIENCE_YEARS_OPTIONS, getLaterExamSession } from '../../utils/constants';
 import { parseResumeFile } from '../../utils/resumeParser';
 
 const POPULAR_CITIES = [
@@ -80,8 +80,7 @@ export const Register = () => {
         if (next.group1Year) next.group2Year = next.group1Year;
         if (next.group1Month) next.completionSessionMonth = next.group1Month;
         if (next.group1Year) next.completionSessionYear = next.group1Year;
-      }
-      if (next.bothGroups1stAttempt) {
+      } else if (next.bothGroups1stAttempt) {
         if (field === 'group1Month') {
           next.group2Month = value;
           next.completionSessionMonth = value;
@@ -90,6 +89,21 @@ export const Register = () => {
           next.group2Year = value;
           next.completionSessionYear = value;
         }
+      } else if (
+        field === 'group1Month' ||
+        field === 'group1Year' ||
+        field === 'group2Month' ||
+        field === 'group2Year' ||
+        field === 'bothGroups1stAttempt'
+      ) {
+        const later = getLaterExamSession(
+          next.group1Month,
+          next.group1Year,
+          next.group2Month,
+          next.group2Year
+        );
+        if (later.month) next.completionSessionMonth = later.month;
+        if (later.year) next.completionSessionYear = later.year;
       }
       return next;
     });
@@ -119,8 +133,8 @@ export const Register = () => {
         if (next.group1Year) next.group2Year = next.group1Year;
         if (next.group1Month) next.completionSessionMonth = next.group1Month;
         if (next.group1Year) next.completionSessionYear = next.group1Year;
-      }
-      if (next.bothGroups1stAttempt) {
+        if (next.group1Year) setCaFinalCompletionYear(next.group1Year);
+      } else if (next.bothGroups1stAttempt) {
         if (field === 'group1Month') {
           next.group2Month = value;
           next.completionSessionMonth = value;
@@ -128,7 +142,28 @@ export const Register = () => {
         if (field === 'group1Year') {
           next.group2Year = value;
           next.completionSessionYear = value;
+          setCaFinalCompletionYear(value || '');
         }
+      } else if (
+        field === 'group1Month' ||
+        field === 'group1Year' ||
+        field === 'group2Month' ||
+        field === 'group2Year' ||
+        field === 'bothGroups1stAttempt'
+      ) {
+        const later = getLaterExamSession(
+          next.group1Month,
+          next.group1Year,
+          next.group2Month,
+          next.group2Year
+        );
+        if (later.month) next.completionSessionMonth = later.month;
+        if (later.year) {
+          next.completionSessionYear = later.year;
+          setCaFinalCompletionYear(later.year);
+        }
+      } else if (field === 'completionSessionYear') {
+        setCaFinalCompletionYear(value || '');
       }
       return next;
     });

@@ -1,5 +1,5 @@
-﻿import React from 'react';
-import { ATTEMPTS, CA_EXAM_MONTHS, YEARS } from '../../utils/constants';
+import React from 'react';
+import { ATTEMPTS, CA_EXAM_MONTHS, YEARS, getLaterExamSession } from '../../utils/constants';
 
 export const Step2CA = ({ caPortfolio, setCaPortfolio }) => {
 
@@ -14,10 +14,8 @@ export const Step2CA = ({ caPortfolio, setCaPortfolio }) => {
       if (newData.group1Year) newData.group2Year = newData.group1Year;
       if (newData.group1Month) newData.completionSessionMonth = newData.group1Month;
       if (newData.group1Year) newData.completionSessionYear = newData.group1Year;
-    }
-    
-    // If Both Groups is checked and we change G1 date, auto update G2 and Completion Date
-    if (newData.bothGroups1stAttempt) {
+    } else if (newData.bothGroups1stAttempt) {
+      // If Both Groups is checked and we change G1 date, auto update G2 and Completion Date
       if (field === 'group1Month') {
         newData.group2Month = value;
         newData.completionSessionMonth = value;
@@ -26,6 +24,22 @@ export const Step2CA = ({ caPortfolio, setCaPortfolio }) => {
         newData.group2Year = value;
         newData.completionSessionYear = value;
       }
+    } else if (
+      field === 'group1Month' ||
+      field === 'group1Year' ||
+      field === 'group2Month' ||
+      field === 'group2Year' ||
+      field === 'bothGroups1stAttempt'
+    ) {
+      // Automatically choose whichever exam session was completed later
+      const later = getLaterExamSession(
+        newData.group1Month,
+        newData.group1Year,
+        newData.group2Month,
+        newData.group2Year
+      );
+      if (later.month) newData.completionSessionMonth = later.month;
+      if (later.year) newData.completionSessionYear = later.year;
     }
 
     setCaPortfolio({ ...caPortfolio, [exam]: newData });

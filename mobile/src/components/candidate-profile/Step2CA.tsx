@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Switch, ScrollView } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import { ATTEMPTS, CA_EXAM_MONTHS, YEARS } from '../../utils/constants';
+import { ATTEMPTS, CA_EXAM_MONTHS, YEARS, getLaterExamSession } from '../../utils/constants';
 
 export const Step2CA = ({ caPortfolio, setCaPortfolio }: any) => {
 
@@ -15,9 +15,7 @@ export const Step2CA = ({ caPortfolio, setCaPortfolio }: any) => {
       if (newData.group1Year) newData.group2Year = newData.group1Year;
       if (newData.group1Month) newData.completionSessionMonth = newData.group1Month;
       if (newData.group1Year) newData.completionSessionYear = newData.group1Year;
-    }
-    
-    if (newData.bothGroups1stAttempt) {
+    } else if (newData.bothGroups1stAttempt) {
       if (field === 'group1Month') {
         newData.group2Month = value;
         newData.completionSessionMonth = value;
@@ -26,6 +24,21 @@ export const Step2CA = ({ caPortfolio, setCaPortfolio }: any) => {
         newData.group2Year = value;
         newData.completionSessionYear = value;
       }
+    } else if (
+      field === 'group1Month' ||
+      field === 'group1Year' ||
+      field === 'group2Month' ||
+      field === 'group2Year' ||
+      field === 'bothGroups1stAttempt'
+    ) {
+      const later = getLaterExamSession(
+        newData.group1Month,
+        newData.group1Year,
+        newData.group2Month,
+        newData.group2Year
+      );
+      if (later.month) newData.completionSessionMonth = later.month;
+      if (later.year) newData.completionSessionYear = later.year;
     }
 
     setCaPortfolio({ ...caPortfolio, [exam]: newData });
