@@ -62,6 +62,14 @@ export const authUser = async (req: Request, res: Response) => {
         lastName: user.lastName,
         email: user.email,
         role: user.role,
+        phone: user.phone || user.personalDetails?.phone || '',
+        resumeUrl: user.resumeUrl,
+        linkedinUrl: user.linkedinUrl,
+        profileCompleted: user.profileCompleted,
+        personalDetails: user.personalDetails,
+        caPortfolio: user.caPortfolio,
+        qualifications: user.qualifications,
+        experienceInfo: user.experienceInfo,
         token: generateToken(user._id.toString(), user.email),
       });
     } else {

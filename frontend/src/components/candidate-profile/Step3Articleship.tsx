@@ -130,8 +130,8 @@ export const Step3Articleship = ({ caPortfolio, setCaPortfolio, isOptional = fal
           </div>
         ))}
 
-        <button onClick={addFirm} className="flex items-center gap-2 text-primary font-semibold text-sm bg-blue-50 hover:bg-blue-100 px-4 py-2.5 rounded-xl transition-colors border border-blue-100 border-dashed w-full justify-center">
-          <Plus size={18} /> Add another firm / training
+        <button onClick={addFirm} className="flex items-center gap-2 text-primary font-semibold text-sm bg-blue-50 hover:bg-blue-100 px-4 py-2.5 rounded-xl transition-colors border border-blue-100 border-dashed w-full justify-center cursor-pointer">
+          <Plus size={18} /> Add another articleship / training
         </button>
       </div>
 
@@ -161,22 +161,82 @@ export const Step3Articleship = ({ caPortfolio, setCaPortfolio, isOptional = fal
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">GMCS Program Completed?</label>
             <div className="flex bg-gray-50 rounded-xl p-1 border border-gray-200">
-              <button type="button" onClick={() => setCaPortfolio({...caPortfolio, gmcsCompleted: 'Yes'})} className={`flex-1 text-sm py-1.5 rounded-lg font-medium transition-all ${caPortfolio.gmcsCompleted === 'Yes' ? 'bg-white shadow-sm text-primary border border-gray-100' : 'text-gray-500 hover:text-gray-700'}`}>Yes</button>
-              <button type="button" onClick={() => setCaPortfolio({...caPortfolio, gmcsCompleted: 'No'})} className={`flex-1 text-sm py-1.5 rounded-lg font-medium transition-all ${caPortfolio.gmcsCompleted === 'No' ? 'bg-white shadow-sm text-primary border border-gray-100' : 'text-gray-500 hover:text-gray-700'}`}>No</button>
+              <button 
+                type="button" 
+                onClick={() => setCaPortfolio({...caPortfolio, gmcsCompleted: 'Yes'})} 
+                className={`flex-1 text-sm py-1.5 rounded-lg font-medium transition-all cursor-pointer ${
+                  caPortfolio.gmcsCompleted === 'Yes' 
+                    ? 'bg-blue-600 text-white shadow-sm font-semibold' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Yes
+              </button>
+              <button 
+                type="button" 
+                onClick={() => setCaPortfolio({...caPortfolio, gmcsCompleted: 'No'})} 
+                className={`flex-1 text-sm py-1.5 rounded-lg font-medium transition-all cursor-pointer ${
+                  caPortfolio.gmcsCompleted === 'No' 
+                    ? 'bg-blue-600 text-white shadow-sm font-semibold' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                No
+              </button>
             </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Industrial Trainee (last 12m)?</label>
             <div className="flex bg-gray-50 rounded-xl p-1 border border-gray-200">
-              <button type="button" onClick={() => setCaPortfolio({...caPortfolio, industrialTrainee: 'Yes'})} className={`flex-1 text-sm py-1.5 rounded-lg font-medium transition-all ${caPortfolio.industrialTrainee === 'Yes' ? 'bg-white shadow-sm text-primary border border-gray-100' : 'text-gray-500 hover:text-gray-700'}`}>Yes</button>
-              <button type="button" onClick={() => setCaPortfolio({...caPortfolio, industrialTrainee: 'No'})} className={`flex-1 text-sm py-1.5 rounded-lg font-medium transition-all ${caPortfolio.industrialTrainee === 'No' ? 'bg-white shadow-sm text-primary border border-gray-100' : 'text-gray-500 hover:text-gray-700'}`}>No</button>
+              <button 
+                type="button" 
+                onClick={() => setCaPortfolio({...caPortfolio, industrialTrainee: 'Yes'})} 
+                className={`flex-1 text-sm py-1.5 rounded-lg font-medium transition-all cursor-pointer ${
+                  caPortfolio.industrialTrainee === 'Yes' 
+                    ? 'bg-blue-600 text-white shadow-sm font-semibold' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Yes
+              </button>
+              <button 
+                type="button" 
+                onClick={() => setCaPortfolio({...caPortfolio, industrialTrainee: 'No'})} 
+                className={`flex-1 text-sm py-1.5 rounded-lg font-medium transition-all cursor-pointer ${
+                  caPortfolio.industrialTrainee === 'No' 
+                    ? 'bg-blue-600 text-white shadow-sm font-semibold' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                No
+              </button>
             </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Done Listed Company Work?</label>
             <div className="flex bg-gray-50 rounded-xl p-1 border border-gray-200">
-              <button type="button" onClick={() => setCaPortfolio({...caPortfolio, listedCompanyWork: 'Yes'})} className={`flex-1 text-sm py-1.5 rounded-lg font-medium transition-all ${caPortfolio.listedCompanyWork === 'Yes' ? 'bg-white shadow-sm text-primary border border-gray-100' : 'text-gray-500 hover:text-gray-700'}`}>Yes</button>
-              <button type="button" onClick={() => setCaPortfolio({...caPortfolio, listedCompanyWork: 'No'})} className={`flex-1 text-sm py-1.5 rounded-lg font-medium transition-all ${caPortfolio.listedCompanyWork === 'No' ? 'bg-white shadow-sm text-primary border border-gray-100' : 'text-gray-500 hover:text-gray-700'}`}>No</button>
+              <button 
+                type="button" 
+                onClick={() => setCaPortfolio({...caPortfolio, listedCompanyWork: 'Yes'})} 
+                className={`flex-1 text-sm py-1.5 rounded-lg font-medium transition-all cursor-pointer ${
+                  caPortfolio.listedCompanyWork === 'Yes' 
+                    ? 'bg-blue-600 text-white shadow-sm font-semibold' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Yes
+              </button>
+              <button 
+                type="button" 
+                onClick={() => setCaPortfolio({...caPortfolio, listedCompanyWork: 'No'})} 
+                className={`flex-1 text-sm py-1.5 rounded-lg font-medium transition-all cursor-pointer ${
+                  caPortfolio.listedCompanyWork === 'No' 
+                    ? 'bg-blue-600 text-white shadow-sm font-semibold' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                No
+              </button>
             </div>
           </div>
         </div>

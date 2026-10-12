@@ -237,7 +237,14 @@ export default function ProfileScreen({ navigation }: any) {
     }
   };
 
-  const isExperienced = Boolean((experienceInfo as any)?.isExperienced ?? user?.experienceInfo?.isExperienced);
+  const isExperienced = Boolean(
+    (experienceInfo as any)?.isExperienced ||
+    user?.experienceInfo?.isExperienced ||
+    user?.caPortfolio?.isFresherCA === false ||
+    (caPortfolio as any)?.isFresherCA === false ||
+    (experienceInfo as any)?.currentCompanyName ||
+    user?.experienceInfo?.currentCompanyName
+  );
   const steps = isExperienced
     ? ['Personal Details', 'CA Qualification', 'Education & Experience', 'Review']
     : ['Personal Details', 'CA Qualification', 'Articleship', 'Education Qualifications', 'Review'];

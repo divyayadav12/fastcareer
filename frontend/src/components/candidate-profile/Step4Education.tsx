@@ -88,15 +88,55 @@ export const Step4Education = ({ qualifications, setQualifications }: any) => {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Whether Completed</label>
             <div className="flex bg-gray-50 rounded-xl p-1 border border-gray-200">
-              <button type="button" onClick={() => setQualifications({...qualifications, graduation: {...qualifications.graduation, completed: 'Yes'}})} className={`flex-1 text-sm py-1.5 rounded-lg font-medium transition-all ${qualifications.graduation.completed === 'Yes' ? 'bg-white shadow-sm text-primary border border-gray-100' : 'text-gray-500 hover:text-gray-700'}`}>Yes</button>
-              <button type="button" onClick={() => setQualifications({...qualifications, graduation: {...qualifications.graduation, completed: 'No/Pursuing'}})} className={`flex-1 text-sm py-1.5 rounded-lg font-medium transition-all ${qualifications.graduation.completed === 'No/Pursuing' ? 'bg-white shadow-sm text-primary border border-gray-100' : 'text-gray-500 hover:text-gray-700'}`}>No / Pursuing</button>
+              <button 
+                type="button" 
+                onClick={() => setQualifications({...qualifications, graduation: {...qualifications.graduation, completed: 'Yes'}})} 
+                className={`flex-1 text-sm py-1.5 rounded-lg font-medium transition-all cursor-pointer ${
+                  qualifications.graduation.completed === 'Yes' 
+                    ? 'bg-blue-600 text-white shadow-sm font-semibold' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Yes
+              </button>
+              <button 
+                type="button" 
+                onClick={() => setQualifications({...qualifications, graduation: {...qualifications.graduation, completed: 'No/Pursuing'}})} 
+                className={`flex-1 text-sm py-1.5 rounded-lg font-medium transition-all cursor-pointer ${
+                  qualifications.graduation.completed === 'No/Pursuing' 
+                    ? 'bg-blue-600 text-white shadow-sm font-semibold' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                No / Pursuing
+              </button>
             </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
             <div className="flex bg-gray-50 rounded-xl p-1 border border-gray-200">
-              <button type="button" onClick={() => setQualifications({...qualifications, graduation: {...qualifications.graduation, type: 'REGULAR'}})} className={`flex-1 text-sm py-1.5 rounded-lg font-medium transition-all ${qualifications.graduation.type === 'REGULAR' ? 'bg-white shadow-sm text-primary border border-gray-100' : 'text-gray-500 hover:text-gray-700'}`}>Regular</button>
-              <button type="button" onClick={() => setQualifications({...qualifications, graduation: {...qualifications.graduation, type: 'CORRESPONDENCE'}})} className={`flex-1 text-sm py-1.5 rounded-lg font-medium transition-all ${qualifications.graduation.type === 'CORRESPONDENCE' ? 'bg-white shadow-sm text-primary border border-gray-100' : 'text-gray-500 hover:text-gray-700'}`}>Correspondence</button>
+              <button 
+                type="button" 
+                onClick={() => setQualifications({...qualifications, graduation: {...qualifications.graduation, type: 'REGULAR'}})} 
+                className={`flex-1 text-sm py-1.5 rounded-lg font-medium transition-all cursor-pointer ${
+                  qualifications.graduation.type === 'REGULAR' 
+                    ? 'bg-blue-600 text-white shadow-sm font-semibold' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Regular
+              </button>
+              <button 
+                type="button" 
+                onClick={() => setQualifications({...qualifications, graduation: {...qualifications.graduation, type: 'CORRESPONDENCE'}})} 
+                className={`flex-1 text-sm py-1.5 rounded-lg font-medium transition-all cursor-pointer ${
+                  qualifications.graduation.type === 'CORRESPONDENCE' 
+                    ? 'bg-blue-600 text-white shadow-sm font-semibold' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Correspondence
+              </button>
             </div>
           </div>
         </div>

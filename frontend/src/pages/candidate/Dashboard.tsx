@@ -89,11 +89,40 @@ export const CandidateDashboard = () => {
         }
         setPersonal(prev => ({ ...prev, ...pd }));
       }
-      if (user.phone) setPersonal(prev => ({ ...prev, phone: user.phone }));
+    if (user.phone) setPersonal(prev => ({ ...prev, phone: user.phone }));
     if (user.caPortfolio) setCaPortfolio(prev => ({ ...prev, ...user.caPortfolio }));
     if (user.qualifications) setQualifications(prev => ({ ...prev, ...user.qualifications }));
     if (user.experienceInfo) setExperienceInfo(prev => ({ ...prev, ...user.experienceInfo }));
 
+    // Fetch fresh profile from backend to ensure latest DB experience data
+    const fetchFreshProfile = async () => {
+      try {
+        const res = await api.get('/users/profile');
+        if (res.data) {
+          const freshUser = res.data;
+          if (freshUser.resumeUrl) setResumeUrl(freshUser.resumeUrl);
+          if (freshUser.personalDetails) {
+            let pd = { ...freshUser.personalDetails };
+            if (pd.currentCity && !pd.currentState) {
+              for (const [state, cities] of Object.entries(STATE_CITY_MAP)) {
+                if (cities.includes(pd.currentCity)) {
+                  pd.currentState = state;
+                  break;
+                }
+              }
+            }
+            setPersonal(prev => ({ ...prev, ...pd }));
+          }
+          if (freshUser.phone) setPersonal(prev => ({ ...prev, phone: freshUser.phone }));
+          if (freshUser.caPortfolio) setCaPortfolio(prev => ({ ...prev, ...freshUser.caPortfolio }));
+          if (freshUser.qualifications) setQualifications(prev => ({ ...prev, ...freshUser.qualifications }));
+          if (freshUser.experienceInfo) setExperienceInfo(prev => ({ ...prev, ...freshUser.experienceInfo }));
+        }
+      } catch (err) {
+        console.error('Error fetching user profile:', err);
+      }
+    };
+    fetchFreshProfile();
   }, [user, navigate]);
 
   const applyParsedDataToProfile = (parsed: ParsedResumeData) => {
@@ -375,7 +404,14 @@ export const CandidateDashboard = () => {
     }
   };
 
-  const isExperienced = Boolean(experienceInfo.isExperienced);
+  const isExperienced = Boolean(
+    experienceInfo.isExperienced ||
+    user?.experienceInfo?.isExperienced ||
+    user?.caPortfolio?.isFresherCA === false ||
+    caPortfolio?.isFresherCA === false ||
+    Boolean(experienceInfo.currentCompanyName) ||
+    Boolean(user?.experienceInfo?.currentCompanyName)
+  );
 
   const steps = isExperienced
     ? ['Personal Details', 'Education Qualifications', 'Work Experience', 'Review & Submit']

@@ -109,7 +109,7 @@ export const Step3Articleship = ({ caPortfolio, setCaPortfolio }: any) => {
       ))}
 
       <TouchableOpacity style={styles.addButton} onPress={addFirm}>
-        <Text style={styles.addButtonText}>+ Add another firm / training</Text>
+        <Text style={styles.addButtonText}>+ Add another articleship / training</Text>
       </TouchableOpacity>
 
       <View style={styles.summaryCard}>
