@@ -53,8 +53,6 @@ const DOB_MONTHS = [
 ];
 // Adult birth years from 2008 down to 1965
 const DOB_YEARS = Array.from({ length: 44 }, (_, i) => String(2008 - i));
-// Quick 20+ years back jump options
-const QUICK_DOB_YEARS = ['2004', '2003', '2002', '2001', '2000', '1999', '1998', '1997', '1996', '1995', '1994', '1992', '1990'];
 
 export const Register = () => {
   const [firstName, setFirstName] = useState('');
@@ -103,15 +101,6 @@ export const Register = () => {
     }
   };
 
-  const handleQuickYearJump = (year: string) => {
-    setDobYear(year);
-    const nextDay = dobDay || '01';
-    const nextMonth = dobMonth || '01';
-    setDobDay(nextDay);
-    setDobMonth(nextMonth);
-    setDateOfBirth(`${year}-${nextMonth}-${nextDay}`);
-    if (fieldErrors.dateOfBirth) setFieldErrors(prev => ({ ...prev, dateOfBirth: '' }));
-  };
   const [currentCity, setCurrentCity] = useState('');
   const [workStatus, setWorkStatus] = useState<'fresher' | 'experienced'>('experienced');
   const [experienceYears, setExperienceYears] = useState('1-2 Years');
@@ -977,39 +966,9 @@ export const Register = () => {
 
                   {role === 'candidate' ? (
                     <div>
-                      <div className="flex flex-wrap items-center justify-between gap-1 mb-1.5">
-                        <label className="block text-xs font-semibold text-slate-700">
-                          Date of Birth <span className="text-red-500">*</span>
-                        </label>
-                        <span className="text-[10.5px] font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200/60 flex items-center gap-1">
-                          <Zap size={11} className="text-blue-600 fill-blue-600" />
-                          <span>1-Click 20+ Yrs Jump</span>
-                        </span>
-                      </div>
-
-                      {/* 1-Click Quick Year Jump Buttons */}
-                      <div className="bg-slate-50/90 p-2 rounded-xl border border-slate-200/80 mb-2">
-                        <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 flex items-center justify-between">
-                          <span>Quick Year Jump:</span>
-                          <span className="text-slate-400 font-normal text-[10px]">Jump 20+ yrs back in 1 click</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
-                          {QUICK_DOB_YEARS.map(yr => (
-                            <button
-                              key={yr}
-                              type="button"
-                              onClick={() => handleQuickYearJump(yr)}
-                              className={`px-2.5 py-1 text-xs font-bold rounded-lg border transition-all shrink-0 cursor-pointer ${
-                                dobYear === yr
-                                  ? 'bg-blue-600 text-white border-blue-600 shadow-sm scale-105'
-                                  : 'bg-white hover:bg-blue-50 text-slate-700 border-slate-200 hover:border-blue-400 shadow-2xs'
-                              }`}
-                            >
-                              {yr}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        Date of Birth <span className="text-red-500">*</span>
+                      </label>
 
                       {/* 3 Dropdowns: Day, Month, Year */}
                       <div className="grid grid-cols-3 gap-2">
