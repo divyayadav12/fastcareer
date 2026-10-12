@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { AdminLayout } from '../../layouts/AdminLayout';
 import { 
   Users, Building2, Download, MapPin, GraduationCap, 
-  FileText, Search, PlusCircle, X, Building, Mail, User, UserCheck
+  FileText, Search, PlusCircle, X, Building, Mail, User, UserCheck, FileSpreadsheet
 } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
@@ -14,6 +14,7 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { getResumeUrl } from '../../utils/urlHelper';
 import { fetchCandidateResumeBlob, viewCandidateResume } from '../../utils/clientPdfGenerator';
+import { formatCandidateForExcel, downloadCandidatesExcel } from '../../utils/excelExportHelper';
 
 interface Candidate {
   _id: string;
@@ -149,23 +150,13 @@ export const AdminDashboard = () => {
     try {
       const zip = new JSZip();
       
-      const excelData = filteredCandidates.map(candidate => ({
-        'First Name': candidate.firstName,
-        'Last Name': candidate.lastName,
-        'Email': candidate.email,
-        'Registered On': new Date(candidate.createdAt).toLocaleDateString(),
-        'Location': candidate.personalDetails?.currentCity ? `${candidate.personalDetails.currentCity}, ${candidate.personalDetails.currentState || ''}` : 'Not provided',
-        'Education': candidate.qualifications?.graduation?.collegeName 
-                      ? `${candidate.qualifications.graduation.courseName || 'Graduation'} from ${candidate.qualifications.graduation.collegeName} (${candidate.qualifications.graduation.yearOfCompletion})` 
-                      : 'Not provided',
-        'Resume Link': candidate.resumeUrl ? getResumeUrl(candidate.resumeUrl) : 'Not uploaded'
-      }));
+      const excelData = filteredCandidates.map(formatCandidateForExcel);
 
       const worksheet = XLSX.utils.json_to_sheet(excelData);
       const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Candidates");
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Candidates Database");
       const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-      zip.file("Candidates_List.xlsx", excelBuffer);
+      zip.file("Candidates_Full_Data.xlsx", excelBuffer);
 
       const resumesFolder = zip.folder("Resumes");
       if (resumesFolder) {
@@ -191,6 +182,20 @@ export const AdminDashboard = () => {
       toast.error('Failed to generate bulk download.');
     } finally {
       setDownloading(false);
+    }
+  };
+
+  const handleExportExcel = () => {
+    if (filteredCandidates.length === 0) {
+      toast.error('No candidates available to export.');
+      return;
+    }
+    try {
+      downloadCandidatesExcel(filteredCandidates, 'Candidates_Complete_Data');
+      toast.success('Excel spreadsheet downloaded with all candidate fields!');
+    } catch (error) {
+      console.error('Error exporting Excel:', error);
+      toast.error('Failed to export Excel.');
     }
   };
 
@@ -230,10 +235,18 @@ export const AdminDashboard = () => {
           )}
 
           <button 
+            onClick={handleExportExcel}
+            className="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-xs transition-colors cursor-pointer"
+            title="Download Excel spreadsheet with all candidate details"
+          >
+            <FileSpreadsheet size={16} /> Export Excel
+          </button>
+
+          <button 
             onClick={handleBulkDownload}
             disabled={downloading}
             className={`flex-1 md:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
-              downloading ? 'bg-gray-400 text-white cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer'
+              downloading ? 'bg-gray-400 text-white cursor-not-allowed' : 'bg-slate-800 hover:bg-slate-900 text-white shadow-xs cursor-pointer'
             }`}
           >
             <Download size={16} /> {downloading ? 'Generating ZIP...' : 'Export ZIP'}

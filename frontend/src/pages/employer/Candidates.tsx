@@ -12,6 +12,7 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { STATES, STATE_CITY_MAP, ALL_CITIES } from '../../utils/constants';
 import { DatePicker } from '../../components/DatePicker';
+import { downloadCandidatesExcel } from '../../utils/excelExportHelper';
 
 interface Candidate {
   _id: string;
@@ -240,61 +241,20 @@ export const EmployerCandidates = () => {
   };
 
   const exportToCSV = () => {
-    if (filteredCandidates.length === 0) return;
+    if (filteredCandidates.length === 0) {
+      toast.error('No candidates available to export.');
+      return;
+    }
     setIsExporting(true);
-    
-    // Create CSV Header
-    const headers = ['First Name', 'Last Name', 'Email', 'Gender', 'Marital Status', 'State', 'City', 'Graduation Completed', 'Graduation Type', 'Graduation Course', 'Experienced', 'Experience Years', 'Current Company', 'Current CTC', 'Expected CTC', 'Current Designation', 'Work Profile', 'Fresher CA', 'CA Inter 1st Att. Both', 'CA Inter Grp1', 'CA Inter Grp2', 'CA Inter Ranker', 'CA Final 1st Att. Both', 'CA Final Grp1', 'CA Final Grp2', 'CA Final Ranker', 'Articleship Firm', 'Big4 Articleship', 'GMCS', 'Industrial Trainee', 'Listed Company', 'Resume Link'];
-    
-    // Create rows
-    const rows = filteredCandidates.map(c => {
-      const gender = c.personalDetails?.gender || 'N/A';
-      const maritalStatus = c.personalDetails?.maritalStatus || 'N/A';
-      const city = c.personalDetails?.currentCity || 'N/A';
-      const state = c.personalDetails?.currentState || 'N/A';
-      
-      const gradComp = c.qualifications?.graduation?.completed || 'N/A';
-      const gradType = c.qualifications?.graduation?.type || 'N/A';
-      const grad = c.qualifications?.graduation?.courseName || 'N/A';
-      
-      const expInfo = c.experienceInfo || {};
-      const isExperienced = expInfo.isExperienced ? 'Yes' : 'No';
-      const expYears = expInfo.experienceYears || 'N/A';
-      const currCompany = expInfo.currentCompanyName || 'N/A';
-      const currCTC = expInfo.currentCTC || 'N/A';
-      const expCTC = expInfo.expectedCTC || 'N/A';
-      const currDesig = expInfo.currentDesignation || 'N/A';
-      const workProf = expInfo.workProfile || 'N/A';
-
-      const isFresher = c.caPortfolio?.isFresherCA ? 'Yes' : 'No';
-      const inter1st = c.caPortfolio?.caInter?.bothGroups1stAttempt ? 'Yes' : 'No';
-      const interG1 = c.caPortfolio?.caInter?.group1Attempts || 'N/A';
-      const interG2 = c.caPortfolio?.caInter?.group2Attempts || 'N/A';
-      const interRanker = c.caPortfolio?.caInter?.ranker || 'N/A';
-      
-      const final1st = c.caPortfolio?.caFinal?.bothGroups1stAttempt ? 'Yes' : 'No';
-      const finalG1 = c.caPortfolio?.caFinal?.group1Attempts || 'N/A';
-      const finalG2 = c.caPortfolio?.caFinal?.group2Attempts || 'N/A';
-      const finalRanker = c.caPortfolio?.caFinal?.ranker || 'N/A';
-      
-      const firm = c.caPortfolio?.articleships?.[0]?.firmType || 'N/A';
-      const big4 = (c.caPortfolio?.big4Articleship && c.caPortfolio.big4Articleship !== 'No' && c.caPortfolio.big4Articleship !== 'none' && c.caPortfolio.big4Articleship !== '') ? 'Yes' : 'No';
-      const gmcs = c.caPortfolio?.gmcsCompleted || 'N/A';
-      const indTrainee = c.caPortfolio?.industrialTrainee || 'N/A';
-      const listed = c.caPortfolio?.listedCompanyWork || 'N/A';
-
-      const resume = c.resumeUrl ? getResumeUrl(c.resumeUrl) : 'No Resume';
-      
-      return [c.firstName, c.lastName, c.email, gender, maritalStatus, state, city, gradComp, gradType, grad, isExperienced, expYears, currCompany, currCTC, expCTC, currDesig, workProf, isFresher, inter1st, interG1, interG2, interRanker, final1st, finalG1, finalG2, finalRanker, firm, big4, gmcs, indTrainee, listed, resume]
-        .map(field => `"${String(field).replace(/"/g, '""')}"`) // Escape quotes
-        .join(',');
-    });
-
-    const csvContent = [headers.join(','), ...rows].join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    saveAs(blob, `candidates_export_${new Date().toISOString().split('T')[0]}.csv`);
-    
-    setIsExporting(false);
+    try {
+      downloadCandidatesExcel(filteredCandidates, 'Candidates_Complete_Data');
+      toast.success(`Successfully exported ${filteredCandidates.length} candidates with all fields!`);
+    } catch (err) {
+      console.error('Error exporting candidates Excel:', err);
+      toast.error('Failed to export candidates Excel.');
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const candidatesWithResumes = filteredCandidates.filter(candidateHasResume);
