@@ -169,7 +169,7 @@ export const Register = () => {
   const checkEmailUnique = async (emailVal: string) => {
     const trimmed = emailVal.toLowerCase().trim();
     if (!trimmed) {
-      setFieldErrors(prev => ({ ...prev, email: 'Work / Personal Email is required.' }));
+      setFieldErrors(prev => ({ ...prev, email: 'Please fill this field: Work / Personal Email' }));
       return false;
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -366,52 +366,58 @@ export const Register = () => {
     const newErrors: { [key: string]: string } = {};
 
     if (!firstName.trim()) {
-      newErrors.firstName = 'First Name is required.';
+      newErrors.firstName = 'Please fill this field: First Name';
     }
 
     if (!lastName.trim()) {
-      newErrors.lastName = 'Last Name is required.';
+      newErrors.lastName = 'Please fill this field: Last Name';
     }
 
     const trimmedEmail = email.toLowerCase().trim();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!trimmedEmail) {
-      newErrors.email = 'Work / Personal Email is required.';
+      newErrors.email = 'Please fill this field: Work / Personal Email';
     } else if (!emailRegex.test(trimmedEmail)) {
       newErrors.email = 'Please enter a valid email address (e.g. rahul@ca.org.in).';
     }
 
     if (!password) {
-      newErrors.password = 'Create Password is required.';
+      newErrors.password = 'Please fill this field: Create Password';
     } else if (password.length < 6) {
       newErrors.password = 'Password must be at least 6 characters.';
     }
 
     if (role === 'candidate') {
       const cleanPhone = phone.replace(/\D/g, '');
-      if (!cleanPhone || cleanPhone.length !== 10) {
+      if (!cleanPhone) {
+        newErrors.phone = 'Please fill this field: Mobile Number';
+      } else if (cleanPhone.length !== 10) {
         newErrors.phone = 'Please enter a valid 10-digit mobile number.';
       }
 
       if (!dateOfBirth) {
-        newErrors.dateOfBirth = 'Date of Birth is required.';
+        newErrors.dateOfBirth = 'Please fill this field: Date of Birth';
       }
 
       if (!currentCity.trim()) {
-        newErrors.currentCity = 'Current Location / City is required.';
+        newErrors.currentCity = 'Please fill this field: Current Location';
       }
 
       if (workStatus === 'experienced') {
         if (!experienceYears) {
-          newErrors.experienceYears = 'Total Work Experience is required for experienced candidates.';
+          newErrors.experienceYears = 'Please fill this field: Total Work Experience';
         }
         if (!caFinalCompletionYear) {
-          newErrors.caFinalCompletionYear = 'CA Final completion year is required for experienced candidates.';
+          newErrors.caFinalCompletionYear = 'Please fill this field: Which CA Final Year Completed?';
         }
       }
 
       if (!resumeFile) {
-        newErrors.resumeFile = 'Please upload your Resume / CV (PDF or DOCX).';
+        newErrors.resumeFile = 'Please fill this field: Upload Resume / CV (PDF or DOCX)';
+      }
+    } else {
+      if (!currentCity.trim()) {
+        newErrors.currentCity = 'Please fill this field: Current Location';
       }
     }
 
@@ -628,7 +634,7 @@ export const Register = () => {
               )}
 
               {/* Registration Form */}
-              <form className="space-y-4" onSubmit={handleSubmit}>
+              <form className="space-y-4" onSubmit={handleSubmit} noValidate>
                 
                 {formError && (
                   <div className="p-3.5 bg-rose-50 border border-rose-200/90 rounded-2xl flex items-start gap-3 text-rose-800 text-sm shadow-2xs animate-in fade-in slide-in-from-top-2 duration-200">
@@ -654,6 +660,11 @@ export const Register = () => {
                       onChange={(e) => {
                         setFirstName(e.target.value);
                         if (fieldErrors.firstName) setFieldErrors(prev => ({ ...prev, firstName: '' }));
+                      }}
+                      onBlur={() => {
+                        if (!firstName.trim()) {
+                          setFieldErrors(prev => ({ ...prev, firstName: 'Please fill this field: First Name' }));
+                        }
                       }}
                       placeholder="e.g. Rahul"
                       className={`w-full px-3.5 py-2.5 border rounded-xl text-sm focus:outline-none transition-all ${
@@ -681,6 +692,11 @@ export const Register = () => {
                       onChange={(e) => {
                         setLastName(e.target.value);
                         if (fieldErrors.lastName) setFieldErrors(prev => ({ ...prev, lastName: '' }));
+                      }}
+                      onBlur={() => {
+                        if (!lastName.trim()) {
+                          setFieldErrors(prev => ({ ...prev, lastName: 'Please fill this field: Last Name' }));
+                        }
                       }}
                       placeholder="e.g. Verma"
                       className={`w-full px-3.5 py-2.5 border rounded-xl text-sm focus:outline-none transition-all ${
@@ -756,6 +772,14 @@ export const Register = () => {
                           setPhone(e.target.value.replace(/\D/g, ''));
                           if (fieldErrors.phone) setFieldErrors(prev => ({ ...prev, phone: '' }));
                         }}
+                        onBlur={() => {
+                          const clean = phone.replace(/\D/g, '');
+                          if (!clean) {
+                            setFieldErrors(prev => ({ ...prev, phone: 'Please fill this field: Mobile Number' }));
+                          } else if (clean.length !== 10) {
+                            setFieldErrors(prev => ({ ...prev, phone: 'Please enter a valid 10-digit mobile number.' }));
+                          }
+                        }}
                         placeholder="98765 43210"
                         maxLength={10}
                         className={`w-full px-3.5 py-2.5 border rounded-r-xl text-sm focus:outline-none transition-all ${
@@ -789,6 +813,13 @@ export const Register = () => {
                         onChange={(e) => {
                           setPassword(e.target.value);
                           if (fieldErrors.password) setFieldErrors(prev => ({ ...prev, password: '' }));
+                        }}
+                        onBlur={() => {
+                          if (!password) {
+                            setFieldErrors(prev => ({ ...prev, password: 'Please fill this field: Create Password' }));
+                          } else if (password.length < 6) {
+                            setFieldErrors(prev => ({ ...prev, password: 'Password must be at least 6 characters.' }));
+                          }
                         }}
                         placeholder="Min. 8 characters"
                         minLength={6}
@@ -829,6 +860,11 @@ export const Register = () => {
                           setDateOfBirth(e.target.value);
                           if (fieldErrors.dateOfBirth) setFieldErrors(prev => ({ ...prev, dateOfBirth: '' }));
                         }}
+                        onBlur={() => {
+                          if (!dateOfBirth) {
+                            setFieldErrors(prev => ({ ...prev, dateOfBirth: 'Please fill this field: Date of Birth' }));
+                          }
+                        }}
                         max={new Date().toISOString().split('T')[0]}
                         className={`w-full px-3.5 py-2.5 border rounded-xl text-sm focus:outline-none transition-all bg-white text-slate-900 cursor-pointer ${
                           fieldErrors.dateOfBirth
@@ -850,12 +886,17 @@ export const Register = () => {
                         Current Location *
                       </label>
                       <div
+                        id="employerCurrentCity"
                         onClick={() => {
                           setCityDropdownOpen(prev => !prev);
                           setTimeout(() => cityInputRef.current?.focus(), 100);
                         }}
                         className={`w-full px-3.5 py-2.5 border rounded-xl flex items-center justify-between cursor-pointer bg-white transition-all shadow-2xs ${
-                          cityDropdownOpen ? 'border-primary ring-2 ring-primary/20' : 'border-slate-200 hover:border-slate-300'
+                          fieldErrors.currentCity
+                            ? 'border-rose-500 ring-2 ring-rose-500/20 bg-rose-50/20'
+                            : cityDropdownOpen
+                            ? 'border-primary ring-2 ring-primary/20'
+                            : 'border-slate-200 hover:border-slate-300'
                         }`}
                       >
                         <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -882,11 +923,16 @@ export const Register = () => {
                           <ChevronDown size={16} className={`text-slate-400 transition-transform duration-200 ${cityDropdownOpen ? 'rotate-180 text-primary' : ''}`} />
                         </div>
                       </div>
+                      {fieldErrors.currentCity && (
+                        <p className="mt-1 text-xs font-semibold text-rose-600 flex items-center gap-1 animate-in fade-in slide-in-from-top-1">
+                          <AlertCircle size={13} className="shrink-0 text-rose-600" />
+                          <span>{fieldErrors.currentCity}</span>
+                        </p>
+                      )}
                       <input
                         type="text"
                         tabIndex={-1}
                         value={currentCity}
-                        required
                         onChange={() => {}}
                         className="opacity-0 absolute inset-x-0 bottom-0 h-0 pointer-events-none"
                       />
@@ -905,6 +951,7 @@ export const Register = () => {
 
                       {/* Trigger Box */}
                       <div
+                        id="currentCity"
                         onClick={() => {
                           setCityDropdownOpen(prev => !prev);
                           setTimeout(() => cityInputRef.current?.focus(), 100);
@@ -997,6 +1044,7 @@ export const Register = () => {
                                     type="button"
                                     onClick={() => {
                                       setCurrentCity(city);
+                                      if (fieldErrors.currentCity) setFieldErrors(prev => ({ ...prev, currentCity: '' }));
                                       setCityDropdownOpen(false);
                                       setCitySearchQuery('');
                                     }}
@@ -1028,6 +1076,7 @@ export const Register = () => {
                                   type="button"
                                   onClick={() => {
                                     setCurrentCity(city);
+                                    if (fieldErrors.currentCity) setFieldErrors(prev => ({ ...prev, currentCity: '' }));
                                     setCityDropdownOpen(false);
                                     setCitySearchQuery('');
                                   }}
@@ -1049,6 +1098,7 @@ export const Register = () => {
                                   type="button"
                                   onClick={() => {
                                     setCurrentCity(citySearchQuery.trim());
+                                    if (fieldErrors.currentCity) setFieldErrors(prev => ({ ...prev, currentCity: '' }));
                                     setCityDropdownOpen(false);
                                     setCitySearchQuery('');
                                   }}
@@ -1129,7 +1179,15 @@ export const Register = () => {
 
                         {/* Fresher Card */}
                         <div
-                          onClick={() => setWorkStatus('fresher')}
+                          onClick={() => {
+                            setWorkStatus('fresher');
+                            setFieldErrors(prev => {
+                              const copy = { ...prev };
+                              delete copy.caFinalCompletionYear;
+                              delete copy.experienceYears;
+                              return copy;
+                            });
+                          }}
                           className={`border rounded-2xl p-3.5 cursor-pointer flex items-center justify-between transition-all ${
                             workStatus === 'fresher'
                               ? 'border-blue-600 bg-blue-50/40 ring-1 ring-blue-600/30 shadow-xs'
@@ -1188,6 +1246,11 @@ export const Register = () => {
                                   setCaFinal(prev => ({ ...prev, completionSessionYear: e.target.value }));
                                   if (fieldErrors.caFinalCompletionYear) setFieldErrors(prev => ({ ...prev, caFinalCompletionYear: '' }));
                                 }}
+                                onBlur={() => {
+                                  if (workStatus === 'experienced' && !caFinalCompletionYear) {
+                                    setFieldErrors(prev => ({ ...prev, caFinalCompletionYear: 'Please fill this field: Which CA Final Year Completed?' }));
+                                  }
+                                }}
                                 className={`w-full px-3.5 py-2.5 border rounded-xl text-sm focus:outline-none bg-white font-medium cursor-pointer transition-all ${
                                   fieldErrors.caFinalCompletionYear
                                     ? 'border-rose-500 ring-2 ring-rose-500/20 bg-rose-50/20'
@@ -1220,6 +1283,11 @@ export const Register = () => {
                                 onChange={(e) => {
                                   setExperienceYears(e.target.value);
                                   if (fieldErrors.experienceYears) setFieldErrors(prev => ({ ...prev, experienceYears: '' }));
+                                }}
+                                onBlur={() => {
+                                  if (workStatus === 'experienced' && !experienceYears) {
+                                    setFieldErrors(prev => ({ ...prev, experienceYears: 'Please fill this field: Total Work Experience' }));
+                                  }
                                 }}
                                 className={`w-full px-3.5 py-2.5 border rounded-xl text-sm focus:outline-none bg-white font-medium cursor-pointer transition-all ${
                                   fieldErrors.experienceYears

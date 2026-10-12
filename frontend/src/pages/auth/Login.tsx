@@ -54,15 +54,26 @@ export const Login = () => {
     dispatch(reset());
   }, [user, isError, isSuccess, message, navigate, dispatch]);
 
+  const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError('');
-    if (!email.trim() || !password) {
-      const err = 'Please enter both email and password.';
-      setFormError(err);
-      toast.error(err);
+    const newErrors: { [key: string]: string } = {};
+
+    if (!email.trim()) {
+      newErrors.email = 'Please fill this field: Email address';
+    }
+    if (!password) {
+      newErrors.password = 'Please fill this field: Password';
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setFieldErrors(newErrors);
       return;
     }
+
+    setFieldErrors({});
     const userData = {
       email: email.trim(),
       password,
@@ -229,7 +240,7 @@ export const Login = () => {
               {/* Removed Role Switcher Tabs - Login is unified */}
   
               {/* Form */}
-              <form className="space-y-4" onSubmit={handleSubmit}>
+              <form className="space-y-4" onSubmit={handleSubmit} noValidate>
                 
                 {formError && (
                   <div className="p-3.5 bg-rose-50 border border-rose-200/90 rounded-2xl flex items-start gap-3 text-rose-800 text-sm shadow-2xs animate-in fade-in slide-in-from-top-2 duration-200">
@@ -258,10 +269,28 @@ export const Login = () => {
                       required
                       placeholder={activeRole === 'candidate' ? 'e.g. rahul@ca.org.in' : 'e.g. hr@company.com'}
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full pl-10 pr-3.5 py-2.5 bg-slate-50/60 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        if (fieldErrors.email) setFieldErrors(prev => ({ ...prev, email: '' }));
+                      }}
+                      onBlur={() => {
+                        if (!email.trim()) {
+                          setFieldErrors(prev => ({ ...prev, email: 'Please fill this field: Email address' }));
+                        }
+                      }}
+                      className={`w-full pl-10 pr-3.5 py-2.5 bg-slate-50/60 border rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none transition-all ${
+                        fieldErrors.email
+                          ? 'border-rose-500 ring-2 ring-rose-500/20 bg-rose-50/20 focus:border-rose-600'
+                          : 'border-slate-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500'
+                      }`}
                     />
                   </div>
+                  {fieldErrors.email && (
+                    <p className="mt-1 text-xs font-semibold text-rose-600 flex items-center gap-1 animate-in fade-in slide-in-from-top-1">
+                      <AlertCircle size={13} className="shrink-0 text-rose-600" />
+                      <span>{fieldErrors.email}</span>
+                    </p>
+                  )}
                 </div>
 
                 {/* Password input */}
@@ -283,8 +312,20 @@ export const Login = () => {
                       required
                       placeholder="••••••••"
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="w-full pl-10 pr-10 py-2.5 bg-slate-50/60 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        if (fieldErrors.password) setFieldErrors(prev => ({ ...prev, password: '' }));
+                      }}
+                      onBlur={() => {
+                        if (!password) {
+                          setFieldErrors(prev => ({ ...prev, password: 'Please fill this field: Password' }));
+                        }
+                      }}
+                      className={`w-full pl-10 pr-10 py-2.5 bg-slate-50/60 border rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none transition-all ${
+                        fieldErrors.password
+                          ? 'border-rose-500 ring-2 ring-rose-500/20 bg-rose-50/20 focus:border-rose-600'
+                          : 'border-slate-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500'
+                      }`}
                     />
                     <button
                       type="button"
@@ -294,6 +335,12 @@ export const Login = () => {
                       {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
                   </div>
+                  {fieldErrors.password && (
+                    <p className="mt-1 text-xs font-semibold text-rose-600 flex items-center gap-1 animate-in fade-in slide-in-from-top-1">
+                      <AlertCircle size={13} className="shrink-0 text-rose-600" />
+                      <span>{fieldErrors.password}</span>
+                    </p>
+                  )}
                 </div>
 
                 {/* Remember me & Forgot Password */}
