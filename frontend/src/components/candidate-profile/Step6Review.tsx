@@ -552,7 +552,7 @@ export const Step6Review: React.FC<Step6ReviewProps> = ({
                   </select>
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Completion Session</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">CA Inter Completion Session</label>
                   <div className="grid grid-cols-2 gap-2">
                     <select
                       disabled={tempCa.caInter.bothGroups1stAttempt}
@@ -687,7 +687,7 @@ export const Step6Review: React.FC<Step6ReviewProps> = ({
                   </select>
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Completion Session</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">CA Final Completion Session</label>
                   <div className="grid grid-cols-2 gap-2">
                     <select
                       disabled={tempCa.caFinal.bothGroups1stAttempt}

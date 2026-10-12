@@ -140,7 +140,7 @@ export const Step2CA = ({ caPortfolio, setCaPortfolio }: any) => {
             </Picker>
           </View>
           
-          <Text style={styles.label}>Completion Session</Text>
+          <Text style={styles.label}>{examKey === 'caFinal' ? 'CA Final Completion Session' : 'CA Inter Completion Session'}</Text>
           <View style={styles.row}>
             <View style={styles.col}>
               <View style={[styles.pickerContainer, data.bothGroups1stAttempt && styles.disabledContainer]}>

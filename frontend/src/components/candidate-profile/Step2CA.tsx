@@ -131,7 +131,9 @@ export const Step2CA = ({ caPortfolio, setCaPortfolio }) => {
             </select>
           </div>
           <div className="col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Completion Session</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {examKey === 'caFinal' ? 'CA Final Completion Session' : 'CA Inter Completion Session'}
+            </label>
             <div className="grid grid-cols-2 gap-3">
               <select disabled={data.bothGroups1stAttempt} value={data.completionSessionMonth} onChange={(e) => handleGroupLogic(examKey, 'completionSessionMonth', e.target.value)} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 disabled:bg-gray-50 disabled:text-gray-400">
                 <option value="">Month</option>

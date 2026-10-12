@@ -949,7 +949,7 @@ export default function RegisterScreen({ navigation }: any) {
               </View>
 
               <View style={{ flex: 2 }}>
-                <Text style={styles.subFieldLabel}>Completion Session *</Text>
+                <Text style={styles.subFieldLabel}>CA Inter Completion Session *</Text>
                 <View style={{ flexDirection: 'row', gap: 4 }}>
                   <TouchableOpacity
                     style={[styles.dropdownBtn, { flex: 1, paddingHorizontal: 6 }, caInter.bothGroups1stAttempt && styles.dropdownDisabled]}
@@ -1098,7 +1098,7 @@ export default function RegisterScreen({ navigation }: any) {
               </View>
 
               <View style={{ flex: 2 }}>
-                <Text style={styles.subFieldLabel}>Completion Session *</Text>
+                <Text style={styles.subFieldLabel}>CA Final Completion Session *</Text>
                 <View style={{ flexDirection: 'row', gap: 4 }}>
                   <TouchableOpacity
                     style={[styles.dropdownBtn, { flex: 1, paddingHorizontal: 6 }, caFinal.bothGroups1stAttempt && styles.dropdownDisabled]}

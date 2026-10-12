@@ -1757,7 +1757,7 @@ export const Register = () => {
                           </select>
                         </div>
                         <div className="sm:col-span-2">
-                          <label className="block text-xs font-semibold text-slate-700 mb-1">Completion Session *</label>
+                          <label className="block text-xs font-semibold text-slate-700 mb-1">CA Inter Completion Session *</label>
                           <div className="grid grid-cols-2 gap-2">
                             <select 
                               disabled={caInter.bothGroups1stAttempt} 
@@ -1916,7 +1916,7 @@ export const Register = () => {
                           </select>
                         </div>
                         <div className="sm:col-span-2">
-                          <label className="block text-xs font-semibold text-slate-700 mb-1">Completion Session *</label>
+                          <label className="block text-xs font-semibold text-slate-700 mb-1">CA Final Completion Session *</label>
                           <div className="grid grid-cols-2 gap-2">
                             <select 
                               disabled={caFinal.bothGroups1stAttempt} 
