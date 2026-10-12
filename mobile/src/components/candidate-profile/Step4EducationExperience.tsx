@@ -163,36 +163,7 @@ export const Step4EducationExperience = ({ qualifications, setQualifications, ex
         </View>
       </View>
 
-      {/* Experience Section */}
-      {experienceInfo?.isExperienced && (
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <Text style={styles.cardTitle}>Corporate Work Experience</Text>
-          </View>
-          
-          <View style={{ marginTop: 8 }}>
-            <Text style={styles.label}>Total Experience (Years/Months)</Text>
-            <TextInput style={styles.input} value={experienceInfo.experienceYears} onChangeText={(val) => setExperienceInfo({...experienceInfo, isExperienced: true, experienceYears: val})} placeholder="e.g. 2.5 years" />
-            
-            <Text style={styles.label}>Current Company</Text>
-            <TextInput style={styles.input} value={experienceInfo.currentCompanyName} onChangeText={(val) => setExperienceInfo({...experienceInfo, isExperienced: true, currentCompanyName: val})} placeholder="Company name" />
-            
-            <Text style={styles.label}>Current Designation</Text>
-            <TextInput style={styles.input} value={experienceInfo.currentDesignation} onChangeText={(val) => setExperienceInfo({...experienceInfo, isExperienced: true, currentDesignation: val})} placeholder="Your role" />
-            
-            <View style={styles.row}>
-              <View style={styles.col}>
-                <Text style={styles.label}>Current CTC</Text>
-                <TextInput style={styles.input} value={experienceInfo.currentCTC} onChangeText={(val) => setExperienceInfo({...experienceInfo, isExperienced: true, currentCTC: val})} placeholder="e.g. 10 LPA" />
-              </View>
-              <View style={styles.col}>
-                <Text style={styles.label}>Expected CTC</Text>
-                <TextInput style={styles.input} value={experienceInfo.expectedCTC} onChangeText={(val) => setExperienceInfo({...experienceInfo, isExperienced: true, expectedCTC: val})} placeholder="e.g. 15 LPA" />
-              </View>
-            </View>
-          </View>
-        </View>
-      )}
+
 
       {/* Preferences Section */}
       <View style={styles.card}>

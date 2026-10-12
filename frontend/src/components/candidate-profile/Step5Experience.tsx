@@ -1,63 +1,12 @@
 import React from 'react';
-import { PREFERRED_CAMPUS_CITIES, ALL_CITIES, YEARS_1970 } from '../../utils/constants';
+import { PREFERRED_CAMPUS_CITIES, ALL_CITIES } from '../../utils/constants';
 
 export const Step5Experience = ({ experienceInfo, setExperienceInfo, personal, setPersonal }) => {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Experience & Preferences</h2>
-        <p className="text-gray-500 text-sm mt-1">Tell us about your work experience and placement preferences.</p>
-      </div>
-
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-        <div className="border-b border-gray-100 pb-4 mb-6">
-          <h3 className="text-lg font-bold text-gray-900">Corporate Work Experience</h3>
-          <p className="text-xs text-gray-500 mt-1">Review or update your current employment, domain and compensation details</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in slide-in-from-top-2 duration-300">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Which CA Final Year Completed? <span className="text-red-500">*</span>
-            </label>
-            <select
-              value={experienceInfo.caFinalCompletionYear || ''}
-              onChange={(e) => setExperienceInfo({...experienceInfo, isExperienced: true, caFinalCompletionYear: e.target.value})}
-              className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 text-sm bg-white cursor-pointer font-medium"
-            >
-              <option value="">-- Select CA Final Year (1970 to Present) --</option>
-              {YEARS_1970.map(y => (
-                <option key={y} value={y}>{y}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Total Experience (Years/Months) <span className="text-red-500">*</span>
-            </label>
-            <input type="text" value={experienceInfo.experienceYears} onChange={(e) => setExperienceInfo({...experienceInfo, isExperienced: true, experienceYears: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 text-sm" placeholder="e.g. 2.5 years" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Current / Most Recent Company</label>
-            <input type="text" value={experienceInfo.currentCompanyName} onChange={(e) => setExperienceInfo({...experienceInfo, isExperienced: true, currentCompanyName: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 text-sm" placeholder="e.g. PwC, Infosys, Deloitte" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Current Designation</label>
-            <input type="text" value={experienceInfo.currentDesignation} onChange={(e) => setExperienceInfo({...experienceInfo, isExperienced: true, currentDesignation: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 text-sm" placeholder="e.g. Senior Associate" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Work Profile / Domain</label>
-            <input type="text" value={experienceInfo.workProfile} onChange={(e) => setExperienceInfo({...experienceInfo, isExperienced: true, workProfile: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 text-sm" placeholder="e.g. Statutory Audit, FP&A" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Current CTC</label>
-            <input type="text" value={experienceInfo.currentCTC} onChange={(e) => setExperienceInfo({...experienceInfo, isExperienced: true, currentCTC: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 text-sm" placeholder="e.g. ₹ 10 LPA" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Expected CTC</label>
-            <input type="text" value={experienceInfo.expectedCTC} onChange={(e) => setExperienceInfo({...experienceInfo, isExperienced: true, expectedCTC: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 text-sm" placeholder="e.g. ₹ 15 LPA" />
-          </div>
-        </div>
+        <h2 className="text-2xl font-bold text-gray-900">Placement Preferences</h2>
+        <p className="text-gray-500 text-sm mt-1">Select your preferred campus placement drive city and target job location preferences.</p>
       </div>
 
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">

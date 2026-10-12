@@ -414,7 +414,7 @@ export const CandidateDashboard = () => {
   );
 
   const steps = isExperienced
-    ? ['Personal Details', 'Education Qualifications', 'Work Experience', 'Review & Submit']
+    ? ['Personal Details', 'Education Qualifications', 'Placement Preferences', 'Review & Submit']
     : ['Personal Details', 'Articleship & Training', 'Education Qualifications', 'Review & Submit'];
 
   const calculateProfileCompletion = () => {
