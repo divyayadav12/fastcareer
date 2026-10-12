@@ -27,7 +27,7 @@ import {
 import { register, reset } from '../../store/authSlice';
 import type { AppDispatch, RootState } from '../../store';
 import api from '../../services/api';
-import { ALL_CITIES, ATTEMPTS, CA_EXAM_MONTHS, YEARS, YEARS_1970, EXPERIENCE_YEARS_OPTIONS, getLaterExamSession } from '../../utils/constants';
+import { ALL_CITIES, ATTEMPTS, CA_EXAM_MONTHS, YEARS, YEARS_1970, EXPERIENCE_YEARS_OPTIONS, getLaterExamSession, RANKER_OPTIONS } from '../../utils/constants';
 import { parseResumeFile } from '../../utils/resumeParser';
 
 const POPULAR_CITIES = [
@@ -1472,8 +1472,12 @@ export const Register = () => {
                             onChange={(e) => handleCaInterChange('ranker', e.target.value)} 
                             className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500/20 font-medium bg-white cursor-pointer"
                           >
-                            <option value="No">No</option>
-                            <option value="Yes">Yes (Ranker)</option>
+                            {RANKER_OPTIONS.map(opt => (
+                              <option key={opt} value={opt}>{opt}</option>
+                            ))}
+                            {caInter.ranker && !RANKER_OPTIONS.includes(caInter.ranker) && (
+                              <option value={caInter.ranker}>{caInter.ranker}</option>
+                            )}
                           </select>
                         </div>
                         <div className="sm:col-span-2">
@@ -1627,8 +1631,12 @@ export const Register = () => {
                             onChange={(e) => handleCaFinalChange('ranker', e.target.value)} 
                             className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 font-medium bg-white cursor-pointer"
                           >
-                            <option value="No">No</option>
-                            <option value="Yes">Yes (Ranker)</option>
+                            {RANKER_OPTIONS.map(opt => (
+                              <option key={opt} value={opt}>{opt}</option>
+                            ))}
+                            {caFinal.ranker && !RANKER_OPTIONS.includes(caFinal.ranker) && (
+                              <option value={caFinal.ranker}>{caFinal.ranker}</option>
+                            )}
                           </select>
                         </div>
                         <div className="sm:col-span-2">

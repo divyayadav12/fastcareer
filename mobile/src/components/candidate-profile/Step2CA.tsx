@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Switch, ScrollView } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import { ATTEMPTS, CA_EXAM_MONTHS, YEARS, getLaterExamSession } from '../../utils/constants';
+import { ATTEMPTS, CA_EXAM_MONTHS, YEARS, getLaterExamSession, RANKER_OPTIONS } from '../../utils/constants';
 
 export const Step2CA = ({ caPortfolio, setCaPortfolio }: any) => {
 
@@ -131,8 +131,12 @@ export const Step2CA = ({ caPortfolio, setCaPortfolio }: any) => {
           <Text style={styles.label}>Ranker</Text>
           <View style={styles.pickerContainer}>
             <Picker selectedValue={data.ranker || 'No'} onValueChange={(val) => handleGroupLogic(examKey, 'ranker', val)}>
-              <Picker.Item label="No" value="No" />
-              <Picker.Item label="Yes" value="Yes" />
+              {RANKER_OPTIONS.map(opt => (
+                <Picker.Item key={opt} label={opt} value={opt} />
+              ))}
+              {data.ranker && !RANKER_OPTIONS.includes(data.ranker) && (
+                <Picker.Item label={data.ranker} value={data.ranker} />
+              )}
             </Picker>
           </View>
           

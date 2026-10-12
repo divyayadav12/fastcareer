@@ -1,5 +1,5 @@
 import React from 'react';
-import { ATTEMPTS, CA_EXAM_MONTHS, YEARS, getLaterExamSession } from '../../utils/constants';
+import { ATTEMPTS, CA_EXAM_MONTHS, YEARS, getLaterExamSession, RANKER_OPTIONS } from '../../utils/constants';
 
 export const Step2CA = ({ caPortfolio, setCaPortfolio }) => {
 
@@ -122,8 +122,12 @@ export const Step2CA = ({ caPortfolio, setCaPortfolio }) => {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Ranker</label>
             <select value={data.ranker} onChange={(e) => handleGroupLogic(examKey, 'ranker', e.target.value)} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20">
-              <option>No</option>
-              <option>Yes</option>
+              {RANKER_OPTIONS.map(opt => (
+                <option key={opt} value={opt}>{opt}</option>
+              ))}
+              {data.ranker && !RANKER_OPTIONS.includes(data.ranker) && (
+                <option value={data.ranker}>{data.ranker}</option>
+              )}
             </select>
           </div>
           <div className="col-span-2">

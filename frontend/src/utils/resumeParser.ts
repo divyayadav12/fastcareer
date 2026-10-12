@@ -473,7 +473,13 @@ export function parseResumeText(rawText: string): ParsedResumeData {
   // CA Final Ranker check
   const rankMatch = cleanText.match(/\b(?:AIR|All\s+India\s+Rank|Rank)[\s:-]*(\d{1,3})\b/i);
   if (rankMatch && !cleanText.toLowerCase().includes('graduation rank')) {
-    result.caFinalRanker = 'Yes';
+    const rankNum = parseInt(rankMatch[1], 10);
+    if (rankNum >= 1 && rankNum <= 10) result.caFinalRanker = 'Rank 1-10';
+    else if (rankNum <= 20) result.caFinalRanker = 'Rank 11-20';
+    else if (rankNum <= 30) result.caFinalRanker = 'Rank 21-30';
+    else if (rankNum <= 40) result.caFinalRanker = 'Rank 31-40';
+    else if (rankNum <= 50) result.caFinalRanker = 'Rank 41-50';
+    else result.caFinalRanker = 'Rank 1-10';
   } else {
     result.caFinalRanker = 'No';
   }

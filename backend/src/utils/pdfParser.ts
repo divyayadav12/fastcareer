@@ -457,7 +457,13 @@ export async function parseResumeBuffer(buffer: Buffer, originalFilename: string
 
   const finalRankMatch = searchPool.match(/\b(?:AIR|All\s+India\s+Rank)[\s:-]*(\d{1,3})\b/i);
   if (finalRankMatch) {
-    caFinalObj.ranker = parseInt(finalRankMatch[1]) <= 10 ? 'Top 1-10' : 'Top 11-50';
+    const rankNum = parseInt(finalRankMatch[1], 10);
+    if (rankNum >= 1 && rankNum <= 10) caFinalObj.ranker = 'Rank 1-10';
+    else if (rankNum <= 20) caFinalObj.ranker = 'Rank 11-20';
+    else if (rankNum <= 30) caFinalObj.ranker = 'Rank 21-30';
+    else if (rankNum <= 40) caFinalObj.ranker = 'Rank 31-40';
+    else if (rankNum <= 50) caFinalObj.ranker = 'Rank 41-50';
+    else caFinalObj.ranker = 'Rank 1-10';
   }
   result.caFinal = caFinalObj;
 

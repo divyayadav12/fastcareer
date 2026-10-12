@@ -11,14 +11,12 @@ import { register, reset } from '../store/authSlice';
 import type { AppDispatch, RootState } from '../store';
 import * as DocumentPicker from 'expo-document-picker';
 import api, { API_BASE_URL, uploadFileApi } from '../services/api';
-import { ALL_CITIES } from '../utils/constants';
+import { ALL_CITIES, RANKER_OPTIONS, getLaterExamSession } from '../utils/constants';
 import { parseResumeDocument } from '../utils/resumeParser';
-import { getLaterExamSession } from '../utils/constants';
 
 const MONTHS = ['Jan', 'May', 'Sep', 'Nov'];
 const YEARS = ['2026', '2025', '2024', '2023', '2022', '2021', '2020', '2019', '2018', '2017', '2016', '2015'];
 const ATTEMPTS = ['1', '2', '3', '4', '5+'];
-const RANKER_OPTIONS = ['No', 'Top 1-10', 'Top 11-50'];
 
 export default function RegisterScreen({ navigation }: any) {
   const [firstName, setFirstName] = useState('');

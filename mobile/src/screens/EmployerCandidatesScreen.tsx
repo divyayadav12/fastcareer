@@ -251,13 +251,23 @@ export default function EmployerCandidatesScreen() {
       if (filters.inter1stAttempt && inter1st !== filters.inter1stAttempt) return false;
       if (filters.interGroup1Attempts && c.caPortfolio?.caInter?.group1Attempts !== filters.interGroup1Attempts) return false;
       if (filters.interGroup2Attempts && c.caPortfolio?.caInter?.group2Attempts !== filters.interGroup2Attempts) return false;
-      if (filters.interRanker && c.caPortfolio?.caInter?.ranker !== filters.interRanker) return false;
+      if (filters.interRanker) {
+        const isRanker = !!(c.caPortfolio?.caInter?.ranker && c.caPortfolio.caInter.ranker !== 'No');
+        if (filters.interRanker === 'Yes' && !isRanker) return false;
+        if (filters.interRanker === 'No' && isRanker) return false;
+        if (filters.interRanker !== 'Yes' && filters.interRanker !== 'No' && c.caPortfolio?.caInter?.ranker !== filters.interRanker) return false;
+      }
 
       const final1st = c.caPortfolio?.caFinal?.bothGroups1stAttempt ? 'Yes' : 'No';
       if (filters.final1stAttempt && final1st !== filters.final1stAttempt) return false;
       if (filters.finalGroup1Attempts && c.caPortfolio?.caFinal?.group1Attempts !== filters.finalGroup1Attempts) return false;
       if (filters.finalGroup2Attempts && c.caPortfolio?.caFinal?.group2Attempts !== filters.finalGroup2Attempts) return false;
-      if (filters.finalRanker && c.caPortfolio?.caFinal?.ranker !== filters.finalRanker) return false;
+      if (filters.finalRanker) {
+        const isRanker = !!(c.caPortfolio?.caFinal?.ranker && c.caPortfolio.caFinal.ranker !== 'No');
+        if (filters.finalRanker === 'Yes' && !isRanker) return false;
+        if (filters.finalRanker === 'No' && isRanker) return false;
+        if (filters.finalRanker !== 'Yes' && filters.finalRanker !== 'No' && c.caPortfolio?.caFinal?.ranker !== filters.finalRanker) return false;
+      }
       if (filters.finalPassMonth && c.caPortfolio?.caFinal?.completionSessionMonth !== filters.finalPassMonth) return false;
       if (filters.finalPassYear && c.caPortfolio?.caFinal?.completionSessionYear !== filters.finalPassYear) return false;
 
