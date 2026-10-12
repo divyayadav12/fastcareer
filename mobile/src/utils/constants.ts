@@ -21,14 +21,14 @@ if (STATE_CITY_MAP['Haryana']) {
 
 export const STATES = Object.keys(STATE_CITY_MAP);
 export const ALL_CITIES = Array.from(new Set(Object.values(STATE_CITY_MAP).flat())).sort();
-export const YEARS = Array.from({length: 30}, (_, i) => String(new Date().getFullYear() - i));
+export const YEARS = Array.from({length: new Date().getFullYear() - 1940 + 1}, (_, i) => String(new Date().getFullYear() - i));
 export const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 export const BOARDS = ['CBSE', 'ICSE', 'State Board', 'Other'];
 export const ATTEMPT_YEARS = ['Sept\'25', 'Jan\'26', 'May\'25', 'Nov\'24', 'May\'24', 'Nov\'23', 'May\'23', 'Nov\'22', 'May\'22', 'Nov\'21', 'May\'21', 'Nov\'20', 'May\'20'];
 export const ATTEMPTS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10+'];
 export const CA_EXAM_MONTHS = ['Jan', 'May', 'Sep', 'Nov'];
 export const RANKER_OPTIONS = ['No', 'Rank 1-10', 'Rank 11-20', 'Rank 21-30', 'Rank 31-40', 'Rank 41-50'];
-export const YEARS_1970 = Array.from({ length: new Date().getFullYear() - 1970 + 1 }, (_, i) => String(new Date().getFullYear() - i));
+export const YEARS_1970 = Array.from({ length: new Date().getFullYear() - 1940 + 1 }, (_, i) => String(new Date().getFullYear() - i));
 export const EXPERIENCE_YEARS_OPTIONS = [
   '0-1 Year',
   '1-2 Years',

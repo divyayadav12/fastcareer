@@ -38,7 +38,7 @@ export default function CalendarModal({
   onClose,
   onSelectDate,
   title = 'Select Date of Birth',
-  minYear = 1960,
+  minYear = 1950,
   maxYear = new Date().getFullYear(),
 }: CalendarModalProps) {
   // Parse initial date or default to ~23 years ago for DOB

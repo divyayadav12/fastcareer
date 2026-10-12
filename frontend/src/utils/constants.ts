@@ -3,8 +3,8 @@ import { STATE_CITY_MAP } from './indianCitiesData';
 export { STATE_CITY_MAP };
 export const STATES = Object.keys(STATE_CITY_MAP);
 export const ALL_CITIES = Array.from(new Set(Object.values(STATE_CITY_MAP).flat())).sort();
-export const YEARS = Array.from({length: 30}, (_, i) => String(new Date().getFullYear() - i));
-export const YEARS_1970 = Array.from({length: new Date().getFullYear() - 1970 + 1}, (_, i) => String(new Date().getFullYear() - i));
+export const YEARS = Array.from({length: new Date().getFullYear() - 1940 + 1}, (_, i) => String(new Date().getFullYear() - i));
+export const YEARS_1970 = Array.from({length: new Date().getFullYear() - 1940 + 1}, (_, i) => String(new Date().getFullYear() - i));
 export const EXPERIENCE_YEARS_OPTIONS = [
   '0-1 Year',
   '1-2 Years',

@@ -51,8 +51,11 @@ const DOB_MONTHS = [
   { value: '11', label: 'Nov (11)' },
   { value: '12', label: 'Dec (12)' },
 ];
-// Adult birth years from 2008 down to 1965
-const DOB_YEARS = Array.from({ length: 44 }, (_, i) => String(2008 - i));
+// Birth years from recent years down to 1940 (covering all freshers to senior experienced candidates)
+const CURRENT_YEAR = new Date().getFullYear();
+const MAX_DOB_YEAR = Math.max(CURRENT_YEAR - 14, 2012);
+const MIN_DOB_YEAR = 1940;
+const DOB_YEARS = Array.from({ length: MAX_DOB_YEAR - MIN_DOB_YEAR + 1 }, (_, i) => String(MAX_DOB_YEAR - i));
 
 export const Register = () => {
   const [firstName, setFirstName] = useState('');
