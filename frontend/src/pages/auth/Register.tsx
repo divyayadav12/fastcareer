@@ -36,6 +36,26 @@ const POPULAR_CITIES = [
   'Surat', 'Noida', 'Gurgaon', 'Bhopal', 'Vadodara', 'Kanpur'
 ];
 
+const DOB_DAYS = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0'));
+const DOB_MONTHS = [
+  { value: '01', label: 'Jan (01)' },
+  { value: '02', label: 'Feb (02)' },
+  { value: '03', label: 'Mar (03)' },
+  { value: '04', label: 'Apr (04)' },
+  { value: '05', label: 'May (05)' },
+  { value: '06', label: 'Jun (06)' },
+  { value: '07', label: 'Jul (07)' },
+  { value: '08', label: 'Aug (08)' },
+  { value: '09', label: 'Sep (09)' },
+  { value: '10', label: 'Oct (10)' },
+  { value: '11', label: 'Nov (11)' },
+  { value: '12', label: 'Dec (12)' },
+];
+// Adult birth years from 2008 down to 1965
+const DOB_YEARS = Array.from({ length: 44 }, (_, i) => String(2008 - i));
+// Quick 20+ years back jump options
+const QUICK_DOB_YEARS = ['2004', '2003', '2002', '2001', '2000', '1999', '1998', '1997', '1996', '1995', '1994', '1992', '1990'];
+
 export const Register = () => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -46,6 +66,52 @@ export const Register = () => {
   // Candidate Specific Fields
   const [phone, setPhone] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
+  const [dobDay, setDobDay] = useState('');
+  const [dobMonth, setDobMonth] = useState('');
+  const [dobYear, setDobYear] = useState('');
+
+  // Synchronize Day, Month, Year when dateOfBirth changes (e.g. from resume scan)
+  useEffect(() => {
+    if (dateOfBirth && dateOfBirth.includes('-')) {
+      const parts = dateOfBirth.split('-');
+      if (parts.length === 3) {
+        if (parts[0] !== dobYear) setDobYear(parts[0]);
+        if (parts[1] !== dobMonth) setDobMonth(parts[1]);
+        if (parts[2] !== dobDay) setDobDay(parts[2]);
+      }
+    } else if (!dateOfBirth) {
+      setDobDay('');
+      setDobMonth('');
+      setDobYear('');
+    }
+  }, [dateOfBirth]);
+
+  const handleDobPartChange = (part: 'day' | 'month' | 'year', val: string) => {
+    const nextDay = part === 'day' ? val : dobDay;
+    const nextMonth = part === 'month' ? val : dobMonth;
+    const nextYear = part === 'year' ? val : dobYear;
+
+    if (part === 'day') setDobDay(val);
+    if (part === 'month') setDobMonth(val);
+    if (part === 'year') setDobYear(val);
+
+    if (nextYear && nextMonth && nextDay) {
+      setDateOfBirth(`${nextYear}-${nextMonth}-${nextDay}`);
+      if (fieldErrors.dateOfBirth) setFieldErrors(prev => ({ ...prev, dateOfBirth: '' }));
+    } else {
+      setDateOfBirth('');
+    }
+  };
+
+  const handleQuickYearJump = (year: string) => {
+    setDobYear(year);
+    const nextDay = dobDay || '01';
+    const nextMonth = dobMonth || '01';
+    setDobDay(nextDay);
+    setDobMonth(nextMonth);
+    setDateOfBirth(`${year}-${nextMonth}-${nextDay}`);
+    if (fieldErrors.dateOfBirth) setFieldErrors(prev => ({ ...prev, dateOfBirth: '' }));
+  };
   const [currentCity, setCurrentCity] = useState('');
   const [workStatus, setWorkStatus] = useState<'fresher' | 'experienced'>('experienced');
   const [experienceYears, setExperienceYears] = useState('1-2 Years');
@@ -882,31 +948,127 @@ export const Register = () => {
 
                   {role === 'candidate' ? (
                     <div>
-                      <label htmlFor="dateOfBirth" className="block text-xs font-semibold text-slate-700 mb-1.5">
-                        Date of Birth <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="date"
-                        id="dateOfBirth"
-                        name="dateOfBirth"
-                        required={role === 'candidate'}
-                        value={dateOfBirth}
-                        onChange={(e) => {
-                          setDateOfBirth(e.target.value);
-                          if (fieldErrors.dateOfBirth) setFieldErrors(prev => ({ ...prev, dateOfBirth: '' }));
-                        }}
-                        onBlur={() => {
-                          if (!dateOfBirth) {
-                            setFieldErrors(prev => ({ ...prev, dateOfBirth: 'Please fill this field: Date of Birth' }));
-                          }
-                        }}
-                        max={new Date().toISOString().split('T')[0]}
-                        className={`w-full px-3.5 py-2.5 border rounded-xl text-sm focus:outline-none transition-all bg-white text-slate-900 cursor-pointer ${
-                          fieldErrors.dateOfBirth
-                            ? 'border-rose-500 ring-2 ring-rose-500/20 bg-rose-50/20 focus:border-rose-600'
-                            : 'border-slate-200 focus:ring-2 focus:ring-primary/20 focus:border-primary'
-                        }`}
-                      />
+                      <div className="flex flex-wrap items-center justify-between gap-1 mb-1.5">
+                        <label className="block text-xs font-semibold text-slate-700">
+                          Date of Birth <span className="text-red-500">*</span>
+                        </label>
+                        <span className="text-[10.5px] font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200/60 flex items-center gap-1">
+                          <Zap size={11} className="text-blue-600 fill-blue-600" />
+                          <span>1-Click 20+ Yrs Jump</span>
+                        </span>
+                      </div>
+
+                      {/* 1-Click Quick Year Jump Buttons */}
+                      <div className="bg-slate-50/90 p-2 rounded-xl border border-slate-200/80 mb-2">
+                        <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                          <span>Quick Year Jump:</span>
+                          <span className="text-slate-400 font-normal text-[10px]">Jump 20+ yrs back in 1 click</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+                          {QUICK_DOB_YEARS.map(yr => (
+                            <button
+                              key={yr}
+                              type="button"
+                              onClick={() => handleQuickYearJump(yr)}
+                              className={`px-2.5 py-1 text-xs font-bold rounded-lg border transition-all shrink-0 cursor-pointer ${
+                                dobYear === yr
+                                  ? 'bg-blue-600 text-white border-blue-600 shadow-sm scale-105'
+                                  : 'bg-white hover:bg-blue-50 text-slate-700 border-slate-200 hover:border-blue-400 shadow-2xs'
+                              }`}
+                            >
+                              {yr}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* 3 Dropdowns: Day, Month, Year */}
+                      <div className="grid grid-cols-3 gap-2">
+                        <div>
+                          <label className="block text-[10.5px] font-semibold text-slate-500 mb-1">Day *</label>
+                          <select
+                            id="dobDay"
+                            value={dobDay}
+                            onChange={(e) => handleDobPartChange('day', e.target.value)}
+                            onBlur={() => {
+                              if (!dateOfBirth) {
+                                setFieldErrors(prev => ({ ...prev, dateOfBirth: 'Please fill this field: Date of Birth' }));
+                              }
+                            }}
+                            className={`w-full px-2.5 py-2 text-xs sm:text-sm border rounded-xl font-medium bg-white cursor-pointer transition-all ${
+                              fieldErrors.dateOfBirth
+                                ? 'border-rose-500 ring-2 ring-rose-500/20 bg-rose-50/20'
+                                : 'border-slate-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500'
+                            }`}
+                          >
+                            <option value="">Day</option>
+                            {DOB_DAYS.map(d => (
+                              <option key={d} value={d}>{d}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-[10.5px] font-semibold text-slate-500 mb-1">Month *</label>
+                          <select
+                            id="dobMonth"
+                            value={dobMonth}
+                            onChange={(e) => handleDobPartChange('month', e.target.value)}
+                            onBlur={() => {
+                              if (!dateOfBirth) {
+                                setFieldErrors(prev => ({ ...prev, dateOfBirth: 'Please fill this field: Date of Birth' }));
+                              }
+                            }}
+                            className={`w-full px-2.5 py-2 text-xs sm:text-sm border rounded-xl font-medium bg-white cursor-pointer transition-all ${
+                              fieldErrors.dateOfBirth
+                                ? 'border-rose-500 ring-2 ring-rose-500/20 bg-rose-50/20'
+                                : 'border-slate-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500'
+                            }`}
+                          >
+                            <option value="">Month</option>
+                            {DOB_MONTHS.map(m => (
+                              <option key={m.value} value={m.value}>{m.label}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-[10.5px] font-semibold text-slate-500 mb-1">Year *</label>
+                          <select
+                            id="dobYear"
+                            value={dobYear}
+                            onChange={(e) => handleDobPartChange('year', e.target.value)}
+                            onBlur={() => {
+                              if (!dateOfBirth) {
+                                setFieldErrors(prev => ({ ...prev, dateOfBirth: 'Please fill this field: Date of Birth' }));
+                              }
+                            }}
+                            className={`w-full px-2.5 py-2 text-xs sm:text-sm border rounded-xl font-medium bg-white cursor-pointer transition-all ${
+                              fieldErrors.dateOfBirth
+                                ? 'border-rose-500 ring-2 ring-rose-500/20 bg-rose-50/20'
+                                : 'border-slate-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500'
+                            }`}
+                          >
+                            <option value="">Year</option>
+                            {DOB_YEARS.map(y => (
+                              <option key={y} value={y}>{y}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      {dateOfBirth && dobDay && dobMonth && dobYear && (
+                        <div className="mt-1.5 flex items-center justify-between text-[11px] text-emerald-700 bg-emerald-50/80 px-2.5 py-1 rounded-lg border border-emerald-200/60 font-semibold">
+                          <span className="flex items-center gap-1.5">
+                            <CheckCircle2 size={13} className="text-emerald-600 shrink-0" />
+                            <span>Selected DOB: {dobDay}/{dobMonth}/{dobYear}</span>
+                          </span>
+                          <span className="text-slate-500 text-[10px] font-normal">
+                            Age: ~{new Date().getFullYear() - parseInt(dobYear, 10)} yrs
+                          </span>
+                        </div>
+                      )}
+
                       {fieldErrors.dateOfBirth && (
                         <p className="mt-1 text-xs font-semibold text-rose-600 flex items-center gap-1 animate-in fade-in slide-in-from-top-1">
                           <AlertCircle size={13} className="shrink-0 text-rose-600" />
