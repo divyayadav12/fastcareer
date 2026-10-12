@@ -31,7 +31,7 @@ export default function RegisterScreen({ navigation }: any) {
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [currentCity, setCurrentCity] = useState('');
   const [linkedinUrl, setLinkedinUrl] = useState('');
-  const [workStatus, setWorkStatus] = useState<'fresher' | 'experienced'>('experienced');
+  const [workStatus, setWorkStatus] = useState<'fresher' | 'experienced'>('fresher');
   const [experienceYears, setExperienceYears] = useState('1-2 Years');
   const [caFinalCompletionYear, setCaFinalCompletionYear] = useState('2023');
   const [currentCompanyName, setCurrentCompanyName] = useState('');
@@ -688,23 +688,6 @@ export default function RegisterScreen({ navigation }: any) {
             <Text style={styles.label}>Career Stage & Qualification *</Text>
             <View style={styles.workStatusContainer}>
               <TouchableOpacity
-                style={[styles.workCard, workStatus === 'experienced' && styles.workCardActive]}
-                onPress={() => setWorkStatus('experienced')}
-                activeOpacity={0.8}
-              >
-                <View style={styles.workCardHeader}>
-                  <Ionicons name="briefcase-outline" size={20} color={workStatus === 'experienced' ? '#034b71' : '#64748b'} />
-                  <Ionicons
-                    name={workStatus === 'experienced' ? 'radio-button-on' : 'radio-button-off'}
-                    size={18}
-                    color={workStatus === 'experienced' ? '#034b71' : '#cbd5e1'}
-                  />
-                </View>
-                <Text style={styles.workCardTitle}>Experienced CA</Text>
-                <Text style={styles.workCardSub}>Post-qualification exp.</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
                 style={[styles.workCard, workStatus === 'fresher' && styles.workCardActive]}
                 onPress={() => setWorkStatus('fresher')}
                 activeOpacity={0.8}
@@ -719,6 +702,23 @@ export default function RegisterScreen({ navigation }: any) {
                 </View>
                 <Text style={styles.workCardTitle}>Fresher / Semi-CA</Text>
                 <Text style={styles.workCardSub}>Recent pass / Articleship</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.workCard, workStatus === 'experienced' && styles.workCardActive]}
+                onPress={() => setWorkStatus('experienced')}
+                activeOpacity={0.8}
+              >
+                <View style={styles.workCardHeader}>
+                  <Ionicons name="briefcase-outline" size={20} color={workStatus === 'experienced' ? '#034b71' : '#64748b'} />
+                  <Ionicons
+                    name={workStatus === 'experienced' ? 'radio-button-on' : 'radio-button-off'}
+                    size={18}
+                    color={workStatus === 'experienced' ? '#034b71' : '#cbd5e1'}
+                  />
+                </View>
+                <Text style={styles.workCardTitle}>Experienced CA</Text>
+                <Text style={styles.workCardSub}>Post-qualification exp.</Text>
               </TouchableOpacity>
             </View>
           </View>

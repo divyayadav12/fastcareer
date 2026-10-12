@@ -102,7 +102,7 @@ export const Register = () => {
   };
 
   const [currentCity, setCurrentCity] = useState('');
-  const [workStatus, setWorkStatus] = useState<'fresher' | 'experienced'>('experienced');
+  const [workStatus, setWorkStatus] = useState<'fresher' | 'experienced'>('fresher');
   const [experienceYears, setExperienceYears] = useState('1-2 Years');
   const [caFinalCompletionYear, setCaFinalCompletionYear] = useState('2023');
   const [currentCompanyName, setCurrentCompanyName] = useState('');
@@ -1333,35 +1333,6 @@ export const Register = () => {
                         Current Qualification & Career Stage *
                       </label>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {/* Experienced Card */}
-                        <div
-                          onClick={() => setWorkStatus('experienced')}
-                          className={`border rounded-2xl p-3.5 cursor-pointer flex items-center justify-between transition-all ${
-                            workStatus === 'experienced'
-                              ? 'border-blue-600 bg-blue-50/40 ring-1 ring-blue-600/30 shadow-xs'
-                              : 'border-slate-200 hover:border-slate-300 bg-white'
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-                              workStatus === 'experienced' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500'
-                            }`}>
-                              <Briefcase size={18} />
-                            </div>
-                            <div>
-                              <div className="text-xs font-bold text-slate-900">Experienced CA</div>
-                              <div className="text-[11px] text-slate-500">Post-qualification exp.</div>
-                            </div>
-                          </div>
-                          <div className={`w-5 h-5 rounded-full flex items-center justify-center border transition-colors ${
-                            workStatus === 'experienced'
-                              ? 'border-blue-600 bg-blue-600 text-white'
-                              : 'border-slate-300'
-                          }`}>
-                            {workStatus === 'experienced' && <Check size={12} strokeWidth={3} />}
-                          </div>
-                        </div>
-
                         {/* Fresher Card */}
                         <div
                           onClick={() => {
@@ -1398,6 +1369,35 @@ export const Register = () => {
                               : 'border-slate-300'
                           }`}>
                             {workStatus === 'fresher' && <Check size={12} strokeWidth={3} />}
+                          </div>
+                        </div>
+
+                        {/* Experienced Card */}
+                        <div
+                          onClick={() => setWorkStatus('experienced')}
+                          className={`border rounded-2xl p-3.5 cursor-pointer flex items-center justify-between transition-all ${
+                            workStatus === 'experienced'
+                              ? 'border-blue-600 bg-blue-50/40 ring-1 ring-blue-600/30 shadow-xs'
+                              : 'border-slate-200 hover:border-slate-300 bg-white'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                              workStatus === 'experienced' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500'
+                            }`}>
+                              <Briefcase size={18} />
+                            </div>
+                            <div>
+                              <div className="text-xs font-bold text-slate-900">Experienced CA</div>
+                              <div className="text-[11px] text-slate-500">Post-qualification exp.</div>
+                            </div>
+                          </div>
+                          <div className={`w-5 h-5 rounded-full flex items-center justify-center border transition-colors ${
+                            workStatus === 'experienced'
+                              ? 'border-blue-600 bg-blue-600 text-white'
+                              : 'border-slate-300'
+                          }`}>
+                            {workStatus === 'experienced' && <Check size={12} strokeWidth={3} />}
                           </div>
                         </div>
                       </div>
