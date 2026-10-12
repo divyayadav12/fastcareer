@@ -29,13 +29,18 @@ export const ShareJob = () => {
     setSaving(true);
     setError('');
     
+    const payload = {
+      ...formData,
+      industry: formData.industry === 'Other' && formData.customIndustry ? formData.customIndustry : formData.industry
+    };
+
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/shared-jobs`, formData, {
+      await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/shared-jobs`, payload, {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       toast.success('Job Opportunity Shared Successfully! Admin will review it.');
       setFormData({
-        industry: '', companyName: '', jobDescription: '', location: '', 
+        industry: '', customIndustry: '', companyName: '', jobDescription: '', location: '', 
         region: '', noOfPost: '', concernedPerson: '', mobileNo: '', emailId: ''
       });
     } catch (err: any) {
@@ -80,6 +85,16 @@ export const ShareJob = () => {
                   <option value="Manufacturing">Manufacturing</option>
                   <option value="Other">Other</option>
                 </select>
+                {formData.industry === 'Other' && (
+                  <input
+                    type="text"
+                    required
+                    placeholder="Please specify industry"
+                    value={formData.customIndustry || ''}
+                    onChange={(e) => setFormData({ ...formData, customIndustry: e.target.value })}
+                    className="mt-2 w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                  />
+                )}
               </div>
             </div>
 

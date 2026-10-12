@@ -223,8 +223,11 @@ export const ManageJobs = () => {
       const safeReq = (formData.requirements || '').split('\n').map(r => r.trim()).filter(Boolean);
       const safeResp = (formData.responsibilities || '').split('\n').map(r => r.trim()).filter(Boolean);
 
+      const finalCategory = formData.category === 'Other' && formData.customCategory ? formData.customCategory.trim() : formData.category;
+
       const payload = {
         ...formData,
+        category: finalCategory,
         title: formData.title.trim(),
         company: formData.company.trim(),
         location: (formData.location || 'Pan India').trim(),
@@ -368,6 +371,16 @@ export const ManageJobs = () => {
                       <option value="Consulting">Consulting</option>
                       <option value="Other">Other</option>
                     </select>
+                    {formData.category === 'Other' && (
+                      <input
+                        type="text"
+                        required
+                        placeholder="Please specify category"
+                        value={formData.customCategory || ''}
+                        onChange={e => setFormData({ ...formData, customCategory: e.target.value })}
+                        className="mt-2 w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                      />
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Salary / Stipend *</label>

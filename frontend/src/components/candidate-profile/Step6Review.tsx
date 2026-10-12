@@ -332,7 +332,7 @@ export const Step6Review: React.FC<Step6ReviewProps> = ({
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1.5">Gender *</label>
                 <select
-                  value={tempPersonal.gender}
+                  value={['Male', 'Female'].includes(tempPersonal.gender) ? tempPersonal.gender : (tempPersonal.gender ? 'Other' : '')}
                   onChange={(e) => setTempPersonal({ ...tempPersonal, gender: e.target.value })}
                   className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white cursor-pointer"
                 >
@@ -340,6 +340,15 @@ export const Step6Review: React.FC<Step6ReviewProps> = ({
                   <option>Female</option>
                   <option>Other</option>
                 </select>
+                {(tempPersonal.gender === 'Other' || (tempPersonal.gender && !['Male', 'Female'].includes(tempPersonal.gender))) && (
+                  <input
+                    type="text"
+                    placeholder="Please specify gender"
+                    value={tempPersonal.gender === 'Other' ? '' : tempPersonal.gender}
+                    onChange={(e) => setTempPersonal({ ...tempPersonal, gender: e.target.value })}
+                    className="mt-2 w-full px-3.5 py-2 border border-gray-200 rounded-xl text-xs"
+                  />
+                )}
               </div>
 
               <div>
@@ -369,7 +378,7 @@ export const Step6Review: React.FC<Step6ReviewProps> = ({
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1.5">Current City *</label>
                 <select
-                  value={tempPersonal.currentCity}
+                  value={(STATE_CITY_MAP[tempPersonal.currentState] || []).includes(tempPersonal.currentCity) ? tempPersonal.currentCity : (tempPersonal.currentCity ? 'Other' : '')}
                   onChange={(e) => setTempPersonal({ ...tempPersonal, currentCity: e.target.value })}
                   disabled={!tempPersonal.currentState}
                   className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white disabled:bg-gray-50 cursor-pointer"
@@ -377,6 +386,15 @@ export const Step6Review: React.FC<Step6ReviewProps> = ({
                   <option value="">Select City</option>
                   {(STATE_CITY_MAP[tempPersonal.currentState] || []).map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
+                {(tempPersonal.currentCity === 'Other' || (tempPersonal.currentCity && !(STATE_CITY_MAP[tempPersonal.currentState] || []).filter(c => c !== 'Other').includes(tempPersonal.currentCity))) && (
+                  <input
+                    type="text"
+                    placeholder="Enter city name"
+                    value={tempPersonal.currentCity === 'Other' ? '' : tempPersonal.currentCity}
+                    onChange={(e) => setTempPersonal({ ...tempPersonal, currentCity: e.target.value })}
+                    className="mt-2 w-full px-3.5 py-2 border border-gray-200 rounded-xl text-xs"
+                  />
+                )}
               </div>
             </div>
 

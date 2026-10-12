@@ -357,12 +357,28 @@ export const PlacementDriveForm = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
-                    <select name="gender" value={formData.gender} onChange={handleChange} className="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
+                    <select
+                      name="gender"
+                      value={['Male', 'Female'].includes(formData.gender) ? formData.gender : (formData.gender ? 'Other' : '')}
+                      onChange={handleChange}
+                      className="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white"
+                    >
                       <option value="">Select Gender...</option>
                       <option value="Male">Male</option>
                       <option value="Female">Female</option>
                       <option value="Other">Other</option>
                     </select>
+                    {(formData.gender === 'Other' || (formData.gender && !['Male', 'Female'].includes(formData.gender))) && (
+                      <input
+                        type="text"
+                        name="gender"
+                        placeholder="Please specify gender"
+                        value={formData.gender === 'Other' ? '' : formData.gender}
+                        onChange={handleChange}
+                        required
+                        className="mt-2 w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition animate-in fade-in"
+                      />
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Marital Status</label>
@@ -620,10 +636,25 @@ export const PlacementDriveForm = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">Type</label>
-                    <select name="articleshipType" value={formData.articleshipType} onChange={handleChange} className="w-full p-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                    <select
+                      name="articleshipType"
+                      value={ARTICLESHIP_TYPES.includes(formData.articleshipType) ? formData.articleshipType : (formData.articleshipType ? 'Other' : '')}
+                      onChange={handleChange}
+                      className="w-full p-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                    >
                       <option value="">Select...</option>
                       {ARTICLESHIP_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                     </select>
+                    {(formData.articleshipType === 'Other' || (formData.articleshipType && !ARTICLESHIP_TYPES.filter(t => t !== 'Other').includes(formData.articleshipType))) && (
+                      <input
+                        type="text"
+                        name="articleshipType"
+                        placeholder="Specify type"
+                        value={formData.articleshipType === 'Other' ? '' : formData.articleshipType}
+                        onChange={handleChange}
+                        className="mt-2 w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-xs animate-in fade-in"
+                      />
+                    )}
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">Firm Name</label>
@@ -639,12 +670,28 @@ export const PlacementDriveForm = () => {
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">Firm Type</label>
-                    <select name="articleshipFirmType" value={formData.articleshipFirmType} onChange={handleChange} className="w-full p-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                    <select
+                      name="articleshipFirmType"
+                      value={['Big 4', 'Medium', 'Small'].includes(formData.articleshipFirmType) ? formData.articleshipFirmType : (formData.articleshipFirmType ? 'Other' : '')}
+                      onChange={handleChange}
+                      className="w-full p-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                    >
                       <option value="">Select...</option>
                       <option value="Big 4">Big 4</option>
                       <option value="Medium">Medium Size</option>
                       <option value="Small">Small Size</option>
+                      <option value="Other">Other</option>
                     </select>
+                    {(formData.articleshipFirmType === 'Other' || (formData.articleshipFirmType && !['Big 4', 'Medium', 'Small'].includes(formData.articleshipFirmType))) && (
+                      <input
+                        type="text"
+                        name="articleshipFirmType"
+                        placeholder="Specify firm type"
+                        value={formData.articleshipFirmType === 'Other' ? '' : formData.articleshipFirmType}
+                        onChange={handleChange}
+                        className="mt-2 w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-xs animate-in fade-in"
+                      />
+                    )}
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">No. of Partners</label>
@@ -691,12 +738,27 @@ export const PlacementDriveForm = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Nature of Work in Articleship</label>
-                      <select name="natureOfWork" value={formData.natureOfWork} onChange={handleChange} className="w-full p-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                      <select
+                        name="natureOfWork"
+                        value={NATURE_OF_WORK.includes(formData.natureOfWork) ? formData.natureOfWork : (formData.natureOfWork ? 'Other' : '')}
+                        onChange={handleChange}
+                        className="w-full p-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                      >
                         <option value="">Select...</option>
                         {NATURE_OF_WORK.map(work => (
                           <option key={work} value={work}>{work}</option>
                         ))}
                       </select>
+                      {(formData.natureOfWork === 'Other' || (formData.natureOfWork && !NATURE_OF_WORK.filter(w => w !== 'Other').includes(formData.natureOfWork))) && (
+                        <input
+                          type="text"
+                          name="natureOfWork"
+                          placeholder="Please specify nature of work"
+                          value={formData.natureOfWork === 'Other' ? '' : formData.natureOfWork}
+                          onChange={handleChange}
+                          className="mt-2 w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-xs animate-in fade-in"
+                        />
+                      )}
                     </div>
                   </div>
                 </div>
@@ -719,10 +781,25 @@ export const PlacementDriveForm = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Graduation College Name</label>
-                    <select name="grad_college" value={formData.grad_college} onChange={handleChange} className="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
+                    <select
+                      name="grad_college"
+                      value={COLLEGES.includes(formData.grad_college) ? formData.grad_college : (formData.grad_college ? 'Other' : '')}
+                      onChange={handleChange}
+                      className="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white"
+                    >
                       <option value="">Select College...</option>
                       {COLLEGES.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
+                    {(formData.grad_college === 'Other' || (formData.grad_college && !COLLEGES.filter(c => c !== 'Other').includes(formData.grad_college))) && (
+                      <input
+                        type="text"
+                        name="grad_college"
+                        placeholder="Please enter college name"
+                        value={formData.grad_college === 'Other' ? '' : formData.grad_college}
+                        onChange={handleChange}
+                        className="mt-2 w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition text-sm animate-in fade-in"
+                      />
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Graduation Percentage</label>
@@ -747,10 +824,25 @@ export const PlacementDriveForm = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Class 12th Board</label>
-                    <select name="class12_board" value={formData.class12_board} onChange={handleChange} className="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
+                    <select
+                      name="class12_board"
+                      value={BOARDS.includes(formData.class12_board) ? formData.class12_board : (formData.class12_board ? 'Other' : '')}
+                      onChange={handleChange}
+                      className="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white"
+                    >
                       <option value="">Select Board...</option>
                       {BOARDS.map(b => <option key={b} value={b}>{b}</option>)}
                     </select>
+                    {(formData.class12_board === 'Other' || (formData.class12_board && !BOARDS.filter(b => b !== 'Other').includes(formData.class12_board))) && (
+                      <input
+                        type="text"
+                        name="class12_board"
+                        placeholder="Please enter board name"
+                        value={formData.class12_board === 'Other' ? '' : formData.class12_board}
+                        onChange={handleChange}
+                        className="mt-2 w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition text-sm animate-in fade-in"
+                      />
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Class 12th Percentage</label>
@@ -765,10 +857,25 @@ export const PlacementDriveForm = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Class 10th Board</label>
-                    <select name="class10_board" value={formData.class10_board} onChange={handleChange} className="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
+                    <select
+                      name="class10_board"
+                      value={BOARDS.includes(formData.class10_board) ? formData.class10_board : (formData.class10_board ? 'Other' : '')}
+                      onChange={handleChange}
+                      className="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white"
+                    >
                       <option value="">Select Board...</option>
                       {BOARDS.map(b => <option key={b} value={b}>{b}</option>)}
                     </select>
+                    {(formData.class10_board === 'Other' || (formData.class10_board && !BOARDS.filter(b => b !== 'Other').includes(formData.class10_board))) && (
+                      <input
+                        type="text"
+                        name="class10_board"
+                        placeholder="Please enter board name"
+                        value={formData.class10_board === 'Other' ? '' : formData.class10_board}
+                        onChange={handleChange}
+                        className="mt-2 w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition text-sm animate-in fade-in"
+                      />
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Class 10th Percentage</label>

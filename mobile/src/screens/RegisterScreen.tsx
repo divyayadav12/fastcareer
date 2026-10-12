@@ -30,6 +30,7 @@ export default function RegisterScreen({ navigation }: any) {
   const [phone, setPhone] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [currentCity, setCurrentCity] = useState('');
+  const [customCurrentCity, setCustomCurrentCity] = useState('');
   const [linkedinUrl, setLinkedinUrl] = useState('');
   const [workStatus, setWorkStatus] = useState<'fresher' | 'experienced'>('fresher');
   const [experienceYears, setExperienceYears] = useState('1-2 Years');
@@ -363,8 +364,9 @@ export default function RegisterScreen({ navigation }: any) {
         Alert.alert('Date of Birth Required', 'Please enter your Date of Birth.');
         return;
       }
-      if (!currentCity.trim()) {
-        Alert.alert('City Location Required', 'Please select your Current City.');
+      const effectiveCity = currentCity === 'Other' ? customCurrentCity.trim() : currentCity.trim();
+      if (!effectiveCity) {
+        Alert.alert('City Location Required', 'Please select or enter your Current City.');
         return;
       }
       if (workStatus === 'experienced') {
@@ -394,6 +396,8 @@ export default function RegisterScreen({ navigation }: any) {
       }
     }
 
+    const effectiveCity = currentCity === 'Other' ? customCurrentCity.trim() : currentCity.trim();
+
     dispatch(
       register({
         firstName,
@@ -404,7 +408,7 @@ export default function RegisterScreen({ navigation }: any) {
         linkedinUrl: linkedinUrl.trim(),
         ...(role === 'candidate' && {
           phone: phone.trim(),
-          currentCity,
+          currentCity: effectiveCity,
           dateOfBirth,
           isFresherCA: workStatus === 'fresher',
           resumeUrl: finalResumeUrl,
@@ -659,6 +663,15 @@ export default function RegisterScreen({ navigation }: any) {
           </View>
           <Ionicons name="chevron-down" size={18} color="#64748b" />
         </TouchableOpacity>
+        {currentCity === 'Other' && (
+          <TextInput
+            style={[styles.input, { marginTop: 8 }]}
+            value={customCurrentCity}
+            onChangeText={setCustomCurrentCity}
+            placeholder="Enter your city name"
+            placeholderTextColor="#94a3b8"
+          />
+        )}
       </View>
 
       {/* LinkedIn Profile URL (Optional) */}
@@ -1189,6 +1202,19 @@ export default function RegisterScreen({ navigation }: any) {
             data={filteredCities}
             keyExtractor={(item) => item}
             keyboardShouldPersistTaps="handled"
+            ListHeaderComponent={
+              citySearchQuery.trim().length > 0 ? (
+                <TouchableOpacity
+                  style={[styles.cityItem, { backgroundColor: '#f0f9ff', borderColor: '#bae6fd', borderWidth: 1 }]}
+                  onPress={() => selectCity(citySearchQuery.trim())}
+                >
+                  <Ionicons name="add-circle-outline" size={18} color="#034b71" style={{ marginRight: 12 }} />
+                  <Text style={[styles.cityItemText, { color: '#034b71', fontWeight: '700' }]}>
+                    Use "{citySearchQuery.trim()}" as city
+                  </Text>
+                </TouchableOpacity>
+              ) : null
+            }
             renderItem={({ item }) => (
               <TouchableOpacity
                 style={[styles.cityItem, currentCity === item && styles.cityItemActive]}

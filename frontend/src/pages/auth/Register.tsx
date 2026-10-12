@@ -102,6 +102,7 @@ export const Register = () => {
   };
 
   const [currentCity, setCurrentCity] = useState('');
+  const [customCityInput, setCustomCityInput] = useState('');
   const [workStatus, setWorkStatus] = useState<'fresher' | 'experienced'>('fresher');
   const [experienceYears, setExperienceYears] = useState('1-2 Years');
   const [caFinalCompletionYear, setCaFinalCompletionYear] = useState('2023');
@@ -506,7 +507,8 @@ export const Register = () => {
         newErrors.dateOfBirth = 'Please fill this field: Date of Birth';
       }
 
-      if (!currentCity.trim()) {
+      const effectiveCity = currentCity === 'Other' ? customCityInput.trim() : currentCity.trim();
+      if (!effectiveCity) {
         newErrors.currentCity = 'Please fill this field: Current Location';
       }
 
@@ -529,7 +531,8 @@ export const Register = () => {
         newErrors.resumeFile = 'Please fill this field: Upload Resume / CV (PDF or DOCX)';
       }
     } else {
-      if (!currentCity.trim()) {
+      const effectiveCity = currentCity === 'Other' ? customCityInput.trim() : currentCity.trim();
+      if (!effectiveCity) {
         newErrors.currentCity = 'Please fill this field: Current Location';
       }
     }
@@ -590,7 +593,7 @@ export const Register = () => {
       linkedinUrl: linkedinUrl.trim(),
       ...(role === 'candidate' && {
         phone,
-        currentCity,
+        currentCity: (currentCity === 'Other' ? customCityInput.trim() : currentCity.trim()),
         dateOfBirth,
         isFresherCA: workStatus === 'fresher',
         resumeUrl: uploadedResumeUrl,
@@ -1121,6 +1124,20 @@ export const Register = () => {
                         onChange={() => {}}
                         className="opacity-0 absolute inset-x-0 bottom-0 h-0 pointer-events-none"
                       />
+                      {currentCity === 'Other' && (
+                        <div className="mt-2 animate-in fade-in">
+                          <input
+                            type="text"
+                            value={customCityInput}
+                            onChange={(e) => {
+                              setCustomCityInput(e.target.value);
+                              if (fieldErrors.currentCity) setFieldErrors(prev => ({ ...prev, currentCity: '' }));
+                            }}
+                            placeholder="Please enter your city name"
+                            className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white font-medium"
+                          />
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -1294,6 +1311,20 @@ export const Register = () => {
                               </div>
                             )}
                           </div>
+                        </div>
+                      )}
+                      {currentCity === 'Other' && (
+                        <div className="mt-2 animate-in fade-in">
+                          <input
+                            type="text"
+                            value={customCityInput}
+                            onChange={(e) => {
+                              setCustomCityInput(e.target.value);
+                              if (fieldErrors.currentCity) setFieldErrors(prev => ({ ...prev, currentCity: '' }));
+                            }}
+                            placeholder="Please enter your city name"
+                            className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white font-medium"
+                          />
                         </div>
                       )}
                     </div>

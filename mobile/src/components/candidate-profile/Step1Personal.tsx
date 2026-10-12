@@ -121,7 +121,7 @@ export const Step1Personal: React.FC<Step1Props> = ({ personal, setPersonal, use
         <Text style={styles.label}>Gender *</Text>
         <View style={styles.pickerContainer}>
           <Picker
-            selectedValue={personal.gender}
+            selectedValue={['Male', 'Female'].includes(personal.gender) ? personal.gender : (personal.gender ? 'Other' : '')}
             onValueChange={(val) => setPersonal({...personal, gender: val})}
           >
             <Picker.Item label="Male" value="Male" />
@@ -129,6 +129,15 @@ export const Step1Personal: React.FC<Step1Props> = ({ personal, setPersonal, use
             <Picker.Item label="Other" value="Other" />
           </Picker>
         </View>
+        {(personal.gender === 'Other' || (personal.gender && !['Male', 'Female'].includes(personal.gender))) && (
+          <TextInput
+            style={[styles.input, { marginTop: -4, marginBottom: 12 }]}
+            placeholder="Please specify gender"
+            placeholderTextColor="#94a3b8"
+            value={personal.gender === 'Other' ? '' : personal.gender}
+            onChangeText={(val) => setPersonal({ ...personal, gender: val })}
+          />
+        )}
 
         <Text style={styles.label}>Marital Status *</Text>
         <View style={styles.pickerContainer}>
@@ -174,7 +183,7 @@ export const Step1Personal: React.FC<Step1Props> = ({ personal, setPersonal, use
         <Text style={styles.label}>City *</Text>
         <View style={styles.pickerContainer}>
           <Picker
-            selectedValue={personal.currentCity}
+            selectedValue={(STATE_CITY_MAP[personal.currentState] || []).includes(personal.currentCity) ? personal.currentCity : (personal.currentCity ? 'Other' : '')}
             enabled={!!personal.currentState}
             onValueChange={(val) => {
               setPersonal({...personal, currentCity: val});
@@ -185,6 +194,18 @@ export const Step1Personal: React.FC<Step1Props> = ({ personal, setPersonal, use
             {(STATE_CITY_MAP[personal.currentState] || []).map(c => <Picker.Item key={c} label={c} value={c} />)}
           </Picker>
         </View>
+        {(personal.currentCity === 'Other' || (personal.currentCity && !(STATE_CITY_MAP[personal.currentState] || []).filter(c => c !== 'Other').includes(personal.currentCity))) && (
+          <TextInput
+            style={[styles.input, { marginTop: -4, marginBottom: 12 }]}
+            placeholder="Enter city name"
+            placeholderTextColor="#94a3b8"
+            value={personal.currentCity === 'Other' ? '' : personal.currentCity}
+            onChangeText={(val) => {
+              setPersonal({...personal, currentCity: val});
+              if(personal.permanentAddressSameAsCurrent) setPersonal((p: any) => ({...p, permanentCity: val}));
+            }}
+          />
+        )}
       </View>
 
       {/* Permanent Address */}
@@ -232,7 +253,7 @@ export const Step1Personal: React.FC<Step1Props> = ({ personal, setPersonal, use
         <Text style={styles.label}>City *</Text>
         <View style={styles.pickerContainer}>
           <Picker
-            selectedValue={personal.permanentCity}
+            selectedValue={(STATE_CITY_MAP[personal.permanentState] || []).includes(personal.permanentCity) ? personal.permanentCity : (personal.permanentCity ? 'Other' : '')}
             enabled={!!personal.permanentState && !personal.permanentAddressSameAsCurrent}
             onValueChange={(val) => setPersonal({...personal, permanentCity: val})}
           >
@@ -240,6 +261,16 @@ export const Step1Personal: React.FC<Step1Props> = ({ personal, setPersonal, use
             {(STATE_CITY_MAP[personal.permanentState] || []).map(c => <Picker.Item key={c} label={c} value={c} />)}
           </Picker>
         </View>
+        {(personal.permanentCity === 'Other' || (personal.permanentCity && !(STATE_CITY_MAP[personal.permanentState] || []).filter(c => c !== 'Other').includes(personal.permanentCity))) && (
+          <TextInput
+            style={[styles.input, { marginTop: -4, marginBottom: 12 }]}
+            placeholder="Enter city name"
+            placeholderTextColor="#94a3b8"
+            value={personal.permanentCity === 'Other' ? '' : personal.permanentCity}
+            onChangeText={(val) => setPersonal({...personal, permanentCity: val})}
+            editable={!personal.permanentAddressSameAsCurrent}
+          />
+        )}
       </View>
 
     </View>

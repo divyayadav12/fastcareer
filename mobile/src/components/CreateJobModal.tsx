@@ -41,6 +41,7 @@ export default function CreateJobModal({ visible, onClose, onSuccess, initialCom
     location: '',
     type: 'Full-time',
     category: 'Finance',
+    customCategory: '',
     salaryRange: '',
     description: '',
     requirements: '',
@@ -99,7 +100,8 @@ export default function CreateJobModal({ visible, onClose, onSuccess, initialCom
       const safeTitle = formData.title.trim();
       const safeCompany = formData.company.trim();
       const safeLoc = (formData.location || 'Pan India').trim();
-      const safeDesc = formData.description.trim() || `${safeTitle} opening at ${safeCompany} in ${safeLoc}. Type: ${formData.type || 'Full-time'}. Category: ${formData.category || 'Finance'}. Salary/Stipend: ${formData.salaryRange || 'Competitive'}.`;
+      const finalCategory = (formData.category === 'Other' && formData.customCategory?.trim()) ? formData.customCategory.trim() : formData.category;
+      const safeDesc = formData.description.trim() || `${safeTitle} opening at ${safeCompany} in ${safeLoc}. Type: ${formData.type || 'Full-time'}. Category: ${finalCategory || 'Finance'}. Salary/Stipend: ${formData.salaryRange || 'Competitive'}.`;
       const safeReq = formData.requirements.trim() ? formData.requirements.split('\n').map(r => r.trim()).filter(Boolean) : [`Relevant experience and qualifications for ${safeTitle}`];
       const safeResp = formData.responsibilities.trim() ? formData.responsibilities.split('\n').map(r => r.trim()).filter(Boolean) : [`Key deliverables and responsibilities as ${safeTitle}`];
 
@@ -108,6 +110,7 @@ export default function CreateJobModal({ visible, onClose, onSuccess, initialCom
         title: safeTitle,
         company: safeCompany,
         location: safeLoc,
+        category: finalCategory,
         description: safeDesc,
         requirements: safeReq,
         responsibilities: safeResp,
@@ -124,6 +127,7 @@ export default function CreateJobModal({ visible, onClose, onSuccess, initialCom
         location: '',
         type: 'Full-time',
         category: 'Finance',
+        customCategory: '',
         salaryRange: '',
         description: '',
         requirements: '',
@@ -230,7 +234,7 @@ export default function CreateJobModal({ visible, onClose, onSuccess, initialCom
         </View>
 
         <Text style={styles.label}>Category</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
           <View style={{ flexDirection: 'row', gap: 6 }}>
             {CATEGORIES.map(cat => (
               <TouchableOpacity
@@ -245,6 +249,15 @@ export default function CreateJobModal({ visible, onClose, onSuccess, initialCom
             ))}
           </View>
         </ScrollView>
+        {formData.category === 'Other' && (
+          <TextInput
+            style={[styles.input, { marginBottom: 16 }]}
+            value={formData.customCategory}
+            onChangeText={t => setFormData({ ...formData, customCategory: t })}
+            placeholder="Specify custom category"
+            placeholderTextColor="#94a3b8"
+          />
+        )}
 
         {/* Salary Range Dropdown */}
         <Text style={styles.label}>Salary / Stipend</Text>

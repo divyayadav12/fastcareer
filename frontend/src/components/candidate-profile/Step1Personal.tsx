@@ -83,11 +83,24 @@ export const Step1Personal = ({ personal, setPersonal, user, resumeUrl, handleFi
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Gender <span className="text-red-500">*</span></label>
-            <select value={personal.gender} onChange={(e) => setPersonal({...personal, gender: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
+            <select
+              value={['Male', 'Female'].includes(personal.gender) ? personal.gender : (personal.gender ? 'Other' : '')}
+              onChange={(e) => setPersonal({...personal, gender: e.target.value})}
+              className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+            >
               <option>Male</option>
               <option>Female</option>
               <option>Other</option>
             </select>
+            {(personal.gender === 'Other' || (personal.gender && !['Male', 'Female'].includes(personal.gender))) && (
+              <input
+                type="text"
+                placeholder="Please specify gender"
+                value={personal.gender === 'Other' ? '' : personal.gender}
+                onChange={(e) => setPersonal({ ...personal, gender: e.target.value })}
+                className="mt-2 w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 text-sm animate-in fade-in"
+              />
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Marital Status <span className="text-red-500">*</span></label>
@@ -133,19 +146,42 @@ export const Step1Personal = ({ personal, setPersonal, user, resumeUrl, handleFi
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">City <span className="text-red-500">*</span></label>
-                <select value={personal.currentCity} onChange={(e) => {
-                  const val = e.target.value;
-                  setPersonal((prev: any) => {
-                    const next = { ...prev, currentCity: val };
-                    if (prev.permanentAddressSameAsCurrent) {
-                      next.permanentCity = val;
-                    }
-                    return next;
-                  });
-                }} disabled={!personal.currentState} className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 disabled:bg-gray-50">
+                <select
+                  value={(STATE_CITY_MAP[personal.currentState] || []).includes(personal.currentCity) ? personal.currentCity : (personal.currentCity ? 'Other' : '')}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setPersonal((prev: any) => {
+                      const next = { ...prev, currentCity: val };
+                      if (prev.permanentAddressSameAsCurrent) {
+                        next.permanentCity = val;
+                      }
+                      return next;
+                    });
+                  }}
+                  disabled={!personal.currentState}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 disabled:bg-gray-50"
+                >
                   <option value="">Select City</option>
                   {(STATE_CITY_MAP[personal.currentState] || []).map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
+                {(personal.currentCity === 'Other' || (personal.currentCity && !(STATE_CITY_MAP[personal.currentState] || []).filter(c => c !== 'Other').includes(personal.currentCity))) && (
+                  <input
+                    type="text"
+                    placeholder="Enter your city name"
+                    value={personal.currentCity === 'Other' ? '' : personal.currentCity}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setPersonal((prev: any) => {
+                        const next = { ...prev, currentCity: val };
+                        if (prev.permanentAddressSameAsCurrent) {
+                          next.permanentCity = val;
+                        }
+                        return next;
+                      });
+                    }}
+                    className="mt-2 w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 text-sm animate-in fade-in"
+                  />
+                )}
               </div>
             </div>
           </div>
@@ -173,10 +209,25 @@ export const Step1Personal = ({ personal, setPersonal, user, resumeUrl, handleFi
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">City <span className="text-red-500">*</span></label>
-                <select value={personal.permanentCity} onChange={(e) => setPersonal({...personal, permanentCity: e.target.value})} disabled={personal.permanentAddressSameAsCurrent || !personal.permanentState} className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 disabled:bg-gray-50 disabled:text-gray-500">
+                <select
+                  value={(STATE_CITY_MAP[personal.permanentState] || []).includes(personal.permanentCity) ? personal.permanentCity : (personal.permanentCity ? 'Other' : '')}
+                  onChange={(e) => setPersonal({...personal, permanentCity: e.target.value})}
+                  disabled={personal.permanentAddressSameAsCurrent || !personal.permanentState}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 disabled:bg-gray-50 disabled:text-gray-500"
+                >
                   <option value="">Select City</option>
                   {(STATE_CITY_MAP[personal.permanentState] || []).map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
+                {(personal.permanentCity === 'Other' || (personal.permanentCity && !(STATE_CITY_MAP[personal.permanentState] || []).filter(c => c !== 'Other').includes(personal.permanentCity))) && (
+                  <input
+                    type="text"
+                    placeholder="Enter your city name"
+                    value={personal.permanentCity === 'Other' ? '' : personal.permanentCity}
+                    onChange={(e) => setPersonal({...personal, permanentCity: e.target.value})}
+                    disabled={personal.permanentAddressSameAsCurrent}
+                    className="mt-2 w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 text-sm animate-in fade-in"
+                  />
+                )}
               </div>
             </div>
           </div>

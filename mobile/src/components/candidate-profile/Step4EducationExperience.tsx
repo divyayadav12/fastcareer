@@ -47,11 +47,26 @@ export const Step4EducationExperience = ({ qualifications, setQualifications, ex
 
         <Text style={[styles.label, {marginTop: 12}]}>College Name</Text>
         <View style={styles.pickerContainer}>
-          <Picker selectedValue={qualifications.graduation?.college} onValueChange={(val) => setQualifications({...qualifications, graduation: {...qualifications.graduation, college: val}})}>
+          <Picker
+            selectedValue={COLLEGES.includes(qualifications.graduation?.college) ? qualifications.graduation?.college : (qualifications.graduation?.college ? 'Other' : '')}
+            onValueChange={(val) => setQualifications({...qualifications, graduation: {...qualifications.graduation, college: val}})}
+          >
             <Picker.Item label="Select College" value="" />
             {COLLEGES.map(c => <Picker.Item key={c} label={c} value={c} />)}
           </Picker>
         </View>
+        {(qualifications.graduation?.college === 'Other' || (qualifications.graduation?.college && !COLLEGES.filter(c => c !== 'Other').includes(qualifications.graduation?.college))) && (
+          <TextInput
+            style={[styles.input, { marginTop: -4, marginBottom: 12 }]}
+            value={qualifications.graduation?.customCollege || (qualifications.graduation?.college === 'Other' ? '' : qualifications.graduation?.college)}
+            onChangeText={(val) => setQualifications({
+              ...qualifications,
+              graduation: { ...qualifications.graduation, customCollege: val, college: val || 'Other' }
+            })}
+            placeholder="Enter college name"
+            placeholderTextColor="#94a3b8"
+          />
+        )}
 
         {qualifications.graduation?.completed === 'Yes' && (
           <View style={styles.row}>
@@ -88,11 +103,26 @@ export const Step4EducationExperience = ({ qualifications, setQualifications, ex
           
           <Text style={styles.label}>Board</Text>
           <View style={styles.pickerContainer}>
-            <Picker selectedValue={qualifications.class12?.board} onValueChange={(val) => setQualifications({...qualifications, class12: {...qualifications.class12, board: val}})}>
+            <Picker
+              selectedValue={BOARDS.includes(qualifications.class12?.board) ? qualifications.class12?.board : (qualifications.class12?.board ? 'Other' : '')}
+              onValueChange={(val) => setQualifications({...qualifications, class12: {...qualifications.class12, board: val}})}
+            >
               <Picker.Item label="Select" value="" />
               {BOARDS.map(b => <Picker.Item key={b} label={b} value={b} />)}
             </Picker>
           </View>
+          {(qualifications.class12?.board === 'Other' || (qualifications.class12?.board && !BOARDS.filter(b => b !== 'Other').includes(qualifications.class12?.board))) && (
+            <TextInput
+              style={[styles.input, { marginTop: -4, marginBottom: 12 }]}
+              value={qualifications.class12?.customBoard || (qualifications.class12?.board === 'Other' ? '' : qualifications.class12?.board)}
+              onChangeText={(val) => setQualifications({
+                ...qualifications,
+                class12: { ...qualifications.class12, customBoard: val, board: val || 'Other' }
+              })}
+              placeholder="Enter board name"
+              placeholderTextColor="#94a3b8"
+            />
+          )}
         </View>
 
         {/* Class 10 */}
@@ -110,11 +140,26 @@ export const Step4EducationExperience = ({ qualifications, setQualifications, ex
           
           <Text style={styles.label}>Board</Text>
           <View style={styles.pickerContainer}>
-            <Picker selectedValue={qualifications.class10?.board} onValueChange={(val) => setQualifications({...qualifications, class10: {...qualifications.class10, board: val}})}>
+            <Picker
+              selectedValue={BOARDS.includes(qualifications.class10?.board) ? qualifications.class10?.board : (qualifications.class10?.board ? 'Other' : '')}
+              onValueChange={(val) => setQualifications({...qualifications, class10: {...qualifications.class10, board: val}})}
+            >
               <Picker.Item label="Select" value="" />
               {BOARDS.map(b => <Picker.Item key={b} label={b} value={b} />)}
             </Picker>
           </View>
+          {(qualifications.class10?.board === 'Other' || (qualifications.class10?.board && !BOARDS.filter(b => b !== 'Other').includes(qualifications.class10?.board))) && (
+            <TextInput
+              style={[styles.input, { marginTop: -4, marginBottom: 12 }]}
+              value={qualifications.class10?.customBoard || (qualifications.class10?.board === 'Other' ? '' : qualifications.class10?.board)}
+              onChangeText={(val) => setQualifications({
+                ...qualifications,
+                class10: { ...qualifications.class10, customBoard: val, board: val || 'Other' }
+              })}
+              placeholder="Enter board name"
+              placeholderTextColor="#94a3b8"
+            />
+          )}
         </View>
       </View>
 

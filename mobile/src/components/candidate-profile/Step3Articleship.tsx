@@ -79,6 +79,15 @@ export const Step3Articleship = ({ caPortfolio, setCaPortfolio }: any) => {
               {ARTICLESHIP_TYPES.map(t => <Picker.Item key={t} label={t} value={t} />)}
             </Picker>
           </View>
+          {firm.type === 'Other' && (
+            <TextInput
+              style={[styles.input, { marginTop: -4, marginBottom: 12 }]}
+              value={firm.customType || ''}
+              onChangeText={(val) => updateFirm(index, 'customType', val)}
+              placeholder="Specify type"
+              placeholderTextColor="#94a3b8"
+            />
+          )}
 
           <Text style={styles.label}>Firm Name</Text>
           <TextInput style={styles.input} value={firm.firmName} onChangeText={(val) => updateFirm(index, 'firmName', val)} placeholder="Enter firm name" />
@@ -142,6 +151,18 @@ export const Step3Articleship = ({ caPortfolio, setCaPortfolio }: any) => {
             )
           })}
         </View>
+        {isWorkSelected('Other') && (
+          <View style={{ marginTop: 12, borderTopWidth: 1, borderTopColor: '#f1f5f9', paddingTop: 10 }}>
+            <Text style={styles.label}>Specify Other Nature of Work</Text>
+            <TextInput
+              style={styles.input}
+              value={caPortfolio.otherNatureOfWork || ''}
+              onChangeText={(val) => setCaPortfolio({ ...caPortfolio, otherNatureOfWork: val })}
+              placeholder="e.g. ERP, SAP, Transaction Advisory"
+              placeholderTextColor="#94a3b8"
+            />
+          </View>
+        )}
       </View>
     </View>
   );
