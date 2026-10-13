@@ -185,7 +185,8 @@ export const EmployerCandidates = () => {
     const matchesInter1st = filterInter1stAttempt ? inter1st === filterInter1stAttempt : true;
     const matchesInterG1 = filterInterGroup1Attempts ? c.caPortfolio?.caInter?.group1Attempts === filterInterGroup1Attempts : true;
     const matchesInterG2 = filterInterGroup2Attempts ? c.caPortfolio?.caInter?.group2Attempts === filterInterGroup2Attempts : true;
-    const matchesInterRanker = filterInterRanker ? c.caPortfolio?.caInter?.ranker === filterInterRanker : true;
+    const isInterRanker = Boolean(c.caPortfolio?.caInter?.ranker && c.caPortfolio.caInter.ranker !== 'No');
+    const matchesInterRanker = filterInterRanker ? (filterInterRanker === 'Yes' ? isInterRanker : !isInterRanker) : true;
 
     const final1st = c.caPortfolio?.caFinal?.bothGroups1stAttempt ? 'Yes' : 'No';
     const matchesFinal1st = filterFinal1stAttempt ? final1st === filterFinal1stAttempt : true;
@@ -209,7 +210,8 @@ export const EmployerCandidates = () => {
     }
     const matchesFinalG1 = filterFinalGroup1Attempts ? c.caPortfolio?.caFinal?.group1Attempts === filterFinalGroup1Attempts : true;
     const matchesFinalG2 = filterFinalGroup2Attempts ? c.caPortfolio?.caFinal?.group2Attempts === filterFinalGroup2Attempts : true;
-    const matchesFinalRanker = filterFinalRanker ? c.caPortfolio?.caFinal?.ranker === filterFinalRanker : true;
+    const isFinalRanker = Boolean(c.caPortfolio?.caFinal?.ranker && c.caPortfolio.caFinal.ranker !== 'No');
+    const matchesFinalRanker = filterFinalRanker ? (filterFinalRanker === 'Yes' ? isFinalRanker : !isFinalRanker) : true;
 
     const big4 = (c.caPortfolio?.big4Articleship && c.caPortfolio.big4Articleship !== 'No' && c.caPortfolio.big4Articleship !== 'none' && c.caPortfolio.big4Articleship !== '') ? 'Yes' : 'No';
     const matchesBig4 = filterBig4 ? big4 === filterBig4 : true;

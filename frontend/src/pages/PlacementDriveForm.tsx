@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { STATES, STATE_CITY_MAP, ALL_CITIES, YEARS, YEARS_1970, EXPERIENCE_YEARS_OPTIONS, MONTHS, BOARDS, ATTEMPTS, CA_EXAM_MONTHS, NATURE_OF_WORK, COLLEGES, PREFERRED_CAMPUS_CITIES, ARTICLESHIP_TYPES } from '../utils/constants';
+import { STATES, STATE_CITY_MAP, ALL_CITIES, YEARS, YEARS_1970, EXPERIENCE_YEARS_OPTIONS, MONTHS, BOARDS, ATTEMPTS, CA_EXAM_MONTHS, NATURE_OF_WORK, COLLEGES, PREFERRED_CAMPUS_CITIES, ARTICLESHIP_TYPES, RANKER_OPTIONS } from '../utils/constants';
 import { DatePicker } from '../components/DatePicker';
 
 export const PlacementDriveForm = () => {
@@ -548,8 +548,12 @@ export const PlacementDriveForm = () => {
                         <label className="block text-xs font-medium text-gray-700 mb-1">Ranker</label>
                         <select name="caInter_ranker" value={formData.caInter_ranker} onChange={handleChange} className="w-full p-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
                           <option value="">Select...</option>
-                          <option value="Yes">Yes</option>
-                          <option value="No">No</option>
+                          {RANKER_OPTIONS.map(r => (
+                            <option key={r} value={r}>{r}</option>
+                          ))}
+                          {formData.caInter_ranker && !RANKER_OPTIONS.includes(formData.caInter_ranker) && (
+                            <option value={formData.caInter_ranker}>{formData.caInter_ranker}</option>
+                          )}
                         </select>
                       </div>
                       <div>
@@ -612,8 +616,12 @@ export const PlacementDriveForm = () => {
                         <label className="block text-xs font-medium text-gray-700 mb-1">Ranker</label>
                         <select name="caFinal_ranker" value={formData.caFinal_ranker} onChange={handleChange} className="w-full p-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
                           <option value="">Select...</option>
-                          <option value="Yes">Yes</option>
-                          <option value="No">No</option>
+                          {RANKER_OPTIONS.map(r => (
+                            <option key={r} value={r}>{r}</option>
+                          ))}
+                          {formData.caFinal_ranker && !RANKER_OPTIONS.includes(formData.caFinal_ranker) && (
+                            <option value={formData.caFinal_ranker}>{formData.caFinal_ranker}</option>
+                          )}
                         </select>
                       </div>
                       <div>
