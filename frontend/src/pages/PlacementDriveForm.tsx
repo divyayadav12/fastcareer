@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { STATES, STATE_CITY_MAP, ALL_CITIES, YEARS, YEARS_1970, EXPERIENCE_YEARS_OPTIONS, MONTHS, BOARDS, ATTEMPTS, CA_EXAM_MONTHS, NATURE_OF_WORK, COLLEGES, PREFERRED_CAMPUS_CITIES, ARTICLESHIP_TYPES } from '../utils/constants';
 import { DatePicker } from '../components/DatePicker';
@@ -433,12 +433,12 @@ export const PlacementDriveForm = () => {
               <div>
                 <h3 className="text-xl font-semibold text-gray-900 border-b pb-2 mb-4">CA Portfolio Details</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
+                    <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">CA Status</label>
                     <select name="caStatus" value={formData.caStatus} onChange={handleChange} className="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
                       <option value="">Select Status...</option>
                       <option value="CA Fresher">CA Fresher</option>
-                      <option value="CA Experienced">CA Experienced</option>
+                      <option value="CA Experienced">CA Experienced (2+ Years Required)</option>
                       <option value="CA Inter">CA Inter</option>
                     </select>
                   </div>
@@ -471,9 +471,18 @@ export const PlacementDriveForm = () => {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-gray-800 mb-1">
-                          Total Work Experience <span className="text-red-500">*</span>
-                        </label>
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="block text-xs font-bold text-gray-800">
+                            Total Work Experience <span className="text-red-500">*</span>
+                          </label>
+                          <span className="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">
+                            2+ Years Required
+                          </span>
+                        </div>
+                        <div className="mb-1.5 text-[11px] font-semibold text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 flex items-center gap-1.5">
+                          <AlertCircle size={13} className="text-amber-600 shrink-0" />
+                          <span>Minimum 2+ Years Post-Qualification Experience Required</span>
+                        </div>
                         <select
                           name="experienceYears"
                           required
@@ -481,7 +490,7 @@ export const PlacementDriveForm = () => {
                           onChange={handleChange}
                           className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white font-medium"
                         >
-                          <option value="">-- Select Total Experience --</option>
+                          <option value="">-- Select Total Experience (Min. 2+ Years) --</option>
                           {EXPERIENCE_YEARS_OPTIONS.map(opt => (
                             <option key={opt} value={opt}>{opt}</option>
                           ))}

@@ -22,12 +22,28 @@ import {
   Sparkles,
   UploadCloud,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Plus,
+  Trash2
 } from 'lucide-react';
 import { register, reset } from '../../store/authSlice';
 import type { AppDispatch, RootState } from '../../store';
 import api from '../../services/api';
-import { ALL_CITIES, ATTEMPTS, CA_EXAM_MONTHS, YEARS, YEARS_1970, EXPERIENCE_YEARS_OPTIONS, CTC_OPTIONS, getLaterExamSession, RANKER_OPTIONS } from '../../utils/constants';
+import {
+  ALL_CITIES,
+  ATTEMPTS,
+  CA_EXAM_MONTHS,
+  YEARS,
+  YEARS_1970,
+  EXPERIENCE_YEARS_OPTIONS,
+  CTC_OPTIONS,
+  getLaterExamSession,
+  RANKER_OPTIONS,
+  ARTICLESHIP_TYPES,
+  CA_FIRMS,
+  MONTHS,
+  NATURE_OF_WORK
+} from '../../utils/constants';
 import { parseResumeFile } from '../../utils/resumeParser';
 
 const POPULAR_CITIES = [
@@ -107,7 +123,7 @@ export const Register = () => {
   const [currentCity, setCurrentCity] = useState('');
   const [customCityInput, setCustomCityInput] = useState('');
   const [workStatus, setWorkStatus] = useState<'fresher' | 'experienced'>('fresher');
-  const [experienceYears, setExperienceYears] = useState('1-2 Years');
+  const [experienceYears, setExperienceYears] = useState('2-3 Years');
   const [caFinalCompletionYear, setCaFinalCompletionYear] = useState('2023');
   const [currentCompanyName, setCurrentCompanyName] = useState('');
   const [currentDesignation, setCurrentDesignation] = useState('');
@@ -121,6 +137,54 @@ export const Register = () => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [isScanningResume, setIsScanningResume] = useState(false);
   const [scannedFields, setScannedFields] = useState<string[]>([]);
+
+  // Articleship Details State (for Freshers)
+  const [articleships, setArticleships] = useState<Array<{
+    type: string;
+    customType?: string;
+    firmName: string;
+    customFirmName?: string;
+    city: string;
+    noOfPartners: string;
+    noOfMonths: string;
+  }>>([
+    { type: 'Articleship', firmName: '', city: '', noOfPartners: '2', noOfMonths: '36' }
+  ]);
+  const [articleshipCompletionMonth, setArticleshipCompletionMonth] = useState('May');
+  const [articleshipCompletionYear, setArticleshipCompletionYear] = useState(String(new Date().getFullYear()));
+  const [selectedNatureOfWork, setSelectedNatureOfWork] = useState<string[]>([
+    'Statutory Audit',
+    'Tax Audit'
+  ]);
+  const [otherNatureOfWork, setOtherNatureOfWork] = useState('');
+  const [gmcsCompleted, setGmcsCompleted] = useState<'Yes' | 'No'>('Yes');
+  const [industrialTrainee, setIndustrialTrainee] = useState<'Yes' | 'No'>('No');
+  const [listedCompanyWork, setListedCompanyWork] = useState<'Yes' | 'No'>('No');
+
+  const addArticleship = () => {
+    setArticleships(prev => [
+      ...prev,
+      { type: 'Articleship', firmName: '', city: '', noOfPartners: '2', noOfMonths: '0' }
+    ]);
+  };
+
+  const removeArticleship = (idx: number) => {
+    setArticleships(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const updateArticleship = (idx: number, field: string, val: string) => {
+    setArticleships(prev => {
+      const next = [...prev];
+      next[idx] = { ...next[idx], [field]: val };
+      return next;
+    });
+  };
+
+  const toggleNatureWork = (work: string) => {
+    setSelectedNatureOfWork(prev =>
+      prev.includes(work) ? prev.filter(w => w !== work) : [...prev, work]
+    );
+  };
 
   // CA Intermediate Examination State
   const [caInter, setCaInter] = useState({
@@ -379,7 +443,7 @@ export const Register = () => {
         setLinkedinUrl(parsed.linkedinUrl);
         extracted.push('LinkedIn');
       }
-      if (parsed.workStatus || parsed.isExperienced) {
+      if (parsed.workStatus === 'experienced' || parsed.isExperienced) {
         setWorkStatus('experienced');
         if (parsed.experienceYears) {
           setExperienceYears(parsed.experienceYears);
@@ -397,7 +461,29 @@ export const Register = () => {
           extracted.push('Work Profile');
         }
         extracted.push('Experience Stage');
+      } else if (parsed.workStatus === 'fresher' || parsed.isFresherCA) {
+        setWorkStatus('fresher');
+        extracted.push('Fresher Profile');
       }
+
+      if (parsed.articleshipFirm || parsed.articleshipCity) {
+        setArticleships(prev => {
+          const updated = [...prev];
+          if (parsed.articleshipFirm) updated[0].firmName = parsed.articleshipFirm;
+          if (parsed.articleshipCity) updated[0].city = parsed.articleshipCity;
+          return updated;
+        });
+        extracted.push('Articleship Firm');
+      }
+      if (parsed.natureOfWork) {
+        const parts = parsed.natureOfWork.split(',').map((w: string) => w.trim()).filter(Boolean);
+        if (parts.length > 0) {
+          setSelectedNatureOfWork(prev => Array.from(new Set([...prev, ...parts])));
+          extracted.push('Nature of Work');
+        }
+      }
+      if (parsed.industrialTrainee) setIndustrialTrainee(parsed.industrialTrainee as 'Yes' | 'No');
+      if (parsed.gmcsCompleted) setGmcsCompleted(parsed.gmcsCompleted as 'Yes' | 'No');
       if (parsed.caFinalCompletionYear || parsed.caFinalYear) {
         const yearVal = parsed.caFinalCompletionYear || parsed.caFinalYear;
         if (yearVal) {
@@ -602,9 +688,23 @@ export const Register = () => {
         dateOfBirth,
         isFresherCA: workStatus === 'fresher',
         resumeUrl: uploadedResumeUrl,
+        articleships: workStatus === 'fresher' ? articleships.map(a => ({
+          type: a.type === 'Other' && a.customType ? a.customType.trim() : a.type,
+          firmName: a.firmName === 'Other' && a.customFirmName ? a.customFirmName.trim() : a.firmName.trim(),
+          city: a.city.trim(),
+          noOfPartners: a.noOfPartners,
+          noOfMonths: a.noOfMonths,
+        })).filter(a => a.firmName || a.city) : [],
+        articleshipCompletionDate: workStatus === 'fresher' ? `${articleshipCompletionMonth} ${articleshipCompletionYear}` : '',
+        natureOfWork: workStatus === 'fresher' ? (
+          selectedNatureOfWork.concat(selectedNatureOfWork.includes('Other') && otherNatureOfWork.trim() ? [otherNatureOfWork.trim()] : []).filter(w => w !== 'Other').join(', ')
+        ) : '',
+        gmcsCompleted: workStatus === 'fresher' ? gmcsCompleted : '',
+        industrialTrainee: workStatus === 'fresher' ? industrialTrainee : '',
+        listedCompanyWork: workStatus === 'fresher' ? listedCompanyWork : '',
         experienceInfo: {
           isExperienced: workStatus === 'experienced',
-          experienceYears: experienceYears || '0-1 Year',
+          experienceYears: experienceYears || '2-3 Years',
           currentCompanyName: currentCompanyName.trim(),
           currentDesignation: currentDesignation.trim(),
           currentCTC: currentCTC.trim(),
@@ -1424,8 +1524,13 @@ export const Register = () => {
                               <Briefcase size={18} />
                             </div>
                             <div>
-                              <div className="text-xs font-bold text-slate-900">Experienced CA</div>
-                              <div className="text-[11px] text-slate-500">Post-qualification exp.</div>
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="text-xs font-bold text-slate-900">Experienced CA</span>
+                                <span className="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">
+                                  2+ Years Exp. Required
+                                </span>
+                              </div>
+                              <div className="text-[11px] text-slate-500 mt-0.5">Post-qualification exp.</div>
                             </div>
                           </div>
                           <div className={`w-5 h-5 rounded-full flex items-center justify-center border transition-colors ${
@@ -1438,15 +1543,314 @@ export const Register = () => {
                         </div>
                       </div>
 
+                      {/* Fresher Articleship Details Form */}
+                      {workStatus === 'fresher' && (
+                        <div className="mt-3.5 bg-blue-50/80 border border-blue-200/90 rounded-2xl p-4 sm:p-5 space-y-4 animate-in fade-in duration-200">
+                          <div className="flex items-center gap-2 border-b border-blue-200/80 pb-3">
+                            <GraduationCap className="w-5 h-5 text-blue-600" />
+                            <div>
+                              <h3 className="text-sm sm:text-base font-bold text-slate-900">
+                                Articleship & Training Details <span className="text-red-500">*</span>
+                              </h3>
+                              <p className="text-[11px] text-slate-500 mt-0.5">
+                                Enter your articleship firm, duration, completion date & nature of work
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Articleship Firms List */}
+                          <div className="space-y-3">
+                            {articleships.map((firm, idx) => (
+                              <div key={idx} className="bg-white p-3.5 sm:p-4 rounded-xl border border-blue-100 shadow-2xs space-y-3 relative">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                                    <Building2 size={14} className="text-blue-600" />
+                                    Articleship Firm {articleships.length > 1 ? `#${idx + 1}` : ''}
+                                  </span>
+                                  {idx > 0 && (
+                                    <button
+                                      type="button"
+                                      onClick={() => removeArticleship(idx)}
+                                      className="text-slate-400 hover:text-red-500 p-1 rounded transition-colors text-xs flex items-center gap-1"
+                                    >
+                                      <Trash2 size={13} /> Remove
+                                    </button>
+                                  )}
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                  {/* Training Type */}
+                                  <div>
+                                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                                      Training Type
+                                    </label>
+                                    <select
+                                      value={firm.type}
+                                      onChange={(e) => updateArticleship(idx, 'type', e.target.value)}
+                                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
+                                    >
+                                      {ARTICLESHIP_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                                    </select>
+                                    {firm.type === 'Other' && (
+                                      <input
+                                        type="text"
+                                        placeholder="Specify training type"
+                                        value={firm.customType || ''}
+                                        onChange={(e) => updateArticleship(idx, 'customType', e.target.value)}
+                                        className="mt-1.5 w-full px-3 py-1.5 border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-blue-500"
+                                      />
+                                    )}
+                                  </div>
+
+                                  {/* Firm Name */}
+                                  <div>
+                                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                                      Firm Name <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                      type="text"
+                                      list={`caFirmsList-${idx}`}
+                                      value={firm.firmName}
+                                      onChange={(e) => updateArticleship(idx, 'firmName', e.target.value)}
+                                      placeholder="e.g. Deloitte, PwC, or Enter Firm Name"
+                                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
+                                    />
+                                    <datalist id={`caFirmsList-${idx}`}>
+                                      {CA_FIRMS.map(f => <option key={f} value={f} />)}
+                                    </datalist>
+                                    {firm.firmName === 'Other' && (
+                                      <input
+                                        type="text"
+                                        placeholder="Enter Firm Name"
+                                        value={firm.customFirmName || ''}
+                                        onChange={(e) => updateArticleship(idx, 'customFirmName', e.target.value)}
+                                        className="mt-1.5 w-full px-3 py-1.5 border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-blue-500"
+                                      />
+                                    )}
+                                  </div>
+
+                                  {/* Articleship City */}
+                                  <div>
+                                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                                      Articleship City <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                      type="text"
+                                      list={`citiesList-${idx}`}
+                                      value={firm.city}
+                                      onChange={(e) => updateArticleship(idx, 'city', e.target.value)}
+                                      placeholder="City where articleship done"
+                                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
+                                    />
+                                    <datalist id={`citiesList-${idx}`}>
+                                      {ALL_CITIES.map(c => <option key={c} value={c} />)}
+                                    </datalist>
+                                  </div>
+
+                                  {/* Number of Partners */}
+                                  <div>
+                                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                                      Number of Partners
+                                    </label>
+                                    <select
+                                      value={firm.noOfPartners}
+                                      onChange={(e) => updateArticleship(idx, 'noOfPartners', e.target.value)}
+                                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white cursor-pointer"
+                                    >
+                                      {Array.from({ length: 20 }, (_, i) => (
+                                        <option key={i + 1} value={String(i + 1)}>{i + 1} {i === 0 ? 'Partner' : 'Partners'}</option>
+                                      ))}
+                                    </select>
+                                  </div>
+
+                                  {/* Duration (Months) */}
+                                  <div>
+                                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                                      Duration (Months)
+                                    </label>
+                                    <input
+                                      type="number"
+                                      min="0"
+                                      max="36"
+                                      value={firm.noOfMonths}
+                                      onChange={(e) => updateArticleship(idx, 'noOfMonths', e.target.value)}
+                                      placeholder="e.g. 36"
+                                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+
+                            <button
+                              type="button"
+                              onClick={addArticleship}
+                              className="w-full py-2 border border-dashed border-blue-300 text-blue-600 hover:bg-blue-100/50 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                            >
+                              <Plus size={14} /> Add Another Articleship / Training Firm
+                            </button>
+                          </div>
+
+                          {/* Completion Date & Training Questions */}
+                          <div className="bg-white p-3.5 sm:p-4 rounded-xl border border-blue-100 shadow-2xs space-y-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                              {/* Completion Month & Year */}
+                              <div>
+                                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                                  Completion / Due Date <span className="text-red-500">*</span>
+                                </label>
+                                <div className="grid grid-cols-2 gap-1.5">
+                                  <select
+                                    value={articleshipCompletionMonth}
+                                    onChange={(e) => setArticleshipCompletionMonth(e.target.value)}
+                                    className="w-full px-2.5 py-2 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white cursor-pointer"
+                                  >
+                                    {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
+                                  </select>
+                                  <select
+                                    value={articleshipCompletionYear}
+                                    onChange={(e) => setArticleshipCompletionYear(e.target.value)}
+                                    className="w-full px-2.5 py-2 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white cursor-pointer"
+                                  >
+                                    {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+                                  </select>
+                                </div>
+                              </div>
+
+                              {/* GMCS Completed */}
+                              <div>
+                                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                                  GMCS Completed?
+                                </label>
+                                <div className="grid grid-cols-2 gap-1.5">
+                                  {(['Yes', 'No'] as const).map(opt => (
+                                    <button
+                                      key={opt}
+                                      type="button"
+                                      onClick={() => setGmcsCompleted(opt)}
+                                      className={`py-2 text-xs font-semibold rounded-xl border transition-all cursor-pointer ${
+                                        gmcsCompleted === opt
+                                          ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                                          : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                                      }`}
+                                    >
+                                      {opt}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+
+                              {/* Industrial Trainee */}
+                              <div>
+                                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                                  Industrial Trainee?
+                                </label>
+                                <div className="grid grid-cols-2 gap-1.5">
+                                  {(['Yes', 'No'] as const).map(opt => (
+                                    <button
+                                      key={opt}
+                                      type="button"
+                                      onClick={() => setIndustrialTrainee(opt)}
+                                      className={`py-2 text-xs font-semibold rounded-xl border transition-all cursor-pointer ${
+                                        industrialTrainee === opt
+                                          ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                                          : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                                      }`}
+                                    >
+                                      {opt}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+
+                              {/* Listed Company Work */}
+                              <div>
+                                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                                  Listed Company Work?
+                                </label>
+                                <div className="grid grid-cols-2 gap-1.5">
+                                  {(['Yes', 'No'] as const).map(opt => (
+                                    <button
+                                      key={opt}
+                                      type="button"
+                                      onClick={() => setListedCompanyWork(opt)}
+                                      className={`py-2 text-xs font-semibold rounded-xl border transition-all cursor-pointer ${
+                                        listedCompanyWork === opt
+                                          ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                                          : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                                      }`}
+                                    >
+                                      {opt}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Nature of Work */}
+                          <div className="bg-white p-3.5 sm:p-4 rounded-xl border border-blue-100 shadow-2xs space-y-2.5">
+                            <div className="flex items-center justify-between">
+                              <label className="block text-xs font-bold text-slate-900">
+                                Nature of Work <span className="text-[11px] font-normal text-slate-500">(You may select multiple)</span>
+                              </label>
+                              <span className="text-[10.5px] font-medium text-blue-600">
+                                {selectedNatureOfWork.length} selected
+                              </span>
+                            </div>
+
+                            <div className="flex flex-wrap gap-1.5">
+                              {NATURE_OF_WORK.map(work => {
+                                const isSel = selectedNatureOfWork.includes(work);
+                                return (
+                                  <button
+                                    key={work}
+                                    type="button"
+                                    onClick={() => toggleNatureWork(work)}
+                                    className={`px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-all cursor-pointer ${
+                                      isSel
+                                        ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                                    }`}
+                                  >
+                                    {work}
+                                  </button>
+                                );
+                              })}
+                            </div>
+
+                            {selectedNatureOfWork.includes('Other') && (
+                              <div className="pt-2">
+                                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                                  Specify Other Nature of Work
+                                </label>
+                                <input
+                                  type="text"
+                                  value={otherNatureOfWork}
+                                  onChange={(e) => setOtherNatureOfWork(e.target.value)}
+                                  placeholder="e.g. ERP Implementation, SAP FICO, Transaction Advisory"
+                                  className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
                       {/* Experienced Candidate Mandatory Details */}
                       {workStatus === 'experienced' && (
                         <div className="mt-3.5 bg-blue-50/80 border border-blue-200/90 rounded-2xl p-4 sm:p-5 space-y-4 animate-in fade-in duration-200">
                           <div className="flex items-center gap-2 border-b border-blue-200/80 pb-3">
-                            <Briefcase className="w-5 h-5 text-blue-600" />
-                            <div>
-                              <h3 className="text-sm sm:text-base font-bold text-slate-900">
-                                Experienced CA Employment Details <span className="text-red-500">*</span>
-                              </h3>
+                            <Briefcase className="w-5 h-5 text-blue-600 shrink-0" />
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between flex-wrap gap-2">
+                                <h3 className="text-sm sm:text-base font-bold text-slate-900">
+                                  Experienced CA Employment Details <span className="text-red-500">*</span>
+                                </h3>
+                                <span className="text-[10.5px] font-bold text-amber-800 bg-amber-100/90 border border-amber-300 px-2.5 py-0.5 rounded-full">
+                                  Min. 2+ Years Experience Required
+                                </span>
+                              </div>
                               <p className="text-[11px] text-slate-500 mt-0.5">
                                 Enter your current company, designation, experience & salary package
                               </p>
@@ -1495,9 +1899,18 @@ export const Register = () => {
 
                             {/* Total Experience Years */}
                             <div>
-                              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                                Total Work Experience <span className="text-red-500">*</span>
-                              </label>
+                              <div className="flex items-center justify-between mb-1">
+                                <label className="block text-xs font-semibold text-slate-700">
+                                  Total Work Experience <span className="text-red-500">*</span>
+                                </label>
+                                <span className="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">
+                                  2+ Years Required
+                                </span>
+                              </div>
+                              <div className="mb-1.5 text-[11px] font-semibold text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 flex items-center gap-1.5">
+                                <AlertCircle size={13} className="text-amber-600 shrink-0" />
+                                <span>Minimum 2+ Years Post-Qualification Experience Required</span>
+                              </div>
                               <select
                                 id="experienceYears"
                                 name="experienceYears"
@@ -1518,7 +1931,7 @@ export const Register = () => {
                                     : 'border-slate-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500'
                                 }`}
                               >
-                                <option value="">-- Select Total Experience --</option>
+                                <option value="">-- Select Total Experience (Min. 2+ Years) --</option>
                                 {EXPERIENCE_YEARS_OPTIONS.map(opt => (
                                   <option key={opt} value={opt}>{opt}</option>
                                 ))}

@@ -404,11 +404,14 @@ export const CandidateDashboard = () => {
     }
   };
 
-  const isExperienced = Boolean(
+  const isFresher = Boolean(
+    user?.caPortfolio?.isFresherCA === true || 
+    caPortfolio?.isFresherCA === true
+  );
+
+  const isExperienced = !isFresher && Boolean(
     experienceInfo.isExperienced ||
     user?.experienceInfo?.isExperienced ||
-    user?.caPortfolio?.isFresherCA === false ||
-    caPortfolio?.isFresherCA === false ||
     Boolean(experienceInfo.currentCompanyName) ||
     Boolean(user?.experienceInfo?.currentCompanyName)
   );

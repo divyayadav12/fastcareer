@@ -87,7 +87,29 @@ import { sendRegistrationWhatsApp } from '../utils/whatsappService';
 // @route   POST /api/users
 // @access  Public
 export const registerUser = async (req: Request, res: Response) => {
-  const { firstName, lastName, companyName, email, password, role, phone, currentCity, dateOfBirth, isFresherCA, resumeUrl, linkedinUrl, caFinal, caInter, experienceInfo } = req.body;
+  const {
+    firstName,
+    lastName,
+    companyName,
+    email,
+    password,
+    role,
+    phone,
+    currentCity,
+    dateOfBirth,
+    isFresherCA,
+    resumeUrl,
+    linkedinUrl,
+    caFinal,
+    caInter,
+    experienceInfo,
+    articleships,
+    articleshipCompletionDate,
+    natureOfWork,
+    gmcsCompleted,
+    industrialTrainee,
+    listedCompanyWork,
+  } = req.body;
 
   try {
     const trimmedEmail = (email || '').toLowerCase().trim();
@@ -126,6 +148,12 @@ export const registerUser = async (req: Request, res: Response) => {
         isFresherCA: isFresherCA === true || isFresherCA === 'true',
         ...(caFinal ? { caFinal } : {}),
         ...(caInter ? { caInter } : {}),
+        ...(articleships && Array.isArray(articleships) && articleships.length > 0 ? { articleships } : {}),
+        ...(articleshipCompletionDate ? { articleshipCompletionDate } : {}),
+        ...(natureOfWork ? { natureOfWork } : {}),
+        ...(gmcsCompleted ? { gmcsCompleted } : {}),
+        ...(industrialTrainee ? { industrialTrainee } : {}),
+        ...(listedCompanyWork ? { listedCompanyWork } : {}),
       },
       ...(experienceInfo ? { experienceInfo } : {})
     });
