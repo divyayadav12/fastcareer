@@ -332,23 +332,14 @@ export const Step6Review: React.FC<Step6ReviewProps> = ({
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1.5">Gender *</label>
                 <select
-                  value={['Male', 'Female'].includes(tempPersonal.gender) ? tempPersonal.gender : (tempPersonal.gender ? 'Other' : '')}
+                  value={tempPersonal.gender || 'Male'}
                   onChange={(e) => setTempPersonal({ ...tempPersonal, gender: e.target.value })}
                   className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white cursor-pointer"
                 >
-                  <option>Male</option>
-                  <option>Female</option>
-                  <option>Other</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
                 </select>
-                {(tempPersonal.gender === 'Other' || (tempPersonal.gender && !['Male', 'Female'].includes(tempPersonal.gender))) && (
-                  <input
-                    type="text"
-                    placeholder="Please specify gender"
-                    value={tempPersonal.gender === 'Other' ? '' : tempPersonal.gender}
-                    onChange={(e) => setTempPersonal({ ...tempPersonal, gender: e.target.value })}
-                    className="mt-2 w-full px-3.5 py-2 border border-gray-200 rounded-xl text-xs"
-                  />
-                )}
               </div>
 
               <div>

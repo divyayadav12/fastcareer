@@ -359,7 +359,7 @@ export const PlacementDriveForm = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
                     <select
                       name="gender"
-                      value={['Male', 'Female'].includes(formData.gender) ? formData.gender : (formData.gender ? 'Other' : '')}
+                      value={formData.gender || ''}
                       onChange={handleChange}
                       className="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white"
                     >
@@ -368,17 +368,6 @@ export const PlacementDriveForm = () => {
                       <option value="Female">Female</option>
                       <option value="Other">Other</option>
                     </select>
-                    {(formData.gender === 'Other' || (formData.gender && !['Male', 'Female'].includes(formData.gender))) && (
-                      <input
-                        type="text"
-                        name="gender"
-                        placeholder="Please specify gender"
-                        value={formData.gender === 'Other' ? '' : formData.gender}
-                        onChange={handleChange}
-                        required
-                        className="mt-2 w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition animate-in fade-in"
-                      />
-                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Marital Status</label>
