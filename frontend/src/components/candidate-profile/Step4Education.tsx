@@ -143,22 +143,49 @@ export const Step4Education = ({ qualifications, setQualifications }: any) => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">College Name</label>
-            <input type="text" list="collegesList" value={qualifications.graduation.college} onChange={(e) => setQualifications({...qualifications, graduation: {...qualifications.graduation, college: e.target.value}})} className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 text-sm" placeholder="Enter or select college" />
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium text-gray-700">College Name</label>
+              {qualifications.graduation.college === 'Other' && (
+                <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
+                  Type your custom college below
+                </span>
+              )}
+            </div>
+            <input
+              type="text"
+              list="collegesList"
+              value={qualifications.graduation.college}
+              onChange={(e) => setQualifications({
+                ...qualifications,
+                graduation: {
+                  ...qualifications.graduation,
+                  college: e.target.value
+                }
+              })}
+              className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 text-sm bg-white"
+              placeholder="Enter or select college"
+            />
             <datalist id="collegesList">
               {COLLEGES.map(c => <option key={c} value={c} />)}
             </datalist>
+
             {qualifications.graduation.college === 'Other' && (
-              <input
-                type="text"
-                placeholder="Enter custom college name"
-                value={qualifications.graduation.customCollege || ''}
-                onChange={(e) => setQualifications({
-                  ...qualifications,
-                  graduation: { ...qualifications.graduation, customCollege: e.target.value }
-                })}
-                className="mt-2 w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 text-sm animate-in fade-in"
-              />
+              <div className="mt-2.5 animate-in fade-in slide-in-from-top-1">
+                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                  Specify Other College Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="Type your college name here (e.g. Government Commerce College)"
+                  value={qualifications.graduation.customCollege || ''}
+                  onChange={(e) => setQualifications({
+                    ...qualifications,
+                    graduation: { ...qualifications.graduation, customCollege: e.target.value }
+                  })}
+                  className="w-full px-4 py-2.5 border border-blue-300 rounded-xl focus:ring-2 focus:ring-primary/20 text-sm bg-white shadow-xs"
+                  autoFocus
+                />
+              </div>
             )}
           </div>
           {qualifications.graduation.completed === 'Yes' && (
