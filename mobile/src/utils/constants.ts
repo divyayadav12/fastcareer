@@ -40,6 +40,29 @@ export const EXPERIENCE_YEARS_OPTIONS = [
   '7-10 Years',
   '10+ Years',
 ];
+export const CTC_OPTIONS = [
+  '1 to 5 LPA',
+  '5 to 10 LPA',
+  '10 to 15 LPA',
+  '15 to 20 LPA',
+  '20 to 25 LPA',
+  '25 to 30 LPA',
+  '30 to 35 LPA',
+  '35 to 40 LPA',
+  '40 to 45 LPA',
+  '45 to 50 LPA',
+  '50 to 55 LPA',
+  '55 to 60 LPA',
+  '60 to 65 LPA',
+  '65 to 70 LPA',
+  '70 to 75 LPA',
+  '75 to 80 LPA',
+  '80 to 85 LPA',
+  '85 to 90 LPA',
+  '90 to 95 LPA',
+  '95 LPA to 1 Cr',
+  'Above 1 Cr'
+];
 export const NATURE_OF_WORK = [
   'Statutory Audit',
   'Internal Audit',
