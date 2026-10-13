@@ -243,7 +243,9 @@ export const Step3Articleship = ({ caPortfolio, setCaPortfolio, isOptional = fal
       </div>
 
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-100 pb-4 mb-6">Nature of Work (Select all that apply)</h3>
+        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-100 pb-4 mb-6">
+          Nature of Work <span className="text-sm font-normal text-gray-500">(You may select multiple)</span>
+        </h3>
         <div className="space-y-6">
           {Object.entries(groupedWork).map(([category, works]) => (
             <div key={category}>
