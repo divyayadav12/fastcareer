@@ -2,6 +2,128 @@ import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { getResumeUrl } from './urlHelper';
 
+/**
+ * Format any date string to DD-MM-YYYY (e.g. 1984-10-13 -> 13-10-1984)
+ */
+export const formatDateToDDMMYYYY = (dateVal: any): string => {
+  if (!dateVal) return 'N/A';
+  const s = String(dateVal).trim();
+  if (!s || s === 'N/A' || s === '-') return 'N/A';
+
+  // If already in DD-MM-YYYY format
+  if (/^\d{2}-\d{2}-\d{4}$/.test(s)) {
+    return s;
+  }
+
+  // If in YYYY-MM-DD format (e.g. 1984-10-13 or 1984-10-13T00:00:00.000Z)
+  const isoMatch = s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+  if (isoMatch) {
+    const y = isoMatch[1];
+    const m = isoMatch[2].padStart(2, '0');
+    const d = isoMatch[3].padStart(2, '0');
+    return `${d}-${m}-${y}`;
+  }
+
+  // If in DD/MM/YYYY format
+  const dmyMatch = s.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
+  if (dmyMatch) {
+    const d = dmyMatch[1].padStart(2, '0');
+    const m = dmyMatch[2].padStart(2, '0');
+    const y = dmyMatch[3];
+    return `${d}-${m}-${y}`;
+  }
+
+  // Fallback using Date parser
+  const parsed = new Date(s);
+  if (!isNaN(parsed.getTime())) {
+    const day = String(parsed.getDate()).padStart(2, '0');
+    const month = String(parsed.getMonth() + 1).padStart(2, '0');
+    const year = parsed.getFullYear();
+    return `${day}-${month}-${year}`;
+  }
+
+  return s;
+};
+
+/**
+ * Format articleship completion date to MMM-YY format (e.g. "May 2025" -> "May-25")
+ */
+export const formatArticleshipCompletionDate = (
+  month?: string,
+  year?: string,
+  fullStr?: string
+): string => {
+  const shortMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  // Case 1: Separate month and year provided
+  if (month && year) {
+    const cleanM = month.trim();
+    const cleanY = String(year).trim().slice(-2);
+    const capitalizedM = cleanM.charAt(0).toUpperCase() + cleanM.slice(1, 3).toLowerCase();
+    return `${capitalizedM}-${cleanY}`;
+  }
+
+  // Case 2: Full string e.g. "May 2025", "May 25", "May'25", "2025-05", "May-2025"
+  if (fullStr) {
+    const s = String(fullStr).trim();
+    if (!s || s === 'N/A' || s === '-') return 'N/A';
+
+    // Match text and year e.g. "May 2025", "May-25", "Sept'25", "October 2024"
+    const textYearMatch = s.match(/([a-zA-Z]{3,9})[\s\-']+(\d{2,4})/);
+    if (textYearMatch) {
+      let rawM = textYearMatch[1];
+      if (rawM.toLowerCase().startsWith('sept')) rawM = 'Sep';
+      const m = rawM.charAt(0).toUpperCase() + rawM.slice(1, 3).toLowerCase();
+      const y = textYearMatch[2].slice(-2);
+      return `${m}-${y}`;
+    }
+
+    // Match ISO format e.g. "2025-05"
+    const isoMatch = s.match(/^(\d{4})[-/](\d{1,2})/);
+    if (isoMatch) {
+      const y = isoMatch[1].slice(-2);
+      const mIdx = parseInt(isoMatch[2], 10) - 1;
+      const m = shortMonths[mIdx] || isoMatch[2];
+      return `${m}-${y}`;
+    }
+
+    return s;
+  }
+
+  return 'N/A';
+};
+
+/**
+ * Format registration timestamp into separate date, time (12h AM/PM), and full string
+ */
+export const formatRegistrationTimestamp = (dateVal: any) => {
+  if (!dateVal) {
+    return { date: 'N/A', time: 'N/A', full: 'N/A' };
+  }
+  const d = new Date(dateVal);
+  if (isNaN(d.getTime())) {
+    return { date: 'N/A', time: 'N/A', full: 'N/A' };
+  }
+
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  const formattedDate = `${day}-${month}-${year}`;
+
+  const timeFormatted = d.toLocaleTimeString('en-IN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true
+  });
+
+  return {
+    date: formattedDate,
+    time: timeFormatted,
+    full: `${formattedDate} ${timeFormatted}`
+  };
+};
+
 export const formatCandidateForExcel = (c: any) => {
   const pd = c.personalDetails || {};
   const ca = c.caPortfolio || {};
@@ -24,13 +146,21 @@ export const formatCandidateForExcel = (c: any) => {
 
   // Calculate age if DOB exists
   let age = 'N/A';
-  const dob = pd.dateOfBirth || c.dateOfBirth || '';
-  if (dob) {
-    const birthYear = parseInt(dob.split('-')[0], 10);
+  const rawDob = pd.dateOfBirth || c.dateOfBirth || '';
+  if (rawDob) {
+    let birthYear = parseInt(String(rawDob).split('-')[0], 10);
+    if (isNaN(birthYear) || birthYear < 1900) {
+      const parts = String(rawDob).split('-');
+      if (parts.length === 3 && parseInt(parts[2], 10) > 1900) {
+        birthYear = parseInt(parts[2], 10);
+      }
+    }
     if (!isNaN(birthYear) && birthYear > 1900) {
       age = String(new Date().getFullYear() - birthYear);
     }
   }
+
+  const regInfo = formatRegistrationTimestamp(c.createdAt);
 
   // Articleship total months
   const totalArticleshipMonths = articleships.reduce(
@@ -53,11 +183,14 @@ export const formatCandidateForExcel = (c: any) => {
     'Email Address': c.email || '',
     'Phone Number': c.phone || pd.phone || 'N/A',
     'Alternate Phone': pd.alternatePhone || 'N/A',
-    'Date of Birth': dob || 'N/A',
+    'Date of Birth': formatDateToDDMMYYYY(rawDob),
     'Age (Years)': age,
     'Gender': pd.gender || 'N/A',
     'Marital Status': pd.maritalStatus || 'N/A',
-    'Registered On': c.createdAt ? new Date(c.createdAt).toLocaleDateString('en-IN') : 'N/A',
+    'Registration Date': regInfo.date,
+    'Registration Time': regInfo.time,
+    'Registration Date & Time': regInfo.full,
+    'Registered On': regInfo.full,
     'Profile Completed': c.profileCompleted ? 'Yes' : 'No',
     'LinkedIn Profile': c.linkedinUrl || 'N/A',
 
@@ -110,9 +243,11 @@ export const formatCandidateForExcel = (c: any) => {
     'Articleship Firm Duration (Months)': primaryArt.noOfMonths || 'N/A',
     'All Articleship Firms': allFirms || 'N/A',
     'Total Articleship Duration (Months)': totalArticleshipMonths > 0 ? String(totalArticleshipMonths) : 'N/A',
-    'Articleship Completion Date': (ca.articleshipCompletionDateMonth && ca.articleshipCompletionDateYear) 
-      ? `${ca.articleshipCompletionDateMonth} ${ca.articleshipCompletionDateYear}` 
-      : (ca.articleshipCompletionDate || 'N/A'),
+    'Articleship Completion Date': formatArticleshipCompletionDate(
+      ca.articleshipCompletionDateMonth, 
+      ca.articleshipCompletionDateYear, 
+      ca.articleshipCompletionDate
+    ),
     'GMCS Completed': ca.gmcsCompleted || 'N/A',
     'Big 4 Articleship': (ca.big4Articleship && ca.big4Articleship !== 'No' && ca.big4Articleship !== 'none' && ca.big4Articleship !== '') ? 'Yes' : 'No',
     'Industrial Trainee': ca.industrialTrainee || 'N/A',
