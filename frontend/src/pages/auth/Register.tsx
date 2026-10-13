@@ -27,7 +27,7 @@ import {
 import { register, reset } from '../../store/authSlice';
 import type { AppDispatch, RootState } from '../../store';
 import api from '../../services/api';
-import { ALL_CITIES, ATTEMPTS, CA_EXAM_MONTHS, YEARS, YEARS_1970, EXPERIENCE_YEARS_OPTIONS, getLaterExamSession, RANKER_OPTIONS } from '../../utils/constants';
+import { ALL_CITIES, ATTEMPTS, CA_EXAM_MONTHS, YEARS, YEARS_1970, EXPERIENCE_YEARS_OPTIONS, CTC_OPTIONS, getLaterExamSession, RANKER_OPTIONS } from '../../utils/constants';
 import { parseResumeFile } from '../../utils/resumeParser';
 
 const POPULAR_CITIES = [
@@ -113,6 +113,8 @@ export const Register = () => {
   const [currentDesignation, setCurrentDesignation] = useState('');
   const [currentCTC, setCurrentCTC] = useState('');
   const [expectedCTC, setExpectedCTC] = useState('');
+  const [isCustomCurrentCTC, setIsCustomCurrentCTC] = useState(false);
+  const [isCustomExpectedCTC, setIsCustomExpectedCTC] = useState(false);
   const [workProfile, setWorkProfile] = useState('');
   const [linkedinUrl, setLinkedinUrl] = useState('');
   const [resumeFile, setResumeFile] = useState<File | null>(null);
@@ -1624,32 +1626,119 @@ export const Register = () => {
                             {/* CTC Grid (Current CTC & Expected CTC) */}
                             <div className="grid grid-cols-2 gap-3">
                               <div>
-                                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                                  Current CTC (LPA)
-                                </label>
-                                <input
-                                  type="text"
-                                  id="currentCTC"
-                                  name="currentCTC"
-                                  value={currentCTC}
-                                  onChange={(e) => setCurrentCTC(e.target.value)}
-                                  placeholder="e.g. 12 LPA"
-                                  className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white font-medium transition-all"
-                                />
+                                <div className="flex items-center justify-between mb-1.5">
+                                  <label htmlFor="currentCTC" className="block text-xs font-semibold text-slate-700">
+                                    Current CTC (LPA)
+                                  </label>
+                                  {isCustomCurrentCTC && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setIsCustomCurrentCTC(false);
+                                        setCurrentCTC('');
+                                      }}
+                                      className="text-[10.5px] font-semibold text-blue-600 hover:text-blue-700 hover:underline"
+                                    >
+                                      Select list
+                                    </button>
+                                  )}
+                                </div>
+                                {isCustomCurrentCTC ? (
+                                  <input
+                                    type="text"
+                                    id="currentCTC"
+                                    name="currentCTC"
+                                    value={currentCTC}
+                                    onChange={(e) => setCurrentCTC(e.target.value)}
+                                    placeholder="e.g. 12 LPA"
+                                    autoFocus
+                                    className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white font-medium transition-all"
+                                  />
+                                ) : (
+                                  <select
+                                    id="currentCTC"
+                                    name="currentCTC"
+                                    value={currentCTC}
+                                    onChange={(e) => {
+                                      if (e.target.value === '__custom__') {
+                                        setIsCustomCurrentCTC(true);
+                                        setCurrentCTC('');
+                                      } else {
+                                        setCurrentCTC(e.target.value);
+                                      }
+                                    }}
+                                    className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white font-medium transition-all cursor-pointer"
+                                  >
+                                    <option value="">-- Select Current CTC --</option>
+                                    {currentCTC && !CTC_OPTIONS.includes(currentCTC) && (
+                                      <option value={currentCTC}>{currentCTC}</option>
+                                    )}
+                                    {CTC_OPTIONS.map((ctc) => (
+                                      <option key={ctc} value={ctc}>
+                                        {ctc}
+                                      </option>
+                                    ))}
+                                    <option value="__custom__">✏️ Other / Custom CTC</option>
+                                  </select>
+                                )}
                               </div>
                               <div>
-                                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                                  Expected CTC (LPA)
-                                </label>
-                                <input
-                                  type="text"
-                                  id="expectedCTC"
-                                  name="expectedCTC"
-                                  value={expectedCTC}
-                                  onChange={(e) => setExpectedCTC(e.target.value)}
-                                  placeholder="e.g. 16 LPA"
-                                  className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white font-medium transition-all"
-                                />
+                                <div className="flex items-center justify-between mb-1.5">
+                                  <label htmlFor="expectedCTC" className="block text-xs font-semibold text-slate-700">
+                                    Expected CTC (LPA)
+                                  </label>
+                                  {isCustomExpectedCTC && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setIsCustomExpectedCTC(false);
+                                        setExpectedCTC('');
+                                      }}
+                                      className="text-[10.5px] font-semibold text-blue-600 hover:text-blue-700 hover:underline"
+                                    >
+                                      Select list
+                                    </button>
+                                  )}
+                                </div>
+                                {isCustomExpectedCTC ? (
+                                  <input
+                                    type="text"
+                                    id="expectedCTC"
+                                    name="expectedCTC"
+                                    value={expectedCTC}
+                                    onChange={(e) => setExpectedCTC(e.target.value)}
+                                    placeholder="e.g. 16 LPA"
+                                    autoFocus
+                                    className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white font-medium transition-all"
+                                  />
+                                ) : (
+                                  <select
+                                    id="expectedCTC"
+                                    name="expectedCTC"
+                                    value={expectedCTC}
+                                    onChange={(e) => {
+                                      if (e.target.value === '__custom__') {
+                                        setIsCustomExpectedCTC(true);
+                                        setExpectedCTC('');
+                                      } else {
+                                        setExpectedCTC(e.target.value);
+                                      }
+                                    }}
+                                    className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white font-medium transition-all cursor-pointer"
+                                  >
+                                    <option value="">-- Select Expected CTC --</option>
+                                    <option value="Negotiable">Negotiable</option>
+                                    {expectedCTC && expectedCTC !== 'Negotiable' && !CTC_OPTIONS.includes(expectedCTC) && (
+                                      <option value={expectedCTC}>{expectedCTC}</option>
+                                    )}
+                                    {CTC_OPTIONS.map((ctc) => (
+                                      <option key={ctc} value={ctc}>
+                                        {ctc}
+                                      </option>
+                                    ))}
+                                    <option value="__custom__">✏️ Other / Custom CTC</option>
+                                  </select>
+                                )}
                               </div>
                             </div>
                           </div>

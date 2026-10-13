@@ -14,6 +14,45 @@ export const EXPERIENCE_YEARS_OPTIONS = [
   '7-10 Years',
   '10+ Years'
 ];
+export const CTC_OPTIONS = [
+  'Under 3 LPA',
+  '3 LPA',
+  '3.5 LPA',
+  '4 LPA',
+  '4.5 LPA',
+  '5 LPA',
+  '5.5 LPA',
+  '6 LPA',
+  '6.5 LPA',
+  '7 LPA',
+  '7.5 LPA',
+  '8 LPA',
+  '8.5 LPA',
+  '9 LPA',
+  '9.5 LPA',
+  '10 LPA',
+  '11 LPA',
+  '12 LPA',
+  '13 LPA',
+  '14 LPA',
+  '15 LPA',
+  '16 LPA',
+  '17 LPA',
+  '18 LPA',
+  '19 LPA',
+  '20 LPA',
+  '22 LPA',
+  '24 LPA',
+  '25 LPA',
+  '26 LPA',
+  '28 LPA',
+  '30 LPA',
+  '32 LPA',
+  '35 LPA',
+  '40 LPA',
+  '45 LPA',
+  '50+ LPA'
+];
 export const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 export const BOARDS = ['CBSE', 'ICSE', 'State Board', 'Other'];
 export const ATTEMPT_YEARS = ['Sept\'25', 'Jan\'26', 'May\'25', 'Nov\'24', 'May\'24', 'Nov\'23', 'May\'23', 'Nov\'22', 'May\'22', 'Nov\'21', 'May\'21', 'Nov\'20', 'May\'20'];
