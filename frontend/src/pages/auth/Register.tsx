@@ -42,7 +42,8 @@ import {
   ARTICLESHIP_TYPES,
   CA_FIRMS,
   MONTHS,
-  NATURE_OF_WORK
+  NATURE_OF_WORK,
+  PARTNER_OPTIONS
 } from '../../utils/constants';
 import { parseResumeFile } from '../../utils/resumeParser';
 
@@ -148,7 +149,7 @@ export const Register = () => {
     noOfPartners: string;
     noOfMonths: string;
   }>>([
-    { type: 'Articleship', firmName: '', city: '', noOfPartners: '2', noOfMonths: '36' }
+    { type: 'Articleship', firmName: '', city: '', noOfPartners: '1 to 10', noOfMonths: '36' }
   ]);
   const [articleshipCompletionMonth, setArticleshipCompletionMonth] = useState('May');
   const [articleshipCompletionYear, setArticleshipCompletionYear] = useState(String(new Date().getFullYear()));
@@ -164,7 +165,7 @@ export const Register = () => {
   const addArticleship = () => {
     setArticleships(prev => [
       ...prev,
-      { type: 'Articleship', firmName: '', city: '', noOfPartners: '2', noOfMonths: '0' }
+      { type: 'Articleship', firmName: '', city: '', noOfPartners: '1 to 10', noOfMonths: '0' }
     ]);
   };
 
@@ -1653,13 +1654,16 @@ export const Register = () => {
                                       Number of Partners
                                     </label>
                                     <select
-                                      value={firm.noOfPartners}
+                                      value={firm.noOfPartners || '1 to 10'}
                                       onChange={(e) => updateArticleship(idx, 'noOfPartners', e.target.value)}
                                       className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white cursor-pointer"
                                     >
-                                      {Array.from({ length: 20 }, (_, i) => (
-                                        <option key={i + 1} value={String(i + 1)}>{i + 1} {i === 0 ? 'Partner' : 'Partners'}</option>
+                                      {PARTNER_OPTIONS.map(opt => (
+                                        <option key={opt} value={opt}>{opt} Partners</option>
                                       ))}
+                                      {firm.noOfPartners && !PARTNER_OPTIONS.includes(firm.noOfPartners) && (
+                                        <option value={firm.noOfPartners}>{firm.noOfPartners} Partners</option>
+                                      )}
                                     </select>
                                   </div>
 

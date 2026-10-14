@@ -30,6 +30,13 @@ export const RANKER_OPTIONS = [
   'No',
   ...Array.from({ length: 50 }, (_, i) => String(i + 1))
 ];
+export const PARTNER_OPTIONS = [
+  '1 to 10',
+  '11 to 20',
+  '21 to 50',
+  'Above 50'
+];
+export const PARTNERS_OPTIONS = PARTNER_OPTIONS;
 export const YEARS_1970 = Array.from({ length: new Date().getFullYear() - 1940 + 1 }, (_, i) => String(new Date().getFullYear() - i));
 export const EXPERIENCE_YEARS_OPTIONS = [
   '0-1 Year',

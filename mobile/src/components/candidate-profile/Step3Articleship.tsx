@@ -1,13 +1,13 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import { ARTICLESHIP_TYPES, CA_FIRMS, ALL_CITIES, MONTHS, YEARS, NATURE_OF_WORK } from '../../utils/constants';
+import { ARTICLESHIP_TYPES, CA_FIRMS, ALL_CITIES, MONTHS, YEARS, NATURE_OF_WORK, PARTNER_OPTIONS } from '../../utils/constants';
 
 export const Step3Articleship = ({ caPortfolio, setCaPortfolio }: any) => {
   const addFirm = () => {
     setCaPortfolio({
       ...caPortfolio,
-      articleships: [...(caPortfolio.articleships || []), { type: 'Articleship', firmName: '', city: '', noOfPartners: '2', noOfMonths: '0' }]
+      articleships: [...(caPortfolio.articleships || []), { type: 'Articleship', firmName: '', city: '', noOfPartners: '1 to 10', noOfMonths: '0' }]
     });
   };
 
@@ -98,7 +98,19 @@ export const Step3Articleship = ({ caPortfolio, setCaPortfolio }: any) => {
           <View style={styles.row}>
             <View style={styles.col}>
               <Text style={styles.label}>Partners</Text>
-              <TextInput style={styles.input} value={firm.noOfPartners} onChangeText={(val) => updateFirm(index, 'noOfPartners', val)} keyboardType="numeric" />
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={firm.noOfPartners || '1 to 10'}
+                  onValueChange={(val) => updateFirm(index, 'noOfPartners', val)}
+                >
+                  {PARTNER_OPTIONS.map((opt) => (
+                    <Picker.Item key={opt} label={`${opt} Partners`} value={opt} />
+                  ))}
+                  {firm.noOfPartners && !PARTNER_OPTIONS.includes(firm.noOfPartners) && (
+                    <Picker.Item label={`${firm.noOfPartners} Partners`} value={firm.noOfPartners} />
+                  )}
+                </Picker>
+              </View>
             </View>
             <View style={styles.col}>
               <Text style={styles.label}>Months</Text>

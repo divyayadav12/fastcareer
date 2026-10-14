@@ -1,12 +1,12 @@
 import React from 'react';
 import { Plus, Trash2, Calendar, Building } from 'lucide-react';
-import { ARTICLESHIP_TYPES, CA_FIRMS, ALL_CITIES, MONTHS, YEARS, NATURE_OF_WORK } from '../../utils/constants';
+import { ARTICLESHIP_TYPES, CA_FIRMS, ALL_CITIES, MONTHS, YEARS, NATURE_OF_WORK, PARTNER_OPTIONS } from '../../utils/constants';
 
 export const Step3Articleship = ({ caPortfolio, setCaPortfolio, isOptional = false }: any) => {
   const addFirm = () => {
     setCaPortfolio({
       ...caPortfolio,
-      articleships: [...caPortfolio.articleships, { type: 'Articleship', firmName: '', city: '', noOfPartners: '2', noOfMonths: '0' }]
+      articleships: [...caPortfolio.articleships, { type: 'Articleship', firmName: '', city: '', noOfPartners: '1 to 10', noOfMonths: '0' }]
     });
   };
 
@@ -118,8 +118,13 @@ export const Step3Articleship = ({ caPortfolio, setCaPortfolio, isOptional = fal
               </div>
               <div className="lg:col-span-1">
                 <label className="block text-xs font-medium text-gray-500 mb-1">Partners</label>
-                <select value={firm.noOfPartners} onChange={(e) => updateFirm(index, 'noOfPartners', e.target.value)} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 text-sm">
-                  {Array.from({length: 20}, (_, i) => <option key={i+1}>{i+1}</option>)}
+                <select value={firm.noOfPartners || '1 to 10'} onChange={(e) => updateFirm(index, 'noOfPartners', e.target.value)} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 text-sm">
+                  {PARTNER_OPTIONS.map(opt => (
+                    <option key={opt} value={opt}>{opt} Partners</option>
+                  ))}
+                  {firm.noOfPartners && !PARTNER_OPTIONS.includes(firm.noOfPartners) && (
+                    <option value={firm.noOfPartners}>{firm.noOfPartners} Partners</option>
+                  )}
                 </select>
               </div>
               <div className="lg:col-span-1">

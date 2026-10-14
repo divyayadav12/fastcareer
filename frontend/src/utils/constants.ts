@@ -46,6 +46,13 @@ export const RANKER_OPTIONS = [
   'No',
   ...Array.from({ length: 50 }, (_, i) => String(i + 1))
 ];
+export const PARTNER_OPTIONS = [
+  '1 to 10',
+  '11 to 20',
+  '21 to 50',
+  'Above 50'
+];
+export const PARTNERS_OPTIONS = PARTNER_OPTIONS;
 export const NATURE_OF_WORK = [
   'Statutory Audit',
   'Internal Audit',

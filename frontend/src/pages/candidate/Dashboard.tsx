@@ -43,7 +43,7 @@ export const CandidateDashboard = () => {
     isFresherCA: false,
     caInter: { bothGroups1stAttempt: false, group1Attempts: '1', group1Month: 'May', group1Year: '2020', group2Attempts: '1', group2Month: 'May', group2Year: '2020', ranker: 'No', completionSessionMonth: 'May', completionSessionYear: '2020', percentage: '' },
     caFinal: { bothGroups1stAttempt: false, group1Attempts: '1', group1Month: 'May', group1Year: '2023', group2Attempts: '1', group2Month: 'May', group2Year: '2023', ranker: 'No', completionSessionMonth: 'May', completionSessionYear: '2023', percentage: '' },
-    articleships: [{ type: 'Articleship', firmName: '', city: '', noOfPartners: '2', noOfMonths: '36' }],
+    articleships: [{ type: 'Articleship', firmName: '', city: '', noOfPartners: '1 to 10', noOfMonths: '36' }],
     articleshipCompletionDateMonth: 'May',
     articleshipCompletionDateYear: '2023',
     gmcsCompleted: 'Yes',
@@ -177,7 +177,7 @@ export const CandidateDashboard = () => {
           type: 'Articleship',
           firmName: parsed.articleshipFirm,
           city: parsed.articleshipCity || parsed.city || '',
-          noOfPartners: '2',
+          noOfPartners: '1 to 10',
           noOfMonths: '36'
         }];
         updatedSections.push('Articleship Firm');

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { User, FileText, Briefcase, GraduationCap, Building, X, Check, Edit3, Sparkles, Save, MapPin, Plus, Trash2, Calendar } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { STATES, STATE_CITY_MAP, ATTEMPTS, CA_EXAM_MONTHS, YEARS, ARTICLESHIP_TYPES, CA_FIRMS, ALL_CITIES, MONTHS, NATURE_OF_WORK } from '../../utils/constants';
+import { STATES, STATE_CITY_MAP, ATTEMPTS, CA_EXAM_MONTHS, YEARS, ARTICLESHIP_TYPES, CA_FIRMS, ALL_CITIES, MONTHS, NATURE_OF_WORK, PARTNER_OPTIONS } from '../../utils/constants';
 
 interface Step6ReviewProps {
   personal: any;
@@ -30,7 +30,7 @@ export const Step6Review: React.FC<Step6ReviewProps> = ({
   const [editArticleshipModal, setEditArticleshipModal] = useState(false);
 
   const [tempArticleship, setTempArticleship] = useState({
-    articleships: caPortfolio.articleships ? JSON.parse(JSON.stringify(caPortfolio.articleships)) : [{ type: 'Articleship', firmName: '', city: '', noOfPartners: '2', noOfMonths: '36' }],
+    articleships: caPortfolio.articleships ? JSON.parse(JSON.stringify(caPortfolio.articleships)) : [{ type: 'Articleship', firmName: '', city: '', noOfPartners: '1 to 10', noOfMonths: '36' }],
     articleshipCompletionDateMonth: caPortfolio.articleshipCompletionDateMonth || 'May',
     articleshipCompletionDateYear: caPortfolio.articleshipCompletionDateYear || '2023',
     gmcsCompleted: caPortfolio.gmcsCompleted || 'Yes',
@@ -169,7 +169,7 @@ export const Step6Review: React.FC<Step6ReviewProps> = ({
     setTempArticleship({
       articleships: caPortfolio.articleships && caPortfolio.articleships.length > 0
         ? JSON.parse(JSON.stringify(caPortfolio.articleships))
-        : [{ type: 'Articleship', firmName: '', city: '', noOfPartners: '2', noOfMonths: '36' }],
+        : [{ type: 'Articleship', firmName: '', city: '', noOfPartners: '1 to 10', noOfMonths: '36' }],
       articleshipCompletionDateMonth: caPortfolio.articleshipCompletionDateMonth || 'May',
       articleshipCompletionDateYear: caPortfolio.articleshipCompletionDateYear || '2023',
       gmcsCompleted: caPortfolio.gmcsCompleted || 'Yes',
@@ -193,7 +193,7 @@ export const Step6Review: React.FC<Step6ReviewProps> = ({
   const addTempFirm = () => {
     setTempArticleship(prev => ({
       ...prev,
-      articleships: [...prev.articleships, { type: 'Articleship', firmName: '', city: '', noOfPartners: '2', noOfMonths: '0' }]
+      articleships: [...prev.articleships, { type: 'Articleship', firmName: '', city: '', noOfPartners: '1 to 10', noOfMonths: '0' }]
     }));
   };
 
@@ -924,6 +924,22 @@ export const Step6Review: React.FC<Step6ReviewProps> = ({
                       <datalist id={`reviewCitiesList-${idx}`}>
                         {ALL_CITIES.map(c => <option key={c} value={c} />)}
                       </datalist>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10.5px] font-semibold text-slate-500 mb-1">Partners</label>
+                      <select
+                        value={firm.noOfPartners || '1 to 10'}
+                        onChange={(e) => updateTempFirm(idx, 'noOfPartners', e.target.value)}
+                        className="w-full px-2.5 py-1.5 text-xs border border-gray-200 rounded-lg bg-white"
+                      >
+                        {PARTNER_OPTIONS.map(opt => (
+                          <option key={opt} value={opt}>{opt} Partners</option>
+                        ))}
+                        {firm.noOfPartners && !PARTNER_OPTIONS.includes(firm.noOfPartners) && (
+                          <option value={firm.noOfPartners}>{firm.noOfPartners} Partners</option>
+                        )}
+                      </select>
                     </div>
 
                     <div>
