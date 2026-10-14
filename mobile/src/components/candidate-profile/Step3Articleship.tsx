@@ -94,6 +94,22 @@ export const Step3Articleship = ({ caPortfolio, setCaPortfolio }: any) => {
 
           <Text style={styles.label}>City</Text>
           <TextInput style={styles.input} value={firm.city} onChangeText={(val) => updateFirm(index, 'city', val)} placeholder="Enter city" />
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 12, marginTop: -6 }}>
+            {['Mumbai', 'Delhi', 'Bengaluru', 'Pune', 'Ahmedabad', 'Kolkata', 'Hyderabad', 'Jaipur'].map((topCity) => (
+              <TouchableOpacity
+                key={topCity}
+                onPress={() => updateFirm(index, 'city', topCity)}
+                style={[
+                  { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6, backgroundColor: '#f1f5f9', borderWidth: 1, borderColor: '#cbd5e1' },
+                  firm.city === topCity && { backgroundColor: '#034b71', borderColor: '#034b71' }
+                ]}
+              >
+                <Text style={[{ fontSize: 11, color: '#475569', fontWeight: '500' }, firm.city === topCity && { color: '#ffffff', fontWeight: 'bold' }]}>
+                  {topCity}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
 
           <View style={styles.row}>
             <View style={styles.col}>

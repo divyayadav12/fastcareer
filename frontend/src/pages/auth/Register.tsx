@@ -43,7 +43,9 @@ import {
   CA_FIRMS,
   MONTHS,
   NATURE_OF_WORK,
-  PARTNER_OPTIONS
+  PARTNER_OPTIONS,
+  ARTICLESHIP_CITIES,
+  TOP_CA_CITIES
 } from '../../utils/constants';
 import { parseResumeFile } from '../../utils/resumeParser';
 
@@ -1644,8 +1646,24 @@ export const Register = () => {
                                       className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
                                     />
                                     <datalist id={`citiesList-${idx}`}>
-                                      {ALL_CITIES.map(c => <option key={c} value={c} />)}
+                                      {ARTICLESHIP_CITIES.map(c => <option key={c} value={c} />)}
                                     </datalist>
+                                    <div className="flex flex-wrap gap-1 mt-1.5">
+                                      {['Mumbai', 'Delhi', 'Bengaluru', 'Pune', 'Ahmedabad', 'Kolkata', 'Hyderabad', 'Jaipur'].map(topCity => (
+                                        <button
+                                          key={topCity}
+                                          type="button"
+                                          onClick={() => updateArticleship(idx, 'city', topCity)}
+                                          className={`px-1.5 py-0.5 text-[10px] rounded transition-colors ${
+                                            firm.city === topCity
+                                              ? 'bg-blue-600 text-white font-medium shadow-2xs'
+                                              : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800'
+                                          }`}
+                                        >
+                                          {topCity}
+                                        </button>
+                                      ))}
+                                    </div>
                                   </div>
 
                                   {/* Number of Partners */}

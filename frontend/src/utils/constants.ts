@@ -3,6 +3,41 @@ import { STATE_CITY_MAP } from './indianCitiesData';
 export { STATE_CITY_MAP };
 export const STATES = Object.keys(STATE_CITY_MAP);
 export const ALL_CITIES = Array.from(new Set(Object.values(STATE_CITY_MAP).flat())).sort();
+
+export const TOP_CA_CITIES = [
+  'Mumbai',
+  'Delhi',
+  'New Delhi',
+  'Bengaluru',
+  'Gurugram',
+  'Gurgaon',
+  'Noida',
+  'Pune',
+  'Kolkata',
+  'Ahmedabad',
+  'Chennai',
+  'Hyderabad',
+  'Jaipur',
+  'Indore',
+  'Chandigarh',
+  'Surat',
+  'Vadodara',
+  'Nagpur',
+  'Lucknow',
+  'Kanpur',
+  'Coimbatore',
+  'Ludhiana',
+  'Bhopal',
+  'Rajkot',
+  'Navi Mumbai',
+  'Thane',
+  'Kochi'
+];
+
+export const ARTICLESHIP_CITIES = Array.from(new Set([
+  ...TOP_CA_CITIES,
+  ...ALL_CITIES
+]));
 export const YEARS = Array.from({length: new Date().getFullYear() - 1940 + 1}, (_, i) => String(new Date().getFullYear() - i));
 export const YEARS_1970 = Array.from({length: new Date().getFullYear() - 1940 + 1}, (_, i) => String(new Date().getFullYear() - i));
 export const EXPERIENCE_YEARS_OPTIONS = [

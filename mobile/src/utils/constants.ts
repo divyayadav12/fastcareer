@@ -21,6 +21,41 @@ if (STATE_CITY_MAP['Haryana']) {
 
 export const STATES = Object.keys(STATE_CITY_MAP);
 export const ALL_CITIES = Array.from(new Set(Object.values(STATE_CITY_MAP).flat())).sort();
+
+export const TOP_CA_CITIES = [
+  'Mumbai',
+  'Delhi',
+  'New Delhi',
+  'Bengaluru',
+  'Gurugram',
+  'Gurgaon',
+  'Noida',
+  'Pune',
+  'Kolkata',
+  'Ahmedabad',
+  'Chennai',
+  'Hyderabad',
+  'Jaipur',
+  'Indore',
+  'Chandigarh',
+  'Surat',
+  'Vadodara',
+  'Nagpur',
+  'Lucknow',
+  'Kanpur',
+  'Coimbatore',
+  'Ludhiana',
+  'Bhopal',
+  'Rajkot',
+  'Navi Mumbai',
+  'Thane',
+  'Kochi'
+];
+
+export const ARTICLESHIP_CITIES = Array.from(new Set([
+  ...TOP_CA_CITIES,
+  ...ALL_CITIES
+]));
 export const YEARS = Array.from({length: new Date().getFullYear() - 1940 + 1}, (_, i) => String(new Date().getFullYear() - i));
 export const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 export const BOARDS = ['CBSE', 'ICSE', 'State Board', 'Other'];
