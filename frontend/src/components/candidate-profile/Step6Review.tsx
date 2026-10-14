@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { User, FileText, Briefcase, GraduationCap, Building, X, Check, Edit3, Sparkles, Save, MapPin, Plus, Trash2, Calendar } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { STATES, STATE_CITY_MAP, ATTEMPTS, CA_EXAM_MONTHS, YEARS, ARTICLESHIP_TYPES, CA_FIRMS, ALL_CITIES, MONTHS, NATURE_OF_WORK, PARTNER_OPTIONS, ARTICLESHIP_CITIES } from '../../utils/constants';
+import { CityDropdownInput } from '../CityDropdownInput';
 
 interface Step6ReviewProps {
   personal: any;
@@ -913,33 +914,12 @@ export const Step6Review: React.FC<Step6ReviewProps> = ({
 
                     <div>
                       <label className="block text-[10.5px] font-semibold text-slate-500 mb-1">City</label>
-                      <input
-                        type="text"
-                        list={`reviewCitiesList-${idx}`}
+                      <CityDropdownInput
                         value={firm.city}
-                        onChange={(e) => updateTempFirm(idx, 'city', e.target.value)}
+                        onChange={(val) => updateTempFirm(idx, 'city', val)}
                         placeholder="City"
-                        className="w-full px-2.5 py-1.5 text-xs border border-gray-200 rounded-lg bg-white"
+                        inputClassName="px-2.5 py-1.5 text-xs rounded-lg"
                       />
-                      <datalist id={`reviewCitiesList-${idx}`}>
-                        {ARTICLESHIP_CITIES.map(c => <option key={c} value={c} />)}
-                      </datalist>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {['Mumbai', 'Delhi', 'Bengaluru', 'Pune', 'Ahmedabad', 'Kolkata'].map(topCity => (
-                          <button
-                            key={topCity}
-                            type="button"
-                            onClick={() => updateTempFirm(idx, 'city', topCity)}
-                            className={`px-1.5 py-0.5 text-[9.5px] rounded transition-colors ${
-                              firm.city === topCity
-                                ? 'bg-primary text-white font-medium shadow-2xs'
-                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                            }`}
-                          >
-                            {topCity}
-                          </button>
-                        ))}
-                      </div>
                     </div>
 
                     <div>

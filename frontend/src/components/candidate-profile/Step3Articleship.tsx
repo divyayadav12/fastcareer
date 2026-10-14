@@ -1,6 +1,7 @@
 import React from 'react';
 import { Plus, Trash2, Calendar, Building } from 'lucide-react';
 import { ARTICLESHIP_TYPES, CA_FIRMS, ALL_CITIES, MONTHS, YEARS, NATURE_OF_WORK, PARTNER_OPTIONS, ARTICLESHIP_CITIES } from '../../utils/constants';
+import { CityDropdownInput } from '../CityDropdownInput';
 
 export const Step3Articleship = ({ caPortfolio, setCaPortfolio, isOptional = false }: any) => {
   const addFirm = () => {
@@ -111,26 +112,11 @@ export const Step3Articleship = ({ caPortfolio, setCaPortfolio, isOptional = fal
               </div>
               <div className="lg:col-span-1">
                 <label className="block text-xs font-medium text-gray-500 mb-1">City</label>
-                <input type="text" list="citiesList" value={firm.city} onChange={(e) => updateFirm(index, 'city', e.target.value)} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 text-sm" placeholder="Search city" />
-                <datalist id="citiesList">
-                  {ARTICLESHIP_CITIES.map(c => <option key={c} value={c} />)}
-                </datalist>
-                <div className="flex flex-wrap gap-1 mt-1.5">
-                  {['Mumbai', 'Delhi', 'Bengaluru', 'Pune', 'Ahmedabad', 'Kolkata', 'Hyderabad', 'Jaipur'].map(topCity => (
-                    <button
-                      key={topCity}
-                      type="button"
-                      onClick={() => updateFirm(index, 'city', topCity)}
-                      className={`px-1.5 py-0.5 text-[10px] rounded transition-colors ${
-                        firm.city === topCity
-                          ? 'bg-primary text-white font-medium shadow-2xs'
-                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                      }`}
-                    >
-                      {topCity}
-                    </button>
-                  ))}
-                </div>
+                <CityDropdownInput
+                  value={firm.city}
+                  onChange={(val) => updateFirm(index, 'city', val)}
+                  placeholder="Search city"
+                />
               </div>
               <div className="lg:col-span-1">
                 <label className="block text-xs font-medium text-gray-500 mb-1">Partners</label>
