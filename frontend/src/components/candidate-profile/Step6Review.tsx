@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { User, FileText, Briefcase, GraduationCap, Building, X, Check, Edit3, Sparkles, Save } from 'lucide-react';
+import { User, FileText, Briefcase, GraduationCap, Building, X, Check, Edit3, Sparkles, Save, MapPin, Plus, Trash2, Calendar } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { STATES, STATE_CITY_MAP, ATTEMPTS, CA_EXAM_MONTHS, YEARS } from '../../utils/constants';
+import { STATES, STATE_CITY_MAP, ATTEMPTS, CA_EXAM_MONTHS, YEARS, ARTICLESHIP_TYPES, CA_FIRMS, ALL_CITIES, MONTHS, NATURE_OF_WORK } from '../../utils/constants';
 
 interface Step6ReviewProps {
   personal: any;
@@ -27,6 +27,17 @@ export const Step6Review: React.FC<Step6ReviewProps> = ({
   // Modal states for direct editing
   const [editPersonalModal, setEditPersonalModal] = useState(false);
   const [editCaModal, setEditCaModal] = useState(false);
+  const [editArticleshipModal, setEditArticleshipModal] = useState(false);
+
+  const [tempArticleship, setTempArticleship] = useState({
+    articleships: caPortfolio.articleships ? JSON.parse(JSON.stringify(caPortfolio.articleships)) : [{ type: 'Articleship', firmName: '', city: '', noOfPartners: '2', noOfMonths: '36' }],
+    articleshipCompletionDateMonth: caPortfolio.articleshipCompletionDateMonth || 'May',
+    articleshipCompletionDateYear: caPortfolio.articleshipCompletionDateYear || '2023',
+    gmcsCompleted: caPortfolio.gmcsCompleted || 'Yes',
+    industrialTrainee: caPortfolio.industrialTrainee || 'No',
+    listedCompanyWork: caPortfolio.listedCompanyWork || 'No',
+    natureOfWork: caPortfolio.natureOfWork || ''
+  });
 
   // Temporary edit states
   const [tempPersonal, setTempPersonal] = useState({
@@ -154,6 +165,65 @@ export const Step6Review: React.FC<Step6ReviewProps> = ({
     toast.success('CA Qualification details updated successfully!', { icon: '✓' });
   };
 
+  const openArticleshipModal = () => {
+    setTempArticleship({
+      articleships: caPortfolio.articleships && caPortfolio.articleships.length > 0
+        ? JSON.parse(JSON.stringify(caPortfolio.articleships))
+        : [{ type: 'Articleship', firmName: '', city: '', noOfPartners: '2', noOfMonths: '36' }],
+      articleshipCompletionDateMonth: caPortfolio.articleshipCompletionDateMonth || 'May',
+      articleshipCompletionDateYear: caPortfolio.articleshipCompletionDateYear || '2023',
+      gmcsCompleted: caPortfolio.gmcsCompleted || 'Yes',
+      industrialTrainee: caPortfolio.industrialTrainee || 'No',
+      listedCompanyWork: caPortfolio.listedCompanyWork || 'No',
+      natureOfWork: caPortfolio.natureOfWork || ''
+    });
+    setEditArticleshipModal(true);
+  };
+
+  const saveArticleshipModal = () => {
+    setCaPortfolio(prev => ({
+      ...prev,
+      ...tempArticleship,
+      articleshipCompletionDate: `${tempArticleship.articleshipCompletionDateMonth} ${tempArticleship.articleshipCompletionDateYear}`
+    }));
+    setEditArticleshipModal(false);
+    toast.success('Articleship & Training details updated successfully!', { icon: '✓' });
+  };
+
+  const addTempFirm = () => {
+    setTempArticleship(prev => ({
+      ...prev,
+      articleships: [...prev.articleships, { type: 'Articleship', firmName: '', city: '', noOfPartners: '2', noOfMonths: '0' }]
+    }));
+  };
+
+  const removeTempFirm = (index: number) => {
+    setTempArticleship(prev => ({
+      ...prev,
+      articleships: prev.articleships.filter((_, i) => i !== index)
+    }));
+  };
+
+  const updateTempFirm = (index: number, field: string, value: any) => {
+    setTempArticleship(prev => {
+      const next = [...prev.articleships];
+      next[index] = { ...next[index], [field]: value };
+      return { ...prev, articleships: next };
+    });
+  };
+
+  const toggleTempNatureOfWork = (work: string) => {
+    setTempArticleship(prev => {
+      let works = prev.natureOfWork ? prev.natureOfWork.split(',').map((w: string) => w.trim()).filter(Boolean) : [];
+      if (works.includes(work)) {
+        works = works.filter(w => w !== work);
+      } else {
+        works.push(work);
+      }
+      return { ...prev, natureOfWork: works.join(', ') };
+    });
+  };
+
   const Section = ({ title, icon: Icon, onEdit, step, children }: any) => (
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 relative group">
       <button
@@ -246,24 +316,47 @@ export const Step6Review: React.FC<Step6ReviewProps> = ({
 
       {/* 3. Articleship Section (Only for Fresher candidates) */}
       {!experienceInfo?.isExperienced && (
-        <Section title="Articleship" icon={Building} step={2}>
+        <Section title="Articleship & Training" icon={Building} onEdit={openArticleshipModal}>
           <DataItem label="Total Experience" value={`${caPortfolio.articleships?.reduce((acc: number, curr: any) => acc + (parseInt(curr.noOfMonths) || 0), 0) || 0} Months`} />
           <DataItem label="Completion Date" value={`${caPortfolio.articleshipCompletionDateMonth || ''} ${caPortfolio.articleshipCompletionDateYear || ''}`} />
+          <DataItem label="GMCS Completed" value={caPortfolio.gmcsCompleted || 'Yes'} />
+          <DataItem label="Industrial Trainee" value={caPortfolio.industrialTrainee || 'No'} />
+          <DataItem label="Listed Company Work" value={caPortfolio.listedCompanyWork || 'No'} />
           <div className="col-span-1 md:col-span-2">
             <DataItem label="Nature of Work" value={caPortfolio.natureOfWork} />
           </div>
+          {caPortfolio.articleships && caPortfolio.articleships.length > 0 && (
+            <div className="col-span-1 md:col-span-2 mt-2 space-y-2">
+              <span className="block text-xs font-semibold text-gray-400 uppercase tracking-wider">Firms Details</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {caPortfolio.articleships.map((f: any, idx: number) => (
+                  <div key={idx} className="bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-xs">
+                    <div className="font-bold text-slate-800">{f.firmName || 'Firm'} ({f.type || 'Articleship'})</div>
+                    <div className="text-slate-500 mt-0.5">{f.city ? `City: ${f.city}` : ''} • {f.noOfMonths ? `${f.noOfMonths} Mos` : ''} • {f.noOfPartners ? `${f.noOfPartners} Partners` : ''}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </Section>
       )}
 
       {/* 4. Education Section */}
-      <Section title="Education" icon={GraduationCap} step={experienceInfo?.isExperienced ? 2 : 3}>
+      <Section title="Education" icon={GraduationCap} step={2}>
         <DataItem label="Graduation" value={`${qualifications.graduation?.type || ''} - ${qualifications.graduation?.college || ''} (${qualifications.graduation?.percentage || ''}%)`} />
         <DataItem label="Class XII" value={`${qualifications.class12?.percentage || ''}% (${qualifications.class12?.year || ''})`} />
+        <DataItem label="Class X" value={`${qualifications.class10?.percentage || ''}% (${qualifications.class10?.year || ''})`} />
       </Section>
 
-      {/* 5. Work Experience Section (Only for Experienced candidates) */}
+      {/* 5. Placement Preferences Section */}
+      <Section title="Placement Preferences" icon={MapPin} step={3}>
+        <DataItem label="Preferred Campus City" value={personal.preferredCampusCity || '-'} />
+        <DataItem label="Preferred Job Cities" value={[personal.prefCity1, personal.prefCity2, personal.prefCity3].filter(Boolean).join(', ') || '-'} />
+      </Section>
+
+      {/* 6. Work Experience Section (Only for Experienced candidates) */}
       {experienceInfo?.isExperienced && (
-        <Section title="Corporate Work Experience" icon={Briefcase} step={3}>
+        <Section title="Corporate Work Experience" icon={Briefcase}>
           <DataItem label="Total Experience" value={experienceInfo.experienceYears} />
           {experienceInfo.caFinalCompletionYear && (
             <DataItem label="CA Final Year" value={experienceInfo.caFinalCompletionYear} />
@@ -731,6 +824,246 @@ export const Step6Review: React.FC<Step6ReviewProps> = ({
                 type="button"
                 onClick={saveCaModal}
                 className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold shadow-md shadow-indigo-600/20 transition-all flex items-center gap-2 cursor-pointer"
+              >
+                <Check size={16} /> Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* ═══════════════ EDIT ARTICLESHIP MODAL ═══════════════ */}
+      {editArticleshipModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center border-b border-gray-100 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-blue-50 text-primary rounded-xl">
+                  <Building size={22} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">Edit Articleship & Training</h3>
+                  <p className="text-xs text-gray-500">Update your firm details, duration & nature of work</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditArticleshipModal(false)}
+                className="p-1.5 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Firms List */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-800 uppercase tracking-wider">Firms Details</label>
+                <button
+                  type="button"
+                  onClick={addTempFirm}
+                  className="text-xs font-semibold text-primary hover:text-blue-700 flex items-center gap-1 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+                >
+                  <Plus size={13} /> Add Firm
+                </button>
+              </div>
+
+              {tempArticleship.articleships.map((firm: any, idx: number) => (
+                <div key={idx} className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3 relative">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                      <Building size={14} className="text-primary" /> Firm #{idx + 1}
+                    </span>
+                    {idx > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => removeTempFirm(idx)}
+                        className="text-slate-400 hover:text-red-500 p-1 rounded transition-colors text-xs flex items-center gap-1 cursor-pointer"
+                      >
+                        <Trash2 size={13} /> Remove
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                    <div>
+                      <label className="block text-[10.5px] font-semibold text-slate-500 mb-1">Type</label>
+                      <select
+                        value={firm.type}
+                        onChange={(e) => updateTempFirm(idx, 'type', e.target.value)}
+                        className="w-full px-2.5 py-1.5 text-xs border border-gray-200 rounded-lg bg-white"
+                      >
+                        {ARTICLESHIP_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                      </select>
+                    </div>
+
+                    <div className="lg:col-span-2">
+                      <label className="block text-[10.5px] font-semibold text-slate-500 mb-1">Firm Name</label>
+                      <input
+                        type="text"
+                        list={`reviewFirmsList-${idx}`}
+                        value={firm.firmName}
+                        onChange={(e) => updateTempFirm(idx, 'firmName', e.target.value)}
+                        placeholder="Enter or select"
+                        className="w-full px-2.5 py-1.5 text-xs border border-gray-200 rounded-lg bg-white"
+                      />
+                      <datalist id={`reviewFirmsList-${idx}`}>
+                        {CA_FIRMS.map(f => <option key={f} value={f} />)}
+                      </datalist>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10.5px] font-semibold text-slate-500 mb-1">City</label>
+                      <input
+                        type="text"
+                        list={`reviewCitiesList-${idx}`}
+                        value={firm.city}
+                        onChange={(e) => updateTempFirm(idx, 'city', e.target.value)}
+                        placeholder="City"
+                        className="w-full px-2.5 py-1.5 text-xs border border-gray-200 rounded-lg bg-white"
+                      />
+                      <datalist id={`reviewCitiesList-${idx}`}>
+                        {ALL_CITIES.map(c => <option key={c} value={c} />)}
+                      </datalist>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10.5px] font-semibold text-slate-500 mb-1">Duration (Mos)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="36"
+                        value={firm.noOfMonths}
+                        onChange={(e) => updateTempFirm(idx, 'noOfMonths', e.target.value)}
+                        className="w-full px-2.5 py-1.5 text-xs border border-gray-200 rounded-lg bg-white"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Completion & Toggles */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Completion / Due Date</label>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <select
+                    value={tempArticleship.articleshipCompletionDateMonth}
+                    onChange={(e) => setTempArticleship({ ...tempArticleship, articleshipCompletionDateMonth: e.target.value })}
+                    className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-lg bg-white"
+                  >
+                    {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
+                  </select>
+                  <select
+                    value={tempArticleship.articleshipCompletionDateYear}
+                    onChange={(e) => setTempArticleship({ ...tempArticleship, articleshipCompletionDateYear: e.target.value })}
+                    className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-lg bg-white"
+                  >
+                    {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">GMCS Completed?</label>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {(['Yes', 'No'] as const).map(opt => (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => setTempArticleship({ ...tempArticleship, gmcsCompleted: opt })}
+                      className={`py-1.5 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
+                        tempArticleship.gmcsCompleted === opt
+                          ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
+                      }`}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Industrial Trainee?</label>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {(['Yes', 'No'] as const).map(opt => (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => setTempArticleship({ ...tempArticleship, industrialTrainee: opt })}
+                      className={`py-1.5 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
+                        tempArticleship.industrialTrainee === opt
+                          ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
+                      }`}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Listed Company Work?</label>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {(['Yes', 'No'] as const).map(opt => (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => setTempArticleship({ ...tempArticleship, listedCompanyWork: opt })}
+                      className={`py-1.5 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
+                        tempArticleship.listedCompanyWork === opt
+                          ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
+                      }`}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Nature of Work */}
+            <div className="space-y-2">
+              <label className="block text-xs font-bold text-slate-900">
+                Nature of Work <span className="text-[11px] font-normal text-slate-500">(You may select multiple)</span>
+              </label>
+              <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto p-1">
+                {NATURE_OF_WORK.map(work => {
+                  const currentWorks = tempArticleship.natureOfWork ? tempArticleship.natureOfWork.split(',').map((w: string) => w.trim()).filter(Boolean) : [];
+                  const isSel = currentWorks.includes(work);
+                  return (
+                    <button
+                      key={work}
+                      type="button"
+                      onClick={() => toggleTempNatureOfWork(work)}
+                      className={`px-2.5 py-1 text-xs font-medium rounded-lg border transition-all cursor-pointer ${
+                        isSel
+                          ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                          : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                      }`}
+                    >
+                      {work}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
+              <button
+                type="button"
+                onClick={() => setEditArticleshipModal(false)}
+                className="px-4 py-2.5 border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-xl text-sm font-semibold transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={saveArticleshipModal}
+                className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold shadow-md shadow-blue-600/20 transition-all flex items-center gap-2 cursor-pointer"
               >
                 <Check size={16} /> Save Changes
               </button>

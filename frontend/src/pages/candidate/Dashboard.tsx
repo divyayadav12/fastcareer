@@ -13,7 +13,6 @@ import { ArrowLeft, ArrowRight, Save, Check } from 'lucide-react';
 
 import { Stepper } from '../../components/candidate-profile/Stepper';
 import { Step1Personal } from '../../components/candidate-profile/Step1Personal';
-import { Step3Articleship } from '../../components/candidate-profile/Step3Articleship';
 import { Step4Education } from '../../components/candidate-profile/Step4Education';
 import { Step5Experience } from '../../components/candidate-profile/Step5Experience';
 import { Step6Review } from '../../components/candidate-profile/Step6Review';
@@ -416,9 +415,7 @@ export const CandidateDashboard = () => {
     Boolean(user?.experienceInfo?.currentCompanyName)
   );
 
-  const steps = isExperienced
-    ? ['Personal Details', 'Education Qualifications', 'Placement Preferences', 'Review & Submit']
-    : ['Personal Details', 'Articleship & Training', 'Education Qualifications', 'Review & Submit'];
+  const steps = ['Personal Details', 'Education Qualifications', 'Placement Preferences', 'Review & Submit'];
 
   const calculateProfileCompletion = () => {
     let score = 0;
@@ -472,18 +469,10 @@ export const CandidateDashboard = () => {
             />
           )}
           {step === 2 && (
-            isExperienced ? (
-              <Step4Education qualifications={qualifications} setQualifications={setQualifications} />
-            ) : (
-              <Step3Articleship caPortfolio={caPortfolio} setCaPortfolio={setCaPortfolio} isOptional={false} />
-            )
+            <Step4Education qualifications={qualifications} setQualifications={setQualifications} />
           )}
           {step === 3 && (
-            isExperienced ? (
-              <Step5Experience experienceInfo={experienceInfo} setExperienceInfo={setExperienceInfo} personal={personal} setPersonal={setPersonal} />
-            ) : (
-              <Step4Education qualifications={qualifications} setQualifications={setQualifications} />
-            )
+            <Step5Experience experienceInfo={experienceInfo} setExperienceInfo={setExperienceInfo} personal={personal} setPersonal={setPersonal} />
           )}
           {step === 4 && (
             <Step6Review
