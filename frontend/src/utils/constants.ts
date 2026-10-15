@@ -4,7 +4,44 @@ export { STATE_CITY_MAP };
 export const STATES = Object.keys(STATE_CITY_MAP);
 export const ALL_CITIES = Array.from(new Set(Object.values(STATE_CITY_MAP).flat())).sort();
 
-export const TOP_CA_CITIES = [
+export const TOP_CA_CITIES_BY_STATE: Record<string, string[]> = {
+  'Maharashtra': ['Mumbai', 'Pune', 'Nagpur', 'Nashik', 'Aurangabad'],
+  'Delhi': ['New Delhi', 'Central Delhi', 'South Delhi', 'North Delhi', 'East Delhi'],
+  'Gujarat': ['Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Bhavnagar'],
+  'Rajasthan': ['Jaipur', 'Jodhpur', 'Udaipur', 'Kota', 'Bikaner'],
+  'Madhya Pradesh': ['Indore', 'Bhopal', 'Gwalior', 'Jabalpur', 'Ujjain'],
+  'Uttar Pradesh': ['Lucknow', 'Kanpur', 'Noida', 'Prayagraj', 'Varanasi'],
+  'Karnataka': ['Bengaluru', 'Mangaluru', 'Mysuru', 'Hubballi', 'Belagavi'],
+  'Tamil Nadu': ['Chennai', 'Coimbatore', 'Madurai', 'Tiruchirappalli', 'Salem'],
+  'West Bengal': ['Kolkata', 'Howrah', 'Siliguri', 'Durgapur', 'Asansol'],
+  'Telangana': ['Hyderabad', 'Warangal', 'Nizamabad', 'Karimnagar', 'Khammam'],
+  'Andhra Pradesh': ['Visakhapatnam', 'Vijayawada', 'Guntur', 'Tirupati', 'Nellore'],
+  'Punjab': ['Ludhiana', 'Amritsar', 'Jalandhar', 'Patiala', 'Bathinda'],
+  'Haryana': ['Gurugram', 'Faridabad', 'Panipat', 'Karnal', 'Ambala'],
+  'Kerala': ['Kochi', 'Thiruvananthapuram', 'Kozhikode', 'Thrissur', 'Kottayam'],
+  'Bihar': ['Patna', 'Gaya', 'Muzaffarpur', 'Bhagalpur', 'Darbhanga'],
+  'Jharkhand': ['Ranchi', 'Jamshedpur', 'Dhanbad', 'Bokaro', 'Deoghar'],
+  'Odisha': ['Bhubaneswar', 'Cuttack', 'Rourkela', 'Berhampur', 'Sambalpur'],
+  'Chhattisgarh': ['Raipur', 'Bilaspur', 'Bhilai', 'Durg', 'Korba'],
+  'Uttarakhand': ['Dehradun', 'Haridwar', 'Haldwani', 'Roorkee', 'Rishikesh'],
+  'Assam': ['Guwahati', 'Dibrugarh', 'Silchar', 'Jorhat', 'Tezpur'],
+  'Himachal Pradesh': ['Shimla', 'Dharamshala', 'Solan', 'Mandi', 'Baddi'],
+  'Goa': ['Panaji', 'Margao', 'Vasco da Gama', 'Mapusa', 'Ponda'],
+  'Jammu and Kashmir': ['Jammu', 'Srinagar', 'Udhampur', 'Anantnag', 'Baramulla'],
+  'Chandigarh': ['Chandigarh', 'Mohali', 'Panchkula', 'Zirakpur', 'Kharar'],
+  'Tripura': ['Agartala', 'Dharmanagar', 'Udaipur', 'Kailashahar', 'Belonia'],
+  'Meghalaya': ['Shillong', 'Tura', 'Jowai', 'Nongpoh', 'Williamnagar'],
+  'Manipur': ['Imphal', 'Churachandpur', 'Thoubal', 'Kakching', 'Ukhrul'],
+  'Nagaland': ['Kohima', 'Dimapur', 'Mokokchung', 'Tuensang', 'Wokha'],
+  'Mizoram': ['Aizawl', 'Lunglei', 'Champhai', 'Serchhip', 'Kolasib'],
+  'Sikkim': ['Gangtok', 'Namchi', 'Geyzing', 'Mangan', 'Rangpo'],
+  'Arunachal Pradesh': ['Itanagar', 'Naharlagun', 'Pasighat', 'Tawang', 'Ziro'],
+  'Puducherry': ['Puducherry', 'Karaikal', 'Ozhukarai', 'Mahe', 'Yanam'],
+  'Andaman and Nicobar Islands': ['Port Blair', 'Bamboo Flat', 'Garacharma', 'Prothrapur', 'Dollygunj']
+};
+
+export const TOP_CA_CITIES = Array.from(new Set([
+  ...Object.values(TOP_CA_CITIES_BY_STATE).flat(),
   'Mumbai',
   'Delhi',
   'New Delhi',
@@ -32,7 +69,7 @@ export const TOP_CA_CITIES = [
   'Navi Mumbai',
   'Thane',
   'Kochi'
-];
+]));
 
 export const ARTICLESHIP_CITIES = Array.from(new Set([
   ...TOP_CA_CITIES,
@@ -82,10 +119,12 @@ export const RANKER_OPTIONS = [
   ...Array.from({ length: 50 }, (_, i) => String(i + 1))
 ];
 export const PARTNER_OPTIONS = [
-  '1 to 10',
-  '11 to 20',
-  '21 to 50',
-  'Above 50'
+  '1',
+  '2-5',
+  '5-10',
+  '10-15',
+  '15-20',
+  'Greater than 20'
 ];
 export const PARTNERS_OPTIONS = PARTNER_OPTIONS;
 export const NATURE_OF_WORK = [

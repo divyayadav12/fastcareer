@@ -7,7 +7,7 @@ export const Step3Articleship = ({ caPortfolio, setCaPortfolio, isOptional = fal
   const addFirm = () => {
     setCaPortfolio({
       ...caPortfolio,
-      articleships: [...caPortfolio.articleships, { type: 'Articleship', firmName: '', city: '', noOfPartners: '1 to 10', noOfMonths: '0' }]
+      articleships: [...caPortfolio.articleships, { type: 'Articleship', firmName: '', city: '', noOfPartners: '1', noOfMonths: '0' }]
     });
   };
 
@@ -120,12 +120,12 @@ export const Step3Articleship = ({ caPortfolio, setCaPortfolio, isOptional = fal
               </div>
               <div className="lg:col-span-1">
                 <label className="block text-xs font-medium text-gray-500 mb-1">Partners</label>
-                <select value={firm.noOfPartners || '1 to 10'} onChange={(e) => updateFirm(index, 'noOfPartners', e.target.value)} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 text-sm">
+                <select value={firm.noOfPartners || '1'} onChange={(e) => updateFirm(index, 'noOfPartners', e.target.value)} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 text-sm">
                   {PARTNER_OPTIONS.map(opt => (
-                    <option key={opt} value={opt}>{opt} Partners</option>
+                    <option key={opt} value={opt}>{opt === '1' ? '1' : opt}</option>
                   ))}
                   {firm.noOfPartners && !PARTNER_OPTIONS.includes(firm.noOfPartners) && (
-                    <option value={firm.noOfPartners}>{firm.noOfPartners} Partners</option>
+                    <option value={firm.noOfPartners}>{firm.noOfPartners}</option>
                   )}
                 </select>
               </div>
@@ -143,13 +143,34 @@ export const Step3Articleship = ({ caPortfolio, setCaPortfolio, isOptional = fal
       </div>
 
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-100 pb-4 gap-4">
-          <h3 className="text-lg font-semibold text-gray-900">Articleship Summary</h3>
-          <div className="bg-blue-50 text-blue-900 px-4 py-2 rounded-xl font-bold flex items-center gap-2 border border-blue-100">
-            <Calendar size={18} className="text-primary" />
-            Total Experience: {totalMonths} Months
-          </div>
-        </div>
+        {(() => {
+          const isValidDuration = totalMonths === 24 || totalMonths === 36;
+          return (
+            <div className="space-y-3 border-b border-gray-100 pb-4">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <h3 className="text-lg font-semibold text-gray-900">Articleship Summary</h3>
+                <div className={`px-4 py-2 rounded-xl font-bold flex items-center gap-2 border ${
+                  isValidDuration 
+                    ? 'bg-emerald-50 text-emerald-900 border-emerald-200' 
+                    : 'bg-amber-50 text-amber-900 border-amber-300'
+                }`}>
+                  <Calendar size={18} className={isValidDuration ? 'text-emerald-600' : 'text-amber-600'} />
+                  Total Experience: {totalMonths} Months
+                  <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold ml-1 ${
+                    isValidDuration ? 'bg-emerald-200/80 text-emerald-900' : 'bg-amber-200 text-amber-900'
+                  }`}>
+                    {totalMonths === 24 ? '✓ 24 Mos (New Scheme)' : totalMonths === 36 ? '✓ 36 Mos (Old Scheme)' : '⚠️ Warning: Must be 24 or 36'}
+                  </span>
+                </div>
+              </div>
+              {!isValidDuration && (
+                <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 font-medium leading-relaxed">
+                  ⚠️ <strong>Notice:</strong> Articleship ka total duration sabhi firms ko milakar ya to exactly <strong>24 Months</strong> (New Scheme) hona chahiye ya <strong>36 Months</strong> (Old Scheme). Current total: <strong>{totalMonths} Months</strong>.
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="space-y-2">

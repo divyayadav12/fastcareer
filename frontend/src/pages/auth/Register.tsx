@@ -152,23 +152,20 @@ export const Register = () => {
     noOfPartners: string;
     noOfMonths: string;
   }>>([
-    { type: 'Articleship', firmName: '', city: '', noOfPartners: '1 to 10', noOfMonths: '36' }
+    { type: 'Articleship', firmName: '', city: '', noOfPartners: '1', noOfMonths: '36' }
   ]);
   const [articleshipCompletionMonth, setArticleshipCompletionMonth] = useState('May');
   const [articleshipCompletionYear, setArticleshipCompletionYear] = useState(String(new Date().getFullYear()));
-  const [selectedNatureOfWork, setSelectedNatureOfWork] = useState<string[]>([
-    'Statutory Audit',
-    'Tax Audit'
-  ]);
+  const [selectedNatureOfWork, setSelectedNatureOfWork] = useState<string[]>([]);
   const [otherNatureOfWork, setOtherNatureOfWork] = useState('');
-  const [gmcsCompleted, setGmcsCompleted] = useState<'Yes' | 'No'>('Yes');
-  const [industrialTrainee, setIndustrialTrainee] = useState<'Yes' | 'No'>('No');
-  const [listedCompanyWork, setListedCompanyWork] = useState<'Yes' | 'No'>('No');
+  const [gmcsCompleted, setGmcsCompleted] = useState<'Yes' | 'No' | ''>('');
+  const [industrialTrainee, setIndustrialTrainee] = useState<'Yes' | 'No' | ''>('');
+  const [listedCompanyWork, setListedCompanyWork] = useState<'Yes' | 'No' | ''>('');
 
   const addArticleship = () => {
     setArticleships(prev => [
       ...prev,
-      { type: 'Articleship', firmName: '', city: '', noOfPartners: '1 to 10', noOfMonths: '0' }
+      { type: 'Articleship', firmName: '', city: '', noOfPartners: '1', noOfMonths: '0' }
     ]);
   };
 
@@ -619,6 +616,13 @@ export const Register = () => {
         }
         if (!currentDesignation.trim()) {
           newErrors.currentDesignation = 'Please fill this field: Current Designation';
+        }
+      }
+
+      if (workStatus === 'fresher') {
+        const totalMonths = articleships.reduce((acc, curr) => acc + (parseInt(curr.noOfMonths, 10) || 0), 0);
+        if (totalMonths !== 24 && totalMonths !== 36) {
+          newErrors.articleshipMonths = `Total Articleship duration across all firms must be exactly 24 Months (New Scheme) or 36 Months (Old Scheme). Current total: ${totalMonths} Months.`;
         }
       }
 
@@ -1652,15 +1656,17 @@ export const Register = () => {
                                       Number of Partners
                                     </label>
                                     <select
-                                      value={firm.noOfPartners || '1 to 10'}
+                                      value={firm.noOfPartners || '1'}
                                       onChange={(e) => updateArticleship(idx, 'noOfPartners', e.target.value)}
                                       className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white cursor-pointer"
                                     >
                                       {PARTNER_OPTIONS.map(opt => (
-                                        <option key={opt} value={opt}>{opt} Partners</option>
+                                        <option key={opt} value={opt}>
+                                          {opt === '1' ? '1' : opt}
+                                        </option>
                                       ))}
                                       {firm.noOfPartners && !PARTNER_OPTIONS.includes(firm.noOfPartners) && (
-                                        <option value={firm.noOfPartners}>{firm.noOfPartners} Partners</option>
+                                        <option value={firm.noOfPartners}>{firm.noOfPartners}</option>
                                       )}
                                     </select>
                                   </div>
@@ -1691,6 +1697,47 @@ export const Register = () => {
                             >
                               <Plus size={14} /> Add Another Articleship / Training Firm
                             </button>
+
+                            {/* Live Articleship Duration Summary & Warning */}
+                            {(() => {
+                              const totalMonths = articleships.reduce((acc, curr) => acc + (parseInt(curr.noOfMonths, 10) || 0), 0);
+                              const isValid = totalMonths === 24 || totalMonths === 36;
+                              return (
+                                <div className={`p-3.5 rounded-xl border transition-all ${
+                                  isValid 
+                                    ? 'bg-emerald-50/90 border-emerald-300 text-emerald-900 shadow-2xs' 
+                                    : 'bg-amber-50 border-amber-300 text-amber-900 shadow-2xs'
+                                }`}>
+                                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 font-bold text-xs sm:text-sm">
+                                    <span className="flex items-center gap-2">
+                                      {isValid ? (
+                                        <CheckCircle2 size={17} className="text-emerald-600 shrink-0" />
+                                      ) : (
+                                        <AlertCircle size={17} className="text-amber-600 shrink-0" />
+                                      )}
+                                      Total Articleship Duration: {totalMonths} Months
+                                    </span>
+                                    <span className={`text-[11px] px-2.5 py-0.5 rounded-full font-bold self-start sm:self-auto ${
+                                      isValid 
+                                        ? 'bg-emerald-200/80 text-emerald-900' 
+                                        : 'bg-amber-200 text-amber-900'
+                                    }`}>
+                                      {totalMonths === 24 ? '✓ 24 Months (2-Year New Scheme)' : totalMonths === 36 ? '✓ 36 Months (3-Year Old Scheme)' : '⚠️ Warning: Duration must be 24 or 36'}
+                                    </span>
+                                  </div>
+                                  {!isValid && (
+                                    <p className="text-[11.5px] leading-relaxed text-amber-800 mt-2 font-medium">
+                                      ⚠️ <strong>Required Rule:</strong> Articleship ka total duration (chahe aap 1 firm dalein ya multiple firms) ya to exactly <strong>24 Months</strong> (New Scheme) hona chahiye ya <strong>36 Months</strong> (Old Scheme). Na 24 se kam, na 36 se zyada. Current total: <strong>{totalMonths} Months</strong>. Please firm durations check karein.
+                                    </p>
+                                  )}
+                                  {fieldErrors.articleshipMonths && (
+                                    <p className="text-xs text-red-600 font-semibold mt-1.5">
+                                      {fieldErrors.articleshipMonths}
+                                    </p>
+                                  )}
+                                </div>
+                              );
+                            })()}
                           </div>
 
                           {/* Completion Date & Training Questions */}

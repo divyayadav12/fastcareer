@@ -103,10 +103,39 @@ export async function extractTextFromPdf(file: File | Blob): Promise<string> {
   for (let i = 1; i <= maxPages; i++) {
     const page = await pdf.getPage(i);
     const textContent = await page.getTextContent();
-    const pageText = textContent.items
-      .map((item: any) => item.str || '')
-      .join(' ');
-    fullText += '\n' + pageText;
+    let lastY: number | null = null;
+    const pageLines: string[] = [];
+    let currentLine = '';
+
+    for (const item of textContent.items as any[]) {
+      if (!item || typeof item.str !== 'string') continue;
+      const str = item.str;
+      const transform = item.transform; // [scaleX, skewY, skewX, scaleY, transX, transY]
+      const y = transform ? Math.round(transform[5]) : null;
+
+      if (lastY !== null && y !== null && Math.abs(y - lastY) > 3) {
+        if (currentLine.trim()) {
+          pageLines.push(currentLine.trim());
+        }
+        currentLine = str;
+      } else {
+        if (item.hasEOL) {
+          currentLine += (currentLine ? ' ' : '') + str;
+          if (currentLine.trim()) {
+            pageLines.push(currentLine.trim());
+          }
+          currentLine = '';
+        } else {
+          currentLine += (currentLine && !currentLine.endsWith(' ') && !str.startsWith(' ') ? ' ' : '') + str;
+        }
+      }
+      if (y !== null) lastY = y;
+    }
+    if (currentLine.trim()) {
+      pageLines.push(currentLine.trim());
+    }
+
+    fullText += '\n' + pageLines.join('\n');
   }
 
   return fullText;
@@ -124,13 +153,43 @@ export async function extractTextFromDocx(file: File | Blob): Promise<string> {
 }
 
 /**
+ * Helper to extract candidate name from file name (e.g. Divya_Yadav_Resume (1) (1).pdf -> Divya Yadav)
+ */
+export function extractNameFromFileName(fileName?: string): string {
+  if (!fileName) return '';
+  // Remove extension
+  let clean = fileName.replace(/\.[a-zA-Z0-9]+$/i, '');
+  // Remove copy markers like (1), (2), _copy, -copy
+  clean = clean.replace(/\(\d+\)/g, ' ').replace(/[-_]copy\d*/gi, ' ');
+  // Remove common non-name resume keywords
+  const fileKeywords = [
+    'resume', 'curriculum', 'vitae', 'cv', 'biodata', 'profile',
+    'updated', 'latest', 'new', 'final', 'draft', 'doc', 'document',
+    'fast', 'careers', 'career', 'ca', 'cma', 'cs', 'finalist', 'fresher',
+    'experienced', 'accountant', 'audit', 'tax', '2020', '2021', '2022',
+    '2023', '2024', '2025', '2026', '2027', 'v1', 'v2', 'v3'
+  ];
+  for (const kw of fileKeywords) {
+    clean = clean.replace(new RegExp(`\\b${kw}\\b`, 'gi'), ' ');
+  }
+  // Replace underscores, hyphens, periods with spaces
+  clean = clean.replace(/[._-]+/g, ' ').replace(/\s+/g, ' ').trim();
+
+  const words = clean.split(' ').filter(w => /^[a-zA-Z]{2,20}$/.test(w));
+  if (words.length >= 1 && words.length <= 4) {
+    return words.map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+  }
+  return '';
+}
+
+/**
  * Intelligent entity extraction from resume text for both registration & full profile
  */
-export function parseResumeText(rawText: string): ParsedResumeData {
+export function parseResumeText(rawText: string, originalFileName?: string): ParsedResumeData {
   const result: ParsedResumeData = {};
-  if (!rawText || !rawText.trim()) return result;
+  if (!rawText && !originalFileName) return result;
 
-  const cleanText = rawText.replace(/\r\n/g, '\n');
+  const cleanText = (rawText || '').replace(/\r\n/g, '\n');
 
   // 1. Email Extraction
   const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i;
@@ -192,27 +251,28 @@ export function parseResumeText(rawText: string): ParsedResumeData {
     }
   }
 
-  // 5. Name Extraction
+  // 5. Robust Multi-Stage Name Extraction
   const lines = cleanText
     .split('\n')
     .map(l => l.trim())
-    .filter(l => l.length > 0 && l.length < 60);
+    .filter(l => l.length > 0 && l.length < 80);
 
   let candidateName = '';
 
-  // Explicit Name: pattern
-  const explicitNameMatch = cleanText.match(/\b(?:Name|Candidate Name|Full Name)[\s:-]+([A-Z][A-Za-z.'-]+(?:\s+[A-Z][A-Za-z.'-]+){1,3})\b/i);
+  // 5A. Explicit Name pattern (e.g. "Name: Rahul Verma", "Full Name - Divya Yadav")
+  const explicitNameMatch = cleanText.match(/\b(?:Name|Candidate Name|Full Name|Applicant Name)[\s:-]+([A-Z][A-Za-z.'-]+(?:\s+[A-Z][A-Za-z.'-]+){1,3})\b/i);
   if (explicitNameMatch) {
     candidateName = explicitNameMatch[1].trim();
   }
 
+  // 5B. Inspect top lines of resume text
   if (!candidateName) {
-    for (const line of lines.slice(0, 8)) {
-      if (line.includes('@') || /(?:\+?91|\d{5})/i.test(line)) continue;
+    for (const line of lines.slice(0, 10)) {
+      if (line.includes('@') || /(?:\+?91|\d{5})/i.test(line) || /linkedin\.com/i.test(line)) continue;
       if (COMMON_NON_NAMES.has(line.toLowerCase())) continue;
       
-      // Remove prefixes like CA, Mr., Ms., Mrs., Dr.
-      const sanitizedLine = line.replace(/^(?:CA\s+|Mr\.\s+|Ms\.\s+|Mrs\.\s+|Dr\.\s+)/i, '').trim();
+      // Remove prefixes like CA, CMA, CS, Mr., Ms., Mrs., Dr.
+      const sanitizedLine = line.replace(/^(?:CA\s+|CMA\s+|CS\s+|Mr\.\s+|Ms\.\s+|Mrs\.\s+|Dr\.\s+)/i, '').trim();
       const words = sanitizedLine.split(/\s+/).filter(w => /^[a-zA-Z.'-]+$/.test(w));
       if (words.length >= 2 && words.length <= 4) {
         const isHeaderWord = words.some(w => COMMON_NON_NAMES.has(w.toLowerCase()));
@@ -220,17 +280,40 @@ export function parseResumeText(rawText: string): ParsedResumeData {
           candidateName = words.map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
           break;
         }
+      } else if (words.length === 1 && words[0].length >= 3 && !COMMON_NON_NAMES.has(words[0].toLowerCase())) {
+        // Single word on the very first line if looks like a name
+        if (!candidateName && lines.indexOf(line) <= 1) {
+          candidateName = words[0].charAt(0).toUpperCase() + words[0].slice(1).toLowerCase();
+        }
       }
     }
   }
 
+  // 5C. Extract from original file name (e.g. Divya_Yadav_Resume (1) (1).pdf -> Divya Yadav)
+  if (!candidateName && originalFileName) {
+    const fromFile = extractNameFromFileName(originalFileName);
+    if (fromFile) {
+      candidateName = fromFile;
+    }
+  }
+
+  // 5D. Fallback to Email prefix (e.g. divyayadav141203@gmail.com or rahul.verma@...)
   if (!candidateName && result.email) {
     const prefix = result.email.split('@')[0];
-    const parts = prefix.split(/[._-]/).filter(p => p.length > 1 && /^[a-zA-Z]+$/.test(p));
+    // First try splitting on dots, hyphens, underscores
+    const parts = prefix.split(/[._-]/).map(p => p.replace(/\d+/g, '')).filter(p => p.length >= 2 && /^[a-zA-Z]+$/.test(p));
     if (parts.length >= 2) {
       candidateName = parts.map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).join(' ');
     } else if (parts.length === 1 && parts[0].length >= 3) {
       candidateName = parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();
+    }
+  }
+
+  // If candidateName was single word from text or email, but filename has 2 words (e.g. Divya Yadav)
+  if (originalFileName && (!candidateName || !candidateName.includes(' '))) {
+    const fromFile = extractNameFromFileName(originalFileName);
+    if (fromFile && fromFile.includes(' ')) {
+      candidateName = fromFile;
     }
   }
 
@@ -607,7 +690,8 @@ export function parseResumeText(rawText: string): ParsedResumeData {
  * High-level function to scan a resume file and extract all data
  */
 export async function parseResumeFile(file: File | Blob): Promise<ParsedResumeData> {
-  const fileName = (file as File).name ? (file as File).name.toLowerCase() : 'resume.pdf';
+  const originalName = (file as File).name || '';
+  const fileName = originalName ? originalName.toLowerCase() : 'resume.pdf';
   let rawText = '';
 
   if (fileName.endsWith('.docx') || fileName.endsWith('.doc')) {
@@ -616,7 +700,7 @@ export async function parseResumeFile(file: File | Blob): Promise<ParsedResumeDa
     rawText = await extractTextFromPdf(file);
   }
 
-  return parseResumeText(rawText);
+  return parseResumeText(rawText, originalName);
 }
 
 /**
@@ -625,5 +709,8 @@ export async function parseResumeFile(file: File | Blob): Promise<ParsedResumeDa
 export async function parseResumeFromUrl(url: string): Promise<ParsedResumeData> {
   const response = await fetch(url);
   const blob = await response.blob();
-  return parseResumeFile(blob);
+  const urlParts = url.split('/');
+  const rawFileName = decodeURIComponent(urlParts[urlParts.length - 1] || 'resume.pdf');
+  const file = new File([blob], rawFileName, { type: blob.type || 'application/pdf' });
+  return parseResumeFile(file);
 }

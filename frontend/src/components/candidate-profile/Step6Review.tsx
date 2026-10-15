@@ -31,12 +31,12 @@ export const Step6Review: React.FC<Step6ReviewProps> = ({
   const [editArticleshipModal, setEditArticleshipModal] = useState(false);
 
   const [tempArticleship, setTempArticleship] = useState({
-    articleships: caPortfolio.articleships ? JSON.parse(JSON.stringify(caPortfolio.articleships)) : [{ type: 'Articleship', firmName: '', city: '', noOfPartners: '1 to 10', noOfMonths: '36' }],
+    articleships: caPortfolio.articleships ? JSON.parse(JSON.stringify(caPortfolio.articleships)) : [{ type: 'Articleship', firmName: '', city: '', noOfPartners: '1', noOfMonths: '36' }],
     articleshipCompletionDateMonth: caPortfolio.articleshipCompletionDateMonth || 'May',
     articleshipCompletionDateYear: caPortfolio.articleshipCompletionDateYear || '2023',
-    gmcsCompleted: caPortfolio.gmcsCompleted || 'Yes',
-    industrialTrainee: caPortfolio.industrialTrainee || 'No',
-    listedCompanyWork: caPortfolio.listedCompanyWork || 'No',
+    gmcsCompleted: caPortfolio.gmcsCompleted || '',
+    industrialTrainee: caPortfolio.industrialTrainee || '',
+    listedCompanyWork: caPortfolio.listedCompanyWork || '',
     natureOfWork: caPortfolio.natureOfWork || ''
   });
 
@@ -170,12 +170,12 @@ export const Step6Review: React.FC<Step6ReviewProps> = ({
     setTempArticleship({
       articleships: caPortfolio.articleships && caPortfolio.articleships.length > 0
         ? JSON.parse(JSON.stringify(caPortfolio.articleships))
-        : [{ type: 'Articleship', firmName: '', city: '', noOfPartners: '1 to 10', noOfMonths: '36' }],
+        : [{ type: 'Articleship', firmName: '', city: '', noOfPartners: '1', noOfMonths: '36' }],
       articleshipCompletionDateMonth: caPortfolio.articleshipCompletionDateMonth || 'May',
       articleshipCompletionDateYear: caPortfolio.articleshipCompletionDateYear || '2023',
-      gmcsCompleted: caPortfolio.gmcsCompleted || 'Yes',
-      industrialTrainee: caPortfolio.industrialTrainee || 'No',
-      listedCompanyWork: caPortfolio.listedCompanyWork || 'No',
+      gmcsCompleted: caPortfolio.gmcsCompleted || '',
+      industrialTrainee: caPortfolio.industrialTrainee || '',
+      listedCompanyWork: caPortfolio.listedCompanyWork || '',
       natureOfWork: caPortfolio.natureOfWork || ''
     });
     setEditArticleshipModal(true);
@@ -194,7 +194,7 @@ export const Step6Review: React.FC<Step6ReviewProps> = ({
   const addTempFirm = () => {
     setTempArticleship(prev => ({
       ...prev,
-      articleships: [...prev.articleships, { type: 'Articleship', firmName: '', city: '', noOfPartners: '1 to 10', noOfMonths: '0' }]
+      articleships: [...prev.articleships, { type: 'Articleship', firmName: '', city: '', noOfPartners: '1', noOfMonths: '0' }]
     }));
   };
 
@@ -930,10 +930,10 @@ export const Step6Review: React.FC<Step6ReviewProps> = ({
                         className="w-full px-2.5 py-1.5 text-xs border border-gray-200 rounded-lg bg-white"
                       >
                         {PARTNER_OPTIONS.map(opt => (
-                          <option key={opt} value={opt}>{opt} Partners</option>
+                          <option key={opt} value={opt}>{opt === '1' ? '1' : opt}</option>
                         ))}
                         {firm.noOfPartners && !PARTNER_OPTIONS.includes(firm.noOfPartners) && (
-                          <option value={firm.noOfPartners}>{firm.noOfPartners} Partners</option>
+                          <option value={firm.noOfPartners}>{firm.noOfPartners}</option>
                         )}
                       </select>
                     </div>

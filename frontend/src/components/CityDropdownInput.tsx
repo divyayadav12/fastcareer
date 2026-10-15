@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Search, ChevronDown, X, MapPin, Check } from 'lucide-react';
-import { TOP_CA_CITIES, ARTICLESHIP_CITIES } from '../utils/constants';
+import { TOP_CA_CITIES, ARTICLESHIP_CITIES, TOP_CA_CITIES_BY_STATE } from '../utils/constants';
 
 interface CityDropdownInputProps {
   value: string;
@@ -21,6 +21,7 @@ export const CityDropdownInput: React.FC<CityDropdownInputProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedState, setSelectedState] = useState<string>('All Hubs');
   const containerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -50,10 +51,13 @@ export const CityDropdownInput: React.FC<CityDropdownInputProps> = ({
   const filteredCities = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     if (!q) {
+      if (selectedState !== 'All Hubs' && TOP_CA_CITIES_BY_STATE[selectedState]) {
+        return TOP_CA_CITIES_BY_STATE[selectedState];
+      }
       return ARTICLESHIP_CITIES.slice(0, 80);
     }
     return ARTICLESHIP_CITIES.filter(c => c.toLowerCase().includes(q)).slice(0, 80);
-  }, [searchQuery]);
+  }, [searchQuery, selectedState]);
 
   const handleSelect = (city: string) => {
     onChange(city);
@@ -141,20 +145,34 @@ export const CityDropdownInput: React.FC<CityDropdownInputProps> = ({
             </div>
           </div>
 
-          {/* Top CA Hub Cities (Quick Select inside dropdown) */}
+          {/* Top CA Hub Cities (5 Top Cities per State Quick Select) */}
           {!searchQuery.trim() && (
             <div className="p-2.5 border-b border-slate-100 bg-white">
-              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 flex items-center justify-between">
-                <span>Top CA Cities / Hubs</span>
-                <span className="text-[9px] text-slate-400 font-normal">Quick Select</span>
+              <div className="flex items-center justify-between mb-1.5 gap-2">
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                  Top CA Cities (5 per state)
+                </span>
+                <select
+                  value={selectedState}
+                  onChange={(e) => setSelectedState(e.target.value)}
+                  className="text-[10.5px] font-semibold text-blue-700 bg-blue-50 border border-blue-200 rounded-md px-1.5 py-0.5 outline-none cursor-pointer hover:bg-blue-100/70 transition-colors"
+                >
+                  <option value="All Hubs">All Top Hubs</option>
+                  {Object.keys(TOP_CA_CITIES_BY_STATE).map((st) => (
+                    <option key={st} value={st}>{st} (Top 5)</option>
+                  ))}
+                </select>
               </div>
               <div className="flex flex-wrap gap-1">
-                {TOP_CA_CITIES.slice(0, 14).map((city) => (
+                {(selectedState === 'All Hubs'
+                  ? ['Mumbai', 'Delhi', 'New Delhi', 'Bengaluru', 'Gurugram', 'Noida', 'Pune', 'Kolkata', 'Ahmedabad', 'Chennai', 'Hyderabad', 'Jaipur', 'Indore', 'Lucknow', 'Chandigarh']
+                  : (TOP_CA_CITIES_BY_STATE[selectedState] || [])
+                ).map((city) => (
                   <button
                     key={city}
                     type="button"
                     onClick={() => handleSelect(city)}
-                    className={`px-2 py-0.5 text-[11px] rounded-md font-medium transition-all ${
+                    className={`px-2 py-0.5 text-[11px] rounded-md font-medium transition-all cursor-pointer ${
                       value === city
                         ? 'bg-blue-600 text-white shadow-2xs font-semibold'
                         : 'bg-slate-100 text-slate-700 hover:bg-slate-200 hover:text-slate-900'
