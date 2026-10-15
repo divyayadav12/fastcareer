@@ -66,7 +66,8 @@ export const CandidateDashboard = () => {
     currentCTC: '',
     expectedCTC: '',
     currentDesignation: '',
-    workProfile: ''
+    workProfile: '',
+    noticePeriod: ''
   });
 
   useEffect(() => {
@@ -192,6 +193,10 @@ export const CandidateDashboard = () => {
       if (parsed.gmcsCompleted) {
         next.gmcsCompleted = parsed.gmcsCompleted;
       }
+      if (parsed.caFinalPercentage && !prev.caFinal.percentage) {
+        next.caFinal = { ...next.caFinal, percentage: parsed.caFinalPercentage };
+        updatedSections.push('CA Final %');
+      }
       return next;
     });
 
@@ -246,6 +251,10 @@ export const CandidateDashboard = () => {
       }
       if (parsed.workProfile && !prev.workProfile) {
         next.workProfile = parsed.workProfile;
+      }
+      if (parsed.noticePeriod && !prev.noticePeriod) {
+        next.noticePeriod = parsed.noticePeriod;
+        updatedSections.push('Notice Period');
       }
       return next;
     });

@@ -107,6 +107,7 @@ export interface IUser extends Document {
     expectedCTC?: string;
     currentDesignation?: string;
     workProfile?: string;
+    noticePeriod?: string;
   };
 
   // Employer specific
@@ -228,6 +229,7 @@ const UserSchema: Schema = new Schema(
       expectedCTC: { type: String },
       currentDesignation: { type: String },
       workProfile: { type: String },
+      noticePeriod: { type: String },
     },
     
     // --- Employer specific fields ---

@@ -36,6 +36,7 @@ import {
   YEARS,
   YEARS_1970,
   EXPERIENCE_YEARS_OPTIONS,
+  NOTICE_PERIOD_OPTIONS,
   CTC_OPTIONS,
   getLaterExamSession,
   RANKER_OPTIONS,
@@ -136,6 +137,8 @@ export const Register = () => {
   const [isCustomCurrentCTC, setIsCustomCurrentCTC] = useState(false);
   const [isCustomExpectedCTC, setIsCustomExpectedCTC] = useState(false);
   const [workProfile, setWorkProfile] = useState('');
+  const [noticePeriod, setNoticePeriod] = useState('');
+  const [isCustomNoticePeriod, setIsCustomNoticePeriod] = useState(false);
   const [linkedinUrl, setLinkedinUrl] = useState('');
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -252,6 +255,7 @@ export const Register = () => {
     ranker: 'No',
     completionSessionMonth: 'May',
     completionSessionYear: '2023',
+    percentage: '',
   });
 
   const handleCaFinalChange = (field: string, value: any) => {
@@ -461,6 +465,10 @@ export const Register = () => {
           setWorkProfile(parsed.workProfile);
           extracted.push('Work Profile');
         }
+        if (parsed.noticePeriod) {
+          setNoticePeriod(parsed.noticePeriod);
+          extracted.push('Notice Period');
+        }
         extracted.push('Experience Stage');
       } else if (parsed.workStatus === 'fresher' || parsed.isFresherCA) {
         setWorkStatus('fresher');
@@ -527,6 +535,9 @@ export const Register = () => {
           if (parsed.caFinalCompletionYear) {
             next.completionSessionYear = parsed.caFinalCompletionYear;
             setCaFinalCompletionYear(parsed.caFinalCompletionYear);
+          }
+          if (parsed.caFinalPercentage) {
+            next.percentage = parsed.caFinalPercentage;
           }
           return next;
         });
@@ -717,6 +728,7 @@ export const Register = () => {
           currentDesignation: currentDesignation.trim(),
           currentCTC: currentCTC.trim(),
           expectedCTC: expectedCTC.trim(),
+          noticePeriod: noticePeriod.trim(),
           workProfile: workProfile.trim(),
           caFinalCompletionYear: caFinalCompletionYear || '',
         },
@@ -743,6 +755,7 @@ export const Register = () => {
           ranker: caFinal.ranker || 'No',
           completionSessionMonth: caFinal.completionSessionMonth || 'May',
           completionSessionYear: caFinalCompletionYear || caFinal.completionSessionYear || '2023',
+          percentage: caFinal.percentage ? String(caFinal.percentage).trim() : '',
         },
       }),
     };
@@ -2069,20 +2082,80 @@ export const Register = () => {
                               )}
                             </div>
 
-                            {/* Work Profile / Domain */}
-                            <div>
-                              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                                Work Profile / Domain
-                              </label>
-                              <input
-                                type="text"
-                                id="workProfile"
-                                name="workProfile"
-                                value={workProfile}
-                                onChange={(e) => setWorkProfile(e.target.value)}
-                                placeholder="e.g. Statutory Audit, Indirect Tax, FP&A"
-                                className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white font-medium transition-all"
-                              />
+                            {/* Work Profile & Notice Period */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              <div>
+                                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                                  Work Profile / Domain
+                                </label>
+                                <input
+                                  type="text"
+                                  id="workProfile"
+                                  name="workProfile"
+                                  value={workProfile}
+                                  onChange={(e) => setWorkProfile(e.target.value)}
+                                  placeholder="e.g. Statutory Audit, Indirect Tax, FP&A"
+                                  className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white font-medium transition-all"
+                                />
+                              </div>
+
+                              <div>
+                                <div className="flex items-center justify-between mb-1.5">
+                                  <label htmlFor="noticePeriod" className="block text-xs font-semibold text-slate-700">
+                                    Notice Period
+                                  </label>
+                                  {isCustomNoticePeriod && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setIsCustomNoticePeriod(false);
+                                        setNoticePeriod('');
+                                      }}
+                                      className="text-[10.5px] font-semibold text-blue-600 hover:text-blue-700 hover:underline"
+                                    >
+                                      Select list
+                                    </button>
+                                  )}
+                                </div>
+                                {isCustomNoticePeriod ? (
+                                  <input
+                                    type="text"
+                                    id="noticePeriod"
+                                    name="noticePeriod"
+                                    value={noticePeriod}
+                                    onChange={(e) => setNoticePeriod(e.target.value)}
+                                    placeholder="e.g. 2 Months / Serving notice"
+                                    autoFocus
+                                    className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white font-medium transition-all"
+                                  />
+                                ) : (
+                                  <select
+                                    id="noticePeriod"
+                                    name="noticePeriod"
+                                    value={noticePeriod}
+                                    onChange={(e) => {
+                                      if (e.target.value === '__custom__') {
+                                        setIsCustomNoticePeriod(true);
+                                        setNoticePeriod('');
+                                      } else {
+                                        setNoticePeriod(e.target.value);
+                                      }
+                                    }}
+                                    className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white font-medium transition-all cursor-pointer"
+                                  >
+                                    <option value="">-- Select Notice Period --</option>
+                                    {noticePeriod && !NOTICE_PERIOD_OPTIONS.includes(noticePeriod) && (
+                                      <option value={noticePeriod}>{noticePeriod}</option>
+                                    )}
+                                    {NOTICE_PERIOD_OPTIONS.map((opt) => (
+                                      <option key={opt} value={opt}>
+                                        {opt}
+                                      </option>
+                                    ))}
+                                    <option value="__custom__">✏️ Other / Custom Notice Period</option>
+                                  </select>
+                                )}
+                              </div>
                             </div>
 
                             {/* CTC Grid (Current CTC & Expected CTC) */}
@@ -2483,7 +2556,7 @@ export const Register = () => {
                         </div>
                       </div>
 
-                      {/* Ranker & Completion Session */}
+                      {/* Ranker & Completion Session & CA Final Percentage for Freshers */}
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-white p-3.5 rounded-xl border border-slate-200/80 shadow-2xs">
                         <div>
                           <label className="block text-xs font-semibold text-slate-700 mb-1">Ranker *</label>
@@ -2500,7 +2573,7 @@ export const Register = () => {
                             )}
                           </select>
                         </div>
-                        <div className="sm:col-span-2">
+                        <div className={workStatus === 'fresher' ? 'sm:col-span-1' : 'sm:col-span-2'}>
                           <label className="block text-xs font-semibold text-slate-700 mb-1">CA Final Completion Session *</label>
                           <div className="grid grid-cols-2 gap-2">
                             <select 
@@ -2523,6 +2596,26 @@ export const Register = () => {
                             </select>
                           </div>
                         </div>
+                        {workStatus === 'fresher' && (
+                          <div>
+                            <div className="flex items-center justify-between mb-1">
+                              <label className="block text-xs font-semibold text-slate-700">
+                                CA Final Percentage (%)
+                              </label>
+                              <span className="text-[10px] font-medium text-slate-400">Optional</span>
+                            </div>
+                            <input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              max="100"
+                              value={caFinal.percentage || ''}
+                              onChange={(e) => handleCaFinalChange('percentage', e.target.value)}
+                              placeholder="e.g. 62.5"
+                              className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 font-medium bg-white outline-none"
+                            />
+                          </div>
+                        )}
                       </div>
                     </div>
 

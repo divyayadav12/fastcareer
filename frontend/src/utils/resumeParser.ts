@@ -75,6 +75,8 @@ export interface ParsedResumeData {
   currentCompanyName?: string;
   currentDesignation?: string;
   workProfile?: string;
+  noticePeriod?: string;
+  caFinalPercentage?: string;
 }
 
 const COMMON_NON_NAMES = new Set([
@@ -567,6 +569,13 @@ export function parseResumeText(rawText: string, originalFileName?: string): Par
     result.caFinalRanker = 'No';
   }
 
+  // CA Final Percentage check
+  const caFinalPctMatch = cleanText.match(/\b(?:CA\s+Final|Chartered\s+Accountant\s+Final)[^\n]{0,50}\b([4-9]\d(?:\.\d{1,2})?)\s*%/i) ||
+    cleanText.match(/\b([4-9]\d(?:\.\d{1,2})?)\s*%\s*[^\n]{0,40}\b(?:CA\s+Final)\b/i);
+  if (caFinalPctMatch) {
+    result.caFinalPercentage = caFinalPctMatch[1];
+  }
+
   // CA Intermediate / IPCC Details Parsing
   const caInterBothGroups = /\b(?:CA\s+Inter(?:mediate)?|IPCC|PCC)[\s\w,-]{0,30}\b(?:both\s+groups?|both\s+grp)[\s\w,-]{0,30}\b(?:1st|first)\s+attempt\b/i.test(cleanText) ||
     /\b(?:CA\s+Inter(?:mediate)?|IPCC|PCC)[^\n]{0,50}\b(?:1st|first)\s+attempt\b/i.test(cleanText) ||
@@ -681,6 +690,19 @@ export function parseResumeText(rawText: string, originalFileName?: string): Par
   const companyMatch = cleanText.match(/\b(?:working at|currently at|employed at|company|employer)[\s:-]+([A-Z][A-Za-z0-9\s&.]{3,30})\b/i);
   if (companyMatch) {
     result.currentCompanyName = companyMatch[1].trim();
+  }
+
+  // Notice Period
+  const noticeMatch = cleanText.match(/\bnotice\s+period[\s:-]+(\d+\s*(?:days?|months?)|immediate(?:ly)?|serving\s+notice)\b/i);
+  if (noticeMatch) {
+    const rawNotice = noticeMatch[1].trim();
+    if (/immediate/i.test(rawNotice)) result.noticePeriod = 'Immediate / Serving Notice';
+    else if (/15\s*days?/i.test(rawNotice)) result.noticePeriod = '15 Days';
+    else if (/30\s*days?|1\s*month/i.test(rawNotice)) result.noticePeriod = '30 Days';
+    else if (/45\s*days?/i.test(rawNotice)) result.noticePeriod = '45 Days';
+    else if (/60\s*days?|2\s*months?/i.test(rawNotice)) result.noticePeriod = '60 Days';
+    else if (/90\s*days?|3\s*months?/i.test(rawNotice)) result.noticePeriod = '90 Days';
+    else result.noticePeriod = rawNotice;
   }
 
   return result;

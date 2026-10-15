@@ -75,6 +75,7 @@ export const Step6Review: React.FC<Step6ReviewProps> = ({
       ranker: caPortfolio.caFinal?.ranker || 'No',
       completionSessionMonth: caPortfolio.caFinal?.completionSessionMonth || 'May',
       completionSessionYear: caPortfolio.caFinal?.completionSessionYear || '2023',
+      percentage: caPortfolio.caFinal?.percentage || '',
     }
   });
 
@@ -125,6 +126,7 @@ export const Step6Review: React.FC<Step6ReviewProps> = ({
         ranker: caPortfolio.caFinal?.ranker || 'No',
         completionSessionMonth: caPortfolio.caFinal?.completionSessionMonth || 'May',
         completionSessionYear: caPortfolio.caFinal?.completionSessionYear || '2023',
+        percentage: caPortfolio.caFinal?.percentage || '',
       }
     });
     setEditCaModal(true);
@@ -310,6 +312,9 @@ export const Step6Review: React.FC<Step6ReviewProps> = ({
               <div><span className="font-semibold text-slate-900">Group II:</span> {caPortfolio.caFinal?.group2Month || '-'} {caPortfolio.caFinal?.group2Year || '-'} ({caPortfolio.caFinal?.group2Attempts || '1'} {parseInt(caPortfolio.caFinal?.group2Attempts || '1') > 1 ? 'attempts' : 'attempt'})</div>
               <div><span className="font-semibold text-slate-900">Ranker:</span> {caPortfolio.caFinal?.ranker || 'No'}</div>
               <div><span className="font-semibold text-slate-900">Completion:</span> {caPortfolio.caFinal?.completionSessionMonth || '-'} {caPortfolio.caFinal?.completionSessionYear || '-'}</div>
+              {caPortfolio.caFinal?.percentage && (
+                <div><span className="font-semibold text-slate-900">Percentage:</span> {caPortfolio.caFinal.percentage}%</div>
+              )}
             </div>
           </div>
         </div>
@@ -364,6 +369,9 @@ export const Step6Review: React.FC<Step6ReviewProps> = ({
           )}
           <DataItem label="Current Company" value={experienceInfo.currentCompanyName} />
           <DataItem label="Designation" value={experienceInfo.currentDesignation} />
+          {experienceInfo.noticePeriod && (
+            <DataItem label="Notice Period" value={experienceInfo.noticePeriod} />
+          )}
           {experienceInfo.workProfile && (
             <DataItem label="Work Profile" value={experienceInfo.workProfile} />
           )}
@@ -809,6 +817,20 @@ export const Step6Review: React.FC<Step6ReviewProps> = ({
                       {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
                     </select>
                   </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">CA Final Percentage (%)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max="100"
+                    value={tempCa.caFinal.percentage || ''}
+                    onChange={(e) => handleTempCaChange('caFinal', 'percentage', e.target.value)}
+                    placeholder="e.g. 62.5"
+                    className="w-full px-3 py-1.5 text-xs border border-gray-200 rounded-lg bg-white"
+                  />
                 </div>
               </div>
             </div>

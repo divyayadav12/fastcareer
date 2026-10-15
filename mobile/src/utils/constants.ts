@@ -80,7 +80,18 @@ export const EXPERIENCE_YEARS_OPTIONS = [
   '3-5 Years',
   '5-7 Years',
   '7-10 Years',
-  '10+ Years',
+  '10-15 Years',
+  '15-20 Years',
+  '20+ Years',
+];
+export const NOTICE_PERIOD_OPTIONS = [
+  'Immediate / Serving Notice',
+  '15 Days',
+  '30 Days',
+  '45 Days',
+  '60 Days',
+  '90 Days',
+  'Other'
 ];
 export const CTC_OPTIONS = [
   '1 to 5 LPA',

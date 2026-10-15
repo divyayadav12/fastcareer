@@ -208,6 +208,7 @@ export const formatCandidateForExcel = (c: any) => {
     'Current / Recent Company': exp.currentCompanyName || 'N/A',
     'Current Designation': exp.currentDesignation || 'N/A',
     'Work Profile / Domain': exp.workProfile || 'N/A',
+    'Notice Period': exp.noticePeriod || 'N/A',
     'Current CTC (LPA)': exp.currentCTC || 'N/A',
     'Expected CTC (LPA)': exp.expectedCTC || 'N/A',
 
