@@ -82,6 +82,7 @@ app.get('/uploads/:filename', async (req: Request, res: Response, next) => {
 
 import webhookRoutes from './routes/webhookRoutes';
 import contactRoutes from './routes/contactRoutes';
+import industrialTrainingRoutes from './routes/industrialTrainingRoutes';
 
 // Health Check Routes
 app.get('/health', (req: Request, res: Response) => {
@@ -101,6 +102,7 @@ app.use('/api/candidate', candidateDashboardRoutes);
 app.use('/api/webhooks', webhookRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/assessments', assessmentRoutes);
+app.use('/api/industrial-training', industrialTrainingRoutes);
 
 // Basic Route
 app.get('/', (req: Request, res: Response) => {

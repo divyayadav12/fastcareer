@@ -121,11 +121,11 @@ export const Step2CA = ({ caPortfolio, setCaPortfolio }) => {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Ranker</label>
-            <select value={data.ranker} onChange={(e) => handleGroupLogic(examKey, 'ranker', e.target.value)} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20">
+            <select value={data.ranker === 'No' ? 'No Rank' : data.ranker} onChange={(e) => handleGroupLogic(examKey, 'ranker', e.target.value)} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20">
               {RANKER_OPTIONS.map(opt => (
                 <option key={opt} value={opt}>{opt}</option>
               ))}
-              {data.ranker && !RANKER_OPTIONS.includes(data.ranker) && (
+              {data.ranker && !RANKER_OPTIONS.includes(data.ranker) && data.ranker !== 'No' && (
                 <option value={data.ranker}>{data.ranker}</option>
               )}
             </select>

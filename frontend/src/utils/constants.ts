@@ -126,7 +126,7 @@ export const ATTEMPT_YEARS = ['Sept\'25', 'Jan\'26', 'May\'25', 'Nov\'24', 'May\
 export const ATTEMPTS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10+'];
 export const CA_EXAM_MONTHS = ['Jan', 'May', 'Sep', 'Nov'];
 export const RANKER_OPTIONS = [
-  'No',
+  'No Rank',
   ...Array.from({ length: 50 }, (_, i) => String(i + 1))
 ];
 export const PARTNER_OPTIONS = [

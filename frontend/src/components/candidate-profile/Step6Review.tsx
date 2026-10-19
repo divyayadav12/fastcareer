@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { User, FileText, Briefcase, GraduationCap, Building, X, Check, Edit3, Sparkles, Save, MapPin, Plus, Trash2, Calendar } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { STATES, STATE_CITY_MAP, ATTEMPTS, CA_EXAM_MONTHS, YEARS, ARTICLESHIP_TYPES, CA_FIRMS, ALL_CITIES, MONTHS, NATURE_OF_WORK, PARTNER_OPTIONS, ARTICLESHIP_CITIES } from '../../utils/constants';
+import { STATES, STATE_CITY_MAP, ATTEMPTS, CA_EXAM_MONTHS, YEARS, ARTICLESHIP_TYPES, CA_FIRMS, ALL_CITIES, MONTHS, NATURE_OF_WORK, PARTNER_OPTIONS, ARTICLESHIP_CITIES, RANKER_OPTIONS } from '../../utils/constants';
 import { CityDropdownInput } from '../CityDropdownInput';
 
 interface Step6ReviewProps {
@@ -60,7 +60,7 @@ export const Step6Review: React.FC<Step6ReviewProps> = ({
       group2Attempts: caPortfolio.caInter?.group2Attempts || '1',
       group2Month: caPortfolio.caInter?.group2Month || 'May',
       group2Year: caPortfolio.caInter?.group2Year || '2020',
-      ranker: caPortfolio.caInter?.ranker || 'No',
+      ranker: (caPortfolio.caInter?.ranker === 'No' || !caPortfolio.caInter?.ranker) ? 'No Rank' : caPortfolio.caInter.ranker,
       completionSessionMonth: caPortfolio.caInter?.completionSessionMonth || 'May',
       completionSessionYear: caPortfolio.caInter?.completionSessionYear || '2020',
     },
@@ -72,7 +72,7 @@ export const Step6Review: React.FC<Step6ReviewProps> = ({
       group2Attempts: caPortfolio.caFinal?.group2Attempts || '1',
       group2Month: caPortfolio.caFinal?.group2Month || 'May',
       group2Year: caPortfolio.caFinal?.group2Year || '2023',
-      ranker: caPortfolio.caFinal?.ranker || 'No',
+      ranker: (caPortfolio.caFinal?.ranker === 'No' || !caPortfolio.caFinal?.ranker) ? 'No Rank' : caPortfolio.caFinal.ranker,
       completionSessionMonth: caPortfolio.caFinal?.completionSessionMonth || 'May',
       completionSessionYear: caPortfolio.caFinal?.completionSessionYear || '2023',
       percentage: caPortfolio.caFinal?.percentage || '',
@@ -111,7 +111,7 @@ export const Step6Review: React.FC<Step6ReviewProps> = ({
         group2Attempts: caPortfolio.caInter?.group2Attempts || '1',
         group2Month: caPortfolio.caInter?.group2Month || 'May',
         group2Year: caPortfolio.caInter?.group2Year || '2020',
-        ranker: caPortfolio.caInter?.ranker || 'No',
+        ranker: (caPortfolio.caInter?.ranker === 'No' || !caPortfolio.caInter?.ranker) ? 'No Rank' : caPortfolio.caInter.ranker,
         completionSessionMonth: caPortfolio.caInter?.completionSessionMonth || 'May',
         completionSessionYear: caPortfolio.caInter?.completionSessionYear || '2020',
       },
@@ -123,7 +123,7 @@ export const Step6Review: React.FC<Step6ReviewProps> = ({
         group2Attempts: caPortfolio.caFinal?.group2Attempts || '1',
         group2Month: caPortfolio.caFinal?.group2Month || 'May',
         group2Year: caPortfolio.caFinal?.group2Year || '2023',
-        ranker: caPortfolio.caFinal?.ranker || 'No',
+        ranker: (caPortfolio.caFinal?.ranker === 'No' || !caPortfolio.caFinal?.ranker) ? 'No Rank' : caPortfolio.caFinal.ranker,
         completionSessionMonth: caPortfolio.caFinal?.completionSessionMonth || 'May',
         completionSessionYear: caPortfolio.caFinal?.completionSessionYear || '2023',
         percentage: caPortfolio.caFinal?.percentage || '',
@@ -292,7 +292,7 @@ export const Step6Review: React.FC<Step6ReviewProps> = ({
             <div className="text-xs text-slate-700 space-y-1 pt-1">
               <div><span className="font-semibold text-slate-900">Group I:</span> {caPortfolio.caInter?.group1Month || '-'} {caPortfolio.caInter?.group1Year || '-'} ({caPortfolio.caInter?.group1Attempts || '1'} {parseInt(caPortfolio.caInter?.group1Attempts || '1') > 1 ? 'attempts' : 'attempt'})</div>
               <div><span className="font-semibold text-slate-900">Group II:</span> {caPortfolio.caInter?.group2Month || '-'} {caPortfolio.caInter?.group2Year || '-'} ({caPortfolio.caInter?.group2Attempts || '1'} {parseInt(caPortfolio.caInter?.group2Attempts || '1') > 1 ? 'attempts' : 'attempt'})</div>
-              <div><span className="font-semibold text-slate-900">Ranker:</span> {caPortfolio.caInter?.ranker || 'No'}</div>
+              <div><span className="font-semibold text-slate-900">Ranker:</span> {caPortfolio.caInter?.ranker === 'No' ? 'No Rank' : (caPortfolio.caInter?.ranker || 'No Rank')}</div>
               <div><span className="font-semibold text-slate-900">Completion:</span> {caPortfolio.caInter?.completionSessionMonth || '-'} {caPortfolio.caInter?.completionSessionYear || '-'}</div>
             </div>
           </div>
@@ -310,7 +310,7 @@ export const Step6Review: React.FC<Step6ReviewProps> = ({
             <div className="text-xs text-slate-700 space-y-1 pt-1">
               <div><span className="font-semibold text-slate-900">Group I:</span> {caPortfolio.caFinal?.group1Month || '-'} {caPortfolio.caFinal?.group1Year || '-'} ({caPortfolio.caFinal?.group1Attempts || '1'} {parseInt(caPortfolio.caFinal?.group1Attempts || '1') > 1 ? 'attempts' : 'attempt'})</div>
               <div><span className="font-semibold text-slate-900">Group II:</span> {caPortfolio.caFinal?.group2Month || '-'} {caPortfolio.caFinal?.group2Year || '-'} ({caPortfolio.caFinal?.group2Attempts || '1'} {parseInt(caPortfolio.caFinal?.group2Attempts || '1') > 1 ? 'attempts' : 'attempt'})</div>
-              <div><span className="font-semibold text-slate-900">Ranker:</span> {caPortfolio.caFinal?.ranker || 'No'}</div>
+              <div><span className="font-semibold text-slate-900">Ranker:</span> {caPortfolio.caFinal?.ranker === 'No' ? 'No Rank' : (caPortfolio.caFinal?.ranker || 'No Rank')}</div>
               <div><span className="font-semibold text-slate-900">Completion:</span> {caPortfolio.caFinal?.completionSessionMonth || '-'} {caPortfolio.caFinal?.completionSessionYear || '-'}</div>
               {caPortfolio.caFinal?.percentage && (
                 <div><span className="font-semibold text-slate-900">Percentage:</span> {caPortfolio.caFinal.percentage}%</div>
@@ -654,12 +654,16 @@ export const Step6Review: React.FC<Step6ReviewProps> = ({
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">Ranker</label>
                   <select
-                    value={tempCa.caInter.ranker}
+                    value={tempCa.caInter.ranker === 'No' ? 'No Rank' : tempCa.caInter.ranker}
                     onChange={(e) => handleTempCaChange('caInter', 'ranker', e.target.value)}
                     className="w-full px-2.5 py-1.5 text-xs border border-gray-200 rounded-lg bg-white"
                   >
-                    <option value="No">No</option>
-                    <option value="Yes">Yes (Ranker)</option>
+                    {RANKER_OPTIONS.map(opt => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                    {tempCa.caInter.ranker && !RANKER_OPTIONS.includes(tempCa.caInter.ranker) && tempCa.caInter.ranker !== 'No' && (
+                      <option value={tempCa.caInter.ranker}>{tempCa.caInter.ranker}</option>
+                    )}
                   </select>
                 </div>
                 <div className="sm:col-span-2">
@@ -789,12 +793,16 @@ export const Step6Review: React.FC<Step6ReviewProps> = ({
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">Ranker</label>
                   <select
-                    value={tempCa.caFinal.ranker}
+                    value={tempCa.caFinal.ranker === 'No' ? 'No Rank' : tempCa.caFinal.ranker}
                     onChange={(e) => handleTempCaChange('caFinal', 'ranker', e.target.value)}
                     className="w-full px-2.5 py-1.5 text-xs border border-gray-200 rounded-lg bg-white"
                   >
-                    <option value="No">No</option>
-                    <option value="Yes">Yes (Ranker)</option>
+                    {RANKER_OPTIONS.map(opt => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                    {tempCa.caFinal.ranker && !RANKER_OPTIONS.includes(tempCa.caFinal.ranker) && tempCa.caFinal.ranker !== 'No' && (
+                      <option value={tempCa.caFinal.ranker}>{tempCa.caFinal.ranker}</option>
+                    )}
                   </select>
                 </div>
                 <div className="sm:col-span-2">

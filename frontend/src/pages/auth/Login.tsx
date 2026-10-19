@@ -17,12 +17,14 @@ import {
 } from 'lucide-react';
 import { login, reset } from '../../store/authSlice';
 import type { AppDispatch, RootState } from '../../store';
+import { IndustrialTrainingModal } from '../../components/IndustrialTrainingModal';
 
 export const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
+  const [industrialModalOpen, setIndustrialModalOpen] = useState(false);
   const [activeRole, setActiveRole] = useState<'candidate' | 'employer'>('candidate');
   const [formError, setFormError] = useState<string>('');
 
@@ -237,8 +239,36 @@ export const Login = () => {
                 </p>
               </div>
 
-              {/* Removed Role Switcher Tabs - Login is unified */}
-  
+              {/* CA Industrial Training Form Callout Banner */}
+              <div className="mb-6 bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/10 border border-amber-300/80 rounded-2xl p-4 shadow-sm">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 text-white flex items-center justify-center shrink-0 shadow-sm shadow-orange-500/30">
+                      <Building2 size={20} className="text-white" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-sm font-bold text-slate-900">CA Industrial Training Form</h4>
+                        <span className="text-[10px] font-extrabold bg-amber-100 text-amber-800 border border-amber-300 px-1.5 py-0.5 rounded-full uppercase tracking-wider">
+                          ICAI Norms
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-600 mt-0.5">
+                        If you have or want CA Industrial Training, please fill this form!
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIndustrialModalOpen(true)}
+                    className="w-full sm:w-auto shrink-0 px-4 py-2 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white rounded-xl text-xs font-bold shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <span>Fill Form Now</span>
+                    <ArrowRight size={14} />
+                  </button>
+                </div>
+              </div>
+
               {/* Form */}
               <form className="space-y-4" onSubmit={handleSubmit} noValidate>
                 
@@ -418,6 +448,12 @@ export const Login = () => {
           © {new Date().getFullYear()} Fast Careers Inc. Premier Chartered Accountant & Financial Leadership Network. All rights reserved.
         </p>
       </footer>
+
+      {/* Industrial Training Application Modal */}
+      <IndustrialTrainingModal
+        isOpen={industrialModalOpen}
+        onClose={() => setIndustrialModalOpen(false)}
+      />
     </div>
   );
 };

@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, LayoutDashboard, LogOut, LogIn } from 'lucide-react';
+import { Menu, X, LayoutDashboard, LogOut, LogIn, GraduationCap, Sparkles, Building2 } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout, reset } from '../store/authSlice';
 import type { RootState, AppDispatch } from '../store';
+import { IndustrialTrainingModal } from '../components/IndustrialTrainingModal';
 
 export const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [industrialModalOpen, setIndustrialModalOpen] = useState(false);
+  const [showIndustrialPopup, setShowIndustrialPopup] = useState(true);
   
   const location = useLocation();
   const navigate = useNavigate();
@@ -75,8 +78,60 @@ export const Navbar = () => {
             })}
           </nav>
 
-          {/* Desktop Auth/Actions */}
-          <div className="hidden lg:flex items-center space-x-3.5">
+          {/* Desktop Auth/Actions & Industrial Training Pop-up */}
+          <div className="hidden lg:flex items-center space-x-3">
+            
+            {/* Industrial Training Logo & Button with Floating Pop-up Message near Login */}
+            <div className="relative flex items-center">
+              {showIndustrialPopup && (
+                <div className="absolute -top-12 right-0 z-30 flex items-center">
+                  <div 
+                    onClick={() => setIndustrialModalOpen(true)}
+                    className="cursor-pointer group flex items-center gap-1.5 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white text-[11px] font-extrabold px-3.5 py-1.5 rounded-full border border-amber-300 shadow-lg hover:shadow-xl hover:scale-105 transition-all whitespace-nowrap animate-bounce"
+                    title="Click to open CA Industrial Training Form"
+                  >
+                    <span className="flex h-2 w-2 relative">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-80"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+                    </span>
+                    <span>If you have or want Industrial Training, please fill this form!</span>
+                    <span className="group-hover:translate-x-0.5 transition-transform">→</span>
+                  </div>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowIndustrialPopup(false);
+                    }}
+                    className="ml-1 text-white/80 hover:text-white bg-slate-900/50 hover:bg-slate-900/80 rounded-full p-1 cursor-pointer transition-colors"
+                    title="Dismiss"
+                    aria-label="Dismiss message"
+                  >
+                    <X size={10} />
+                  </button>
+                  {/* Speech bubble pointer arrow */}
+                  <div className="absolute -bottom-1 right-12 w-2 h-2 bg-amber-600 rotate-45 transform origin-center"></div>
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={() => setIndustrialModalOpen(true)}
+                className="flex items-center gap-2 text-xs font-bold text-slate-800 bg-gradient-to-r from-blue-50 to-indigo-50/80 hover:from-blue-100 hover:to-indigo-100 px-3 py-1.5 rounded-xl border border-blue-200/90 hover:border-blue-400 transition-all shadow-xs hover:shadow-sm cursor-pointer group"
+                title="CA Industrial Training Registration Form"
+              >
+                {/* Logo emblem */}
+                <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center shadow-xs group-hover:scale-110 transition-transform">
+                  <Building2 size={13} className="text-amber-300" />
+                </div>
+                <div className="flex flex-col text-left leading-tight">
+                  <span className="text-[11.5px] font-extrabold text-blue-950">Industrial Training</span>
+                  <span className="text-[9.5px] font-bold text-blue-600 flex items-center gap-1">
+                    Fill Form <span className="text-[8px] bg-amber-500 text-white font-black px-1 rounded">HOT</span>
+                  </span>
+                </div>
+              </button>
+            </div>
+
             {user ? (
               <>
                 <Link 
@@ -88,7 +143,7 @@ export const Navbar = () => {
                 </Link>
                 <button 
                   onClick={onLogout}
-                  className="flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-rose-600 px-3.5 py-1.5 rounded-lg border border-slate-300 hover:border-rose-300 hover:bg-rose-50 transition-all shadow-2xs"
+                  className="flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-rose-600 px-3.5 py-1.5 rounded-lg border border-slate-300 hover:border-rose-300 hover:bg-rose-50 transition-all shadow-2xs cursor-pointer"
                 >
                   <LogOut size={14} />
                   <span>Logout</span>
@@ -115,7 +170,14 @@ export const Navbar = () => {
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="lg:hidden flex items-center">
+          <div className="lg:hidden flex items-center gap-2">
+            <button
+              onClick={() => setIndustrialModalOpen(true)}
+              className="flex items-center gap-1 text-[11px] font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200"
+            >
+              <GraduationCap size={13} />
+              <span>Training Form</span>
+            </button>
             <button 
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="text-slate-800 p-1.5 rounded-lg hover:bg-slate-100 transition-colors focus:outline-none"
@@ -131,6 +193,29 @@ export const Navbar = () => {
       {/* Mobile Navigation Drawer */}
       {mobileMenuOpen && (
         <div className="lg:hidden bg-white border-t border-slate-200 shadow-xl absolute w-full left-0 top-full flex flex-col px-5 py-5 space-y-3 z-50">
+          
+          {/* Mobile Industrial Training Highlight Box */}
+          <button
+            onClick={() => {
+              setMobileMenuOpen(false);
+              setIndustrialModalOpen(true);
+            }}
+            className="flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 text-blue-900 rounded-xl text-xs font-bold shadow-xs cursor-pointer"
+          >
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center">
+                <GraduationCap size={16} />
+              </div>
+              <div className="text-left">
+                <p className="font-extrabold text-blue-950">Industrial Training Form</p>
+                <p className="text-[10px] text-blue-600 font-medium">Verified Registration for CA Students</p>
+              </div>
+            </div>
+            <span className="bg-amber-400 text-blue-950 font-extrabold text-[10px] px-2 py-0.5 rounded-full uppercase shadow-2xs">
+              Fill Form →
+            </span>
+          </button>
+
           {navLinks.map((link) => {
             const isActive = location.pathname === link.path;
             return (
@@ -159,7 +244,7 @@ export const Navbar = () => {
                 </Link>
                 <button 
                   onClick={onLogout}
-                  className="flex items-center justify-center gap-2 text-sm font-bold text-rose-600 border border-rose-200 bg-rose-50 rounded-xl py-2.5"
+                  className="flex items-center justify-center gap-2 text-sm font-bold text-rose-600 border border-rose-200 bg-rose-50 rounded-xl py-2.5 cursor-pointer"
                 >
                   <LogOut size={16} />
                   <span>Logout</span>
@@ -180,6 +265,12 @@ export const Navbar = () => {
           </div>
         </div>
       )}
+
+      {/* Industrial Training Form Modal */}
+      <IndustrialTrainingModal 
+        isOpen={industrialModalOpen} 
+        onClose={() => setIndustrialModalOpen(false)} 
+      />
     </header>
   );
 };

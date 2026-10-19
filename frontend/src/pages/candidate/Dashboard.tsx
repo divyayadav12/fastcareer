@@ -41,8 +41,8 @@ export const CandidateDashboard = () => {
 
   const [caPortfolio, setCaPortfolio] = useState({
     isFresherCA: false,
-    caInter: { bothGroups1stAttempt: false, group1Attempts: '1', group1Month: 'May', group1Year: '2020', group2Attempts: '1', group2Month: 'May', group2Year: '2020', ranker: 'No', completionSessionMonth: 'May', completionSessionYear: '2020', percentage: '' },
-    caFinal: { bothGroups1stAttempt: false, group1Attempts: '1', group1Month: 'May', group1Year: '2023', group2Attempts: '1', group2Month: 'May', group2Year: '2023', ranker: 'No', completionSessionMonth: 'May', completionSessionYear: '2023', percentage: '' },
+    caInter: { bothGroups1stAttempt: false, group1Attempts: '1', group1Month: 'May', group1Year: '2020', group2Attempts: '1', group2Month: 'May', group2Year: '2020', ranker: 'No Rank', completionSessionMonth: 'May', completionSessionYear: '2020', percentage: '' },
+    caFinal: { bothGroups1stAttempt: false, group1Attempts: '1', group1Month: 'May', group1Year: '2023', group2Attempts: '1', group2Month: 'May', group2Year: '2023', ranker: 'No Rank', completionSessionMonth: 'May', completionSessionYear: '2023', percentage: '' },
     articleships: [{ type: 'Articleship', firmName: '', city: '', noOfPartners: '1', noOfMonths: '36' }],
     articleshipCompletionDateMonth: 'May',
     articleshipCompletionDateYear: '2023',
@@ -169,10 +169,12 @@ export const CandidateDashboard = () => {
       if (parsed.isFresherCA !== undefined) {
         next.isFresherCA = parsed.isFresherCA;
       }
+
       if (parsed.big4Articleship) {
         next.big4Articleship = parsed.big4Articleship;
         updatedSections.push('Big 4 Articleship');
       }
+
       if (parsed.articleshipFirm) {
         next.articleships = [{
           type: 'Articleship',
@@ -225,9 +227,11 @@ export const CandidateDashboard = () => {
         next.class10.percentage = parsed.class10Percentage;
         updatedSections.push('Class 10 %');
       }
+      
       if (parsed.class10Board && !prev.class10.board) {
         next.class10.board = parsed.class10Board;
       }
+
       return next;
     });
 

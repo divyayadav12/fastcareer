@@ -566,7 +566,7 @@ export function parseResumeText(rawText: string, originalFileName?: string): Par
     else if (rankNum <= 50) result.caFinalRanker = 'Rank 41-50';
     else result.caFinalRanker = 'Rank 1-10';
   } else {
-    result.caFinalRanker = 'No';
+    result.caFinalRanker = 'No Rank';
   }
 
   // CA Final Percentage check
@@ -621,7 +621,7 @@ export function parseResumeText(rawText: string, originalFileName?: string): Par
     result.caInterGroup2Attempts = interG2AttemptMatch[1];
   }
 
-  result.caInterRanker = 'No';
+  result.caInterRanker = 'No Rank';
 
   // 10. Education Details
   // Graduation College

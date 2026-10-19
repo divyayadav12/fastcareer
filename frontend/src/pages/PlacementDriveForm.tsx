@@ -546,12 +546,12 @@ export const PlacementDriveForm = () => {
                       </div>
                       <div>
                         <label className="block text-xs font-medium text-gray-700 mb-1">Ranker</label>
-                        <select name="caInter_ranker" value={formData.caInter_ranker} onChange={handleChange} className="w-full p-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                        <select name="caInter_ranker" value={formData.caInter_ranker === 'No' ? 'No Rank' : formData.caInter_ranker} onChange={handleChange} className="w-full p-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
                           <option value="">Select...</option>
                           {RANKER_OPTIONS.map(r => (
                             <option key={r} value={r}>{r}</option>
                           ))}
-                          {formData.caInter_ranker && !RANKER_OPTIONS.includes(formData.caInter_ranker) && (
+                          {formData.caInter_ranker && !RANKER_OPTIONS.includes(formData.caInter_ranker) && formData.caInter_ranker !== 'No' && (
                             <option value={formData.caInter_ranker}>{formData.caInter_ranker}</option>
                           )}
                         </select>
@@ -614,12 +614,12 @@ export const PlacementDriveForm = () => {
                       </div>
                       <div>
                         <label className="block text-xs font-medium text-gray-700 mb-1">Ranker</label>
-                        <select name="caFinal_ranker" value={formData.caFinal_ranker} onChange={handleChange} className="w-full p-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                        <select name="caFinal_ranker" value={formData.caFinal_ranker === 'No' ? 'No Rank' : formData.caFinal_ranker} onChange={handleChange} className="w-full p-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
                           <option value="">Select...</option>
                           {RANKER_OPTIONS.map(r => (
                             <option key={r} value={r}>{r}</option>
                           ))}
-                          {formData.caFinal_ranker && !RANKER_OPTIONS.includes(formData.caFinal_ranker) && (
+                          {formData.caFinal_ranker && !RANKER_OPTIONS.includes(formData.caFinal_ranker) && formData.caFinal_ranker !== 'No' && (
                             <option value={formData.caFinal_ranker}>{formData.caFinal_ranker}</option>
                           )}
                         </select>

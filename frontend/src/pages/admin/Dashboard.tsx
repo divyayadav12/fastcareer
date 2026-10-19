@@ -65,6 +65,34 @@ export const AdminDashboard = () => {
   });
   const [creatingCompany, setCreatingCompany] = useState(false);
 
+  // Industrial Training Applications State
+  const [isIndustrialModalOpen, setIsIndustrialModalOpen] = useState(false);
+  const [industrialList, setIndustrialList] = useState<any[]>([]);
+  const [loadingIndustrial, setLoadingIndustrial] = useState(false);
+  const [industrialSearch, setIndustrialSearch] = useState('');
+
+  const fetchIndustrialApplications = async () => {
+    try {
+      setLoadingIndustrial(true);
+      const res = await api.get('/industrial-training');
+      setIndustrialList(res.data?.data || []);
+    } catch (e) {
+      console.error('Error fetching industrial training applications:', e);
+    } finally {
+      setLoadingIndustrial(false);
+    }
+  };
+
+  const handleExportIndustrialExcel = async () => {
+    try {
+      const res = await api.get('/industrial-training/export', { responseType: 'blob' });
+      saveAs(res.data, `Industrial_Training_Candidates_${Date.now()}.xlsx`);
+      toast.success('Downloaded Industrial Training Excel Sheet! ✓');
+    } catch (e) {
+      toast.error('Failed to export Industrial Training spreadsheet.');
+    }
+  };
+
   const fetchCandidates = async () => {
     try {
       setLoading(true);
@@ -91,6 +119,7 @@ export const AdminDashboard = () => {
     if (user?.token) {
       fetchCandidates();
       fetchEmployers();
+      fetchIndustrialApplications();
     }
   }, [user]);
 
@@ -233,6 +262,17 @@ export const AdminDashboard = () => {
               </Link>
             </>
           )}
+
+          <button 
+            onClick={() => {
+              fetchIndustrialApplications();
+              setIsIndustrialModalOpen(true);
+            }}
+            className="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-xs transition-all cursor-pointer"
+            title="View CA Industrial Training Applications"
+          >
+            <GraduationCap size={16} /> Industrial Training {industrialList.length > 0 && `(${industrialList.length})`}
+          </button>
 
           <button 
             onClick={handleExportExcel}
@@ -522,6 +562,171 @@ export const AdminDashboard = () => {
                 </div>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Industrial Training Submissions Modal */}
+      {isIndustrialModalOpen && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden">
+            
+            {/* Modal Header */}
+            <div className="px-6 py-4 bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 text-white flex items-center justify-between shadow-xs">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center backdrop-blur-md">
+                  <GraduationCap className="text-amber-300" size={22} />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold">CA Industrial Training Form Applications</h2>
+                  <p className="text-xs text-blue-100 font-medium">
+                    {industrialList.length} verified candidate registrations recorded
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleExportIndustrialExcel}
+                  className="inline-flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer shadow-xs"
+                  title="Download the exact Excel spreadsheet"
+                >
+                  <FileSpreadsheet size={14} /> Download Excel
+                </button>
+                <button
+                  onClick={() => setIsIndustrialModalOpen(false)}
+                  className="p-1.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+
+            {/* Search and Filters */}
+            <div className="p-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between gap-4">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-2.5 text-slate-400" size={16} />
+                <input
+                  type="text"
+                  placeholder="Filter by candidate name, email, firm, or city..."
+                  value={industrialSearch}
+                  onChange={(e) => setIndustrialSearch(e.target.value)}
+                  className="pl-9 pr-4 py-2 w-full border border-slate-300 rounded-xl text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <span className="text-xs text-slate-500 font-semibold">
+                Showing {industrialList.filter(app => {
+                  if (!industrialSearch) return true;
+                  const q = industrialSearch.toLowerCase();
+                  return (
+                    (app.name || '').toLowerCase().includes(q) ||
+                    (app.email || '').toLowerCase().includes(q) ||
+                    (app.articleshipFirmName || '').toLowerCase().includes(q) ||
+                    (app.currentLocation || '').toLowerCase().includes(q)
+                  );
+                }).length} applications
+              </span>
+            </div>
+
+            {/* Table */}
+            <div className="overflow-y-auto overflow-x-auto flex-1 p-4">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-slate-100 border-b border-slate-200 text-slate-600 uppercase font-semibold">
+                    <th className="px-3 py-2.5">Candidate</th>
+                    <th className="px-3 py-2.5">Contact</th>
+                    <th className="px-3 py-2.5">Location</th>
+                    <th className="px-3 py-2.5">CA Inter Batch</th>
+                    <th className="px-3 py-2.5">1st Attempt</th>
+                    <th className="px-3 py-2.5">Articleship Firm</th>
+                    <th className="px-3 py-2.5">Start Date</th>
+                    <th className="px-3 py-2.5">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {loadingIndustrial ? (
+                    <tr>
+                      <td colSpan={8} className="py-8 text-center text-slate-500">
+                        Loading Industrial Training applications...
+                      </td>
+                    </tr>
+                  ) : industrialList.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} className="py-8 text-center text-slate-500">
+                        No Industrial Training applications submitted yet.
+                      </td>
+                    </tr>
+                  ) : (
+                    industrialList
+                      .filter(app => {
+                        if (!industrialSearch) return true;
+                        const q = industrialSearch.toLowerCase();
+                        return (
+                          (app.name || '').toLowerCase().includes(q) ||
+                          (app.email || '').toLowerCase().includes(q) ||
+                          (app.articleshipFirmName || '').toLowerCase().includes(q) ||
+                          (app.currentLocation || '').toLowerCase().includes(q)
+                        );
+                      })
+                      .map((app) => (
+                        <tr key={app._id} className="hover:bg-slate-50 transition-colors">
+                          <td className="px-3 py-3">
+                            <p className="font-bold text-slate-900">{app.name}</p>
+                            <span className="text-[10px] text-slate-500">{app.gender} • {app.dob}</span>
+                          </td>
+                          <td className="px-3 py-3">
+                            <p className="text-slate-800 font-mono">{app.phone}</p>
+                            <p className="text-slate-500 text-[11px] truncate">{app.email}</p>
+                          </td>
+                          <td className="px-3 py-3">
+                            <p className="text-slate-800">{app.currentLocation}</p>
+                            <span className="text-[10px] text-slate-500">{app.currentState}</span>
+                          </td>
+                          <td className="px-3 py-3 font-semibold text-blue-700">
+                            {app.caInterBatch}
+                            {app.caInterRank && app.caInterRank !== 'No Rank' && (
+                              <span className="block text-[10px] text-amber-600 font-bold">{app.caInterRank}</span>
+                            )}
+                          </td>
+                          <td className="px-3 py-3">
+                            <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${
+                              app.bothGroups1stAttempt === 'Yes' 
+                                ? 'bg-emerald-100 text-emerald-800' 
+                                : 'bg-slate-100 text-slate-700'
+                            }`}>
+                              {app.bothGroups1stAttempt}
+                            </span>
+                          </td>
+                          <td className="px-3 py-3 font-semibold text-slate-800">
+                            {app.articleshipFirmName}
+                          </td>
+                          <td className="px-3 py-3 text-slate-600">
+                            {app.articleshipStartMonthYear}
+                          </td>
+                          <td className="px-3 py-3">
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">
+                              ✓ {app.isVerified ? 'Verified' : 'Pending'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+              <span className="text-xs text-slate-500 font-medium">
+                Tip: Click &quot;Download Excel&quot; to export the full spreadsheet matching your recruitment sheet format.
+              </span>
+              <button
+                onClick={() => setIsIndustrialModalOpen(false)}
+                className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-bold rounded-lg transition-colors cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+
           </div>
         </div>
       )}

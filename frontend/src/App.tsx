@@ -18,6 +18,7 @@ const JobDetails = lazy(() => import('./pages/JobDetails').then(m => ({ default:
 const Login = lazy(() => import('./pages/auth/Login').then(m => ({ default: m.Login })));
 const Register = lazy(() => import('./pages/auth/Register').then(m => ({ default: m.Register })));
 const PlacementDriveForm = lazy(() => import('./pages/PlacementDriveForm').then(m => ({ default: m.PlacementDriveForm })));
+const IndustrialTrainingPage = lazy(() => import('./pages/IndustrialTrainingPage').then(m => ({ default: m.IndustrialTrainingPage })));
 const PlacementResults = lazy(() => import('./pages/PlacementResults').then(m => ({ default: m.PlacementResults })));
 const CandidateDashboard = lazy(() => import('./pages/candidate/Dashboard').then(m => ({ default: m.CandidateDashboard })));
 const JobFair = lazy(() => import('./pages/candidate/JobFair').then(m => ({ default: m.JobFair })));
@@ -101,6 +102,8 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/placement-drive" element={<PlacementDriveForm />} />
+            <Route path="/industrial-training" element={<IndustrialTrainingPage />} />
+            <Route path="/industrial-training-form" element={<IndustrialTrainingPage />} />
             <Route path="/placement-results" element={<PlacementResults />} />
             <Route path="/ca-results" element={<PlacementResults />} />
             

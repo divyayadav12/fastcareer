@@ -199,7 +199,7 @@ export const Register = () => {
     group2Attempts: '1',
     group2Month: 'May',
     group2Year: '2020',
-    ranker: 'No',
+    ranker: 'No Rank',
     completionSessionMonth: 'May',
     completionSessionYear: '2020',
   });
@@ -252,7 +252,7 @@ export const Register = () => {
     group2Attempts: '1',
     group2Month: 'May',
     group2Year: '2023',
-    ranker: 'No',
+    ranker: 'No Rank',
     completionSessionMonth: 'May',
     completionSessionYear: '2023',
     percentage: '',
@@ -740,7 +740,7 @@ export const Register = () => {
           group2Attempts: caInter.group2Attempts || '1',
           group2Month: caInter.group2Month || 'May',
           group2Year: caInter.group2Year || '2020',
-          ranker: caInter.ranker || 'No',
+          ranker: (caInter.ranker === 'No' || !caInter.ranker) ? 'No Rank' : caInter.ranker,
           completionSessionMonth: caInter.completionSessionMonth || 'May',
           completionSessionYear: caInter.completionSessionYear || '2020',
         },
@@ -752,7 +752,7 @@ export const Register = () => {
           group2Attempts: caFinal.group2Attempts || '1',
           group2Month: caFinal.group2Month || 'May',
           group2Year: caFinal.group2Year || '2023',
-          ranker: caFinal.ranker || 'No',
+          ranker: (caFinal.ranker === 'No' || !caFinal.ranker) ? 'No Rank' : caFinal.ranker,
           completionSessionMonth: caFinal.completionSessionMonth || 'May',
           completionSessionYear: caFinalCompletionYear || caFinal.completionSessionYear || '2023',
           percentage: caFinal.percentage ? String(caFinal.percentage).trim() : '',
@@ -2402,14 +2402,14 @@ export const Register = () => {
                         <div>
                           <label className="block text-xs font-semibold text-slate-700 mb-1">Ranker *</label>
                           <select 
-                            value={caInter.ranker} 
+                            value={caInter.ranker === 'No' ? 'No Rank' : caInter.ranker} 
                             onChange={(e) => handleCaInterChange('ranker', e.target.value)} 
                             className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500/20 font-medium bg-white cursor-pointer"
                           >
                             {RANKER_OPTIONS.map(opt => (
                               <option key={opt} value={opt}>{opt}</option>
                             ))}
-                            {caInter.ranker && !RANKER_OPTIONS.includes(caInter.ranker) && (
+                            {caInter.ranker && !RANKER_OPTIONS.includes(caInter.ranker) && caInter.ranker !== 'No' && (
                               <option value={caInter.ranker}>{caInter.ranker}</option>
                             )}
                           </select>
@@ -2561,14 +2561,14 @@ export const Register = () => {
                         <div>
                           <label className="block text-xs font-semibold text-slate-700 mb-1">Ranker *</label>
                           <select 
-                            value={caFinal.ranker} 
+                            value={caFinal.ranker === 'No' ? 'No Rank' : caFinal.ranker} 
                             onChange={(e) => handleCaFinalChange('ranker', e.target.value)} 
                             className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 font-medium bg-white cursor-pointer"
                           >
                             {RANKER_OPTIONS.map(opt => (
                               <option key={opt} value={opt}>{opt}</option>
                             ))}
-                            {caFinal.ranker && !RANKER_OPTIONS.includes(caFinal.ranker) && (
+                            {caFinal.ranker && !RANKER_OPTIONS.includes(caFinal.ranker) && caFinal.ranker !== 'No' && (
                               <option value={caFinal.ranker}>{caFinal.ranker}</option>
                             )}
                           </select>

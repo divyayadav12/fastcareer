@@ -218,7 +218,7 @@ export const formatCandidateForExcel = (c: any) => {
     'CA Inter Group 1 Session': inter.group1Month && inter.group1Year ? `${inter.group1Month} ${inter.group1Year}` : (inter.group1Year || 'N/A'),
     'CA Inter Group 2 Attempts': inter.group2Attempts || 'N/A',
     'CA Inter Group 2 Session': inter.group2Month && inter.group2Year ? `${inter.group2Month} ${inter.group2Year}` : (inter.group2Year || 'N/A'),
-    'CA Inter Ranker': inter.ranker || 'No',
+    'CA Inter Ranker': (inter.ranker === 'No' || !inter.ranker) ? 'No Rank' : inter.ranker,
     'CA Inter Completion Session': inter.completionSessionMonth && inter.completionSessionYear 
       ? `${inter.completionSessionMonth} ${inter.completionSessionYear}` 
       : (inter.completionSessionYear || 'N/A'),
@@ -230,7 +230,7 @@ export const formatCandidateForExcel = (c: any) => {
     'CA Final Group 1 Session': final.group1Month && final.group1Year ? `${final.group1Month} ${final.group1Year}` : (final.group1Year || 'N/A'),
     'CA Final Group 2 Attempts': final.group2Attempts || 'N/A',
     'CA Final Group 2 Session': final.group2Month && final.group2Year ? `${final.group2Month} ${final.group2Year}` : (final.group2Year || 'N/A'),
-    'CA Final Ranker': final.ranker || 'No',
+    'CA Final Ranker': (final.ranker === 'No' || !final.ranker) ? 'No Rank' : final.ranker,
     'CA Final Completion Session': final.completionSessionMonth && final.completionSessionYear 
       ? `${final.completionSessionMonth} ${final.completionSessionYear}` 
       : (final.completionSessionYear || exp.caFinalCompletionYear || 'N/A'),
