@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
 import IndustrialTraining from '../models/IndustrialTraining';
+import User from '../models/User';
+import bcrypt from 'bcrypt';
 import * as XLSX from 'xlsx';
 import { sendRegistrationWhatsApp } from '../utils/whatsappService';
 
@@ -218,6 +220,71 @@ export const submitIndustrialTraining = async (req: Request, res: Response): Pro
       console.log(`[Industrial Training] Created new application for ${cleanEmail}`);
     }
 
+    // Sync candidate into User collection so they also appear in Candidates Database
+    try {
+      let candidateUser = await User.findOne({ email: cleanEmail });
+      const nameParts = name.trim().split(' ');
+      const firstName = nameParts[0] || 'Candidate';
+      const lastName = nameParts.slice(1).join(' ') || '';
+
+      if (!candidateUser) {
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash('Fast@123', salt);
+        await User.create({
+          firstName,
+          lastName,
+          email: cleanEmail,
+          password: hashedPassword,
+          role: 'candidate',
+          phone: cleanPhone.slice(-10),
+          personalDetails: {
+            phone: cleanPhone.slice(-10),
+            currentCity: currentLocation.trim(),
+            currentState: currentState.trim(),
+            permanentCity: permanentLocation.trim(),
+            permanentState: permanentState.trim(),
+            dateOfBirth: dob,
+            gender: gender as any,
+          },
+          caPortfolio: {
+            isFresherCA: false,
+            industrialTrainee: 'Yes',
+            caInter: {
+              bothGroups1stAttempt: bothGroups1stAttempt === 'Yes',
+              group1Attempts: group1 || '1st Attempt',
+              group2Attempts: group2 || '1st Attempt',
+              ranker: caInterRank || 'No Rank',
+            },
+            articleships: [{
+              type: 'Articleship',
+              firmName: articleshipFirmName.trim(),
+              city: currentLocation.trim(),
+              noOfMonths: '12'
+            }]
+          },
+          profileCompleted: true
+        });
+        console.log(`[Industrial Training] Also created Candidate User profile for ${cleanEmail}`);
+      } else if (candidateUser.role === 'candidate') {
+        if (!candidateUser.personalDetails) candidateUser.personalDetails = {};
+        if (currentLocation) candidateUser.personalDetails.currentCity = currentLocation.trim();
+        if (currentState) candidateUser.personalDetails.currentState = currentState.trim();
+        if (permanentLocation) candidateUser.personalDetails.permanentCity = permanentLocation.trim();
+        if (permanentState) candidateUser.personalDetails.permanentState = permanentState.trim();
+        if (dob) candidateUser.personalDetails.dateOfBirth = dob;
+        if (gender) candidateUser.personalDetails.gender = gender as any;
+        if (!candidateUser.caPortfolio) candidateUser.caPortfolio = {};
+        candidateUser.caPortfolio.industrialTrainee = 'Yes';
+        if (!candidateUser.caPortfolio.caInter) candidateUser.caPortfolio.caInter = {};
+        candidateUser.caPortfolio.caInter.bothGroups1stAttempt = bothGroups1stAttempt === 'Yes';
+        candidateUser.caPortfolio.caInter.ranker = caInterRank || 'No Rank';
+        await candidateUser.save();
+        console.log(`[Industrial Training] Updated Candidate User profile for ${cleanEmail}`);
+      }
+    } catch (userSyncErr) {
+      console.error('[Industrial Training User Sync Warning]', userSyncErr);
+    }
+
     // Try sending WhatsApp confirmation notification
     try {
       const candidatePhone = application.phone;
@@ -357,3 +424,23 @@ export const exportIndustrialTrainingExcel = async (req: Request, res: Response)
     res.status(500).json({ message: 'Failed to export Excel spreadsheet.' });
   }
 };
+
+/**
+ * DELETE /api/industrial-training/:id
+ * Delete an application (for Admin)
+ */
+export const deleteIndustrialTrainingApplication = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const deleted = await IndustrialTraining.findByIdAndDelete(id);
+    if (!deleted) {
+      res.status(404).json({ message: 'Application not found' });
+      return;
+    }
+    res.status(200).json({ success: true, message: 'Application deleted successfully.' });
+  } catch (error: any) {
+    console.error('Error deleting Industrial Training application:', error);
+    res.status(500).json({ message: 'Failed to delete application.' });
+  }
+};
+

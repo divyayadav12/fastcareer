@@ -1,5 +1,5 @@
 import React from 'react';
-import { Building, Users, FileText, Settings, Briefcase, BarChart2, Database, ClipboardList, Award, Shield, Search, UserCheck } from 'lucide-react';
+import { Building, Users, FileText, Settings, Briefcase, BarChart2, Database, ClipboardList, Award, Shield, Search, UserCheck, GraduationCap } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../store';
@@ -56,6 +56,9 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
           <nav className="space-y-1">
             <Link to="/admin/dashboard" className={getLinkClass('/admin/dashboard')}>
               <Users size={18} /> Candidates Database
+            </Link>
+            <Link to="/admin/industrial-training" className={getLinkClass('/admin/industrial-training')}>
+              <GraduationCap size={18} className="text-amber-500" /> Industrial Training Form
             </Link>
             <Link to="/admin/applications" className={getLinkClass('/admin/applications')}>
               <ClipboardList size={18} className="text-blue-600" /> Job Applications (Applied Candidates)

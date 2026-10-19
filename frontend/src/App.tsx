@@ -19,6 +19,7 @@ const Login = lazy(() => import('./pages/auth/Login').then(m => ({ default: m.Lo
 const Register = lazy(() => import('./pages/auth/Register').then(m => ({ default: m.Register })));
 const PlacementDriveForm = lazy(() => import('./pages/PlacementDriveForm').then(m => ({ default: m.PlacementDriveForm })));
 const IndustrialTrainingPage = lazy(() => import('./pages/IndustrialTrainingPage').then(m => ({ default: m.IndustrialTrainingPage })));
+const IndustrialTrainingAdmin = lazy(() => import('./pages/admin/IndustrialTrainingAdmin').then(m => ({ default: m.IndustrialTrainingAdmin })));
 const PlacementResults = lazy(() => import('./pages/PlacementResults').then(m => ({ default: m.PlacementResults })));
 const CandidateDashboard = lazy(() => import('./pages/candidate/Dashboard').then(m => ({ default: m.CandidateDashboard })));
 const JobFair = lazy(() => import('./pages/candidate/JobFair').then(m => ({ default: m.JobFair })));
@@ -133,6 +134,8 @@ function App() {
             
             {/* Admin Routes */}
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/industrial-training" element={<IndustrialTrainingAdmin />} />
+            <Route path="/admin/industrial-training-candidates" element={<IndustrialTrainingAdmin />} />
             <Route path="/admin/candidates" element={<EmployerCandidates />} />
             <Route path="/admin/add-company" element={<AddCompany />} />
             <Route path="/admin/add-employee" element={<AddEmployee />} />

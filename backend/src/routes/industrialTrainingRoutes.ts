@@ -4,7 +4,8 @@ import {
   sendVerificationOTP,
   verifyOTP,
   getIndustrialTrainingApplications,
-  exportIndustrialTrainingExcel
+  exportIndustrialTrainingExcel,
+  deleteIndustrialTrainingApplication
 } from '../controllers/industrialTrainingController';
 
 const router = express.Router();
@@ -17,5 +18,6 @@ router.post('/verify-otp', verifyOTP);
 // Admin queries and exports
 router.get('/', getIndustrialTrainingApplications);
 router.get('/export', exportIndustrialTrainingExcel);
+router.delete('/:id', deleteIndustrialTrainingApplication);
 
 export default router;
