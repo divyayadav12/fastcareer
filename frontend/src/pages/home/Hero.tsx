@@ -222,7 +222,7 @@ export const Hero = () => {
         className="lg:col-span-4 flex items-center justify-center relative py-1 overflow-hidden"
       >
         <img
-          src="/hero_woman_requested.png"
+          src="/hero_ca_woman_transparent.png"
           alt="Professional woman - Fast Careers"
           className="h-[340px] sm:h-[370px] lg:h-[390px] w-full max-w-[420px] object-cover object-center pointer-events-none select-none drop-shadow-md"
         />
