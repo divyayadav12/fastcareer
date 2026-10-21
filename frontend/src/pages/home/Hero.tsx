@@ -156,7 +156,7 @@ export const Hero = () => {
   const Slide1 = () => (
     <div className="grid lg:grid-cols-12 gap-6 lg:gap-4 items-center">
       {/* Left: Text & CTAs */}
-      <div className="lg:col-span-5 text-left z-10 py-6 pl-8 sm:pl-10 lg:pl-4">
+      <div className="lg:col-span-5 text-left z-10 py-4 pl-4 sm:pl-6 lg:pl-2">
         <motion.div
           initial={{ opacity: 0, y: -15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -173,7 +173,7 @@ export const Hero = () => {
           initial={{ opacity: 0, x: -30 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="text-3xl sm:text-4xl lg:text-[40px] xl:text-[45px] font-black text-[#0b192c] leading-[1.12] tracking-tight mb-3.5"
+          className="text-3xl sm:text-4xl lg:text-[38px] xl:text-[42px] font-black text-[#0b192c] leading-[1.14] tracking-tight mb-3.5"
         >
           Recruit CAs <br />
           <span className="text-[#1d64f2]">(Experienced &amp; Freshers)</span> <br />
@@ -224,21 +224,17 @@ export const Hero = () => {
         </motion.div>
       </div>
 
-      {/* Center: Woman Image */}
+      {/* Center: Woman Image - Perfectly matched to text height */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1, y: [0, -6, 0] }}
-        transition={{
-          opacity: { duration: 0.7, delay: 0.2 },
-          scale: { duration: 0.7, delay: 0.2 },
-          y: { repeat: Infinity, duration: 4.5, ease: 'easeInOut' },
-        }}
-        className="lg:col-span-4 flex items-end justify-center relative min-h-[420px] lg:min-h-[520px] overflow-visible"
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ opacity: { duration: 0.5, delay: 0.15 }, scale: { duration: 0.5, delay: 0.15 } }}
+        className="lg:col-span-4 flex items-center justify-center relative py-1"
       >
         <img
           src="/hero_woman_new.png"
           alt="Corporate Woman - Fast Careers"
-          className="w-full h-auto max-h-[540px] object-contain object-bottom pointer-events-none select-none"
+          className="h-[340px] sm:h-[370px] lg:h-[390px] w-auto max-w-full object-contain pointer-events-none select-none drop-shadow-md"
         />
       </motion.div>
 
@@ -247,7 +243,7 @@ export const Hero = () => {
         initial={{ opacity: 0, x: 30 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.6, delay: 0.25 }}
-        className="lg:col-span-3 z-10 py-6"
+        className="lg:col-span-3 z-10 py-2"
       >
         <MilestoneCard />
       </motion.div>
@@ -258,7 +254,7 @@ export const Hero = () => {
   const Slide2 = () => (
     <div className="grid lg:grid-cols-12 gap-6 lg:gap-4 items-center">
       {/* Left: Text & CTAs */}
-      <div className="lg:col-span-5 text-left z-10 py-6 pl-8 sm:pl-10 lg:pl-4">
+      <div className="lg:col-span-5 text-left z-10 py-4 pl-4 sm:pl-6 lg:pl-2">
         <motion.div
           initial={{ opacity: 0, y: -15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -275,7 +271,7 @@ export const Hero = () => {
           initial={{ opacity: 0, x: -30 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="text-3xl sm:text-4xl lg:text-[40px] xl:text-[45px] font-black text-[#0b192c] leading-[1.12] tracking-tight mb-3.5"
+          className="text-3xl sm:text-4xl lg:text-[38px] xl:text-[42px] font-black text-[#0b192c] leading-[1.14] tracking-tight mb-3.5"
         >
           Recruiters of <br />
           <span className="text-[#ea580c]">Non-IT for India</span> <br />
@@ -326,19 +322,20 @@ export const Hero = () => {
         </motion.div>
       </div>
 
-      {/* Center: Duo Image */}
+      {/* Center: Duo Image - Perfectly matched to text height */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ opacity: { duration: 0.7, delay: 0.2 }, scale: { duration: 0.7, delay: 0.2 } }}
-        className="lg:col-span-4 flex items-center justify-center relative overflow-hidden rounded-2xl"
-        style={{ height: '420px' }}
+        transition={{ opacity: { duration: 0.5, delay: 0.15 }, scale: { duration: 0.5, delay: 0.15 } }}
+        className="lg:col-span-4 flex items-center justify-center relative py-1"
       >
-        <img
-          src="/hero_non_it_duo.jpg"
-          alt="Non-IT Corporate Duo - Fast Careers"
-          className="w-full h-full object-cover object-top pointer-events-none select-none rounded-2xl shadow-lg"
-        />
+        <div className="w-full max-w-[360px] h-[340px] sm:h-[370px] lg:h-[390px] rounded-2xl overflow-hidden shadow-lg border border-slate-200/80">
+          <img
+            src="/hero_non_it_duo.jpg"
+            alt="Non-IT Corporate Duo - Fast Careers"
+            className="w-full h-full object-cover object-top pointer-events-none select-none rounded-2xl"
+          />
+        </div>
       </motion.div>
 
       {/* Right: Milestone Card */}
@@ -346,17 +343,18 @@ export const Hero = () => {
         initial={{ opacity: 0, x: 30 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.6, delay: 0.25 }}
-        className="lg:col-span-3 z-10 py-6"
+        className="lg:col-span-3 z-10 py-2"
       >
         <MilestoneCard />
       </motion.div>
     </div>
   );
 
+  // ─── SLIDE 3: CA - IT / Industrial Training ───────────────────────────────
   const Slide3 = () => (
     <div className="grid lg:grid-cols-12 gap-6 lg:gap-4 items-center">
       {/* Left: Text & CTAs */}
-      <div className="lg:col-span-5 text-left z-10 py-6 pl-8 sm:pl-10 lg:pl-4">
+      <div className="lg:col-span-5 text-left z-10 py-4 pl-4 sm:pl-6 lg:pl-2">
         <motion.div
           initial={{ opacity: 0, y: -15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -373,7 +371,7 @@ export const Hero = () => {
           initial={{ opacity: 0, x: -30 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="text-3xl sm:text-4xl lg:text-[40px] xl:text-[45px] font-black text-[#0b192c] leading-[1.12] tracking-tight mb-3.5"
+          className="text-3xl sm:text-4xl lg:text-[38px] xl:text-[42px] font-black text-[#0b192c] leading-[1.14] tracking-tight mb-3.5"
         >
           CA – IT Recruitment <br />
           <span className="text-[#16a34a]">&amp; Placement</span> <br />
@@ -424,21 +422,17 @@ export const Hero = () => {
         </motion.div>
       </div>
 
-      {/* Center: CA Hero Image */}
+      {/* Center: CA Hero Image - Perfectly matched to text height */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1, y: [0, -6, 0] }}
-        transition={{
-          opacity: { duration: 0.7, delay: 0.2 },
-          scale: { duration: 0.7, delay: 0.2 },
-          y: { repeat: Infinity, duration: 4.5, ease: 'easeInOut' },
-        }}
-        className="lg:col-span-4 flex items-end justify-center relative min-h-[380px] lg:min-h-[460px] overflow-visible"
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ opacity: { duration: 0.5, delay: 0.15 }, scale: { duration: 0.5, delay: 0.15 } }}
+        className="lg:col-span-4 flex items-center justify-center relative py-1"
       >
         <img
           src="/ca_hero_perfect.png"
           alt="CA Industrial Training - Fast Careers"
-          className="w-full h-auto max-h-[480px] object-contain object-bottom pointer-events-none select-none transition-transform hover:scale-105 duration-500"
+          className="h-[340px] sm:h-[370px] lg:h-[390px] w-auto max-w-full object-contain pointer-events-none select-none drop-shadow-md"
         />
       </motion.div>
 
@@ -447,7 +441,7 @@ export const Hero = () => {
         initial={{ opacity: 0, x: 30 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.6, delay: 0.25 }}
-        className="lg:col-span-3 z-10 py-1 pb-4 sm:pb-6"
+        className="lg:col-span-3 z-10 py-2"
       >
         <MilestoneCard />
       </motion.div>
@@ -479,7 +473,7 @@ export const Hero = () => {
         />
 
         {/* Slide Container */}
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 relative" style={{ minHeight: '480px' }}>
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 relative min-h-[420px]">
           <AnimatePresence initial={false} mode="wait">
             <motion.div
               key={currentSlide}
@@ -487,7 +481,7 @@ export const Hero = () => {
               initial="enter"
               animate="center"
               exit="exit"
-              transition={{ duration: 0.2, ease: 'easeInOut' }}
+              transition={{ duration: 0.18, ease: 'easeInOut' }}
             >
               {slides[currentSlide]}
             </motion.div>
