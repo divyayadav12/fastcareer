@@ -219,12 +219,12 @@ export const Hero = () => {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ opacity: { duration: 0.5, delay: 0.15 }, scale: { duration: 0.5, delay: 0.15 } }}
-        className="lg:col-span-4 flex items-center justify-center relative py-1"
+        className="lg:col-span-4 flex items-center justify-center relative py-1 overflow-hidden"
       >
         <img
-          src="/hero_woman_new.png"
-          alt="Corporate Woman - Fast Careers"
-          className="h-[340px] sm:h-[370px] lg:h-[390px] w-auto max-w-full object-contain pointer-events-none select-none drop-shadow-md"
+          src="/hero_woman_requested.png"
+          alt="Professional woman - Fast Careers"
+          className="h-[340px] sm:h-[370px] lg:h-[390px] w-full max-w-[420px] object-cover object-center pointer-events-none select-none drop-shadow-md"
         />
       </motion.div>
 
