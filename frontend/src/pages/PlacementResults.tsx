@@ -646,7 +646,7 @@ export const PlacementResults = () => {
               <span>Physical Campus Venues</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight mb-3">
-              FAST CA PHYSICAL CAMPUS – July 2026 Schedule
+              FAST CA PHYSICAL CAMPUS – Jan 2027 Schedule
             </h2>
             <p className="text-slate-600 text-sm sm:text-base">
               One Day | One Venue | Tons of Participants | Multiple Recruiting Companies
@@ -672,7 +672,7 @@ export const PlacementResults = () => {
                       <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-md bg-blue-600 text-white tracking-wider">
                         Delhi NCR
                       </span>
-                      <h3 className="text-2xl font-black text-white mt-1">07 July 2026</h3>
+                      <h3 className="text-2xl font-black text-white mt-1">07 Jan 2027</h3>
                     </div>
                   </div>
                   <button 
@@ -732,7 +732,7 @@ export const PlacementResults = () => {
                       <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-md bg-purple-600 text-white tracking-wider">
                         Mumbai
                       </span>
-                      <h3 className="text-2xl font-black text-white mt-1">10 July 2026</h3>
+                      <h3 className="text-2xl font-black text-white mt-1">10 Jan 2027</h3>
                     </div>
                   </div>
                   <button 

@@ -116,41 +116,31 @@ const slideVariants = {
 // ─── Main Hero Component ──────────────────────────────────────────────────────
 export const Hero = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [direction, setDirection] = useState(1); // 1 = forward, -1 = backward
-  const [isPaused, setIsPaused] = useState(false);
   const [itModalOpen, setItModalOpen] = useState(false);
-  const autoRef = useRef<NodeJS.Timeout | null>(null);
 
   const SLIDE_COUNT = 3;
-  const AUTO_INTERVAL = 6000; // 6 seconds
+  const AUTO_INTERVAL = 4500; // 4.5 seconds per slide
 
-  const goTo = useCallback(
-    (idx: number, dir?: number) => {
-      const newDir = dir ?? (idx > currentSlide ? 1 : -1);
-      setDirection(newDir);
-      setCurrentSlide((idx + SLIDE_COUNT) % SLIDE_COUNT);
-    },
-    [currentSlide]
-  );
+  const goTo = (idx: number) => {
+    setCurrentSlide((idx + SLIDE_COUNT) % SLIDE_COUNT);
+  };
 
   const next = useCallback(() => {
-    setDirection(1);
     setCurrentSlide((prev) => (prev + 1) % SLIDE_COUNT);
   }, []);
 
   const prev = useCallback(() => {
-    setDirection(-1);
     setCurrentSlide((prev) => (prev - 1 + SLIDE_COUNT) % SLIDE_COUNT);
   }, []);
 
-  // Auto-scroll
+  // Automatic slide rotation: changes slide continuously every 4.5s
   useEffect(() => {
-    if (isPaused) return;
-    autoRef.current = setInterval(next, AUTO_INTERVAL);
-    return () => {
-      if (autoRef.current) clearInterval(autoRef.current);
-    };
-  }, [isPaused, next]);
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % SLIDE_COUNT);
+    }, AUTO_INTERVAL);
+
+    return () => clearInterval(timer);
+  }, [currentSlide]);
 
   // ─── SLIDE 1: CA Recruitment ──────────────────────────────────────────────
   const Slide1 = () => (
@@ -429,11 +419,13 @@ export const Hero = () => {
         transition={{ opacity: { duration: 0.5, delay: 0.15 }, scale: { duration: 0.5, delay: 0.15 } }}
         className="lg:col-span-4 flex items-center justify-center relative py-1"
       >
-        <img
-          src="/ca_hero_perfect.png"
-          alt="CA Industrial Training - Fast Careers"
-          className="h-[340px] sm:h-[370px] lg:h-[390px] w-auto max-w-full object-contain pointer-events-none select-none drop-shadow-md"
-        />
+        <div className="relative rounded-2xl overflow-hidden shadow-xs">
+          <img
+            src="/ca_hero_perfect.png"
+            alt="CA Industrial Training - Fast Careers"
+            className="h-[340px] sm:h-[370px] lg:h-[390px] w-auto max-w-full object-contain pointer-events-none select-none drop-shadow-md rounded-2xl"
+          />
+        </div>
       </motion.div>
 
       {/* Right: Milestone Card */}
@@ -461,8 +453,6 @@ export const Hero = () => {
     <>
       <section
         className="relative bg-gradient-to-b from-[#eaf3fd] via-[#f5f9fe] to-white pt-[74px] pb-2 sm:pt-[80px] sm:pb-3 lg:pt-[84px] lg:pb-3 border-b border-slate-200/80 overflow-hidden"
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
       >
         {/* Background Soft Glow — changes per slide */}
         <motion.div
