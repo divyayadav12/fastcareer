@@ -30,6 +30,24 @@ const ATTEMPT_OPTIONS = [
   '5+ Attempts'
 ];
 
+const CA_INTER_RANK_OPTIONS = [
+  'No Rank',
+  'AIR 1',
+  'AIR 2',
+  'AIR 3',
+  'AIR 4',
+  'AIR 5',
+  'AIR 6 to 10',
+  'AIR 11 to 15',
+  'AIR 16 to 20',
+  'AIR 21 to 25',
+  'AIR 26 to 30',
+  'AIR 31 to 35',
+  'AIR 36 to 40',
+  'AIR 41 to 45',
+  'AIR 46 to 50'
+];
+
 const POPULAR_FIRMS = [
   'PwC', 'Deloitte', 'EY', 'KPMG', 'BDO', 'Grant Thornton', 
   'Haribhakti & Co', 'Singhi & Co', 'Lodha & Co', 'S.R. Batliboi'
@@ -460,7 +478,7 @@ export const IndustrialTrainingPage: React.FC = () => {
   const isTenureEligible = tenureMonths >= 9 && tenureMonths <= 15;
 
   // Validation
-  const validate = () => {
+  const validate = (): { isValid: boolean; firstError?: string; firstKey?: string } => {
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) newErrors.name = 'Full name is required';
@@ -482,21 +500,34 @@ export const IndustrialTrainingPage: React.FC = () => {
     if (tenureMonths < 9) {
       newErrors.articleshipStartMonthYear = `Minimum 9 months articleship required (Completed: ${tenureMonths} months)`;
     } else if (tenureMonths > 15) {
-      newErrors.articleshipStartMonthYear = `Maximum 15 months articleship allowed for Industrial Training (Completed: ${tenureMonths} months)`;
+      newErrors.articleshipStartMonthYear = `Articleship tenure exceeds limit (Completed: ${tenureMonths} months, Max allowed: 15 months)`;
     }
 
     if (!formData.verifiedDeclaration) newErrors.verifiedDeclaration = 'Please accept the verification declaration';
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const keys = Object.keys(newErrors);
+    return {
+      isValid: keys.length === 0,
+      firstError: keys.length > 0 ? newErrors[keys[0]] : undefined,
+      firstKey: keys.length > 0 ? keys[0] : undefined
+    };
   };
 
   // Submit Handler
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validate()) {
-      toast.error('Please fix validation errors before submitting.');
+    const { isValid, firstError, firstKey } = validate();
+    if (!isValid) {
+      toast.error(firstError || 'Please fix validation errors before submitting.');
+      if (firstKey) {
+        const el = document.querySelector(`[name="${firstKey}"]`) || document.getElementById(`${formId}-${firstKey}`);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          (el as HTMLElement).focus?.();
+        }
+      }
       return;
     }
 
@@ -1034,15 +1065,17 @@ export const IndustrialTrainingPage: React.FC = () => {
                       <label htmlFor={`${formId}-caInterRank`} className="block text-xs font-semibold text-slate-700 mb-1">
                         CA Inter Rank
                       </label>
-                      <input
+                      <select
                         id={`${formId}-caInterRank`}
-                        type="text"
                         name="caInterRank"
-                        value={formData.caInterRank}
+                        value={formData.caInterRank || 'No Rank'}
                         onChange={handleChange}
-                        placeholder="e.g. No Rank or AIR 12"
-                        className="w-full px-3 py-2 text-sm rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-600"
-                      />
+                        className="w-full px-3 py-2 text-sm rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-600 font-medium text-slate-800"
+                      >
+                        {CA_INTER_RANK_OPTIONS.map(r => (
+                          <option key={r} value={r}>{r}</option>
+                        ))}
+                      </select>
                     </div>
                   )}
                 </div>
@@ -1078,15 +1111,17 @@ export const IndustrialTrainingPage: React.FC = () => {
                       <label htmlFor={`${formId}-caInterRank-yes`} className="block text-xs font-semibold text-slate-700 mb-1">
                         CA Inter Rank
                       </label>
-                      <input
+                      <select
                         id={`${formId}-caInterRank-yes`}
-                        type="text"
                         name="caInterRank"
-                        value={formData.caInterRank}
+                        value={formData.caInterRank || 'No Rank'}
                         onChange={handleChange}
-                        placeholder="e.g. No Rank or AIR 12"
-                        className="w-full px-3 py-2 text-sm rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-600"
-                      />
+                        className="w-full px-3 py-2 text-sm rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-600 font-medium text-slate-800"
+                      >
+                        {CA_INTER_RANK_OPTIONS.map(r => (
+                          <option key={r} value={r}>{r}</option>
+                        ))}
+                      </select>
                     </div>
                   </div>
                 ) : (
