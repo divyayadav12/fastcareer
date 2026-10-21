@@ -106,11 +106,11 @@ const MilestoneCard = () => (
   </div>
 );
 
-// ─── Slide variants for framer-motion ────────────────────────────────────────
+// ─── Slide variants for framer-motion (fade only — no scroll/black gap) ──────
 const slideVariants = {
-  enter: (dir: number) => ({ x: dir > 0 ? '100%' : '-100%', opacity: 0 }),
-  center: { x: 0, opacity: 1 },
-  exit: (dir: number) => ({ x: dir < 0 ? '100%' : '-100%', opacity: 0 }),
+  enter: { opacity: 0 },
+  center: { opacity: 1 },
+  exit: { opacity: 0 },
 };
 
 // ─── Main Hero Component ──────────────────────────────────────────────────────
@@ -233,12 +233,12 @@ export const Hero = () => {
           scale: { duration: 0.7, delay: 0.2 },
           y: { repeat: Infinity, duration: 4.5, ease: 'easeInOut' },
         }}
-        className="lg:col-span-4 flex items-end justify-center relative min-h-[380px] lg:min-h-[460px] overflow-visible"
+        className="lg:col-span-4 flex items-end justify-center relative min-h-[420px] lg:min-h-[520px] overflow-visible"
       >
         <img
-          src="/hero_corporate_woman.png"
-          alt="Corporate CA Woman - Fast Careers"
-          className="w-full h-auto max-h-[480px] object-contain object-bottom pointer-events-none select-none"
+          src="/hero_woman_new.png"
+          alt="Corporate Woman - Fast Careers"
+          className="w-full h-auto max-h-[540px] object-contain object-bottom pointer-events-none select-none"
         />
       </motion.div>
 
@@ -335,12 +335,12 @@ export const Hero = () => {
           scale: { duration: 0.7, delay: 0.2 },
           y: { repeat: Infinity, duration: 4.5, ease: 'easeInOut' },
         }}
-        className="lg:col-span-4 flex items-end justify-center relative min-h-[380px] lg:min-h-[460px] overflow-hidden rounded-2xl"
+        className="lg:col-span-4 flex items-end justify-center relative min-h-[420px] lg:min-h-[520px] overflow-hidden rounded-2xl"
       >
         <img
           src="/hero_non_it_duo.jpg"
           alt="Non-IT Corporate Duo - Fast Careers"
-          className="w-full h-full max-h-[480px] object-cover object-center pointer-events-none select-none rounded-2xl shadow-lg"
+          className="w-full h-full min-h-[420px] lg:min-h-[520px] max-h-[540px] object-cover object-top pointer-events-none select-none rounded-2xl shadow-lg"
         />
       </motion.div>
 
@@ -483,8 +483,8 @@ export const Hero = () => {
         />
 
         {/* Slide Container */}
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-          <AnimatePresence initial={false} custom={direction} mode="wait">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 relative" style={{ minHeight: '520px' }}>
+          <AnimatePresence initial={false} custom={direction} mode="sync">
             <motion.div
               key={currentSlide}
               custom={direction}
@@ -492,7 +492,8 @@ export const Hero = () => {
               initial="enter"
               animate="center"
               exit="exit"
-              transition={{ duration: 0.55, ease: [0.32, 0, 0.68, 1] }}
+              transition={{ duration: 0.35, ease: 'easeInOut' }}
+              style={{ position: 'absolute', top: 0, left: 0, right: 0 }}
             >
               {slides[currentSlide]}
             </motion.div>
