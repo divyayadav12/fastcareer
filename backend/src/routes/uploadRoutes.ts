@@ -13,6 +13,13 @@ const isCloudinaryConfigured = Boolean(
   process.env.CLOUDINARY_API_SECRET
 );
 
+// Cloudinary configure karo ek baar
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
 // Helper to stream upload buffer to Cloudinary
 const uploadBufferToCloudinary = (buffer: Buffer, originalname: string, mimetype: string): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -21,21 +28,22 @@ const uploadBufferToCloudinary = (buffer: Buffer, originalname: string, mimetype
     const isVideo = mimetype?.startsWith('video/') || /\.(mp4|mov|webm|avi|mkv)$/i.test(originalname);
     const isAudio = mimetype?.startsWith('audio/') || /\.(mp3|wav|m4a)$/i.test(originalname);
 
-    let resourceType: 'image' | 'video' | 'raw' | 'auto' = 'auto';
-    if (isPdf || isImage) {
-      resourceType = 'image'; // Cloudinary allows PDF delivery under image resource type
+    // PDFs ke liye 'raw' use karo taaki direct download mile
+    let resourceType: 'image' | 'video' | 'raw' | 'auto' = 'raw';
+    if (isImage) {
+      resourceType = 'image';
     } else if (isVideo || isAudio) {
       resourceType = 'video';
-    } else {
-      resourceType = 'raw';
     }
 
-    const cleanField = originalname ? originalname.replace(/[^a-zA-Z0-9]/g, '_') : 'file';
+    const cleanField = originalname ? originalname.replace(/[^a-zA-Z0-9]/g, '_') : 'resume';
     const uploadStream = cloudinary.uploader.upload_stream(
       {
         folder: 'fastweb_resumes',
         resource_type: resourceType,
         public_id: `${cleanField}-${Date.now()}`,
+        // PDF ke liye flags
+        ...(isPdf && { format: 'pdf', flags: 'attachment' }),
       },
       (error, result) => {
         if (error) {
@@ -64,27 +72,29 @@ const saveBufferToLocal = (buffer: Buffer, originalname: string): string => {
   return `/uploads/${filename}`;
 };
 
-// Unified processor for Base64 payloads (Instant local save + async Cloudinary sync)
+// Unified processor for Base64 payloads (Cloudinary first, local fallback)
 async function handleBase64Upload(base64: string, filename?: string, mimeType?: string) {
   const cleanBase64 = base64.replace(/^data:[^;]+;base64,/, '');
   const buffer = Buffer.from(cleanBase64, 'base64');
   const originalName = filename || 'resume.pdf';
   const cleanMime = mimeType || 'application/pdf';
 
-  // 1. Instant local disk save (takes ~2ms)
-  const finalUrl = saveBufferToLocal(buffer, originalName);
+  let finalUrl = '';
 
-  // 2. Non-blocking background sync to Cloudinary if configured
+  // 1. Pehle Cloudinary pe upload karo (production ke liye zaroori)
   if (isCloudinaryConfigured) {
-    uploadBufferToCloudinary(buffer, originalName, cleanMime)
-      .then(cloudUrl => {
-        if (cloudUrl) {
-          console.log('[Async Upload] Cloudinary sync finished:', cloudUrl);
-        }
-      })
-      .catch(cloudErr => {
-        console.warn('[Async Upload] Cloudinary non-critical warning:', cloudErr);
-      });
+    try {
+      finalUrl = await uploadBufferToCloudinary(buffer, originalName, cleanMime);
+      console.log('[Upload] Cloudinary upload success:', finalUrl);
+    } catch (cloudErr) {
+      console.warn('[Upload] Cloudinary failed, falling back to local:', cloudErr);
+    }
+  }
+
+  // 2. Agar Cloudinary fail ho ya configured na ho to local save karo
+  if (!finalUrl) {
+    finalUrl = saveBufferToLocal(buffer, originalName);
+    console.log('[Upload] Saved locally:', finalUrl);
   }
 
   return {
@@ -138,20 +148,22 @@ router.post('/', async (req: any, res: any, next: any) => {
     const originalName = req.file.originalname || req.body?.originalname || 'resume.pdf';
     const mimeType = req.file.mimetype || 'application/pdf';
 
-    // 1. Instant local disk save (takes ~2ms)
-    const finalUrl = saveBufferToLocal(req.file.buffer, originalName);
+    let finalUrl = '';
 
-    // 2. Non-blocking background sync to Cloudinary if configured
+    // 1. Pehle Cloudinary pe upload karo
     if (isCloudinaryConfigured) {
-      uploadBufferToCloudinary(req.file.buffer, originalName, mimeType)
-        .then(cloudUrl => {
-          if (cloudUrl) {
-            console.log('[Async Upload] Cloudinary sync finished:', cloudUrl);
-          }
-        })
-        .catch(cloudinaryErr => {
-          console.warn('[Async Upload] Cloudinary non-critical warning:', cloudinaryErr);
-        });
+      try {
+        finalUrl = await uploadBufferToCloudinary(req.file.buffer, originalName, mimeType);
+        console.log('[Upload] Cloudinary upload success:', finalUrl);
+      } catch (cloudErr) {
+        console.warn('[Upload] Cloudinary failed, falling back to local:', cloudErr);
+      }
+    }
+
+    // 2. Agar Cloudinary fail ho to local save karo
+    if (!finalUrl) {
+      finalUrl = saveBufferToLocal(req.file.buffer, originalName);
+      console.log('[Upload] Saved locally:', finalUrl);
     }
 
     return res.json({
