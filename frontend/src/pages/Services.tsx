@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Building2, UserCheck, CalendarCheck, CheckCircle2, ArrowRight, MapPin, Sparkles, FileText, Globe2, PhoneCall, FileSpreadsheet, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { RecruiterMarquee } from '../components/RecruiterMarquee';
+import { ExecutiveLeadershipCards } from '../components/ExecutiveLeadershipCards';
 
 const serviceModes = [
   {
@@ -226,6 +227,25 @@ export const Services = () => {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Direct Contact with Leadership */}
+      <section className="py-16 px-4 bg-slate-50 border-b border-slate-200">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center max-w-2xl mx-auto mb-10">
+            <span className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full uppercase tracking-wider border border-blue-200">
+              Direct Corporate Helpline
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-2 tracking-tight">
+              Speak Directly with Our Executive Directors
+            </h2>
+            <p className="text-slate-600 text-sm mt-1">
+              For exclusive corporate hiring mandatories, private campus tie-ups, and talent sourcing consultations.
+            </p>
+          </div>
+
+          <ExecutiveLeadershipCards className="max-w-4xl mx-auto" />
         </div>
       </section>
 

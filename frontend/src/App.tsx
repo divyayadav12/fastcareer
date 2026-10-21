@@ -92,6 +92,7 @@ function App() {
               <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
+            <Route path="/ca-campus" element={<OurTeam />} />
             <Route path="/team" element={<OurTeam />} />
             <Route path="/our-team" element={<OurTeam />} />
             <Route path="/services" element={<Services />} />
@@ -105,6 +106,7 @@ function App() {
             <Route path="/placement-drive" element={<PlacementDriveForm />} />
             <Route path="/industrial-training" element={<IndustrialTrainingPage />} />
             <Route path="/industrial-training-form" element={<IndustrialTrainingPage />} />
+            <Route path="/ca-placements" element={<PlacementResults />} />
             <Route path="/placement-results" element={<PlacementResults />} />
             <Route path="/ca-results" element={<PlacementResults />} />
             

@@ -104,9 +104,15 @@ export const submitIndustrialTraining = async (req: Request, res: Response): Pro
       bothGroups1stAttempt,
       group1,
       group2,
+      group1Batch,
+      group2Batch,
       caInterRank,
       articleshipFirmName,
       articleshipStartMonthYear,
+      preferredCities,
+      preferredSectors,
+      remarks,
+      resumeUrl,
       isVerified,
       verificationMethod,
       verificationCode
@@ -182,11 +188,17 @@ export const submitIndustrialTraining = async (req: Request, res: Response): Pro
       application.gender = gender;
       application.caInterBatch = caInterBatch;
       application.bothGroups1stAttempt = bothGroups1stAttempt || 'No';
-      application.group1 = group1 || '1st Attempt';
-      application.group2 = group2 || '1st Attempt';
+      application.group1 = bothGroups1stAttempt === 'Yes' ? '1st Attempt' : (group1 || '1st Attempt');
+      application.group2 = bothGroups1stAttempt === 'Yes' ? '1st Attempt' : (group2 || '1st Attempt');
+      application.group1Batch = bothGroups1stAttempt === 'Yes' ? caInterBatch : (group1Batch || caInterBatch);
+      application.group2Batch = bothGroups1stAttempt === 'Yes' ? caInterBatch : (group2Batch || caInterBatch);
       application.caInterRank = caInterRank || 'No Rank';
       application.articleshipFirmName = articleshipFirmName.trim();
       application.articleshipStartMonthYear = articleshipStartMonthYear.trim();
+      if (Array.isArray(preferredCities)) application.preferredCities = preferredCities;
+      if (Array.isArray(preferredSectors)) application.preferredSectors = preferredSectors;
+      if (remarks !== undefined) application.remarks = remarks.trim();
+      if (resumeUrl !== undefined) application.resumeUrl = resumeUrl.trim();
       application.isVerified = isVerified !== false;
       application.verificationMethod = verificationMethod || 'Verified & Declared';
       if (verificationCode) application.verificationCode = verificationCode;
@@ -212,6 +224,10 @@ export const submitIndustrialTraining = async (req: Request, res: Response): Pro
         caInterRank: caInterRank || 'No Rank',
         articleshipFirmName: articleshipFirmName.trim(),
         articleshipStartMonthYear: articleshipStartMonthYear.trim(),
+        preferredCities: Array.isArray(preferredCities) ? preferredCities : [],
+        preferredSectors: Array.isArray(preferredSectors) ? preferredSectors : [],
+        remarks: (remarks || '').trim(),
+        resumeUrl: (resumeUrl || '').trim(),
         isVerified: isVerified !== false,
         verificationMethod: verificationMethod || 'Verified & Declared',
         verificationCode,
@@ -237,6 +253,7 @@ export const submitIndustrialTraining = async (req: Request, res: Response): Pro
           password: hashedPassword,
           role: 'candidate',
           phone: cleanPhone.slice(-10),
+          resumeUrl: (resumeUrl || '').trim(),
           personalDetails: {
             phone: cleanPhone.slice(-10),
             currentCity: currentLocation.trim(),
@@ -376,12 +393,16 @@ export const exportIndustrialTrainingExcel = async (req: Request, res: Response)
       'DOB': app.dob,
       'Gender': app.gender,
       'CA Inter Batch': app.caInterBatch,
-      'CA both Group in 1st Attempt': app.bothGroups1stAttempt,
+      'CA Both Groups in 1st Attempt': app.bothGroups1stAttempt,
       'Group 1': app.group1,
       'Group 2': app.group2,
       'CA Inter Rank': app.caInterRank || 'No Rank',
       "Articleship Firm's Name 1": app.articleshipFirmName,
       'Articleship Start Month and Year': app.articleshipStartMonthYear,
+      'Preferred Cities': (app.preferredCities || []).join(', '),
+      'Preferred Sectors': (app.preferredSectors || []).join(', '),
+      'Remarks': app.remarks || '',
+      'Resume URL': app.resumeUrl || '',
       'Verification Status': app.isVerified ? 'Verified ✓' : 'Pending',
       'Application Date': app.createdAt ? new Date(app.createdAt).toLocaleDateString('en-IN') : ''
     }));

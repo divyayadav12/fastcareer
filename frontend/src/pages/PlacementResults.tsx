@@ -549,7 +549,7 @@ export const PlacementResults = () => {
         </div>
       </section>
 
-      {/* FAST CA Virtual Campus – Starts 30 June (Slide 11 Graphics) */}
+      {/* FAST CA Virtual Campus – Starts Jan 2027 (Slide 11 Graphics) */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto">
           
@@ -559,7 +559,7 @@ export const PlacementResults = () => {
               <span>India's 1st Virtual CA Campus</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight mb-3">
-              FAST CA VIRTUAL CAMPUS – Starts 30 June
+              FAST CA VIRTUAL CAMPUS – Starts Jan 2027
             </h2>
             <p className="text-slate-600 text-sm sm:text-base">
               One Day | One Company | Daily Campus | First Come - First Serve. Recruit first with FAST Careers!
@@ -625,7 +625,7 @@ export const PlacementResults = () => {
                   </div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-black text-white">Starts 30 June</div>
+                  <div className="text-3xl font-black text-white">Starts Jan 2027</div>
                   <div className="text-xs text-blue-300 font-bold mt-1">Daily Dedicated Corporate Drives</div>
                 </div>
               </div>

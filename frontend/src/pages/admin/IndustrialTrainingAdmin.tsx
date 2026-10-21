@@ -27,6 +27,10 @@ interface IndustrialApplication {
   caInterRank: string;
   articleshipFirmName: string;
   articleshipStartMonthYear: string;
+  preferredCities?: string[];
+  preferredSectors?: string[];
+  remarks?: string;
+  resumeUrl?: string;
   isVerified: boolean;
   verificationMethod?: string;
   verificationCode?: string;
@@ -533,6 +537,67 @@ export const IndustrialTrainingAdmin: React.FC = () => {
                       {selectedApp.createdAt ? new Date(selectedApp.createdAt).toLocaleString('en-IN') : '—'}
                     </span>
                   </div>
+                </div>
+              </div>
+
+              {/* Section 4 */}
+              <div className="pt-2">
+                <h4 className="font-bold text-slate-800 uppercase tracking-wider text-[11px] pb-1.5 border-b border-slate-200 mb-2.5">
+                  4. Industrial Training Preferences
+                </h4>
+                <div className="space-y-2.5">
+                  <div>
+                    <span className="text-slate-400 block text-xs">Preferred Cities / Locations:</span>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {selectedApp.preferredCities && selectedApp.preferredCities.length > 0 ? (
+                        selectedApp.preferredCities.map(c => (
+                          <span key={c} className="text-[11px] bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded-md font-medium">
+                            {c}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-xs text-slate-500 font-medium">Anywhere in India</span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <span className="text-slate-400 block text-xs">Preferred Sectors:</span>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {selectedApp.preferredSectors && selectedApp.preferredSectors.length > 0 ? (
+                        selectedApp.preferredSectors.map(s => (
+                          <span key={s} className="text-[11px] bg-indigo-50 text-indigo-700 border border-indigo-200 px-2 py-0.5 rounded-md font-medium">
+                            {s}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-xs text-slate-500 font-medium">Any</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {selectedApp.remarks && (
+                    <div>
+                      <span className="text-slate-400 block text-xs">Candidate Remarks:</span>
+                      <p className="text-xs text-slate-700 bg-slate-50 p-2 rounded-lg border border-slate-200 mt-1 italic">
+                        &quot;{selectedApp.remarks}&quot;
+                      </p>
+                    </div>
+                  )}
+
+                  {selectedApp.resumeUrl && (
+                    <div className="pt-1">
+                      <span className="text-slate-400 block text-xs mb-1">Attached Resume:</span>
+                      <a 
+                        href={selectedApp.resumeUrl.startsWith('http') ? selectedApp.resumeUrl : `/api${selectedApp.resumeUrl}`}
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-800 font-semibold underline bg-blue-50/60 px-2.5 py-1.5 rounded-lg border border-blue-200"
+                      >
+                        <span>📄 View / Download Candidate Resume</span>
+                      </a>
+                    </div>
+                  )}
                 </div>
               </div>
 

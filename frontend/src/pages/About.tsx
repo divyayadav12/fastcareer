@@ -56,7 +56,7 @@ export const About = () => {
                 className="px-6 py-3.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl shadow-md transition-all flex items-center gap-2 text-sm sm:text-base"
               >
                 <Award size={18} />
-                <span>Our Placement Result & Analysis</span>
+                <span>CA Placements & Result Analysis</span>
               </motion.button>
             </Link>
             <Link to="/placement-drive">

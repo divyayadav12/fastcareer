@@ -14,9 +14,15 @@ export interface IIndustrialTraining extends Document {
   bothGroups1stAttempt: string; // 'Yes' | 'No'
   group1: string; // e.g. '1st Attempt', '2nd Attempt'
   group2: string; // e.g. '1st Attempt', '2nd Attempt'
+  group1Batch?: string;
+  group2Batch?: string;
   caInterRank: string; // e.g. 'No Rank' or 'AIR 15'
   articleshipFirmName: string;
   articleshipStartMonthYear: string;
+  preferredCities?: string[];
+  preferredSectors?: string[];
+  remarks?: string;
+  resumeUrl?: string;
   isVerified: boolean;
   verificationMethod?: string;
   verificationCode?: string;
@@ -41,9 +47,15 @@ const IndustrialTrainingSchema: Schema = new Schema(
     bothGroups1stAttempt: { type: String, required: true, default: 'No' },
     group1: { type: String, required: true, trim: true },
     group2: { type: String, required: true, trim: true },
+    group1Batch: { type: String, trim: true },
+    group2Batch: { type: String, trim: true },
     caInterRank: { type: String, default: 'No Rank', trim: true },
     articleshipFirmName: { type: String, required: true, trim: true },
     articleshipStartMonthYear: { type: String, required: true, trim: true },
+    preferredCities: { type: [String], default: [] },
+    preferredSectors: { type: [String], default: [] },
+    remarks: { type: String, default: '', trim: true },
+    resumeUrl: { type: String, default: '', trim: true },
     isVerified: { type: Boolean, default: true },
     verificationMethod: { type: String, default: 'OTP & ICAI Declaration' },
     verificationCode: { type: String },

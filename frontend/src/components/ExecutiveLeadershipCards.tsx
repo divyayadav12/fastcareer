@@ -45,7 +45,7 @@ export const ExecutiveLeadershipCards: React.FC<ExecutiveLeadershipCardsProps> =
             </div>
 
             <a 
-              href="tel:+917007017090" 
+              href="tel:+919826023534" 
               title="Call Sarthak Jain"
               className="w-9 h-9 rounded-full bg-[#EBF3FE] text-[#2563EB] hover:bg-[#2563EB] hover:text-white transition-colors flex items-center justify-center shadow-xs shrink-0"
             >
@@ -58,9 +58,7 @@ export const ExecutiveLeadershipCards: React.FC<ExecutiveLeadershipCardsProps> =
             <div className="flex items-center gap-2.5">
               <Phone size={14} className="text-[#2563EB] shrink-0" />
               <div className="font-medium text-slate-700 flex items-center gap-1.5 flex-wrap">
-                <a href="tel:+917007017090" className="hover:text-[#2563EB] transition-colors">+91 70070 17090</a>
-                <span className="text-slate-300">|</span>
-                <a href="tel:+917829822354" className="hover:text-[#2563EB] transition-colors">+91 78298 22354</a>
+                <a href="tel:+919826023534" className="hover:text-[#2563EB] transition-colors">+91 98260 23534</a>
               </div>
             </div>
 
@@ -88,7 +86,7 @@ export const ExecutiveLeadershipCards: React.FC<ExecutiveLeadershipCardsProps> =
           </span>
 
           <a 
-            href="https://wa.me/917007017090?text=Hello%20Sarthak%20Sir%2C%20I%20would%20like%20to%20inquire%20about%20FAST%20Careers." 
+            href="https://wa.me/919826023534?text=Hello%20Sarthak%20Sir%2C%20I%20would%20like%20to%20inquire%20about%20FAST%20Careers." 
             target="_blank" 
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#ECFDF5] border border-emerald-200 text-emerald-600 text-xs font-bold hover:bg-emerald-600 hover:text-white transition-all shadow-xs"
@@ -130,7 +128,7 @@ export const ExecutiveLeadershipCards: React.FC<ExecutiveLeadershipCardsProps> =
             </div>
 
             <a 
-              href="tel:+919200060000" 
+              href="tel:+919329882834" 
               title="Call Ritesh Gupta"
               className="w-9 h-9 rounded-full bg-[#EBF3FE] text-[#2563EB] hover:bg-[#2563EB] hover:text-white transition-colors flex items-center justify-center shadow-xs shrink-0"
             >
@@ -143,9 +141,7 @@ export const ExecutiveLeadershipCards: React.FC<ExecutiveLeadershipCardsProps> =
             <div className="flex items-center gap-2.5">
               <Phone size={14} className="text-[#2563EB] shrink-0" />
               <div className="font-medium text-slate-700 flex items-center gap-1.5 flex-wrap">
-                <a href="tel:+919200060000" className="hover:text-[#2563EB] transition-colors">+91 92000 60000</a>
-                <span className="text-slate-300">|</span>
-                <a href="tel:+918282882824" className="hover:text-[#2563EB] transition-colors">+91 82828 82824</a>
+                <a href="tel:+919329882834" className="hover:text-[#2563EB] transition-colors">+91 93298 82834</a>
               </div>
             </div>
 
@@ -173,7 +169,7 @@ export const ExecutiveLeadershipCards: React.FC<ExecutiveLeadershipCardsProps> =
           </span>
 
           <a 
-            href="https://wa.me/919200060000?text=Hello%20Ritesh%20Sir%2C%20I%20would%20like%20to%20inquire%20about%20FAST%20Careers%20corporate%20drives." 
+            href="https://wa.me/919329882834?text=Hello%20Ritesh%20Sir%2C%20I%20would%20like%20to%20inquire%20about%20FAST%20Careers%20corporate%20drives." 
             target="_blank" 
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#ECFDF5] border border-emerald-200 text-emerald-600 text-xs font-bold hover:bg-emerald-600 hover:text-white transition-all shadow-xs"
