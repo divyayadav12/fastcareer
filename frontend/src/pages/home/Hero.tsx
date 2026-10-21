@@ -219,12 +219,14 @@ export const Hero = () => {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ opacity: { duration: 0.5, delay: 0.15 }, scale: { duration: 0.5, delay: 0.15 } }}
-        className="lg:col-span-4 flex items-center justify-center relative py-1"
+        className="lg:col-span-4 flex items-end justify-center relative"
+        style={{ minHeight: '100%' }}
       >
         <img
           src="/hero_ca_woman_transparent.png"
           alt="Professional woman - Fast Careers"
-          className="h-[340px] sm:h-[370px] lg:h-[390px] w-auto max-w-full object-contain object-center pointer-events-none select-none drop-shadow-md"
+          className="h-[380px] sm:h-[420px] lg:h-[460px] xl:h-[490px] w-auto max-w-full object-contain object-bottom pointer-events-none select-none"
+          style={{ filter: 'drop-shadow(2px 8px 18px rgba(29,100,242,0.13))' }}
         />
       </motion.div>
 
