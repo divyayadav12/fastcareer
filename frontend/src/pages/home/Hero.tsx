@@ -419,11 +419,11 @@ export const Hero = () => {
         transition={{ opacity: { duration: 0.5, delay: 0.15 }, scale: { duration: 0.5, delay: 0.15 } }}
         className="lg:col-span-4 flex items-center justify-center relative py-1"
       >
-        <div className="relative rounded-2xl overflow-hidden shadow-xs">
+        <div className="w-full max-w-[360px] h-[340px] sm:h-[370px] lg:h-[390px] rounded-2xl overflow-hidden shadow-lg border border-slate-200/80">
           <img
             src="/ca_hero_perfect.png"
             alt="CA Industrial Training - Fast Careers"
-            className="h-[340px] sm:h-[370px] lg:h-[390px] w-auto max-w-full object-contain pointer-events-none select-none drop-shadow-md rounded-2xl"
+            className="w-full h-full object-cover object-top pointer-events-none select-none rounded-2xl"
           />
         </div>
       </motion.div>
