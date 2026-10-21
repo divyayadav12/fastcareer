@@ -32,20 +32,7 @@ const ATTEMPT_OPTIONS = [
 
 const CA_INTER_RANK_OPTIONS = [
   'No Rank',
-  'AIR 1',
-  'AIR 2',
-  'AIR 3',
-  'AIR 4',
-  'AIR 5',
-  'AIR 6 to 10',
-  'AIR 11 to 15',
-  'AIR 16 to 20',
-  'AIR 21 to 25',
-  'AIR 26 to 30',
-  'AIR 31 to 35',
-  'AIR 36 to 40',
-  'AIR 41 to 45',
-  'AIR 46 to 50'
+  ...Array.from({ length: 50 }, (_, i) => `AIR ${i + 1}`)
 ];
 
 const POPULAR_FIRMS = [
