@@ -37,7 +37,7 @@ const ATTEMPT_OPTIONS = [
 
 const CA_INTER_RANK_OPTIONS = [
   'No Rank',
-  ...Array.from({ length: 50 }, (_, i) => `AIR ${i + 1}`)
+  ...Array.from({ length: 50 }, (_, i) => String(i + 1))
 ];
 
 const POPULAR_FIRMS = [
@@ -494,6 +494,9 @@ export const IndustrialTrainingModal: React.FC<IndustrialTrainingModalProps> = (
     if (!formData.permanentLocation.trim()) newErrors.permanentLocation = 'Permanent city is required';
     if (!formData.dob) newErrors.dob = 'Date of birth is required';
     if (!formData.articleshipFirmName.trim()) newErrors.articleshipFirmName = "Articleship Firm's Name 1 is required";
+    if (!formData.resumeUrl && !formData.resumeFileName) {
+      newErrors.resume = 'Please upload your resume (PDF/DOC)';
+    }
     
     // Articleship Tenure Eligibility Check (9 to 15 months only)
     if (tenureMonths < 9) {
@@ -1402,12 +1405,14 @@ export const IndustrialTrainingModal: React.FC<IndustrialTrainingModalProps> = (
                     />
                   </div>
 
-                  {/* Resume Upload (Optional) */}
-                  <div>
+                  {/* Resume Upload (Required) */}
+                  <div id={`${formId}-resume`}>
                     <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Upload Resume <span className="text-slate-400 font-normal">(Optional - PDF/DOC, Max 10MB)</span>
+                      Upload Resume <span className="text-rose-500 font-bold">*</span> <span className="text-slate-500 font-normal">(PDF/DOC, Max 10MB)</span>
                     </label>
-                    <div className="border-2 border-dashed border-slate-300 rounded-xl p-3 text-center bg-slate-50 hover:bg-slate-100/80 transition-colors">
+                    <div className={`border-2 border-dashed rounded-xl p-3 text-center transition-colors ${
+                      errors.resume ? 'border-rose-400 bg-rose-50/50' : 'border-slate-300 bg-slate-50 hover:bg-slate-100/80'
+                    }`}>
                       {formData.resumeFileName ? (
                         <div className="flex items-center justify-between bg-white p-2 rounded-lg border border-slate-200">
                           <div className="flex items-center gap-2 overflow-hidden text-left">
@@ -1444,6 +1449,9 @@ export const IndustrialTrainingModal: React.FC<IndustrialTrainingModalProps> = (
                         </label>
                       )}
                     </div>
+                    {errors.resume && (
+                      <p className="text-[11px] text-rose-500 font-medium mt-1 text-left">{errors.resume}</p>
+                    )}
                   </div>
                 </div>
               </div>
