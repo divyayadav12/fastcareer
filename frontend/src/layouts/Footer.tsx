@@ -14,7 +14,7 @@ export const Footer = () => {
             </p>
             <div className="flex space-x-4">
               <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" title="LinkedIn" className="text-gray-400 hover:text-white transition-colors"><Link size={20} /></a>
-              <a href="https://wa.me/918839250427" target="_blank" rel="noopener noreferrer" title="WhatsApp (+91 88392 50427)" className="text-gray-400 hover:text-emerald-400 transition-colors"><MessageCircle size={20} /></a>
+              <a href="https://wa.me/919229113040" target="_blank" rel="noopener noreferrer" title="WhatsApp (+91 92291 13040)" className="text-gray-400 hover:text-emerald-400 transition-colors"><MessageCircle size={20} /></a>
               <a href="mailto:info@fastcareers.com" title="Email Us" className="text-gray-400 hover:text-white transition-colors"><Globe size={20} /></a>
             </div>
           </div>

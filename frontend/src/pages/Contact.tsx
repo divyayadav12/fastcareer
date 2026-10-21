@@ -39,7 +39,7 @@ export const Contact = () => {
   const { register, handleSubmit, reset, formState: { errors } } = useForm<ContactFormData>();
   
   const onSubmit = (data: ContactFormData) => {
-    const targetNumber = '918839250427';
+    const targetNumber = '919229113040';
     let text = `*New Contact Inquiry*\n\n`;
     if (data.name) text += `*Name:* ${data.name}\n`;
     text += `*Email:* ${data.email}\n`;
@@ -55,13 +55,13 @@ export const Contact = () => {
     reset();
   };
 
-  const whatsappNumber = '918839250427';
+  const whatsappNumber = '919229113040';
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=Hello%20FAST%20Careers%2C%20I%20would%20like%20to%20inquire%20about%20recruitment%20services.`;
 
   return (
     <div className="w-full relative">
       {/* Hero Section */}
-      <section className="bg-gradient-to-b from-slate-50 via-white to-slate-50 text-slate-900 pt-32 pb-16 px-4 border-b border-slate-200">
+      <section className="bg-gradient-to-b from-slate-50 via-white to-slate-50 text-slate-900 pt-20 pb-8 px-4 border-b border-slate-200">
         <div className="max-w-7xl mx-auto text-center">
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}

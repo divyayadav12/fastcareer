@@ -106,7 +106,7 @@ const MilestoneCard = () => (
   </div>
 );
 
-// ─── Slide variants for framer-motion (fade only — no scroll/black gap) ──────
+// ─── Slide variants — instant crossfade, no scroll/movement ─────────────────
 const slideVariants = {
   enter: { opacity: 0 },
   center: { opacity: 1 },
@@ -154,9 +154,9 @@ export const Hero = () => {
 
   // ─── SLIDE 1: CA Recruitment ──────────────────────────────────────────────
   const Slide1 = () => (
-    <div className="grid lg:grid-cols-12 gap-6 lg:gap-2 items-end">
+    <div className="grid lg:grid-cols-12 gap-6 lg:gap-4 items-center">
       {/* Left: Text & CTAs */}
-      <div className="lg:col-span-5 text-left z-10 py-1 pb-4 sm:pb-6">
+      <div className="lg:col-span-5 text-left z-10 py-6 pl-8 sm:pl-10 lg:pl-4">
         <motion.div
           initial={{ opacity: 0, y: -15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -247,7 +247,7 @@ export const Hero = () => {
         initial={{ opacity: 0, x: 30 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.6, delay: 0.25 }}
-        className="lg:col-span-3 z-10 py-1 pb-4 sm:pb-6"
+        className="lg:col-span-3 z-10 py-6"
       >
         <MilestoneCard />
       </motion.div>
@@ -256,9 +256,9 @@ export const Hero = () => {
 
   // ─── SLIDE 2: Non-IT Recruitment for India ───────────────────────────────
   const Slide2 = () => (
-    <div className="grid lg:grid-cols-12 gap-6 lg:gap-2 items-end">
+    <div className="grid lg:grid-cols-12 gap-6 lg:gap-4 items-center">
       {/* Left: Text & CTAs */}
-      <div className="lg:col-span-5 text-left z-10 py-1 pb-4 sm:pb-6">
+      <div className="lg:col-span-5 text-left z-10 py-6 pl-8 sm:pl-10 lg:pl-4">
         <motion.div
           initial={{ opacity: 0, y: -15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -329,18 +329,15 @@ export const Hero = () => {
       {/* Center: Duo Image */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1, y: [0, -6, 0] }}
-        transition={{
-          opacity: { duration: 0.7, delay: 0.2 },
-          scale: { duration: 0.7, delay: 0.2 },
-          y: { repeat: Infinity, duration: 4.5, ease: 'easeInOut' },
-        }}
-        className="lg:col-span-4 flex items-end justify-center relative min-h-[420px] lg:min-h-[520px] overflow-hidden rounded-2xl"
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ opacity: { duration: 0.7, delay: 0.2 }, scale: { duration: 0.7, delay: 0.2 } }}
+        className="lg:col-span-4 flex items-center justify-center relative overflow-hidden rounded-2xl"
+        style={{ height: '420px' }}
       >
         <img
           src="/hero_non_it_duo.jpg"
           alt="Non-IT Corporate Duo - Fast Careers"
-          className="w-full h-full min-h-[420px] lg:min-h-[520px] max-h-[540px] object-cover object-top pointer-events-none select-none rounded-2xl shadow-lg"
+          className="w-full h-full object-cover object-top pointer-events-none select-none rounded-2xl shadow-lg"
         />
       </motion.div>
 
@@ -349,18 +346,17 @@ export const Hero = () => {
         initial={{ opacity: 0, x: 30 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.6, delay: 0.25 }}
-        className="lg:col-span-3 z-10 py-1 pb-4 sm:pb-6"
+        className="lg:col-span-3 z-10 py-6"
       >
         <MilestoneCard />
       </motion.div>
     </div>
   );
 
-  // ─── SLIDE 3: CA - IT / Industrial Training ───────────────────────────────
   const Slide3 = () => (
-    <div className="grid lg:grid-cols-12 gap-6 lg:gap-2 items-end">
+    <div className="grid lg:grid-cols-12 gap-6 lg:gap-4 items-center">
       {/* Left: Text & CTAs */}
-      <div className="lg:col-span-5 text-left z-10 py-1 pb-4 sm:pb-6">
+      <div className="lg:col-span-5 text-left z-10 py-6 pl-8 sm:pl-10 lg:pl-4">
         <motion.div
           initial={{ opacity: 0, y: -15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -483,17 +479,15 @@ export const Hero = () => {
         />
 
         {/* Slide Container */}
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 relative" style={{ minHeight: '520px' }}>
-          <AnimatePresence initial={false} custom={direction} mode="sync">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 relative" style={{ minHeight: '480px' }}>
+          <AnimatePresence initial={false} mode="wait">
             <motion.div
               key={currentSlide}
-              custom={direction}
               variants={slideVariants}
               initial="enter"
               animate="center"
               exit="exit"
-              transition={{ duration: 0.35, ease: 'easeInOut' }}
-              style={{ position: 'absolute', top: 0, left: 0, right: 0 }}
+              transition={{ duration: 0.2, ease: 'easeInOut' }}
             >
               {slides[currentSlide]}
             </motion.div>
