@@ -214,6 +214,7 @@ export const fetchOrGenerateResumeBuffer = async (
       (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) &&
       !cleanUrl.includes('/uploads/') &&
       !cleanUrl.includes('localhost') &&
+      !cleanUrl.includes('fastcareerwebside.onrender.com') &&
       !cleanUrl.includes('fastcareer.onrender.com')
     ) {
       const response = await fetch(cleanUrl);

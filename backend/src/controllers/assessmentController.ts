@@ -26,7 +26,7 @@ const MCQ_CORRECT_ANSWERS = [
 ];
 
 const getBaseUrl = (req: Request) => {
-  const host = req.get('host') || 'fastcareer.onrender.com';
+  const host = req.get('host') || 'fastcareerwebside.onrender.com';
   const protocol = req.protocol === 'http' && !host.includes('localhost') ? 'https' : req.protocol;
   return `${protocol}://${host}`;
 };
