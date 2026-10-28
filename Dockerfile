@@ -2,11 +2,11 @@ FROM node:20-slim
 
 WORKDIR /app
 
-# Copy package files and install only production dependencies
+# Copy package files and install only production dependencies with legacy peer deps
 COPY backend/package*.json ./
-RUN npm install --omit=dev
+RUN npm install --omit=dev --legacy-peer-deps
 
-# Copy already compiled dist and create uploads folder
+# Copy pre-compiled JavaScript
 COPY backend/dist ./dist
 RUN mkdir -p uploads
 
