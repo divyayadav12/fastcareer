@@ -1,0 +1,24 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const applicationController_1 = require("../controllers/applicationController");
+const upload_1 = require("../utils/upload");
+const authMiddleware_1 = require("../middleware/authMiddleware");
+const router = express_1.default.Router();
+router.get('/my', authMiddleware_1.protect, applicationController_1.getCandidateApplications);
+router.get('/candidate', authMiddleware_1.protect, applicationController_1.getCandidateApplications);
+router.get('/candidate/:id', authMiddleware_1.protect, applicationController_1.getCandidateApplications);
+router.post('/:jobId', authMiddleware_1.protect, upload_1.upload.single('resume'), applicationController_1.applyForJob);
+router.get('/job/:jobId', authMiddleware_1.protect, authMiddleware_1.employerOrAdmin, applicationController_1.getJobApplications);
+router.get('/employer', authMiddleware_1.protect, authMiddleware_1.employerOrAdmin, applicationController_1.getEmployerApplications);
+router.put('/share', authMiddleware_1.protect, authMiddleware_1.admin, applicationController_1.shareApplications);
+router.put('/bulk-status', authMiddleware_1.protect, authMiddleware_1.employerOrAdmin, applicationController_1.bulkUpdateApplicationStatus);
+router.put('/candidate-status', authMiddleware_1.protect, authMiddleware_1.employerOrAdmin, applicationController_1.updateCandidateStatus);
+router.put('/company-status', authMiddleware_1.protect, authMiddleware_1.employerOrAdmin, applicationController_1.updateCompanyStatus);
+router.get('/', authMiddleware_1.protect, authMiddleware_1.employerOrAdmin, applicationController_1.getAllApplications);
+router.route('/:id').delete(authMiddleware_1.protect, authMiddleware_1.employerOrAdmin, applicationController_1.deleteApplication);
+router.put('/:id/status', authMiddleware_1.protect, authMiddleware_1.employerOrAdmin, applicationController_1.updateApplicationStatus);
+exports.default = router;

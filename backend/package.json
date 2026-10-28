@@ -5,6 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
+    "prestart": "tsc",
     "start": "node dist/server.js",
     "dev": "nodemon src/server.ts",
     "seed:20": "node dist/seed20Candidates.js"
@@ -33,7 +34,9 @@
     "nodemailer": "^9.0.5",
     "pdf-parse": "^2.4.5",
     "pdfkit": "^0.20.1",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "@types/node": "^26.3.0",
+    "typescript": "^5.9.3"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
