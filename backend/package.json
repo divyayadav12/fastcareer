@@ -5,8 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
-    "prestart": "tsc",
-    "start": "node dist/server.js",
+    "start": "node --max-old-space-size=450 dist/server.js",
     "dev": "nodemon src/server.ts",
     "seed:20": "node dist/seed20Candidates.js"
   },
