@@ -19,6 +19,7 @@ export interface IIndustrialTraining extends Document {
   caInterRank: string; // e.g. 'No Rank' or 'AIR 15'
   articleshipFirmName: string;
   articleshipStartMonthYear: string;
+  big6Articleship?: string; // 'Yes' | 'No'
   preferredCities?: string[];
   preferredSectors?: string[];
   remarks?: string;
@@ -52,6 +53,7 @@ const IndustrialTrainingSchema: Schema = new Schema(
     caInterRank: { type: String, default: 'No Rank', trim: true },
     articleshipFirmName: { type: String, required: true, trim: true },
     articleshipStartMonthYear: { type: String, required: true, trim: true },
+    big6Articleship: { type: String, default: '', trim: true },
     preferredCities: { type: [String], default: [] },
     preferredSectors: { type: [String], default: [] },
     remarks: { type: String, default: '', trim: true },

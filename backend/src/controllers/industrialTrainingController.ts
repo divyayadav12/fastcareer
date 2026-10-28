@@ -109,6 +109,7 @@ export const submitIndustrialTraining = async (req: Request, res: Response): Pro
       caInterRank,
       articleshipFirmName,
       articleshipStartMonthYear,
+      big6Articleship,
       preferredCities,
       preferredSectors,
       remarks,
@@ -195,6 +196,7 @@ export const submitIndustrialTraining = async (req: Request, res: Response): Pro
       application.caInterRank = caInterRank || 'No Rank';
       application.articleshipFirmName = articleshipFirmName.trim();
       application.articleshipStartMonthYear = articleshipStartMonthYear.trim();
+      if (big6Articleship !== undefined) (application as any).big6Articleship = big6Articleship;
       if (Array.isArray(preferredCities)) application.preferredCities = preferredCities;
       if (Array.isArray(preferredSectors)) application.preferredSectors = preferredSectors;
       if (remarks !== undefined) application.remarks = remarks.trim();
@@ -224,6 +226,7 @@ export const submitIndustrialTraining = async (req: Request, res: Response): Pro
         caInterRank: caInterRank || 'No Rank',
         articleshipFirmName: articleshipFirmName.trim(),
         articleshipStartMonthYear: articleshipStartMonthYear.trim(),
+        big6Articleship: big6Articleship || '',
         preferredCities: Array.isArray(preferredCities) ? preferredCities : [],
         preferredSectors: Array.isArray(preferredSectors) ? preferredSectors : [],
         remarks: (remarks || '').trim(),
@@ -399,6 +402,7 @@ export const exportIndustrialTrainingExcel = async (req: Request, res: Response)
       'CA Inter Rank': app.caInterRank || 'No Rank',
       "Articleship Firm's Name 1": app.articleshipFirmName,
       'Articleship Start Month and Year': app.articleshipStartMonthYear,
+      'Big 6 Articleship': (app as any).big6Articleship || '',
       'Preferred Cities': (app.preferredCities || []).join(', '),
       'Preferred Sectors': (app.preferredSectors || []).join(', '),
       'Remarks': app.remarks || '',

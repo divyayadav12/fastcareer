@@ -98,6 +98,7 @@ export const IndustrialTrainingPage: React.FC = () => {
     articleshipFirmName: '',
     articleshipStartMonth: 'May',
     articleshipStartYear: '2025',
+    big6Articleship: '',
     preferredCities: ['Anywhere in India'] as string[],
     preferredSectors: ['Any'] as string[],
     remarks: '',
@@ -546,6 +547,7 @@ export const IndustrialTrainingPage: React.FC = () => {
         caInterRank: formData.caInterRank || 'No Rank',
         articleshipFirmName: formData.articleshipFirmName.trim(),
         articleshipStartMonthYear,
+        big6Articleship: formData.big6Articleship,
         preferredCities: formData.preferredCities,
         preferredSectors: formData.preferredSectors,
         remarks: formData.remarks.trim(),
@@ -1293,6 +1295,36 @@ export const IndustrialTrainingPage: React.FC = () => {
                     </div>
                     {errors.articleshipStartMonthYear && (
                       <p className="text-[11px] text-rose-500 mt-1 font-semibold">{errors.articleshipStartMonthYear}</p>
+                    )}
+                  </div>
+
+                  {/* Big 6 Articleship Question */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-2">
+                      Have you completed your articleship from any of the Big 6 Audit Firms?{' '}
+                      <span className="text-rose-500">*</span>
+                      <span className="block text-[10.5px] font-normal text-slate-500 mt-0.5">
+                        (Deloitte, PwC, EY, KPMG, Grant Thornton, BDO)
+                      </span>
+                    </label>
+                    <div className="flex gap-3">
+                      {(['Yes', 'No'] as const).map(opt => (
+                        <button
+                          key={opt}
+                          type="button"
+                          onClick={() => setFormData(prev => ({ ...prev, big6Articleship: opt }))}
+                          className={`flex-1 py-2.5 text-xs font-semibold rounded-xl border transition-all cursor-pointer ${
+                            formData.big6Articleship === opt
+                              ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                              : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                          }`}
+                        >
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
+                    {errors.big6Articleship && (
+                      <p className="text-[11px] text-rose-500 mt-1">{errors.big6Articleship}</p>
                     )}
                   </div>
                 </div>

@@ -164,6 +164,7 @@ export const Register = () => {
   const [gmcsCompleted, setGmcsCompleted] = useState<'Yes' | 'No' | ''>('');
   const [industrialTrainee, setIndustrialTrainee] = useState<'Yes' | 'No' | ''>('');
   const [listedCompanyWork, setListedCompanyWork] = useState<'Yes' | 'No' | ''>('');
+  const [big6Articleship, setBig6Articleship] = useState<'Yes' | 'No' | ''>('');
 
   const addArticleship = () => {
     setArticleships(prev => [
@@ -721,6 +722,7 @@ export const Register = () => {
         gmcsCompleted: workStatus === 'fresher' ? gmcsCompleted : '',
         industrialTrainee: workStatus === 'fresher' ? industrialTrainee : '',
         listedCompanyWork: workStatus === 'fresher' ? listedCompanyWork : '',
+        big6Articleship,
         experienceInfo: {
           isExperienced: workStatus === 'experienced',
           experienceYears: experienceYears || '2-3 Years',
@@ -1847,6 +1849,26 @@ export const Register = () => {
                                   ))}
                                 </div>
                               </div>
+
+                              {/* Big 6 Audit Firms Question - Fresher */}
+                              <div className="col-span-full">
+                                <label className="block text-xs font-semibold text-slate-700 mb-2">
+                                  Have you completed your articleship from any of the Big 6 Audit Firms?
+                                  <span className="block text-[10.5px] font-normal text-slate-500 mt-0.5">(Deloitte, PwC, EY, KPMG, Grant Thornton, BDO)</span>
+                                </label>
+                                <div className="grid grid-cols-2 gap-1.5">
+                                  {(['Yes', 'No'] as const).map(opt => (
+                                    <button
+                                      key={opt}
+                                      type="button"
+                                      onClick={() => setBig6Articleship(opt)}
+                                      className={`py-2 text-xs font-semibold rounded-xl border transition-all cursor-pointer ${big6Articleship === opt ? 'bg-blue-600 text-white border-blue-600 shadow-xs' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'}`}
+                                    >
+                                      {opt}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
                             </div>
                           </div>
 
@@ -2275,6 +2297,26 @@ export const Register = () => {
                                   </select>
                                 )}
                               </div>
+                            </div>
+                          </div>
+
+                          {/* Big 6 Audit Firms Question - Experienced */}
+                          <div className="mt-1 bg-white p-3.5 rounded-xl border border-blue-100 shadow-2xs">
+                            <label className="block text-xs font-semibold text-slate-700 mb-2">
+                              Have you completed your articleship from any of the Big 6 Audit Firms?
+                              <span className="block text-[10.5px] font-normal text-slate-500 mt-0.5">(Deloitte, PwC, EY, KPMG, Grant Thornton, BDO)</span>
+                            </label>
+                            <div className="grid grid-cols-2 gap-1.5">
+                              {(['Yes', 'No'] as const).map(opt => (
+                                <button
+                                  key={opt}
+                                  type="button"
+                                  onClick={() => setBig6Articleship(opt)}
+                                  className={`py-2.5 text-xs font-semibold rounded-xl border transition-all cursor-pointer ${big6Articleship === opt ? 'bg-blue-600 text-white border-blue-600 shadow-xs' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'}`}
+                                >
+                                  {opt}
+                                </button>
+                              ))}
                             </div>
                           </div>
                         </div>
