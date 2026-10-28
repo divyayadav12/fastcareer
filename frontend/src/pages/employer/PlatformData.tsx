@@ -3,6 +3,7 @@ import { EmployerLayout } from '../../layouts/EmployerLayout';
 import { AdminLayout } from '../../layouts/AdminLayout';
 import { Database, Download, Star, Briefcase, RefreshCw, MessageSquareQuote, Users, FileText, CheckCircle, Clock } from 'lucide-react';
 import axios from 'axios';
+import api from '../../services/api';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 import { getResumeUrl } from '../../utils/urlHelper';
@@ -27,10 +28,10 @@ export const PlatformData = () => {
         const headers = { Authorization: `Bearer ${user?.token}` };
         
         const [fbRes, refRes, jcRes, sjRes] = await Promise.all([
-          axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/candidate/feedback`, { headers }),
-          axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/candidate/referrals`, { headers }),
-          axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/candidate/job-change`, { headers }),
-          axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/shared-jobs`, { headers })
+          api.get('/candidate/feedback'),
+          api.get('/candidate/referrals'),
+          api.get('/candidate/job-change'),
+          api.get('/shared-jobs')
         ]);
 
         setData({

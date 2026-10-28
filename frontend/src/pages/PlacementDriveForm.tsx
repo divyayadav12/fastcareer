@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { STATES, STATE_CITY_MAP, ALL_CITIES, YEARS, YEARS_1970, EXPERIENCE_YEARS_OPTIONS, MONTHS, BOARDS, ATTEMPTS, CA_EXAM_MONTHS, NATURE_OF_WORK, COLLEGES, PREFERRED_CAMPUS_CITIES, ARTICLESHIP_TYPES, RANKER_OPTIONS } from '../utils/constants';
+import { STATES, STATE_CITY_MAP, ALL_CITIES, YEARS, YEARS_1970, EXPERIENCE_YEARS_OPTIONS, MONTHS, BOARDS, ATTEMPTS, CA_EXAM_MONTHS, NATURE_OF_WORK, COLLEGES, PREFERRED_CAMPUS_CITIES, ARTICLESHIP_TYPES, RANKER_OPTIONS, API_BASE_URL } from '../utils/constants';
 import { DatePicker } from '../components/DatePicker';
 
 export const PlacementDriveForm = () => {
@@ -134,8 +134,7 @@ export const PlacementDriveForm = () => {
       setUploading(true);
       const uploadData = new FormData();
       uploadData.append('resume', file);
-      
-      const res = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/upload`, uploadData, {
+      const res = await axios.post(`${API_BASE_URL}/upload`, uploadData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       
@@ -243,7 +242,7 @@ export const PlacementDriveForm = () => {
 
     setLoading(true);
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/webhooks/zoho`, formData);
+      await axios.post(`${API_BASE_URL}/webhooks/zoho`, formData);
       setSuccess(true);
     } catch (err) {
       console.error('Error submitting form', err);

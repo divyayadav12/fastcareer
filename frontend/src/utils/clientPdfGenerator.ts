@@ -1,6 +1,7 @@
 import { jsPDF } from 'jspdf';
 import { saveAs } from 'file-saver';
 import { getResumeUrl } from './urlHelper';
+import { API_BASE_URL } from './constants';
 
 export const generateCandidatePdfBlob = (c: any): Blob => {
   const doc = new jsPDF({
@@ -188,7 +189,7 @@ export const generateCandidatePdfBlob = (c: any): Blob => {
 // Resilient Resume Fetcher: Tries remote -> Tries API -> Generates fallback PDF blob
 export const fetchCandidateResumeBlob = async (candidate: any): Promise<Blob> => {
   const primaryUrl = candidate?.resumeUrl ? getResumeUrl(candidate.resumeUrl) : '';
-  const fallbackUrl = candidate?._id ? `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/users/candidates/${candidate._id}/resume` : '';
+  const fallbackUrl = candidate?._id ? `${API_BASE_URL}/users/candidates/${candidate._id}/resume` : '';
 
   // 1. Try primary URL (Cloudinary or /uploads/)
   if (primaryUrl) {

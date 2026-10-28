@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { CandidateLayout } from '../../layouts/CandidateLayout';
 import { Button } from '../../components/Button';
 import { RefreshCw, Building, IndianRupee, Briefcase, Clock } from 'lucide-react';
-import axios from 'axios';
+import api from '../../services/api';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 
@@ -26,9 +26,7 @@ export const WantToChangeJob = () => {
     setError('');
     
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/candidate/job-change`, formData, {
-        headers: { Authorization: `Bearer ${user?.token}` }
-      });
+      await api.post('/candidate/job-change', formData);
       toast.success('Your request has been submitted. Our career counselors will contact you soon!');
       setFormData({
         currentCompany: '', currentDesignation: '', currentCTC: '', expectedCTC: '', noticePeriod: '30 Days', reason: ''

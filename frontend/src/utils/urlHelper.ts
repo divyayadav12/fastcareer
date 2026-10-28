@@ -1,3 +1,5 @@
+import { BACKEND_URL } from './constants';
+
 export const getResumeUrl = (url?: string) => {
   if (!url) return '';
   
@@ -7,7 +9,7 @@ export const getResumeUrl = (url?: string) => {
     return url.substring(url.indexOf(cloudinaryPattern));
   }
 
-  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  const baseUrl = BACKEND_URL;
 
   // If URL contains an uploads path (e.g. /uploads/resume_123.pdf or http://localhost:5000/uploads/...)
   if (url.includes('/uploads/')) {

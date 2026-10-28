@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { CandidateLayout } from '../../layouts/CandidateLayout';
 import { Button } from '../../components/Button';
 import { Share2, User, Mail, Phone, Upload } from 'lucide-react';
-import axios from 'axios';
+import api from '../../services/api';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 
@@ -34,11 +34,8 @@ export const ReferFriend = () => {
         data.append('resume', file);
       }
 
-      await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/candidate/referrals`, data, {
-        headers: { 
-          Authorization: `Bearer ${user?.token}`,
-          'Content-Type': 'multipart/form-data'
-        }
+      await api.post('/candidate/referrals', data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
 
       toast.success('Referral Submitted Successfully! We will contact them soon.');

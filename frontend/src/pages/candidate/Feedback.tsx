@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { CandidateLayout } from '../../layouts/CandidateLayout';
 import { Button } from '../../components/Button';
 import { Star, MessageSquareQuote } from 'lucide-react';
-import axios from 'axios';
+import api from '../../services/api';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 
@@ -21,10 +21,7 @@ export const Feedback = () => {
     setError('');
     
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/candidate/feedback`, 
-        { rating, message: feedback },
-        { headers: { Authorization: `Bearer ${user?.token}` } }
-      );
+      await api.post('/candidate/feedback', { rating, message: feedback });
       toast.success('Thank you for your valuable feedback!');
       setRating(0);
       setFeedback('');

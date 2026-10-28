@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../services/api';
 import { CandidateLayout } from '../../layouts/CandidateLayout';
 import { Printer, Download, Mail, Phone, MapPin, Globe } from 'lucide-react';
 import { Button } from '../../components/Button';
@@ -14,10 +14,7 @@ export const ResumePrint = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const token = localStorage.getItem('token') || (user as any)?.token;
-        const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/users/profile`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const res = await api.get('/users/profile');
         setProfileData(res.data);
       } catch (err) {
         console.error('Failed to fetch profile', err);

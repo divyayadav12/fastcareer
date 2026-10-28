@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { CandidateLayout } from '../../layouts/CandidateLayout';
 import { Button } from '../../components/Button';
 import { Share2, Building, MapPin, Briefcase, User, Mail, Phone, Hash } from 'lucide-react';
-import axios from 'axios';
+import api from '../../services/api';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 
@@ -31,13 +31,11 @@ export const ShareJob = () => {
     
     const payload = {
       ...formData,
-      industry: formData.industry === 'Other' && formData.customIndustry ? formData.customIndustry : formData.industry
+      industry: formData.industry === 'Other' && (formData as any).customIndustry ? (formData as any).customIndustry : formData.industry
     };
 
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/shared-jobs`, payload, {
-        headers: { Authorization: `Bearer ${user?.token}` }
-      });
+      await api.post('/shared-jobs', payload);
       toast.success('Job Opportunity Shared Successfully! Admin will review it.');
       setFormData({
         industry: '', customIndustry: '', companyName: '', jobDescription: '', location: '', 

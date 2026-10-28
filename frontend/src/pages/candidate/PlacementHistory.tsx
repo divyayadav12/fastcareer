@@ -4,7 +4,7 @@ import { CheckCircle2, XCircle, Clock, Building2, Briefcase } from 'lucide-react
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import type { RootState } from '../../store';
-import axios from 'axios';
+import api from '../../services/api';
 
 export const PlacementHistory = () => {
   const { user } = useSelector((state: RootState) => state.auth);
@@ -15,13 +15,8 @@ export const PlacementHistory = () => {
     const fetchApplications = async () => {
       setLoading(true);
       try {
-        const token = localStorage.getItem('token') || (user as any)?.token;
-        if (token) {
-          const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/applications/my`, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          setApplications(res.data || []);
-        }
+        const res = await api.get('/applications/my');
+        setApplications(res.data || []);
       } catch (err) {
         console.error('Failed to load candidate applications', err);
       } finally {

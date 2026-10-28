@@ -409,3 +409,20 @@ export const getLaterExamSession = (
     year: String(year2 || year1 || '')
   };
 };
+
+export const getBackendUrl = (): string => {
+  let url = (import.meta as any).env?.VITE_API_URL;
+  if (!url || typeof url !== 'string' || !url.trim() || url === 'undefined') {
+    return 'https://fastcareerwebside.onrender.com';
+  }
+  url = url.trim().replace(/\/+$/, '');
+  // Automatically fix legacy dead Render URL if present in Vercel environment variables
+  if (url.includes('fastcareer.onrender.com')) {
+    url = url.replace('fastcareer.onrender.com', 'fastcareerwebside.onrender.com');
+  }
+  return url;
+};
+
+export const BACKEND_URL = getBackendUrl();
+export const API_BASE_URL = `${BACKEND_URL}/api`;
+

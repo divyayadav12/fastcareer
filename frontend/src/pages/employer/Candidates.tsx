@@ -232,8 +232,7 @@ export const EmployerCandidates = () => {
   const addDemoCandidates = async () => {
     const toastId = toast.loading("Adding 50 realistic candidates... This may take a few seconds.");
     try {
-      const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
-      await axios.get(`${baseUrl}/api/users/seed-50-candidates`);
+      await api.get('/users/seed-50-candidates');
       toast.success("Demo candidates added successfully! Refreshing...", { id: toastId });
       setTimeout(() => window.location.reload(), 1200);
     } catch (err) {
